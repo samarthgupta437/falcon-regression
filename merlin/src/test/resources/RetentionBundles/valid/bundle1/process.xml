@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<process name="rm-coord" xmlns="uri:falcon:process:0.1" xmlns:ns2="uri:ivory:feed:0.1"
+ xmlns:ns3="uri:ivory:cluster:0.1">
+  
+    
+             <clusters>
+        <cluster name="corp">
+         <validity end="2012-01-31T00:00Z" start="2012-01-30T01:00Z" />  
+        </cluster>
+      </clusters>
+    
+    <parallel>1</parallel>
+    <order>LIFO</order>
+        <frequency>days(1)</frequency>
+        <timezone>UTC</timezone>
+    <inputs>
+        <input end="now(2,0)" start="now(0,0)" feed="inPath" name="inPath" partition="*/OK"/>
+    </inputs>
+    <outputs>
+        <output instance="now(0,0)" feed="interPath" name="interPath" />
+        <output instance="now(0,0)" feed="outputhdfsdir" name="outputhdfsdir" />
+    </outputs>
+    <properties>
+        <property name="queueName" value="default"/>
+        <property name="logTime" value="${coord:formatTime(coord:actualTime(),'yyyy-MM-dd')}"/>
+        <property name="partition" value="*"/>
+    </properties>
+    <workflow path="/user/rishu/apps/rm"/>
+    <retry policy="backoff" delay="minutes(10)" attempts="3" />
+    
+    <late-process policy="exp-backoff" delay="hours(1)">
+        <late-input feed="impression" workflow-path="hdfs://impression/late/workflow" />
+        <late-input feed="clicks" workflow-path="hdfs://clicks/late/workflow" />
+    </late-process>
+</process>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<process name="agregator-coord16">
+    
+     <clusters>
+        <cluster name="corp">
+          <validity end="2011-01-03T03:00Z" start="2010-01-02T01:00Z" />
+        </cluster>
+      </clusters>
+        <parallel>2</parallel>
+	<order>LIFO</order>
+        <frequency>minutes(20)</frequency>
+	     <timezone>UTC</timezone>
+	
+	
+	<inputs>
+		<input end="now(0,20)" start="now(0,-30)"
+			feed="raaw-logs16" name="inputData"/>
+	</inputs>
+	<outputs>
+		<output instance="now(0,0)" feed="agregated-logs16"
+			name="outputData" />
+	</outputs>
+	<properties>
+		<property name="queueName" value="default"/>
+	</properties>
+	<workflow path="/examples/apps/aggregator"/>
+	<retry policy="backoff" delay="minutes(10)" attempts="3" />
+
+    <late-process policy="exp-backoff" delay="hours(1)">
+        <late-input feed="impression" workflow-path="hdfs://impression/late/workflow" />
+        <late-input feed="clicks" workflow-path="hdfs://clicks/late/workflow" />
+    </late-process>
+</process>

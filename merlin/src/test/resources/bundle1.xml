@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bundle:bundle-app name="bundle1" xmlns:bundle="uri:oozie:bundle:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="uri:oozie:bundle:0.1 ../../main/resources/bundle.xsd ">
+  <bundle:controls>
+    <bundle:kick-off-time>bundle:kick-off-time</bundle:kick-off-time>
+  </bundle:controls>
+  <bundle:coordinator critical="" name="bundle1">
+    <bundle:app-path>bundle:app-path</bundle:app-path>
+    <bundle:configuration>
+      <bundle:property>
+        <bundle:name>bundle:name</bundle:name>
+        <bundle:value>bundle:value</bundle:value>
+      </bundle:property>
+    </bundle:configuration>
+  </bundle:coordinator>
+</bundle:bundle-app>

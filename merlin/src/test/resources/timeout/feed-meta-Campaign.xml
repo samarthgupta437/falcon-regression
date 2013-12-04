@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<feed name="meta-Campaign" description="metadat for Campaign" xmlns="uri:ivory:feed:0.1">
+   <frequency>minutes(30)</frequency>
+   <clusters>
+       <cluster name="ua2-staging" >
+		<validity start="2010-11-12T00:00Z" end="2099-11-20T23:00Z"/>
+               <retention limit="days(5)" action="delete" />
+       </cluster>
+   </clusters>
+   <locations>
+       <location type="data" path="/data/meta/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/Campaign"/>
+   </locations>
+   <ACL owner="dataload" group="users" permission="0x755"/>
+   <schema location="none" provider="none"/>
+    <properties>
+        <property name="queueName" value="default" />
+        <property name="jobPriority" value="NORMAL" />
+    </properties>
+</feed>

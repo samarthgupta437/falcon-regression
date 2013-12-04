@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<feed xmlns="uri:falcon:feed:0.1" name="interPath" description="clicks log">
+    <partitions/>
+<!--    <groups>online,bi</groups>-->
+     <frequency>days(1)</frequency>
+          <timezone>UTC</timezone>
+     
+    <late-arrival cut-off="hours(6)"></late-arrival>
+    <clusters>
+        <cluster name="corp" type="source">
+            <validity start="2012-01-30T00:00Z" end="2012-12-31T23:59Z" ></validity>
+            <retention limit="months(6)" action="delete"></retention>
+        </cluster>
+    </clusters>
+    <locations>
+        <location type="meta" path="/projects/ivory/clicksMetaData"></location>
+        <location type="stats" path="/projects/ivory/clicksStats"></location>
+        <location type="data" path="/projects/bi/ioout/interactions/${YEAR}-${MONTH}-${DAY}"></location>
+    </locations>
+    <ACL owner="testuser" group="group" permission="0x755"></ACL>
+    <schema location="/schema/clicks" provider="protobuf"></schema>
+    <properties/>
+</feed>

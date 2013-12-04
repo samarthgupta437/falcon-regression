@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<feed description="clicks log"
+	name="raaw-logs16-1000a6ac-4ac7-4409-9a2a-aacc50f0b503" xmlns="uri:falcon:feed:0.1">
+	<partitions>
+		<partition name="country" />
+		<partition name="colo" />
+	</partitions>
+	<frequency>minutes(20)</frequency>
+	<timezone>UTC</timezone>
+	<late-arrival cut-off="hours(6)" />
+	<clusters>
+		<cluster partition="US/${cluster.colo}" type="source"
+			name="corp-cfca47de-cd03-4f30-a40d-28fc0f09a405">
+			<validity end="2013-11-11T05:39Z" start="2013-11-11T04:14Z" />
+			<retention action="delete" limit="hours(10)" />
+		</cluster>
+		<cluster type="target" name="corp-1bbffdbc-bf3a-4c0f-af64-0c9b5c48f13b">
+			<validity end="2013-11-11T05:59Z" start="2013-11-11T04:34Z" />
+			<retention action="delete" limit="hours(10)" />
+		</cluster>
+		<cluster partition="UK/${cluster.colo}" type="source"
+			name="corp-6410d8f7-b58a-4291-8a3d-116cbf314dc1">
+			<validity end="2013-11-11T06:24Z" start="2013-11-11T04:54Z" />
+			<retention action="delete" limit="hours(10)" />
+		</cluster>
+	</clusters>
+	<locations>
+		<location
+			path="/samarthRetention/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"
+			type="data" />
+		<location path="/projects/ivory/clicksStats" type="stats" />
+		<location path="/projects/ivory/clicksMetaData" type="meta" />
+	</locations>
+	<ACL permission="0x755" group="group" owner="testuser" />
+	<schema provider="protobuf" location="/schema/clicks" />
+	<properties>
+		<property value="value1" name="field1" />
+		<property value="value2" name="field2" />
+	</properties>
+</feed>

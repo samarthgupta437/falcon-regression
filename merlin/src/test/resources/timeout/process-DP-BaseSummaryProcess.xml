@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<process name="DP-BaseSummaryProcess" xmlns="uri:ivory:process:0.1">
+   <clusters>
+       <cluster name="ua2-staging">
+           <validity start="2012-12-27T06:30Z" end="2032-01-10T00:00Z"/>
+       </cluster>
+   </clusters>
+    <parallel>2</parallel>
+    <order>FIFO</order>
+    <frequency>minutes(1)</frequency>
+    <timezone>UTC</timezone>
+    <inputs>
+        <input name="ConversionEnhance" feed="FETL-ConversionEnhance" start="now(0,-30)" end="now(0,-30)" partition="*/*/*"/>
+        <input name="BeaconEnhance" feed="FETL-BeaconEnhance" start="now(0,-30)" end="now(0,-30)" partition="*/*/{CPC,CPM}"/>
+        <input name="ClickEnhance" feed="FETL-ClickEnhance" start="now(0,-30)" end="now(0,-30)" partition="*/*/*"/>
+        <input name="BillingEnhance" feed="FETL-BillingEnhance" start="now(0,-30)" end="now(0,-30)" partition="*/*/*"/>
+        <input name="FraudEnhance" feed="FETL-FraudEnhance" start="now(0,-30)" end="now(0,-30)" partition="*/*/*"/>
+        <input name="RequestRC" feed="FETL-RequestRC" start="now(0,-30)" end="now(0,-1)" partition="*/*"/>
+        <input name="ImpressionRC" feed="FETL-ImpressionRC" start="now(0,-30)" end="now(0,-1)" partition="*/*"/>
+        <input name="metadataAdGroup" feed="meta-AdGroup" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataAdGroupGeoTargetingDetail" feed="meta-AdGroupGeoTargetingDetail" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataGeoCity" feed="meta-GeoCity" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataGeoCustomRegion" feed="meta-GeoCustomRegion" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataGeoPreset" feed="meta-GeoPreset" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataGeoTargetingDetail" feed="meta-GeoTargetingDetail" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataGeoTargetingType" feed="meta-GeoTargetingType" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataGeoZip" feed="meta-GeoZip" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataTargetingDetails" feed="meta-TargetingDetails" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataAd" feed="meta-Ad" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataCampaign" feed="meta-Campaign" start="now(0,0)" end="now(0,0)"/>
+        <input name="metadataSite" feed="meta-WapSite" start="now(0,0)" end="now(0,0)"/>
+    </inputs>
+    <outputs>
+        <output name="Output" feed="DP-BaseSummary" instance="now(0,-30)"/>
+    </outputs>
+    <properties>
+        <property name="queueName" value="default"/>
+        <property name="jobPriority" value="NORMAL"/>
+    </properties>
+    <workflow path="/projects/localdc/lda/summary" lib="/projects/localdc/lda/lib"/>
+</process>
+

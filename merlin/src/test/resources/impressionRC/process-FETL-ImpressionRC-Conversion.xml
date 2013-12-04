@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<process name="FETL-ImpressionRC-Conversion" xmlns="uri:ivory:process:0.1">
+    <clusters>
+        <cluster name="ua2-staging">
+            <validity start="2013-02-07T12:00Z" end="2019-02-07T12:10Z"/>
+        </cluster>
+    </clusters>
+    <parallel>1</parallel>
+    <order>FIFO</order>
+    <frequency>minutes(1)</frequency>
+    <inputs>
+        <input name="Input" feed="FETL2-RRLog" start="now(0,0)" end="now(0,0)"/>
+        <input name="Gate" feed="FETL2-RRLog" start="now(0,1)" end="now(0,1)"/>
+    </inputs>
+    <outputs>
+        <output name="Output" feed="FETL-RequestRC" instance="now(0,0)"/>
+	<output name="ImpressionPath" feed="FETL-ImpressionRC" instance="now(0,0)"/>
+    </outputs>
+    <properties>
+        <property name="logType" value="request"/>
+        <property name="jobPriority" value="VERY_HIGH" />
+	<property name="queueName" value="default" />
+    </properties>
+    <workflow path="/projects/localdc/lda/impressionrc-conversion" lib="/projects/localdc/lda/impressionrc-conversion/lib" />
+    <retry policy="exp-backoff" delay="minutes(1)" attempts="3"/>
+</process>
+

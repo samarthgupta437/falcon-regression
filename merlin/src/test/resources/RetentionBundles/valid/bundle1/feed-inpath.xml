@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : feed1.xml
+    Created on : February 14, 2012, 2:07 PM
+    Author     : rishu.mehrotra
+    Description:
+        Purpose of the document follows.
+-->
+
+<feed description="clicks log" name="inPath" xmlns="uri:falcon:feed:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<!--   <partitions>
+        <partition name="min" />
+        <partition name="fraud" />
+        <partition name="min" />
+    </partitions>
+
+    <groups>online,bi</groups>-->
+
+    <frequency>hours(1)</frequency>
+    <late-arrival cut-off="hours(6)" />
+    <timezone>UTC</timezone>
+    <clusters>
+        <cluster name="corp" type="source">
+            <validity start="2012-01-30T00:00Z" end="2099-03-31T23:59Z"
+                      />
+            <retention limit="hours(10)" action="delete" /> <!-- Limit can be in Time or Instances 100, Action ENUM DELETE,ARCHIVE -->
+        </cluster>
+    </clusters>
+
+    <locations>
+        <location type="data" path="/retention/testFolders/${YEAR}-${MONTH}-${DAY}" />
+        <location type="stats" path="/projects/ivory/clicksStats" />
+        <location type="meta" path="/projects/ivory/clicksMetaData" />
+    </locations>
+    
+    <ACL owner="testuser" group="group" permission="0x755" />
+    <schema location="/schema/clicks" provider="protobuf" />
+
+    <properties>
+    </properties>
+</feed>

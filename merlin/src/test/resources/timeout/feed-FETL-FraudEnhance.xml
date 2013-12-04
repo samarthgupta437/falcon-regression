@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<feed name="FETL-FraudEnhance" description="Enhanced Fraud Data" xmlns="uri:ivory:feed:0.1">
+    <partitions>
+        <partition name="EventTime"/>
+        <partition name="ImpressionHour"/>
+        <partition name="PricingModel"/>
+    </partitions>
+    <groups>enhancedata</groups>
+    <availabilityFlag>_SUCCESS</availabilityFlag>
+    <frequency>minutes(30)</frequency>
+    <clusters>
+        <cluster name="ua2-staging" >
+		<validity start="2010-11-12T00:00Z" end="2099-11-20T23:00Z"/>
+		<retention limit="days(5)" action="delete" />
+	</cluster>
+    </clusters>
+    <locations>
+        <location type="data" path="/data/fetl/fraudenhance/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"/>
+        <location type="tmp" path="/data/fetl/staging/fraudenhance/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"/>
+        <location type="stats" path="/data/fetl/stats/fraudenhance/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"/>
+    </locations>
+    <ACL owner="fetl" group="users" permission="0755"/>
+    <schema location="/none" provider="none"/>
+    <properties>
+	<property name="queueName" value="default" />
+	<property name="jobPriority" value="NORMAL" />
+    </properties>
+</feed>
+

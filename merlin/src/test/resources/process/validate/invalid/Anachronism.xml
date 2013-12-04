@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : multipleClusters.xml
+    Created on : December 16, 2011, 4:04 PM
+    Author     : rishu.mehrotra
+    Description:
+        Purpose of the document follows.
+-->
+
+<process name="sample" >
+    <!-- where -->
+    <clusters>
+      <cluster name="prod-red1" />
+    </clusters>
+
+    <!-- when -->
+    <concurrency>1</concurrency> <!--unbounded upper limit for oozie --> 
+    <execution>LIFO</execution> 
+    <frequency>hourly</frequency>
+    <periodicity>1</periodicity>
+    <validity start="2011-11-01 00:00:00" end="2010-12-31 23:59:00" timezone="UTC"/>
+
+    <!-- what -->
+    <inputs>
+        <input name="impression" feed="impression" start-instance="$ptime-6" end-instance="$ptime" /> 
+        <input name="clicks" feed="clicks" start-instance="$ptime" end-instance="$ptime" />
+    </inputs>
+
+    <outputs>
+        <output name="impOutput" feed="imp-click-join" instance="$ptime" />
+        <output name="clicksOutput" feed="imp-click-join1" instance="$ptime" />
+    </outputs>
+
+    <!-- how --> <!-- equivalent of command line arguments or any other system properties.Referred inside workflow -->
+    <properties>
+    	<property name="name" value="value"/>
+    	<property name="name" value="value"/>
+    </properties>
+    
+    <workflow engine="oozie" path="hdfs://path/to/workflow" libpath="hdfs://path/to/workflow/lib"/>
+
+    <retry policy="backoff" delay="10" delayUnit="min" attempts="3" />
+
+    <late-process policy="exp-backoff" delay="1" delayUnit="hour">
+        <late-input feed="impression" workflow-path="hdfs://impression/late/workflow" />
+        <late-input feed="clicks" workflow-path="hdfs://clicks/late/workflow" />
+    </late-process>
+</process>

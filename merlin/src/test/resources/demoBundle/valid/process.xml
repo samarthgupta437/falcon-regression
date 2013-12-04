@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<process name="rm-coord" xmlns:ns2="uri:ivory:feed:0.1"
+ xmlns:ns3="uri:ivory:cluster:0.1">
+  
+    <clusters>
+        <cluster name="corp" />
+    </clusters>
+    <concurrency>1</concurrency>
+    <execution>LIFO</execution>
+    <frequency>days(1)</frequency>
+    <validity timezone="UTC" end="2012-02-01T00:00Z" start="2012-01-31T01:00Z" />  
+    <inputs>
+        <input end="today(2,0)" start="yesterday(0,0)" feed="inPath" name="inPath-event" />
+    </inputs>
+    <outputs>
+        <output instance="yesterday(0,0)" feed="interPath" name="interPath-event" />
+        <output instance="now(0,0)" feed="outputhdfsdir" name="outputhdfsdir-event" />
+    </outputs>
+    <properties>
+      
+        <property name="queueName" value="default" />
+        
+        </property>
+    </properties>
+    <workflow path="${nameNode}/user/${coord:user()}/apps/rm" />
+    <retry policy="backoff" delay="minutes(10)" attempts="3" />
+    
+    
+    <late-process policy="exp-backoff" delay="hours(1)">
+        <late-input feed="impression" workflow-path="hdfs://impression/late/workflow" />
+        <late-input feed="clicks" workflow-path="hdfs://clicks/late/workflow" />
+    </late-process>
+</process>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<feed name="DP-BaseSummary" description="Base summary" xmlns="uri:ivory:feed:0.1">
+   <frequency>minutes(30)</frequency>
+   <availabilityFlag>_SUCCESS</availabilityFlag>
+   <clusters>
+       <cluster name="ua2-staging" type="source">
+               <validity start="2010-12-27T06:00Z" end="2032-10-16T00:00Z" />
+               <retention limit="days(5)" action="delete" />
+       </cluster>
+   </clusters>
+   <locations>
+       <location type="data" path="/data/fetl/baseSummary/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"/>
+   </locations>
+   <ACL owner="fetl" group="users" permission="0x755"/>
+   <schema location="none" provider="none"/>
+   <properties>
+       <property name="queueName" value="default" />
+       <property name="jobPriority" value="NORMAL" />
+   </properties>
+</feed>

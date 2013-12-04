@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<process name="agregator-coord16" xmlns="uri:falcon:process:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+       <clusters>
+        <cluster name="corp">
+           <validity end="2011-01-03T03:00Z" start="2010-01-02T01:00Z" />  
+        </cluster>
+      </clusters>
+	<parallel>1</parallel>
+	<order>FIFO</order>
+       <frequency>minutes(1)</frequency>
+	<timezone>UTC</timezone>
+	
+	<inputs>
+		<input end="now(0,0)" start="now(0,-1)"
+			feed="raaw-logs16" name="inputData"/>
+	</inputs>
+	<outputs>
+		<output instance="now(0,0)" feed="agregated-logs16"
+			name="outputData" />
+	</outputs>
+	<properties>
+		<property name="queueName" value="default"/>
+		
+       <property name="fileTime" value="${formatTime(dateOffset(instanceTime(), 1, 'DAY'), 'yyyy-MMM-dd')}"/>
+       <property name="user" value="${user()}"/>
+       <property name="baseTime" value="${today(0,0)}"/>
+   
+	</properties>
+	<workflow path="/examples/apps/aggregator" />
+	<retry policy="periodic" delay="minutes(3)" attempts="3" />
+
+</process>
+
