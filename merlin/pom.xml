@@ -1,102 +1,62 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.inmobi.qa</groupId>
-	<artifactId>Merlin</artifactId>
-	<version>1.0-SNAPSHOT</version>
-	<packaging>jar</packaging>
+    <parent>
+        <groupId>org.apache.falcon</groupId>
+        <artifactId>falcon-regression</artifactId>
+        <version>0.5-incubating-SNAPSHOT</version>
+    </parent>
+    <artifactId>falcon-merlin</artifactId>
+    <description>Merlin - Regression test suite for Apache Falcon</description>
+    <name>Apache Falcon Regression Suite</name>
+    <packaging>jar</packaging>
 
-	<name>Merlin</name>
-	<url>http://maven.apache.org</url>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
 
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Denvironment=${config.file}</argLine>
+                    <parallel>methods</parallel>
+                    <threadCount>1</threadCount>
+                    <groups>${testng.groups}</groups>
+                    <excludedGroups>${testng.exclude.groups}</excludedGroups>
 
-	<pluginRepositories>
-		<pluginRepository>
-			<id>dtrott</id>
-			<url>http://maven.davidtrott.com/repository</url>
-		</pluginRepository>
-	</pluginRepositories>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.falcon</groupId>
+            <artifactId>falcon-merlin-core</artifactId>
+        </dependency>
 
-	<repositories>
-		<repository>
-			<id>cdh.repo</id>
-			<url>https://repository.cloudera.com/content/groups/cloudera-repos</url>
-			<name>Cloudera Repository</name>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
 
-		<repository>
-			<id>codehaus-snapshots</id>
-			<url>http://snapshots.repository.codehaus.org</url>
-		</repository>
-		<repository>
-			<id>mvn-repo</id>
-			<url>http://repo1.maven.org/maven2</url>
-		</repository>
-	</repositories>
+        <dependency>
+            <groupId>org.apache.hcatalog</groupId>
+            <artifactId>webhcat-java-client</artifactId>
+        </dependency>
 
-
-
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<argLine>-Denvironment=${config.file}</argLine>
-					<parallel>methods</parallel>
-					<threadCount>1</threadCount>
-					<groups>${testng.groups}</groups>
-					<excludedGroups>${testng.exclude.groups}</excludedGroups>
-
-				</configuration>
-			</plugin>
-		</plugins>
-
-	</build>
-
-	<dependencies>
-		<dependency>
-			<groupId>com.inmobi.qa</groupId>
-			<artifactId>MerlinHelper</artifactId>
-			<version>0.1-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>6.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.hcatalog</groupId>
-			<artifactId>webhcat-java-client</artifactId>
-			<version>0.11.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-common</artifactId>
-			<version>0.11.0</version>
-		</dependency>
-
-	</dependencies>
+        <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-common</artifactId>
+        </dependency>
+    </dependencies>
 </project>
