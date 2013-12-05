@@ -97,6 +97,12 @@ public abstract class IEntityManagerHelper {
     protected String serviceRestartCmd;
     protected String serviceStatusCmd;
 
+  public String getIdentityFile() {
+    return identityFile;
+  }
+
+  protected String identityFile;
+
   public String getServiceStatusMsg() {
     return serviceStatusMsg;
   }
@@ -160,6 +166,8 @@ public abstract class IEntityManagerHelper {
        this.serviceStatusMsg = prop.getProperty("service_status_msg",
          "Tomcat servlet engine is running with pid");
        this.serviceStatusCmd = prop.getProperty("service_status_cmd", "/etc/init.d/tomcat6 status");
+       this.identityFile = prop.getProperty("identityFile",
+         System.getProperty("user.home") +"/.ssh/id_rsa");
     }
     
     public abstract ServiceResponse submitEntity(String url, String data) throws Exception;

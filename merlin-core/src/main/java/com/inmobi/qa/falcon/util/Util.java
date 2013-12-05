@@ -108,15 +108,19 @@ public class Util {
 	static Logger logger=Logger.getLogger(Util.class);
 
 	//This section is for properties that are read from the config.properties file and then used throughout
-	final static String HOST_NAME=readPropertiesFile("qa_host");
-	final static String USER_NAME=readPropertiesFile("username");
-	final static String PASSWORD=readPropertiesFile("password");
-	final static String HADOOP_LOCATION=readPropertiesFile("hadoop_location");
-	final static String HADOOP_URL=readPropertiesFile("hadoop_url");
-	final static String OOZIE_URL=readPropertiesFile("oozie_url");
-	final static String OOZIE_LOCATION=readPropertiesFile("oozie_location");
-	final static String HOSTNAME=readPropertiesFile("ivory_hostname");
-	final static String ACTIVEMQ=readPropertiesFile("activemq_url");
+  final static Properties properties = getPropertiesObj
+    ("src/main/resources/"+System.getProperty("environment"));
+  final static String HOST_NAME = properties.getProperty("qa_host");
+	final static String USER_NAME=properties.getProperty("username");
+	final static String PASSWORD=properties.getProperty("password");
+	final static String HADOOP_LOCATION=properties.getProperty("hadoop_location");
+	final static String HADOOP_URL=properties.getProperty("hadoop_url");
+	final static String OOZIE_URL=properties.getProperty("oozie_url");
+	final static String OOZIE_LOCATION=properties.getProperty("oozie_location");
+	final static String HOSTNAME=properties.getProperty("ivory_hostname");
+	final static String ACTIVEMQ=properties.getProperty("activemq_url");
+  final static String IDENTITY_FILE = properties.getProperty("identityFile",
+    System.getProperty("user.home") +"/.ssh/id_rsa");
 	//config file property section ends here
 
 
@@ -503,47 +507,59 @@ public class Util {
 
 	public static ArrayList<String> getProcessStoreInfo(IEntityManagerHelper helper) throws Exception
 	{
-		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/PROCESS");
+		return runRemoteScript(helper.getQaHost(),helper.getUsername(),
+      helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/PROCESS", helper.getIdentityFile());
 	}
 
 	public static ArrayList<String> getDataSetStoreInfo(IEntityManagerHelper helper) throws Exception
 	{
-		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/FEED");
+		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/FEED", helper.getIdentityFile());
 	}
 
 	public static ArrayList<String> getDataSetArchiveInfo(IEntityManagerHelper helper) throws Exception
 	{
-		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/archive/FEED");
+		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/archive/FEED", helper.getIdentityFile());
 	}
 
 	public static ArrayList<String> getArchiveStoreInfo(IEntityManagerHelper helper) throws Exception
 	{
-		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/archive/PROCESS");
+		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/archive/PROCESS", helper.getIdentityFile());
 	}
 
 	public static ArrayList<String> getClusterStoreInfo(IEntityManagerHelper helper) throws Exception
 	{
 		Util.print("getting Storeinfo from box: "+helper.getQaHost());
-		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/CLUSTER");
+		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/CLUSTER", helper.getIdentityFile());
 	}
 
 	public static ArrayList<String> getClusterArchiveInfo(IEntityManagerHelper helper) throws Exception
 	{
-		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/archive/CLUSTER");
+		return runRemoteScript(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"ls "+helper.getStoreLocation()+"/store/archive/CLUSTER", helper.getIdentityFile());
 	}
 
 
-	public static ArrayList<String> runRemoteScript(String host_name,String user_name,String password,String command) throws Exception
+	public static ArrayList<String> runRemoteScript(String hostName,
+                                                  String userName,
+                                                  String password,
+                                                  String command,
+                                                  String identityFile) throws
+    Exception
     {
         JSch jsch = new JSch();
-        Session session = jsch.getSession(user_name, host_name, 22);
-        //logger.info("Done");
+        Session session = jsch.getSession(userName, hostName, 22);
 
-
-        System.out.println("host_name: "+host_name+ " user_name: "+user_name +" password: "+password+ " command: "+command);
-        session.setUserInfo(new HardcodedUserInfo(password));
+        System.out.println("host_name: "+hostName+ " user_name: "+userName +" password: "+password+ " command: "+command);
+        // only set the password if its not empty
+        if (null != password && !password.isEmpty()) {
+          session.setUserInfo(new HardcodedUserInfo(password));
+        }
         Properties config = new Properties();
         config.setProperty("StrictHostKeyChecking", "no");
+        config.setProperty("UserKnownHostsFile", "/dev/null");
+        // only set the password if its not empty
+        if (null == password || password.isEmpty()) {
+          jsch.addIdentity(identityFile);
+        }
         session.setConfig(config);
 
         session.connect();
@@ -554,14 +570,9 @@ public class Util {
 
 
         logger.info("executing the command..."+command);
-         channel.setCommand(command);
+        channel.setCommand(command);
         channel.connect();
         Assert.assertTrue(channel.isConnected(),"The channel was not connected correctly!");
-
-
-
-        //Assert.assertTrue("The channel did not connect correctly for setting the path!",channel.isConnected());
-
         logger.info("now reading the line....");
 
         //now to read output
@@ -593,7 +604,6 @@ public class Util {
 
         channel.disconnect();
         session.disconnect();
-        //System.out.println("returning from runRemoteScript");
 
         return data;  
     }
@@ -849,7 +859,7 @@ public class Util {
 
 		//ArrayList<String> tempData=runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,HADOOP_GET_COMMAND+"/"+processName+" FALCON_PROCESS_"+processName+".xml");
 
-		ArrayList<String> tempData=runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,HADOOP_GET_COMMAND+"/"+processName+"/FALCON_PROCESS_DEFAULT/coordinator.xml");
+		ArrayList<String> tempData=runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,HADOOP_GET_COMMAND+"/"+processName+"/FALCON_PROCESS_DEFAULT/coordinator.xml", IDENTITY_FILE);
 
 		JAXBContext jc=JAXBContext.newInstance(COORDINATORAPP.class);
 		Unmarshaller u=jc.createUnmarshaller();
@@ -869,7 +879,8 @@ public class Util {
 
 		//ArrayList<String> tempData=runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,HADOOP_GET_COMMAND+"/"+processName+" IVORY_PROCESS_"+processName+".xml");
 
-		ArrayList<String> tempData=runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,HADOOP_LOCATION+"  fs -cat "+path);
+		ArrayList<String> tempData=runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,
+      HADOOP_LOCATION+"  fs -cat "+path, IDENTITY_FILE);
 
 		JAXBContext jc=JAXBContext.newInstance(COORDINATORAPP.class);
 		Unmarshaller u=jc.createUnmarshaller();
@@ -1125,7 +1136,10 @@ public class Util {
 
 		for(int seconds=0;seconds<20;seconds++)
 		{
-			jobList= runRemoteScript(coloHelper.getProcessHelper().getQaHost(),coloHelper.getProcessHelper().getUsername(),coloHelper.getProcessHelper().getPassword(),statusCommand);
+			jobList= runRemoteScript(coloHelper.getProcessHelper().getQaHost(),
+        coloHelper.getProcessHelper().getUsername(),
+        coloHelper.getProcessHelper().getPassword(),statusCommand,
+        coloHelper.getProcessHelper().getIdentityFile());
 
 			if( (expectedState!=null || !(expectedState.equals(""))) && jobList.get(0).contains(expectedState))
 			{
@@ -1163,7 +1177,7 @@ public class Util {
 
 		for(int seconds=0;seconds<20;seconds++)
 		{
-			jobList= runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,statusCommand);
+			jobList= runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,statusCommand, IDENTITY_FILE);
 
 			if( (expectedState!=null || !(expectedState.equals(""))) && jobList.get(0).contains(expectedState))
 			{
@@ -1212,7 +1226,10 @@ public class Util {
 
 		for(int seconds=0;seconds<20;seconds++)
 		{
-			jobList= runRemoteScript(prismHelper.getProcessHelper().getQaHost(),prismHelper.getProcessHelper().getUsername(),prismHelper.getProcessHelper().getPassword(),statusCommand);
+			jobList= runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
+        prismHelper.getProcessHelper().getUsername(),
+        prismHelper.getProcessHelper().getPassword(),statusCommand,
+        prismHelper.getProcessHelper().getIdentityFile());
 
 			if( (expectedState!=null || expectedState.equalsIgnoreCase("NONE")) || !(expectedState.equals("") && jobList.get(0).contains(expectedState)))
 			{
@@ -1258,7 +1275,10 @@ public class Util {
 
 		for(int seconds=0;seconds<20;seconds++)
 		{
-			jobList= runRemoteScript(colohelper.getProcessHelper().getQaHost(),colohelper.getProcessHelper().getUsername(),colohelper.getProcessHelper().getPassword(),statusCommand);
+			jobList= runRemoteScript(colohelper.getProcessHelper().getQaHost(),
+        colohelper.getProcessHelper().getUsername(),
+        colohelper.getProcessHelper().getPassword(),statusCommand,
+        colohelper.getProcessHelper().getIdentityFile());
 
 			if( (expectedState!=null || expectedState.equalsIgnoreCase("NONE")) || !(expectedState.equals("") && jobList.get(0).contains(expectedState)))
 			{
@@ -1305,7 +1325,7 @@ public class Util {
 
 		for(int seconds=0;seconds<20;seconds++)
 		{
-			jobList= runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,statusCommand);
+			jobList= runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,statusCommand, IDENTITY_FILE);
 
 			if( (expectedState!=null || expectedState.equalsIgnoreCase("NONE")) || !(expectedState.equals("") && jobList.get(0).contains(expectedState)))
 			{
@@ -1351,7 +1371,9 @@ public class Util {
 
 		for(int seconds=0;seconds<20;seconds++)
 		{
-			jobList= runRemoteScript(coloHelper.getFeedHelper().getQaHost(),coloHelper.getFeedHelper().getUsername(),coloHelper.getFeedHelper().getPassword(),statusCommand);
+			jobList= runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
+        coloHelper.getFeedHelper().getUsername(),coloHelper.getFeedHelper()
+        .getPassword(),statusCommand, coloHelper.getProcessHelper().getIdentityFile());
 
 			if( (expectedState!=null || expectedState.equalsIgnoreCase("NONE")) || !(expectedState.equals("") && jobList.get(0).contains(expectedState)))
 			{
@@ -1746,7 +1768,10 @@ public class Util {
 		//this command copies hadoop files in a directory....then gets the contents
 		//String command=HADOOP_LOCATION+"  dfs -lsr hdfs://"+HADOOP_URL+"/retention/testFolders | awk '///retention//testFolders/ {print $8}'";
 		String command=prismHelper.getClusterHelper().getHadoopLocation()+"  dfs -lsr hdfs://"+prismHelper.getClusterHelper().getHadoopURL()+"/retention/testFolders | awk '{print $8}'";
-		ArrayList<String> result=runRemoteScript(prismHelper.getClusterHelper().getQaHost(),prismHelper.getClusterHelper().getUsername(),prismHelper.getClusterHelper().getPassword(),command);
+		ArrayList<String> result=runRemoteScript(prismHelper.getClusterHelper()
+      .getQaHost(),prismHelper.getClusterHelper().getUsername(),
+      prismHelper.getClusterHelper().getPassword(),command,
+      prismHelper.getClusterHelper().getIdentityFile());
 
 		ArrayList<String> finalResult=new ArrayList<String>();
 
@@ -1802,7 +1827,10 @@ public class Util {
 		//this command copies hadoop files in a directory....then gets the contents
 		String command=prismHelper.getClusterHelper().getHadoopLocation()+"  dfs -lsr hdfs://"+prismHelper.getClusterHelper().getHadoopURL()+"/lateDataTest/testFolders | awk '{print $8}'";
 
-		ArrayList<String> result=runRemoteScript(prismHelper.getClusterHelper().getQaHost(),prismHelper.getClusterHelper().getUsername(),prismHelper.getClusterHelper().getPassword(),command);
+		ArrayList<String> result=runRemoteScript(prismHelper.getClusterHelper()
+      .getQaHost(),prismHelper.getClusterHelper().getUsername(),
+      prismHelper.getClusterHelper().getPassword(),command,
+      prismHelper.getClusterHelper().getIdentityFile());
 
 		ArrayList<String> finalResult=new ArrayList<String>();
 
@@ -1878,16 +1906,20 @@ public class Util {
 
 	public static void replenishData() throws Exception
 	{
-		ArrayList<String> deleteMessage=runRemoteScript(HOST_NAME,USER_NAME,PASSWORD,HADOOP_LOCATION+"  dfs -rmr hdfs://"+HADOOP_URL+"/projects/bi/ioout");
+		ArrayList<String> deleteMessage=runRemoteScript(HOST_NAME,USER_NAME,
+      PASSWORD,HADOOP_LOCATION+"  dfs -rmr " +
+      "hdfs://"+HADOOP_URL+"/projects/bi/ioout", IDENTITY_FILE);
 		//Assert.assertEquals(deleteMessage.get(0),"Deleted hdfs://10.14.110.46/projects/bi/ioout","seems to be a problem with delete");
-		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs -copyFromLocal /tmp/tmpData/* hdfs://"+HADOOP_URL+"/projects/bi/");
+		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs " +
+      "-copyFromLocal /tmp/tmpData/* hdfs://"+HADOOP_URL+"/projects/bi/", IDENTITY_FILE);
 	}
 
 	public static void replenishData(List<String> folderList) throws Exception
 	{
 
 		//purge data first
-		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs -rmr  hdfs://"+HADOOP_URL+"/retention/testFolders/");
+		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs -rmr" +
+      "  hdfs://"+HADOOP_URL+"/retention/testFolders/", IDENTITY_FILE);
 		//createHDFSFolders(HOST_NAME, USER_NAME, PASSWORD, folderList);
 		createHDFSFolders(folderList);
 
@@ -1904,7 +1936,12 @@ public class Util {
 	{
 
 		//purge data first
-		runRemoteScript(prismHelper.getClusterHelper().getQaHost(),prismHelper.getClusterHelper().getUsername(), prismHelper.getClusterHelper().getPassword(),prismHelper.getClusterHelper().getHadoopLocation()+"  dfs -rmr  hdfs://"+prismHelper.getClusterHelper().getHadoopURL()+"/retention/testFolders/");
+		runRemoteScript(prismHelper.getClusterHelper().getQaHost(),
+      prismHelper.getClusterHelper().getUsername(),
+      prismHelper.getClusterHelper().getPassword(),
+      prismHelper.getClusterHelper().getHadoopLocation()+"  dfs -rmr  " +
+        "hdfs://"+prismHelper.getClusterHelper().getHadoopURL()
+        +"/retention/testFolders/", prismHelper.getClusterHelper().getIdentityFile());
 		//createHDFSFolders(HOST_NAME, USER_NAME, PASSWORD, folderList);
 		createHDFSFolders(prismHelper,folderList);
 
@@ -2778,7 +2815,8 @@ public class Util {
 	public static void createHDFSPartitionFolders(List<String> folderList) throws Exception
 	{
 		//purge data first
-		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs -rmr  hdfs://"+HADOOP_URL+"/partition/testFolders/");
+		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs -rmr" +
+      "  hdfs://"+HADOOP_URL+"/partition/testFolders/", IDENTITY_FILE);
 
 		Configuration conf=new Configuration();
 		conf.set("fs.default.name","hdfs://"+HADOOP_URL+"");
@@ -3051,7 +3089,10 @@ public class Util {
 		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
 
 
-		return fmt.parseDateTime(runRemoteScript(prismHelper.getClusterHelper().getQaHost(), prismHelper.getClusterHelper().getUsername(), prismHelper.getClusterHelper().getPassword(),"date '+%Y-%m-%dT%H:%MZ'").get(0));
+		return fmt.parseDateTime(runRemoteScript(prismHelper.getClusterHelper()
+      .getQaHost(), prismHelper.getClusterHelper().getUsername(),
+      prismHelper.getClusterHelper().getPassword(),"date '+%Y-%m-%dT%H:%MZ'",
+      prismHelper.getClusterHelper().getIdentityFile()).get(0));
 
 	}
 
@@ -3062,23 +3103,35 @@ public class Util {
 
 
 	public static ArrayList<String> getBundles(String processName) throws Exception {
-		return runRemoteScript(HOST_NAME, USER_NAME, PASSWORD,OOZIE_LOCATION+"/oozie jobs -oozie "+OOZIE_URL+"  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"+processName+"|grep 000|awk '{print $1}'");
+		return runRemoteScript(HOST_NAME, USER_NAME, PASSWORD,
+      OOZIE_LOCATION+"/oozie jobs -oozie "+OOZIE_URL+"  -jobtype bundle " +
+        "-localtime -filter name=FALCON_PROCESS_"+processName+"|grep 000|awk " +
+        "'{print $1}'", IDENTITY_FILE);
 	}
 
 	public static ArrayList<String> getBundles(String processName,String entityType) throws Exception {
 
-		return runRemoteScript(HOST_NAME, USER_NAME, PASSWORD,OOZIE_LOCATION+"/oozie jobs -oozie "+OOZIE_URL+"  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"+processName+"|grep 000|awk '{print $1}'");
+		return runRemoteScript(HOST_NAME, USER_NAME, PASSWORD,
+      OOZIE_LOCATION+"/oozie jobs -oozie "+OOZIE_URL+"  -jobtype bundle " +
+        "-localtime -filter name=FALCON_PROCESS_"+processName+"|grep 000|awk " +
+        "'{print $1}'", IDENTITY_FILE);
 	}
 
 	public static ArrayList<String> getBundles(PrismHelper coloHelper,String entityName,String entityType) throws Exception {
 
 		if(entityType.equalsIgnoreCase("feed"))
 		{
-			return runRemoteScript(coloHelper.getFeedHelper().getQaHost(), coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper().getPassword(),coloHelper.getFeedHelper().getOozieLocation()+"/oozie jobs -oozie "+coloHelper.getFeedHelper().getOozieURL()+"  -jobtype bundle -localtime -filter name=FALCON_FEED_"+entityName+"|grep 000|awk '{print $1}'");                 
+			return runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
+        coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper()
+        .getPassword(),coloHelper.getFeedHelper().getOozieLocation()+"/oozie " +
+        "jobs -oozie "+coloHelper.getFeedHelper().getOozieURL()+"  -jobtype " +
+        "bundle -localtime -filter name=FALCON_FEED_"+entityName+"|grep " +
+        "000|awk '{print $1}'", coloHelper.getFeedHelper().getIdentityFile());
+
 		}
 		else
 		{
-			return runRemoteScript(coloHelper.getFeedHelper().getQaHost(), coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper().getPassword(),coloHelper.getFeedHelper().getOozieLocation()+"/oozie jobs -oozie "+coloHelper.getFeedHelper().getOozieURL()+"  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"+entityName+"|grep 000|awk '{print $1}'");                  
+			return runRemoteScript(coloHelper.getFeedHelper().getQaHost(), coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper().getPassword(),coloHelper.getFeedHelper().getOozieLocation()+"/oozie jobs -oozie "+coloHelper.getFeedHelper().getOozieURL()+"  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"+entityName+"|grep 000|awk '{print $1}'", coloHelper.getFeedHelper().getIdentityFile());
 		}
 	}
 
@@ -3245,12 +3298,18 @@ public class Util {
 
 	public static void HDFSCleanup(String hdfsPath) throws Exception
 	{
-		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs -rmr  hdfs://"+HADOOP_URL+"/"+hdfsPath);
+		runRemoteScript(HOST_NAME,USER_NAME, PASSWORD,HADOOP_LOCATION+"  dfs -rmr" +
+      "  hdfs://"+HADOOP_URL+"/"+hdfsPath, IDENTITY_FILE);
 	}
 
 	public static void HDFSCleanup(PrismHelper prismHelper,String hdfsPath) throws Exception
 	{
-		runRemoteScript(prismHelper.getProcessHelper().getQaHost(),prismHelper.getProcessHelper().getUsername(), prismHelper.getProcessHelper().getPassword(),prismHelper.getProcessHelper().getHadoopLocation()+"  dfs -rmr  hdfs://"+prismHelper.getProcessHelper().getHadoopURL()+"/"+hdfsPath);
+		runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
+      prismHelper.getProcessHelper().getUsername(),
+      prismHelper.getProcessHelper().getPassword(),
+      prismHelper.getProcessHelper().getHadoopLocation()+"  dfs -rmr  " +
+        "hdfs://"+prismHelper.getProcessHelper().getHadoopURL()+"/"+hdfsPath,
+      prismHelper.getProcessHelper().getIdentityFile());
 	}        
 
 	//	public static void lateDataReplenish(int interval,int daySkip,int minuteSkip) throws Exception
@@ -3677,13 +3736,18 @@ public class Util {
 
 		for(PrismHelper helper:prismHelper)
 		{
-			ArrayList<String> processList=runRemoteScript(helper.getFeedHelper().getQaHost(),helper.getFeedHelper().getUsername(), helper.getFeedHelper().getPassword(),helper.getFeedHelper().getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper().getHadoopURL()+"/projects/ivory/staging/ivory/workflows/process | awk '{print $8}'");
+			ArrayList<String> processList=runRemoteScript(helper.getFeedHelper()
+        .getQaHost(),helper.getFeedHelper().getUsername(),
+        helper.getFeedHelper().getPassword(),helper.getFeedHelper()
+        .getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper()
+        .getHadoopURL()+"/projects/ivory/staging/ivory/workflows/process | " +
+        "awk '{print $8}'", helper.getFeedHelper().getIdentityFile());
 
 			//make sure process bundle is not there
 			Assert.assertFalse(processList.contains("/projects/ivory/staging/ivory/workflows/process/"+Util.readEntityName(bundle.getProcessData())),"Process "+Util.readEntityName(bundle.getProcessData())+" did not have its bundle removed!!!!");
 
 			//make sure feed bundle is not there
-			ArrayList<String> feedList=runRemoteScript(helper.getFeedHelper().getQaHost(),helper.getFeedHelper().getUsername(), helper.getFeedHelper().getPassword(),helper.getFeedHelper().getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper().getHadoopURL()+"/projects/ivory/staging/ivory/workflows/feed | awk '{print $8}'");
+			ArrayList<String> feedList=runRemoteScript(helper.getFeedHelper().getQaHost(),helper.getFeedHelper().getUsername(), helper.getFeedHelper().getPassword(),helper.getFeedHelper().getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper().getHadoopURL()+"/projects/ivory/staging/ivory/workflows/feed | awk '{print $8}'", helper.getFeedHelper().getIdentityFile());
 
 			for(String data:bundle.getDataSets())
 			{
@@ -3696,7 +3760,7 @@ public class Util {
 	{
 		for(PrismHelper helper:prismHelper)
 		{
-			ArrayList<String> processList=runRemoteScript(helper.getFeedHelper().getQaHost(),helper.getFeedHelper().getUsername(),helper.getFeedHelper().getPassword(),helper.getFeedHelper().getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper().getHadoopURL()+"/projects/ivory/staging/ivory/workflows/process | awk '{print $8}'");
+			ArrayList<String> processList=runRemoteScript(helper.getFeedHelper().getQaHost(),helper.getFeedHelper().getUsername(),helper.getFeedHelper().getPassword(),helper.getFeedHelper().getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper().getHadoopURL()+"/projects/ivory/staging/ivory/workflows/process | awk '{print $8}'", helper.getFeedHelper().getIdentityFile());
 
 			//make sure process bundle is not there
 			Assert.assertFalse(processList.contains("/projects/ivory/staging/ivory/workflows/process/"+Util.readEntityName(process)),"Process "+Util.readEntityName(process)+" did not have its bundle removed!!!!");
@@ -3708,7 +3772,7 @@ public class Util {
 		for(PrismHelper helper:prismHelper)
 		{
 			//make sure feed bundle is not there
-			ArrayList<String> feedList=runRemoteScript(helper.getFeedHelper().getQaHost(),helper.getFeedHelper().getUsername(),helper.getFeedHelper().getPassword(),helper.getFeedHelper().getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper().getHadoopURL()+"/projects/ivory/staging/ivory/workflows/feed | awk '{print $8}'");
+			ArrayList<String> feedList=runRemoteScript(helper.getFeedHelper().getQaHost(),helper.getFeedHelper().getUsername(),helper.getFeedHelper().getPassword(),helper.getFeedHelper().getHadoopLocation()+"  fs -ls hdfs://"+helper.getFeedHelper().getHadoopURL()+"/projects/ivory/staging/ivory/workflows/feed | awk '{print $8}'", helper.getFeedHelper().getIdentityFile());
 
 			Assert.assertFalse(feedList.contains("/projects/ivory/staging/ivory/workflows/feed/"+Util.readDatasetName(feed)),"Feed "+Util.readDatasetName(feed)+" did not have its bundle removed!!!!");
 		}
@@ -3825,7 +3889,11 @@ public class Util {
 
 	public static ArrayList<String> getInstanceFinishTimes(ColoHelper coloHelper,String workflowId) throws Exception
 	{
-		ArrayList<String> raw=runRemoteScript(coloHelper.getProcessHelper().getQaHost(), coloHelper.getProcessHelper().getUsername(), coloHelper.getProcessHelper().getPassword(),"cat /var/log/ivory/application.* | grep \""+workflowId+"\" | grep \"Received\" | awk '{print $2}'");
+		ArrayList<String> raw=runRemoteScript(coloHelper.getProcessHelper()
+      .getQaHost(), coloHelper.getProcessHelper().getUsername(),
+      coloHelper.getProcessHelper().getPassword(),
+      "cat /var/log/ivory/application.* | grep \""+workflowId+"\" | grep " +
+        "\"Received\" | awk '{print $2}'", coloHelper.getProcessHelper().getIdentityFile());
 		ArrayList<String> finalList=new ArrayList<String>();
 		for(String line:raw)
 		{
@@ -3838,7 +3906,12 @@ public class Util {
 
 	public static ArrayList<String> getInstanceRetryTimes(ColoHelper coloHelper,String workflowId) throws Exception
 	{
-		ArrayList<String> raw=runRemoteScript(coloHelper.getProcessHelper().getQaHost(), coloHelper.getProcessHelper().getUsername(), coloHelper.getProcessHelper().getPassword(),"cat /var/log/ivory/application.* | grep \""+workflowId+"\" | grep \"Retrying attempt\" | awk '{print $2}'");
+		ArrayList<String> raw=runRemoteScript(coloHelper.getProcessHelper()
+      .getQaHost(), coloHelper.getProcessHelper().getUsername(),
+      coloHelper.getProcessHelper().getPassword(),
+      "cat /var/log/ivory/application.* | grep \""+workflowId+"\" | grep " +
+        "\"Retrying attempt\" | awk '{print $2}'",
+      coloHelper.getProcessHelper().getIdentityFile());
 		ArrayList<String> finalList=new ArrayList<String>();
 		for(String line:raw)
 		{
@@ -3850,12 +3923,15 @@ public class Util {
 
 	public static void shutDownService(IEntityManagerHelper helper) throws Exception
 	{
-		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"/home/samarth/falconOpensource/falcon-server-0.4-incubating-SNAPSHOT/bin/falcon-stop");
+		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),
+      helper.getPassword(),helper.getServiceStopCmd(),
+      helper.getServiceUser(), helper.getIdentityFile());
 	}
 
 	public static void startService(IEntityManagerHelper helper) throws Exception
 	{
-		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"/home/samarth/falconOpensource/falcon-server-0.4-incubating-SNAPSHOT/bin/falcon-start");
+		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),
+      helper.getPassword(),helper.getServiceStartCmd(), helper.getServiceUser(), helper.getIdentityFile());
 	}
 
 	public static void restartService(IEntityManagerHelper helper) throws Exception
@@ -3866,84 +3942,69 @@ public class Util {
 	//	ArrayList<String> tomcatStatus = runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),helper.getPassword()," /etc/init.d/tomcat6 status");
 	//	if(tomcatStatus.get(0).contains("Tomcat servlet engine is running with pid"))
 	//		return;
-		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"/home/samarth/falconOpensource/falcon-server-0.4-incubating-SNAPSHOT/bin/falcon-stop");
+		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),
+      helper.getPassword(),helper.getServiceStopCmd(), helper.getServiceUser(), helper.getIdentityFile());
 		Thread.sleep(10000);
-		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),helper.getPassword(),"/home/samarth/falconOpensource/falcon-server-0.4-incubating-SNAPSHOT/bin/falcon-start");
+		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),
+      helper.getPassword(),helper.getServiceStartCmd(), helper.getServiceUser(), helper.getIdentityFile());
 	}        
 
 
-	private static ArrayList<String> runRemoteScriptAsSudo(String host_name,String user_name,String password,String command) throws Exception
+	private static ArrayList<String> runRemoteScriptAsSudo(String hostName,
+                                                         String userName,
+                                                         String password,
+                                                         String command,
+                                                         String
+                                                           runAs,
+                                                         String identityFile
+                                                         ) throws
+    Exception
 	{
 		JSch jsch = new JSch();
-		Session session = jsch.getSession(user_name, host_name, 22);  
-		session.setUserInfo(new HardcodedUserInfo(password));
+		Session session = jsch.getSession(userName, hostName, 22);
+    // only set the password if its not empty
+    if (null != password && !password.isEmpty()) {
+      session.setUserInfo(new HardcodedUserInfo(password));
+    }
 		Properties config = new Properties();
 		config.setProperty("StrictHostKeyChecking", "no");
+    config.setProperty("UserKnownHostsFile", "/dev/null");
+    // only set the password if its not empty
+    if (null == password || password.isEmpty()) {
+      jsch.addIdentity(identityFile);
+    }
 		session.setConfig(config);
 		session.connect();
 		Assert.assertTrue(session.isConnected(),"The session was not connected correctly!");
 
 		ArrayList<String> data = new ArrayList<String>();
 
-		Channel channel=session.openChannel("exec");
-		((ChannelExec)channel).setCommand("sudo -S -p '' "+command);
-		//((ChannelExec)channel).setCommand(command);
+		ChannelExec channel = (ChannelExec) session.openChannel("exec");
+    String runCmd = null;
+    if (null == runAs || runAs.isEmpty()) {
+      runCmd = "sudo -S -p '' "+command;
+    } else {
+      runCmd = String.format("sudo su %s -c p '%s'",runAs, command);
+    }
+		channel.setCommand(runCmd);
 		InputStream in=channel.getInputStream();
 		OutputStream out=channel.getOutputStream();
-		((ChannelExec)channel).setErrStream(System.err);
+		channel.setErrStream(System.err);
 
 		channel.connect();
 		Thread.sleep(10000);
-		out.write((password+"\n").getBytes());
-		out.flush();
-
-		BufferedReader r = new BufferedReader(new InputStreamReader(in));
-
-/*		String line=new String();
-		while (true) {
-
-			while ((line=r.readLine())!=null) {
-				//logger.info(line);
-				data.add(line);
-				
-			}
-			if (channel.isClosed()) {
-
-				break;
-			}
-
-		}
-
-
-
-		byte[] tmp=new byte[1024];
-		while(true){
-			while(in.available()>0){
-				int i=in.read(tmp, 0, 1024);
-				if(i<0)break;
-				System.out.print(new String(tmp, 0, i));
-			}
-			if(channel.isClosed()){
-				System.out.println("exit-status: "+channel.getExitStatus());
-				break;
-			}
-			try{Thread.sleep(1000);}catch(Exception ee){}
-		}
-
-*/
+    // only print the password if its not empty
+    if (null != password && !password.isEmpty()) {
+		  out.write((password+"\n").getBytes());
+		  out.flush();
+    }
 
 		in.close();
-		r.close();
-
-
 		channel.disconnect();
 		session.disconnect();
-
+    out.close();
 		return data;
 	}
-
-
-
 
 	public static void verifyNoJobsFoundInOozie(ArrayList<String> data) throws Exception
 	{
@@ -4006,9 +4067,16 @@ public class Util {
 
 	public static ArrayList<String> getBundles(String entityName,String entityType,IEntityManagerHelper helper) throws Exception {
 		if(entityType.equals("FEED"))
-			return runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),helper.getOozieLocation()+"/oozie jobs -oozie "+helper.getOozieURL()+"  -jobtype bundle -localtime -filter name=FALCON_FEED_"+entityName+"|grep 000|awk '{print $1}'");
+			return runRemoteScript(helper.getQaHost(), helper.getUsername(),
+        helper.getPassword(),helper.getOozieLocation()+"/oozie jobs -oozie " +
+        ""+helper.getOozieURL()+"  -jobtype bundle -localtime -filter " +
+        "name=FALCON_FEED_"+entityName+"|grep 000|awk '{print $1}'", helper.getIdentityFile());
 		else
-			return runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),helper.getOozieLocation()+"/oozie jobs -oozie "+helper.getOozieURL()+"  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"+entityName+"|grep 000|awk '{print $1}'");
+			return runRemoteScript(helper.getQaHost(), helper.getUsername(),
+        helper.getPassword(),helper.getOozieLocation()+"/oozie jobs -oozie " +
+        ""+helper.getOozieURL()+"  -jobtype bundle -localtime -filter " +
+        "name=FALCON_PROCESS_"+entityName+"|grep 000|awk '{print $1}'",
+        helper.getIdentityFile());
 
 	}
 
@@ -4233,7 +4301,8 @@ public class Util {
 					+ "/oozie jobs -oozie "
 					+ coloHelper.getFeedHelper().getOozieURL()
 					+ "  -jobtype bundle -localtime -filter name=FALCON_FEED_"
-					+ entityName + "|grep 000|awk '{print $1}'");
+					+ entityName + "|grep 000|awk '{print $1}'",
+        coloHelper.getFeedHelper().getIdentityFile());
 		} else {
 			return runRemoteScript(
 					coloHelper.getFeedHelper().getQaHost(),
@@ -4243,7 +4312,8 @@ public class Util {
 					+ "/oozie jobs -oozie "
 					+ coloHelper.getFeedHelper().getOozieURL()
 					+ "  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"
-					+ entityName + "|grep 000|awk '{print $1}'");
+					+ entityName + "|grep 000|awk '{print $1}'",
+        coloHelper.getFeedHelper().getIdentityFile());
 		}
 	}
 
@@ -4500,7 +4570,9 @@ public class Util {
 		Util.print("force restarting service for: "+helper.getQaHost() );
 
 		//check if needs to be restarted or not
-		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),helper.getPassword()," /etc/init.d/tomcat6 restart");
+		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),
+      helper.getPassword(),helper.getServiceRestartCmd(),
+      helper.getServiceUser(), helper.getIdentityFile());
 
 	}
 

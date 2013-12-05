@@ -1593,14 +1593,19 @@ public class instanceUtil {
 			Assert.assertTrue(false,"feed should have atleast one source cluster");
 		if(sourceClusters.size()==1)
 		{
-			ArrayList<String> result = Util.runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),"hadoop fs -ls "+baseFeedPath);
+			ArrayList<String> result = Util.runRemoteScript(helper.getQaHost(),
+        helper.getUsername(), helper.getPassword(),
+        "hadoop fs -ls "+baseFeedPath, helper.getIdentityFile());
 			Util.print("single cluster remote hadoop ls result: "+result);
 		}
 		else{
 
 			for(int i = 0 ; i < sourceClusters.size() ; i++)
 			{
-				ArrayList<String> result = Util.runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),"hadoop fs -ls "+baseFeedPath+sourceClusters.get(i).getPartition());
+				ArrayList<String> result = Util.runRemoteScript(helper.getQaHost(),
+          helper.getUsername(), helper.getPassword(),
+          "hadoop fs -ls "+baseFeedPath+sourceClusters.get(i).getPartition(),
+          helper.getIdentityFile());
 				Util.print(" multiple cluster remote hadoop ls result: "+result);
 
 			}
