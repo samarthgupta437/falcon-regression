@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -58,29 +59,29 @@ public class PrismProcessDeleteTest {
         //now submit the thing to prism
         submitAndScheduleProcess(UA1Bundle);
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -111,15 +112,15 @@ public class PrismProcessDeleteTest {
         //now submit the thing to prism
         submitAndScheduleProcess(UA1Bundle);
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
 
         //bring down UA2 colo :P
@@ -129,15 +130,15 @@ public class PrismProcessDeleteTest {
         Util.assertFailed(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -157,7 +158,7 @@ public class PrismProcessDeleteTest {
         Util.startService(UA1ColoHelper.getProcessHelper());
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
-        HashMap<String,ArrayList<String>> systemPostUp=getSystemState(ENTITY_TYPE.PROCESS);
+        HashMap<String,List<String>> systemPostUp=getSystemState(ENTITY_TYPE.PROCESS);
 
         compareDataStoreStates(finalPrismStore, systemPostUp.get("prismStore"), clusterName);
         compareDataStoreStates(systemPostUp.get("prismArchive"),finalPrismArchiveStore, clusterName);
@@ -194,15 +195,15 @@ public class PrismProcessDeleteTest {
 //        //now submit the thing to prism
 //        APIResult clusterResult=Util.parseResponse(prismHelper.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL,UA1Bundle.getDataSets().get(0)));
 //        //fetch the initial store and archive state for prism
-//        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-//        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+//        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+//        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 //        
 //        //fetch the initial store and archive for both colos
-//        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-//        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+//        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+//        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 //        
-//        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-//        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+//        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+//        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 //        
 //        
 //        //bring down UA2 colo :P
@@ -212,15 +213,15 @@ public class PrismProcessDeleteTest {
 //        APIResult clusterDeleteResult=Util.parseResponse(prismHelper.getFeedHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getDataSets().get(0)));
 //        
 //        //now lets get the final states
-//        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-//        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+//        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+//        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 //        
 //        //fetch the final store and archive for both colos
-//        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-//        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+//        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+//        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 //        
-//        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-//        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+//        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+//        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 //        
 //        //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 //        
@@ -261,28 +262,28 @@ public class PrismProcessDeleteTest {
         submitAndScheduleProcess(UA1Bundle);
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -329,15 +330,15 @@ public class PrismProcessDeleteTest {
         Util.assertFailed(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //start up service
         Util.startService(UA1ColoHelper.getClusterHelper());
@@ -346,15 +347,15 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //get final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -394,29 +395,29 @@ public class PrismProcessDeleteTest {
 
 
         //now lets get the final states
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //delete
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //get final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -454,15 +455,15 @@ public class PrismProcessDeleteTest {
 
 
         //now lets get the final states
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //bring down UA1
         Util.shutDownService(UA1ColoHelper.getClusterHelper());
@@ -471,15 +472,15 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //get final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -528,29 +529,29 @@ public class PrismProcessDeleteTest {
         submitAndScheduleProcess(UA2Bundle);
 
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -588,29 +589,29 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().suspend(URLS.SUSPEND_URL,UA1Bundle.getProcessData()));
 
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -650,29 +651,29 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().suspend(URLS.SUSPEND_URL,UA2Bundle.getProcessData()));
 
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -709,15 +710,15 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,UA1Bundle.getProcessData()));
 
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //shutdown UA1
         Util.shutDownService(UA1ColoHelper.getFeedHelper());
@@ -726,15 +727,15 @@ public class PrismProcessDeleteTest {
         Util.assertFailed(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -780,15 +781,15 @@ public class PrismProcessDeleteTest {
         submitAndScheduleProcess(UA2Bundle);
 
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //shutdown UA1
         Util.shutDownService(UA1ColoHelper.getFeedHelper());
@@ -797,15 +798,15 @@ public class PrismProcessDeleteTest {
         Util.assertFailed(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -825,7 +826,7 @@ public class PrismProcessDeleteTest {
         Util.startService(UA1ColoHelper.getClusterHelper());
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
-        HashMap<String,ArrayList<String>> systemPostUp=getSystemState(ENTITY_TYPE.PROCESS);
+        HashMap<String,List<String>> systemPostUp=getSystemState(ENTITY_TYPE.PROCESS);
 
         compareDataStoresForEquality(finalUA2Store, systemPostUp.get("ua2Store"));
         compareDataStoresForEquality(finalUA2ArchiveStore, systemPostUp.get("ua2Archive"));
@@ -866,15 +867,15 @@ public class PrismProcessDeleteTest {
         //now submit the thing to prism
         Util.assertSucceeded(prismHelper.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,UA2Bundle.getProcessData()));
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //shutdown UA1
         Util.shutDownService(UA1ColoHelper.getFeedHelper());
@@ -883,15 +884,15 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA2Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -939,15 +940,15 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,UA2Bundle.getProcessData()));
         Util.assertSucceeded(prismHelper.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,UA1Bundle.getProcessData()));
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //shutdown UA1
         Util.shutDownService(UA1ColoHelper.getFeedHelper());
@@ -956,15 +957,15 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA2Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -1007,15 +1008,15 @@ public class PrismProcessDeleteTest {
         submitAndScheduleProcess(UA1Bundle);submitAndScheduleProcess(UA2Bundle);
 
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //shutdown UA1
         Util.shutDownService(UA1ColoHelper.getFeedHelper());
@@ -1024,15 +1025,15 @@ public class PrismProcessDeleteTest {
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA2Bundle.getProcessData()));
 
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getProcessHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getProcessHelper().getArchiveInfo();
 
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -1054,7 +1055,7 @@ public class PrismProcessDeleteTest {
 
         Util.assertSucceeded(prismHelper.getProcessHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getProcessData()));
 
-        HashMap<String,ArrayList<String>> systemPostUp=getSystemState(ENTITY_TYPE.PROCESS);
+        HashMap<String,List<String>> systemPostUp=getSystemState(ENTITY_TYPE.PROCESS);
 
         clusterName=Util.readEntityName(UA1Bundle.getProcessData());
 
@@ -1091,10 +1092,10 @@ public class PrismProcessDeleteTest {
 		return Util.readBundles("src/test/resources/LateDataBundles");
 	}
 
-	private void compareDataStoreStates(ArrayList<String> initialState,ArrayList<String> finalState,String filename) throws Exception
+	private void compareDataStoreStates(List<String> initialState,List<String> finalState,String filename) throws Exception
 	{
 
-		ArrayList<String> temp=new ArrayList<String>(initialState); 
+		List<String> temp=new ArrayList<String>(initialState); 
 		temp.removeAll(finalState);
 		Assert.assertEquals(temp.size(),1);
 		Assert.assertTrue(temp.get(0).contains(filename));
@@ -1118,12 +1119,12 @@ public class PrismProcessDeleteTest {
 		Util.assertSucceeded(prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,bundle.getProcessData()));
 	}
 
-	private void compareDataStoresForEquality(ArrayList<String> store1,ArrayList<String> store2) throws Exception
+	private void compareDataStoresForEquality(List<String> store1,List<String> store2) throws Exception
 	{
 		Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]), store1.toArray(new String[store1.size()])));
 	}  
 
-	public HashMap<String,ArrayList<String>> getSystemState(ENTITY_TYPE entityType) throws Exception
+	public HashMap<String,List<String>> getSystemState(ENTITY_TYPE entityType) throws Exception
 	{
 		IEntityManagerHelper prism=prismHelper.getClusterHelper();
 		IEntityManagerHelper ua1=UA1ColoHelper.getClusterHelper();
@@ -1143,7 +1144,7 @@ public class PrismProcessDeleteTest {
 			ua2=UA2ColoHelper.getProcessHelper();
 		}
 
-		HashMap<String,ArrayList<String>> temp=new HashMap<String, ArrayList<String>>();
+		HashMap<String,List<String>> temp=new HashMap<String, List<String>>();
 		temp.put("prismArchive",prism.getArchiveInfo());
 		temp.put("prismStore", prism.getStoreInfo());
 		temp.put("ua1Archive",ua1.getArchiveInfo());

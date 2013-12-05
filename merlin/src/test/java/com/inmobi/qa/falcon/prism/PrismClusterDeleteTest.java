@@ -9,6 +9,7 @@ package com.inmobi.qa.falcon.prism;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.testng.Assert;
 import org.testng.TestNGException;
@@ -50,29 +51,29 @@ public class PrismClusterDeleteTest {
         Util.assertSucceeded((prismHelper.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL,UA1Bundle.getClusters().get(0))));
         
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
         
@@ -108,15 +109,15 @@ public class PrismClusterDeleteTest {
         
         
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         
         //bring down UA1 colo :P
@@ -127,15 +128,15 @@ public class PrismClusterDeleteTest {
         
         
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
         
@@ -156,17 +157,17 @@ public class PrismClusterDeleteTest {
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //get final data states:
-        ArrayList<String> UA1ArchiveFinalState2=UA1ColoHelper.getClusterHelper().getArchiveInfo();
-        ArrayList<String> UA1StoreFinalState2=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> UA1ArchiveFinalState2=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> UA1StoreFinalState2=UA1ColoHelper.getClusterHelper().getStoreInfo();
         
-        ArrayList<String> prismStorePostUp=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> prismArchivePostUp=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> prismStorePostUp=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> prismArchivePostUp=prismHelper.getClusterHelper().getArchiveInfo();
         
         compareDataStoreStates(finalUA1Store,UA1StoreFinalState2, clusterName);
         compareDataStoreStates(UA1ArchiveFinalState2,finalUA1ArchiveStore,clusterName);
         
-        ArrayList<String> UA2ArchiveStateFinal=UA2ColoHelper.getClusterHelper().getArchiveInfo();
-        ArrayList<String> UA2StoreStateFinal=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> UA2ArchiveStateFinal=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> UA2StoreStateFinal=UA2ColoHelper.getClusterHelper().getStoreInfo();
         
         compareDataStoreStates(UA2ArchiveStateFinal,initialUA2ArchiveStore, clusterName);
         compareDataStoreStates(initialUA2Store,UA2StoreStateFinal, clusterName);
@@ -205,28 +206,28 @@ public class PrismClusterDeleteTest {
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //fetch the initial store and archive state for prism
-        ArrayList<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //now lets get the final states
-        ArrayList<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
         
@@ -274,15 +275,15 @@ public class PrismClusterDeleteTest {
         Util.assertPartialSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //now lets get the final states
-        ArrayList<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //start up service
         Util.startService(UA1ColoHelper.getClusterHelper());
@@ -291,15 +292,15 @@ public class PrismClusterDeleteTest {
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //get final states
-        ArrayList<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
         
@@ -343,30 +344,30 @@ public class PrismClusterDeleteTest {
         
         
         //now lets get the final states
-        ArrayList<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
        
         //delete
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //get final states
-        ArrayList<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
         
@@ -404,15 +405,15 @@ public class PrismClusterDeleteTest {
         
         
         //now lets get the final states
-        ArrayList<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> initialPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the initial store and archive for both colos
-        ArrayList<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> initialUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //bring down UA1
         Util.shutDownService(UA1ColoHelper.getClusterHelper());
@@ -421,15 +422,15 @@ public class PrismClusterDeleteTest {
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
         //get final states
-        ArrayList<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalPrismStore=prismHelper.getClusterHelper().getStoreInfo();
+        List<String> finalPrismArchiveStore=prismHelper.getClusterHelper().getArchiveInfo();
         
         //fetch the final store and archive for both colos
-        ArrayList<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA1Store=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> finalUA2Store=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
         
@@ -449,11 +450,11 @@ public class PrismClusterDeleteTest {
         Util.startService(UA1ColoHelper.getFeedHelper());
         Util.assertSucceeded(prismHelper.getClusterHelper().delete(Util.URLS.DELETE_URL,UA1Bundle.getClusters().get(0)));
         
-        ArrayList<String> UA1StorePostUp=UA1ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> UA1ArchivePostUp=UA1ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> UA1StorePostUp=UA1ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> UA1ArchivePostUp=UA1ColoHelper.getClusterHelper().getArchiveInfo();
         
-        ArrayList<String> UA2StorePostUp=UA2ColoHelper.getClusterHelper().getStoreInfo();
-        ArrayList<String> UA2ArchivePostUp=UA2ColoHelper.getClusterHelper().getArchiveInfo();
+        List<String> UA2StorePostUp=UA2ColoHelper.getClusterHelper().getStoreInfo();
+        List<String> UA2ArchivePostUp=UA2ColoHelper.getClusterHelper().getArchiveInfo();
         
         Assert.assertTrue(Arrays.deepEquals(UA2StorePostUp.toArray(new String[UA2StorePostUp.size()]),finalUA2Store.toArray(new String[finalUA2Store.size()])));
         Assert.assertTrue(Arrays.deepEquals(UA2ArchivePostUp.toArray(new String[UA2ArchivePostUp.size()]),finalUA2ArchiveStore.toArray(new String[finalUA2ArchiveStore.size()])));
@@ -482,7 +483,7 @@ public class PrismClusterDeleteTest {
         return Util.readBundles("src/test/resources/LateDataBundles");
     }
     
-    private void compareDataStoreStates(ArrayList<String> initialState,ArrayList<String> finalState,String filename) throws Exception
+    private void compareDataStoreStates(List<String> initialState,List<String> finalState,String filename) throws Exception
     {
        initialState.removeAll(finalState);
        Assert.assertEquals(initialState.size(),1);
@@ -490,7 +491,7 @@ public class PrismClusterDeleteTest {
         
     }
     
-    private void compareDataStoresForEquality(ArrayList<String> store1,ArrayList<String> store2) throws Exception
+    private void compareDataStoresForEquality(List<String> store1,List<String> store2) throws Exception
     {
         Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]), store1.toArray(new String[store1.size()])));
     }

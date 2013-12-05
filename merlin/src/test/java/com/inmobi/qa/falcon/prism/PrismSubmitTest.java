@@ -2,6 +2,7 @@ package com.inmobi.qa.falcon.prism;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.testng.Assert;
 import org.testng.TestNGException;
@@ -49,7 +50,7 @@ public class PrismSubmitTest {
 			
 			Util.shutDownService(prismHelper.getClusterHelper());
 
-			ArrayList<String> beforeSubmit =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit =UA1coloHelper.getClusterHelper().getStoreInfo();
             try{
 			ServiceResponse r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
             }
@@ -58,7 +59,7 @@ public class PrismSubmitTest {
             	
             	Assert.assertTrue(e.getMessage().contains("Connection to http://10.14.118.26:8082 refused"));
             }
-			ArrayList<String> afterSubmit = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit = UA1coloHelper.getClusterHelper().getStoreInfo();
 
 			prismUtil.compareDataStoreStates(beforeSubmit, afterSubmit,Util.readClusterName(b.getClusters().get(0)),0);
 			}
@@ -93,8 +94,8 @@ public class PrismSubmitTest {
 
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-			ArrayList<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			//b.setInputFeedAvailabilityFlag("hihello");
 			b.setCLusterWorkingPath(b.getClusters().get(0),"/projects/ivory/someRandomPath");
 			Util.print("modified cluster Data: " + b.getClusters().get(0));
@@ -102,8 +103,8 @@ public class PrismSubmitTest {
 			
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 	//		Assert.assertTrue(r.getMessage().contains("already registered with configuration store. Can't be submitted again. Try removing before submitting"));
-			ArrayList<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			prismUtil.compareDataStoreStates(beforeSubmit_colo, afterSubmit_colo,Util.readClusterName(b.getClusters().get(0)),0);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,Util.readClusterName(b.getClusters().get(0)),0);
 		}
@@ -177,18 +178,18 @@ public class PrismSubmitTest {
 
 			
 
-			ArrayList<String>	 beforeSubmit_ua1 =UA1coloHelper.getProcessHelper().getStoreInfo();
-			ArrayList<String>	 beforeSubmit_ua2 =ivoryqa1.getProcessHelper().getStoreInfo();
-			ArrayList<String>	 beforeSubmit_prism =prismHelper.getProcessHelper().getStoreInfo();		
+			List<String>	 beforeSubmit_ua1 =UA1coloHelper.getProcessHelper().getStoreInfo();
+			List<String>	 beforeSubmit_ua2 =ivoryqa1.getProcessHelper().getStoreInfo();
+			List<String>	 beforeSubmit_prism =prismHelper.getProcessHelper().getStoreInfo();		
 			
 			r= prismHelper.getProcessHelper().delete(URLS.DELETE_URL,b.getProcessData());
 
 			r =  prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, b.getProcessData());
 			Util.assertFailed(r);
 			//Util.assertSucceeded(r);
-			ArrayList<String>	afterSubmit_ua1 = UA1coloHelper.getProcessHelper().getStoreInfo();
-			ArrayList<String>	afterSubmit_ua2 =ivoryqa1.getProcessHelper().getStoreInfo();
-			ArrayList<String>	afterSubmit_prism =prismHelper.getProcessHelper().getStoreInfo();
+			List<String>	afterSubmit_ua1 = UA1coloHelper.getProcessHelper().getStoreInfo();
+			List<String>	afterSubmit_ua2 =ivoryqa1.getProcessHelper().getStoreInfo();
+			List<String>	afterSubmit_prism =prismHelper.getProcessHelper().getStoreInfo();
 
 			prismUtil.compareDataStoreStates(beforeSubmit_ua1, afterSubmit_ua1,Util.getProcessName(b.getProcessData()),1);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,Util.getProcessName(b.getProcessData()),1);
@@ -244,9 +245,9 @@ public class PrismSubmitTest {
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
 			
-			ArrayList<String> beforeSubmit_ua1 =UA1coloHelper.getFeedHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();			
+			List<String> beforeSubmit_ua1 =UA1coloHelper.getFeedHelper().getStoreInfo();
+			List<String> beforeSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();			
 			
 			r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL,b.getDataSets().get(0));
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -254,9 +255,9 @@ public class PrismSubmitTest {
 			r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL,b.getDataSets().get(1));
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-			ArrayList<String> afterSubmit_ua1 = UA1coloHelper.getFeedHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();
+			List<String> afterSubmit_ua1 = UA1coloHelper.getFeedHelper().getStoreInfo();
+			List<String> afterSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
+			List<String> afterSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();
 
 			prismUtil.compareDataStoreStates(beforeSubmit_ua1, afterSubmit_ua1,2);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,2);
@@ -299,16 +300,16 @@ public class PrismSubmitTest {
 
 			Util.shutDownService(UA1coloHelper.getClusterHelper());
 
-			ArrayList<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();			
+			List<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();			
 			
 			ServiceResponse	r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
 			
 
-			ArrayList<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
 
 			//should be partial
 			//Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -366,16 +367,16 @@ public class PrismSubmitTest {
 
 		
 			
-			ArrayList<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();			
+			List<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();			
 			
 			r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
 			
 
-			ArrayList<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
 
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 			prismUtil.compareDataStoreStates(beforeSubmit_ua1, afterSubmit_ua1,Util.readClusterName(b.getClusters().get(0)),1);
@@ -454,9 +455,9 @@ public class PrismSubmitTest {
 			b1 = new Bundle(b1,UA1coloHelper.getEnvFileName());
 			b2  = new Bundle(b2,ivoryqa1.getEnvFileName());
 
-			ArrayList<String> before_colo1 =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> before_prism =prismHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> before_colo2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> before_colo1 =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> before_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> before_colo2 =ivoryqa1.getClusterHelper().getStoreInfo();
 			
 			Util.shutDownService(UA1coloHelper.getFeedHelper());
 
@@ -466,9 +467,9 @@ public class PrismSubmitTest {
 			//Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 			Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 			
-			ArrayList<String> par_colo1 =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> par_prism =prismHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> par_colo2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> par_colo1 =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> par_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> par_colo2 =ivoryqa1.getClusterHelper().getStoreInfo();
 
 		    prismUtil.compareDataStoreStates( par_colo1,before_colo1,Util.readClusterName(b1.getClusters().get(0)),0);
 			prismUtil.compareDataStoreStates(before_prism, par_prism,Util.readClusterName(b2.getClusters().get(0)),1);
@@ -481,9 +482,9 @@ public class PrismSubmitTest {
 			r = prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b1.getClusters().get(0));
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
             
-			ArrayList<String> after_colo1 =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> after_prism =prismHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> after_colo2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> after_colo1 =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> after_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> after_colo2 =ivoryqa1.getClusterHelper().getStoreInfo();
 
 			prismUtil.compareDataStoreStates( par_colo1,after_colo1,Util.readClusterName(b1.getClusters().get(0)),1);
 			prismUtil.compareDataStoreStates(after_prism, par_prism,Util.readClusterName(b2.getClusters().get(0)),0);
@@ -516,11 +517,11 @@ public class PrismSubmitTest {
 			//shutdown one colo and submit 
 
 			Util.shutDownService(UA1coloHelper.getClusterHelper());
-			ArrayList<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			ServiceResponse r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
-			ArrayList<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			//Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 			Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 			prismUtil.compareDataStoreStates(beforeSubmit_colo, afterSubmit_colo,Util.readClusterName(b.getClusters().get(0)),0);
@@ -573,16 +574,16 @@ public class PrismSubmitTest {
 			Util.startService(UA1coloHelper.getClusterHelper());
 			Thread.sleep(30000);
 
-			ArrayList<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			//b.setInputFeedAvailabilityFlag("hihello");
 			b.setCLusterWorkingPath(b.getClusters().get(0),"/projects/ivory/someRandomPath");
 			r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 			//Assert.assertTrue(r.getMessage().contains("FAILED"));
 			//Assert.assertTrue(r.getMessage().contains("already registered with configuration store. Can't be submitted again. Try removing before submitting"));
-			ArrayList<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			prismUtil.compareDataStoreStates(beforeSubmit_colo, afterSubmit_colo,Util.readClusterName(b.getClusters().get(0)),1);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,Util.readClusterName(b.getClusters().get(0)),0);
 		}
@@ -619,13 +620,13 @@ public class PrismSubmitTest {
 
 
 
-			ArrayList<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			r =  prismHelper.getClusterHelper().delete(URLS.DELETE_URL,b.getClusters().get(0));
 			//Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 			Assert.assertTrue(r.getMessage().contains("PARTIAL"));
-			ArrayList<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			prismUtil.compareDataStoreStates(beforeSubmit_colo, afterSubmit_colo,Util.readClusterName(b.getClusters().get(0)),0);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,Util.readClusterName(b.getClusters().get(0)),-1);
 
@@ -665,12 +666,12 @@ public class PrismSubmitTest {
 			Util.shutDownService(UA1coloHelper.getClusterHelper());
 			Thread.sleep(30000);
 			
-			ArrayList<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			r =  prismHelper.getClusterHelper().delete(URLS.DELETE_URL,b.getClusters().get(0));
 			Assert.assertTrue(r.getMessage().contains("PARTIAL"));
-			ArrayList<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			prismUtil.compareDataStoreStates(beforeSubmit_colo, afterSubmit_colo,Util.readClusterName(b.getClusters().get(0)),0);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,Util.readClusterName(b.getClusters().get(0)),-1);
 
@@ -715,12 +716,12 @@ public class PrismSubmitTest {
 
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-			ArrayList<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_colo =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-			ArrayList<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_colo = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =ivoryqa1.getClusterHelper().getStoreInfo();
 			prismUtil.compareDataStoreStates(beforeSubmit_colo, afterSubmit_colo,Util.readClusterName(b.getClusters().get(0)),0);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,Util.readClusterName(b.getClusters().get(0)),0);
 		}
@@ -741,17 +742,17 @@ public class PrismSubmitTest {
 
 			b = new Bundle(b,UA1coloHelper.getEnvFileName());
 
-			ArrayList<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
 
 			
 			ServiceResponse r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
 			
 			
-			ArrayList<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
 
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 			prismUtil.compareDataStoreStates(beforeSubmit_ua1, afterSubmit_ua1,Util.readClusterName(b.getClusters().get(0)),1);
@@ -781,16 +782,16 @@ public class PrismSubmitTest {
 
 			ServiceResponse r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
 
-			ArrayList<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();			
+			List<String> beforeSubmit_ua1 =UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();			
 			
 			r =  prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL,b.getClusters().get(0));
 			
 
-			ArrayList<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua1 = UA1coloHelper.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_ua2 =ivoryqa1.getClusterHelper().getStoreInfo();
+			List<String> afterSubmit_prism =prismHelper.getClusterHelper().getStoreInfo();
 
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 			prismUtil.compareDataStoreStates(beforeSubmit_ua1, afterSubmit_ua1,Util.readClusterName(b.getClusters().get(0)),0);
@@ -823,16 +824,16 @@ public class PrismSubmitTest {
 			Thread.sleep(30000);
 
 			
-			ArrayList<String> beforeSubmit_ua1 =UA1coloHelper.getFeedHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
-			ArrayList<String> beforeSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();			
+			List<String> beforeSubmit_ua1 =UA1coloHelper.getFeedHelper().getStoreInfo();
+			List<String> beforeSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
+			List<String> beforeSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();			
 			
 			r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL,b.getDataSets().get(1));
 			Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-			ArrayList<String> afterSubmit_ua1 = UA1coloHelper.getFeedHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
-			ArrayList<String> afterSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();
+			List<String> afterSubmit_ua1 = UA1coloHelper.getFeedHelper().getStoreInfo();
+			List<String> afterSubmit_ua2 =ivoryqa1.getFeedHelper().getStoreInfo();
+			List<String> afterSubmit_prism =prismHelper.getFeedHelper().getStoreInfo();
 
 			prismUtil.compareDataStoreStates(beforeSubmit_ua1, afterSubmit_ua1,Util.readDatasetName(b.getDataSets().get(1)),1);
 			prismUtil.compareDataStoreStates(beforeSubmit_prism, afterSubmit_prism,Util.readDatasetName(b.getDataSets().get(1)),1);
