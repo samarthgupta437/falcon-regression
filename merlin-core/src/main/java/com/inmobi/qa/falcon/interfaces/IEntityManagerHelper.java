@@ -156,7 +156,12 @@ public abstract class IEntityManagerHelper {
        this.hadoopGetCommand=hadoopLocation+"  fs -cat hdfs://"+hadoopURL+"/projects/ivory/staging/ivory/workflows/process";
        this.envFileName=envFileName;
        this.allColo = "?colo=" + prop.getProperty("colo", "*");
-       this.colo = prop.getProperty("colo", "");
+       this.colo = prop.getProperty("colo", null);
+       if (null == this.colo || this.colo.isEmpty()) {
+         this.colo = "";
+       } else {
+         this.colo = "?colo=" + this.colo;
+       }
        this.serviceStartCmd = prop.getProperty("service_start_cmd","/etc/init.d/tomcat6 start");
        this.serviceStopCmd = prop.getProperty("service_stop_cmd",
          "/etc/init.d/tomcat6 stop");
