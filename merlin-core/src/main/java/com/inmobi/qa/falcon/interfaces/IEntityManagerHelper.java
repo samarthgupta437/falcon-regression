@@ -4,7 +4,8 @@
  */
 package com.inmobi.qa.falcon.interfaces;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import com.inmobi.qa.falcon.response.APIResult;
 import com.inmobi.qa.falcon.response.ProcessInstancesResult;
@@ -91,6 +92,38 @@ public abstract class IEntityManagerHelper {
     protected String envFileName;
     protected String colo;
     protected String allColo;
+    protected String serviceStartCmd;
+    protected String serviceStopCmd;
+    protected String serviceRestartCmd;
+    protected String serviceStatusCmd;
+
+  public String getServiceStatusMsg() {
+    return serviceStatusMsg;
+  }
+
+  public String getServiceStatusCmd() {
+    return serviceStatusCmd;
+  }
+
+  protected String serviceStatusMsg;
+
+  public String getServiceUser() {
+    return serviceUser;
+  }
+
+  public String getServiceRestartCmd() {
+    return serviceRestartCmd;
+  }
+
+  public String getServiceStopCmd() {
+    return serviceStopCmd;
+  }
+
+  public String getServiceStartCmd() {
+    return serviceStartCmd;
+  }
+
+  protected String serviceUser;
  
     public String getEnvFileName() {
 		return envFileName;
@@ -103,37 +136,30 @@ public abstract class IEntityManagerHelper {
     
     public IEntityManagerHelper(String envFileName) throws Exception
     {
-       this.qaHost=Util.readPropertiesFile(envFileName,"qa_host");
-       this.hostname=Util.readPropertiesFile(envFileName,"ivory_hostname"); 
-       this.username=Util.readPropertiesFile(envFileName,"username");
-       this.password=Util.readPropertiesFile(envFileName,"password");
-       this.hadoopLocation=Util.readPropertiesFile(envFileName,"hadoop_location");
-       this.hadoopURL=Util.readPropertiesFile(envFileName,"hadoop_url");
-       this.oozieURL=Util.readPropertiesFile(envFileName,"oozie_url");
-       this.oozieLocation=Util.readPropertiesFile(envFileName,"oozie_location");
-       this.activeMQ=Util.readPropertiesFile(envFileName,"activemq_url");
-       this.storeLocation=Util.readPropertiesFile(envFileName,"storeLocation");
+       Properties prop = Util.getPropertiesObj(envFileName);
+       this.qaHost=prop.getProperty("qa_host");
+       this.hostname=prop.getProperty("ivory_hostname");
+       this.username=prop.getProperty("username", System.getProperty("user.name"));
+       this.password=prop.getProperty("password", "");
+       this.hadoopLocation=prop.getProperty("hadoop_location");
+       this.hadoopURL=prop.getProperty("hadoop_url");
+       this.oozieURL=prop.getProperty("oozie_url");
+       this.oozieLocation=prop.getProperty("oozie_location");
+       this.activeMQ=prop.getProperty("activemq_url");
+       this.storeLocation=prop.getProperty("storeLocation");
        this.hadoopGetCommand=hadoopLocation+"  fs -cat hdfs://"+hadoopURL+"/projects/ivory/staging/ivory/workflows/process";
        this.envFileName=envFileName;
-       this.allColo = "?colo=*";
-       if(null==Util.readPropertiesFile(envFileName,"colo"))
-       {
-           this.colo="";
-       }
-       else
-       {
-           this.colo="?colo="+Util.readPropertiesFile(envFileName,"colo");
-       }
-       
-       if(null==Util.readPropertiesFile(envFileName,"colo"))
-       {
-           this.allColo=allColo;
-       }
-       else
-       {
-           this.allColo="?colo="+Util.readPropertiesFile(envFileName,"colo");
-       }
-       
+       this.allColo = "?colo=" + prop.getProperty("colo", "*");
+       this.colo = prop.getProperty("colo", "");
+       this.serviceStartCmd = prop.getProperty("service_start_cmd","/etc/init.d/tomcat6 start");
+       this.serviceStopCmd = prop.getProperty("service_stop_cmd",
+         "/etc/init.d/tomcat6 stop");
+       this.serviceRestartCmd = prop.getProperty("service_restart_cmd",
+         "/etc/init.d/tomcat6 restart");
+       this.serviceUser = prop.getProperty("service_user", null);
+       this.serviceStatusMsg = prop.getProperty("service_status_msg",
+         "Tomcat servlet engine is running with pid");
+       this.serviceStatusCmd = prop.getProperty("service_status_cmd", "/etc/init.d/tomcat6 status");
     }
     
     public abstract ServiceResponse submitEntity(String url, String data) throws Exception;
@@ -208,9 +234,9 @@ public abstract class IEntityManagerHelper {
     
     public abstract String getDependencies(String entityName) throws Exception;
     
-    public abstract ArrayList<String> getArchiveInfo() throws Exception;
+    public abstract List<String> getArchiveInfo() throws Exception;
     
-    public abstract ArrayList<String> getStoreInfo() throws Exception;
+    public abstract List<String> getStoreInfo() throws Exception;
     
     public abstract ServiceResponse update(String oldEntity,String newEntity) throws Exception;
     

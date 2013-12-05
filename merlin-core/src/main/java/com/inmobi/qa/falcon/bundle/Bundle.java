@@ -589,7 +589,7 @@ public class Bundle {
 		Thread.sleep(7000);
 		//also fetch the coordinator info
 		//return Util.getOozieCoordinator(Util.readEntityName(processData));
-		ArrayList<String> coordinatorStatus=Util.getOozieJobStatus(Util.readEntityName(processData));
+		List<String> coordinatorStatus=Util.getOozieJobStatus(Util.readEntityName(processData));
 
 		if(!coordinatorStatus.isEmpty())
 		{
@@ -782,7 +782,7 @@ public class Bundle {
 		Thread.sleep(7000);
 		//also fetch the coordinator info
 		//return Util.getOozieCoordinator(Util.readEntityName(processData));
-		ArrayList<String> coordinatorStatus=Util.getOozieJobStatus(Util.readEntityName(processData));
+		List<String> coordinatorStatus=Util.getOozieJobStatus(Util.readEntityName(processData));
 
 		if(!coordinatorStatus.isEmpty())
 		{
@@ -802,8 +802,8 @@ public class Bundle {
 	public void validateBundleSubmission() throws Exception
 	{
 		//just connect to the remote box to get the data from stores
-		ArrayList<String> processStoreData=Util.getProcessStoreInfo(getProcessHelper());
-		ArrayList<String> dataSetStoreData=Util.getDataSetStoreInfo(getFeedHelper());
+		List<String> processStoreData=Util.getProcessStoreInfo(getProcessHelper());
+		List<String> dataSetStoreData=Util.getDataSetStoreInfo(getFeedHelper());
 
 		//check if all data is present in the respective stores or not
 		for(String dataSet:dataSets)

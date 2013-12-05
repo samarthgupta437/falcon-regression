@@ -310,7 +310,7 @@ public class instanceUtil {
 
 		//BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
 		//CoordinatorJob jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
-		ArrayList<String> workflows=Util.getCoordinatorJobs(prismHelper,bundleID,"any");
+		List<String> workflows=Util.getCoordinatorJobs(prismHelper,bundleID,"any");
 
 		ArrayList<String> toBeReturned = new ArrayList<String>();
 		for(String jobID : workflows)
@@ -420,7 +420,7 @@ public class instanceUtil {
 
 		String bundleID = Util.getCoordID(Util.getOozieJobStatus(prismHelper,processName,"NONE").get(0));
 		ArrayList<WorkflowAction> was = new ArrayList<WorkflowAction>();
-		ArrayList<String> workflows=Util.getCoordinatorJobs(prismHelper,bundleID,"any");		
+		List<String> workflows=Util.getCoordinatorJobs(prismHelper,bundleID,"any");
 
 		for(String jobID : workflows)
 		{
@@ -637,7 +637,7 @@ public class instanceUtil {
 
 
 	public static String getLatestBundleID(ColoHelper coloHelper,String processName,ENTITY_TYPE entityType) throws Exception {
-		ArrayList<String> bundleIds = Util.getBundles(coloHelper, processName, entityType);
+		List<String> bundleIds = Util.getBundles(coloHelper, processName, entityType);
 
 		String max = "";
 		int maxID = -1;
@@ -654,7 +654,7 @@ public class instanceUtil {
 	}        
 
 	public static String getLatestBundleID(ColoHelper coloHelper,String processName,String entityType) throws Exception {
-		ArrayList<String> bundleIds = Util.getBundles(coloHelper, processName, entityType);
+		List<String> bundleIds = Util.getBundles(coloHelper, processName, entityType);
 
 		String max = "";
 		int maxID = -1;
@@ -671,7 +671,7 @@ public class instanceUtil {
 	}        
 
 	public static String getLatestBundleID(String processName,String entityType,IEntityManagerHelper helper) throws Exception {
-		ArrayList<String> bundleIds = Util.getBundles(processName,entityType,helper);
+		List<String> bundleIds = Util.getBundles(processName,entityType,helper);
 
 		String max = "";
 		int maxID = -1;
@@ -745,7 +745,7 @@ public class instanceUtil {
 	public static String getSequenceBundleID(String entityName,
 			String entityType, int coordNumber) throws Exception {
 
-		ArrayList<String> bundleIds = Util.getBundles(entityName,entityType);
+		List<String> bundleIds = Util.getBundles(entityName,entityType);
 		Map <Integer, String> bundleMap = new TreeMap<Integer, String>();
 		String bundleID ="";
 		for(int i =0 ; i < bundleIds.size() ; i++)
@@ -774,7 +774,7 @@ public class instanceUtil {
 	public static String getSequenceBundleID(PrismHelper prismHelper,String entityName,
 			ENTITY_TYPE entityType, int bundleNumber) throws Exception {
 
-		ArrayList<String> bundleIds = Util.getBundles(prismHelper,entityName,entityType);
+		List<String> bundleIds = Util.getBundles(prismHelper,entityName,entityType);
 		Map <Integer, String> bundleMap = new TreeMap<Integer, String>();
 		String bundleID ="";
 		for(int i =0 ; i < bundleIds.size() ; i++)
@@ -1622,7 +1622,7 @@ public class instanceUtil {
 		conf.set("fs.default.name","hdfs://"+helper.getFeedHelper().getHadoopURL());
 
 
-		final FileSystem fs=FileSystem.get(conf);
+		final FileSystem fs=FileSystem.get(FileSystem.getDefaultUri(conf),conf,"hdfs");
 
 		UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
 
@@ -1838,7 +1838,7 @@ public class instanceUtil {
 			return 0;
 
 
-		ArrayList<String> bundleID = Util.getBundles(feedName,"FEED",helper);
+		List<String> bundleID = Util.getBundles(feedName,"FEED",helper);
 
 		for(int i = 0 ; i < bundleID.size() ; i++){
 

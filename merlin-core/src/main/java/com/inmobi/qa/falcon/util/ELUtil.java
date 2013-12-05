@@ -1,12 +1,7 @@
 package com.inmobi.qa.falcon.util;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.*;
 
 import com.inmobi.qa.falcon.bundle.Bundle;
 import org.testng.Assert;
@@ -151,7 +146,7 @@ public class ELUtil {
 			String coordID = Util.getCoordID(Util.getOozieJobStatus(prismHelper,Util.getProcessName(bundle.getProcessData()),"NONE").get(0));
 			Util.print("coord id: "+ coordID);
 			Thread.sleep(30000);
-			ArrayList<String> missingDependencies = Util.getMissingDependencies(prismHelper,coordID);
+			List<String> missingDependencies = Util.getMissingDependencies(prismHelper,coordID);
 			for(String dependency : missingDependencies)
 			{
 				Util.print("dependency from job: "+dependency);
@@ -179,7 +174,7 @@ public class ELUtil {
 
 			int frequency = bundle.getInitialDatasetFrequency();
 
-			ArrayList<String> qaDependencyList = getQADepedencyList(time,bundle.getStartInstanceProcess(time), bundle.getEndInstanceProcess(time), frequency,bundle);
+			List<String> qaDependencyList = getQADepedencyList(time,bundle.getStartInstanceProcess(time), bundle.getEndInstanceProcess(time), frequency,bundle);
 			for(String qaDependency : qaDependencyList)	
 				Util.print("qa qaDependencyList: "+qaDependency );
 
@@ -193,7 +188,7 @@ public class ELUtil {
 		}
 	}
 
-	public static boolean  matchDependencies(ArrayList<String> fromJob, ArrayList<String> QAList)
+	public static boolean  matchDependencies(List<String> fromJob, List<String> QAList)
 	{
 		if(fromJob.size() != QAList.size())
 			return false ; 

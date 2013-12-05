@@ -4503,4 +4503,21 @@ public class Util {
 		runRemoteScriptAsSudo(helper.getQaHost(),helper.getUsername(),helper.getPassword()," /etc/init.d/tomcat6 restart");
 
 	}
+
+  public static Properties getPropertiesObj(String filename) {
+    Properties properties=new Properties();
+    try {
+      FileInputStream conf_stream=new FileInputStream(new File("src/main/resources/"+filename));
+      properties.load(conf_stream);
+      conf_stream.close();
+    }
+    catch(Exception e)
+    {
+      logger.info(e.getStackTrace());
+    }
+
+    finally {
+      return properties;
+    }
+  }
 }
