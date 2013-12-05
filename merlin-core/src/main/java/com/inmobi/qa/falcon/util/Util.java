@@ -571,6 +571,7 @@ public class Util {
 
         logger.info("executing the command..."+command);
         channel.setCommand(command);
+        channel.setPty(true);
         channel.connect();
         Assert.assertTrue(channel.isConnected(),"The channel was not connected correctly!");
         logger.info("now reading the line....");
@@ -3980,6 +3981,7 @@ public class Util {
 		ArrayList<String> data = new ArrayList<String>();
 
 		ChannelExec channel = (ChannelExec) session.openChannel("exec");
+    channel.setPty(true);
     String runCmd = null;
     if (null == runAs || runAs.isEmpty()) {
       runCmd = "sudo -S -p '' "+command;
