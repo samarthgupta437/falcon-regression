@@ -26,7 +26,7 @@ import com.inmobi.qa.falcon.response.ServiceResponse;
 public class prismUtil {
 
 	String cluster2Data = null;
-	public static void verifyClusterSubmission(ServiceResponse r, String clusterData, String env, String expectedStatus,ArrayList<String> beforeSubmit, ArrayList<String> afterSubmit) throws Exception
+	public static void verifyClusterSubmission(ServiceResponse r, String clusterData, String env, String expectedStatus,List<String> beforeSubmit, List<String> afterSubmit) throws Exception
 	{
 
 		if(expectedStatus.equals("SUCCEEDED"))
@@ -37,7 +37,7 @@ public class prismUtil {
 		}
 	}
 
-	public static void compareDataStoreStates(ArrayList<String> initialState,ArrayList<String> finalState,String filename) throws Exception
+	public static void compareDataStoreStates(List<String> initialState,List<String> finalState,String filename) throws Exception
 	{
 		finalState.removeAll(initialState)  ;
 
@@ -46,8 +46,8 @@ public class prismUtil {
 
 	}
 
-	public static void compareDataStoreStates(ArrayList<String> initialState,
-			ArrayList<String> finalState, String filename, int expectedDiff) {
+	public static void compareDataStoreStates(List<String> initialState,
+			List<String> finalState, String filename, int expectedDiff) {
 
 		if(expectedDiff>-1){
 			finalState.removeAll(initialState)  ;
@@ -67,8 +67,8 @@ public class prismUtil {
 
 	}
 
-	public static void compareDataStoreStates(ArrayList<String> initialState,
-			ArrayList<String> finalState, int expectedDiff) {
+	public static void compareDataStoreStates(List<String> initialState,
+			List<String> finalState, int expectedDiff) {
 
 		if(expectedDiff>-1){
 			finalState.removeAll(initialState)  ;

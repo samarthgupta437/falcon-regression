@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
@@ -309,13 +309,13 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
    
     @Override
-    public ArrayList<String> getArchiveInfo() throws Exception {
+    public List<String> getArchiveInfo() throws Exception {
         
         return Util.getDataSetArchiveInfo(this);
     }
 
     @Override
-    public ArrayList<String> getStoreInfo() throws Exception {
+    public List<String> getStoreInfo() throws Exception {
         
         return Util.getDataSetStoreInfo(this);
     }
