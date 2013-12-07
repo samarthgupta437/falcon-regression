@@ -1,3 +1,21 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
@@ -76,8 +94,6 @@
         <!-- platform encoding override -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-        <include.prism>true</include.prism>
 
         <hadoop.profile>1</hadoop.profile>
         <hadoop.version>1.1.2</hadoop.version>
@@ -423,12 +439,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.falcon</groupId>
-                <artifactId>falcon-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>javax.xml.bind</groupId>
                 <artifactId>jaxb-api</artifactId>
                 <version>2.1</version>
@@ -518,6 +528,12 @@
                 <groupId>commons-el</groupId>
                 <artifactId>commons-el</artifactId>
                 <version>1.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.falcon</groupId>
+                <artifactId>falcon-client</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <dependency>
@@ -628,6 +644,10 @@
     </dependencyManagement>
 
     <build>
+        <directory>target</directory>
+        <outputDirectory>target/classes</outputDirectory>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <testOutputDirectory>target/test-classes</testOutputDirectory>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -640,6 +660,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>2.2.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>2.4</version>
                 </plugin>
 
                 <plugin>
@@ -667,5 +693,141 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <forkMode>always</forkMode>
+                    <argLine>-Djava.awt.headless=true -Djava.security.krb5.realm= -Djava.security.krb5.kdc=</argLine>
+                    <argLine>-Denvironment=${config.file}</argLine>
+                    <parallel>methods</parallel>
+                    <threadCount>1</threadCount>
+                    <groups>${testng.groups}</groups>
+                    <excludedGroups>${testng.exclude.groups}</excludedGroups>
+                    <!--<skipTests>true</skipTests>-->
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <useDefaultExcludes>true</useDefaultExcludes>
+                    <useMavenDefaultExcludes>true</useMavenDefaultExcludes>
+                    <useIdeaDefaultExcludes>true</useIdeaDefaultExcludes>
+                    <useEclipseDefaultExcludes>true</useEclipseDefaultExcludes>
+                    <excludeSubProjects>true</excludeSubProjects>
+                    <excludes>
+                        <exclude>*.txt</exclude>
+                        <exclude>.git/**</exclude>
+                        <exclude>.idea/**</exclude>
+                        <exclude>**/*.twiki</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>**/activemq-data/**</exclude>
+                        <exclude>**/build/**</exclude>
+                        <exclude>*.patch</exclude>
+                        <exclude>derby.log</exclude>
+                        <exclude>**/logs/**</exclude>
+                        <exclude>**/.classpath</exclude>
+                        <exclude>**/.project</exclude>
+                        <exclude>**/.settings/**</exclude>
+                        <exclude>**/test-output/**</exclude>
+                        <exclude>**/data.txt</exclude>
+                        <exclude>**/maven-eclipse.xml</exclude>
+                        <exclude>**/.externalToolBuilders/**</exclude>
+                        <exclude>**/part-*</exclude>
+                    </excludes>
+                    <!--<argLine>-Dfalcon.log.dir=target/logs -Dfalcon.embeddedmq.data=target/data</argLine>-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>rat-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>checkstyle-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>verify</phase>
+                        <configuration>
+                            <consoleOutput>true</consoleOutput>
+                            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            <failOnViolation>true</failOnViolation>
+                            <skip>${skipCheck}</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <configuration>
+                    <!--debug>true</debug -->
+                    <xmlOutput>true</xmlOutput>
+                    <excludeFilterFile>${basedir}/../build-tools/src/main/resources/falcon/findbugs-exclude.xml</excludeFilterFile>
+                    <failOnError>true</failOnError>
+                    <skip>${skipCheck}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>findbugs-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
