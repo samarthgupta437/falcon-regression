@@ -40,3 +40,6 @@ logs
 test-output/
 bin/
 
+#Mac OS X
+.DS_Store
+*/DS_Store

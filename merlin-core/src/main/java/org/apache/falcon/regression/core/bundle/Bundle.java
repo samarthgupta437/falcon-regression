@@ -27,20 +27,16 @@ import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.generated.feed.Locations;
-import org.apache.falcon.regression.core.generated.feed.Partition;
-import org.apache.falcon.regression.core.generated.feed.Partitions;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.RetentionType;
 import org.apache.falcon.regression.core.generated.feed.Validity;
 import org.apache.falcon.regression.core.generated.process.Cluster;
-import org.apache.falcon.regression.core.generated.process.ExecutionType;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Inputs;
 import org.apache.falcon.regression.core.generated.process.LateInput;
 import org.apache.falcon.regression.core.generated.process.LateProcess;
 import org.apache.falcon.regression.core.generated.process.Output;
 import org.apache.falcon.regression.core.generated.process.Outputs;
-import org.apache.falcon.regression.core.generated.process.PolicyType;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
@@ -71,23 +67,18 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
 
+/**
+ * A bundle abstraction.
+ */
 public class Bundle {
 
     static PrismHelper prismHelper = new PrismHelper("prism.properties");
@@ -95,10 +86,8 @@ public class Bundle {
     public List<String> dataSets;
     String processData;
     String clusterData;
-    String oldCluster;
 
-
-    List<String> feedFilePaths;
+    //List<String> feedFilePaths;
     String processFilePath;
     String envFileName;
     List<String> clusters;
@@ -110,7 +99,7 @@ public class Bundle {
     }
 
     List<String> oldClusters;
-    List<String> clusterFilePaths;
+    //List<String> clusterFilePaths;
 
     IEntityManagerHelper clusterHelper;
     IEntityManagerHelper processHelper;
@@ -131,26 +120,19 @@ public class Bundle {
         return processHelper;
     }
 
-    public List<String> getClusterFilePath() {
-        return clusterFilePaths;
-    }
-
     public String getEnvFileName() {
         return envFileName;
     }
 
-    public void addClusterFilePath(String clusterFilePath) {
+    /*public void addClusterFilePath(String clusterFilePath) {
 
         if (null == this.clusterFilePaths) {
             this.clusterFilePaths = new ArrayList<String>();
         }
         this.clusterFilePaths.add(clusterFilePath);
-    }
+    }*/
 
-    public List<String> getFeedFilePaths() {
-        return feedFilePaths;
-    }
-
+/*
     public void addFeedFilePaths(String feedFilePath) {
 
         if (null == this.feedFilePaths) {
@@ -159,38 +141,18 @@ public class Bundle {
         this.feedFilePaths.add(feedFilePath);
     }
 
-    public void addClusterFilePaths(String clusterFilePath) {
-
-        if (null == this.clusterFilePaths) {
-            this.clusterFilePaths = new ArrayList<String>();
-        }
-        this.clusterFilePaths.add(clusterFilePath);
-    }
-
-    public List<String> getClusterFilePaths() throws Exception {
-        if (null == this.clusterFilePaths) {
-            this.clusterFilePaths = new ArrayList<String>();
-        }
-        return this.clusterFilePaths;
-    }
-
+*/
     public String getProcessFilePath() {
         return processFilePath;
     }
 
-    public void setProcessFilePath(String processFilePath) {
+    /*public void setProcessFilePath(String processFilePath) {
         this.processFilePath = processFilePath;
-    }
-
-    //	public Bundle(List<String> dataSets, String processData, String clusterData) {
-    //		this.dataSets = dataSets;
-    //		this.processData = processData;
-    //		this.clusterData = clusterData;
-    //	}
+    }*/
 
     public Bundle(Bundle bundle) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
-        this.processData = new String(bundle.getProcessData());
+        this.processData = bundle.getProcessData();
         this.clusters = bundle.getClusters();
         this.clusterHelper = bundle.getClusterHelper();
         this.processHelper = bundle.getProcessHelper();
@@ -204,7 +166,7 @@ public class Bundle {
         this.processData = processData;
         this.envFileName = envFileName;
         this.clusters = new ArrayList<String>();
-        this.clusters.add(new String(Util.getEnvClusterXML(envFileName, clusterData)));
+        this.clusters.add(Util.getEnvClusterXML(envFileName, clusterData));
         this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, envFileName);
         this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName);
     }
@@ -216,7 +178,7 @@ public class Bundle {
         this.processData = processData;
         this.clusters = new ArrayList<String>();
         for (String cluster : clusterData) {
-            this.clusters.add(new String(Util.getEnvClusterXML(envFileName, cluster)));
+            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster));
         }
         this.envFileName = envFileName;
         this.clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, envFileName);
@@ -228,12 +190,12 @@ public class Bundle {
         this.dataSets = dataSets;
         this.processData = processData;
         this.clusters = new ArrayList<String>();
-        this.clusters.add(new String(clusterData));
+        this.clusters.add(clusterData);
     }
 
     public Bundle(Bundle bundle, String envFileName) throws Exception {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
-        this.processData = new String(bundle.getProcessData());
+        this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
         colohelper = new ColoHelper(envFileName);
         for (String cluster : bundle.getClusters()) {
@@ -265,16 +227,15 @@ public class Bundle {
 
     public Bundle(Bundle bundle, PrismHelper prismHelper) throws Exception {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
-        this.processData = new String(bundle.getProcessData());
+        this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
         for (String cluster : bundle.getClusters()) {
             this.clusters
-                    .add(new String(Util.getEnvClusterXML(prismHelper.getEnvFileName(), cluster)));
+                    .add(Util.getEnvClusterXML(prismHelper.getEnvFileName(), cluster));
         }
         this.clusterHelper = prismHelper.getClusterHelper();
         this.processHelper = prismHelper.getProcessHelper();
         this.feedHelper = prismHelper.getFeedHelper();
-        this.envFileName = envFileName;
     }
 
     public String getClusterData() {
@@ -282,19 +243,12 @@ public class Bundle {
     }
 
     public void setClusterData(List<String> clusters) throws Exception {
-        this.clusters = new ArrayList(clusters);
+        this.clusters = new ArrayList<String>(clusters);
     }
 
     public void setClusterData(String clusterData) {
         this.clusterData = clusterData;
     }
-
-    HashMap<String, String> dataSetMapping;
-    //	IEntityManagerHelper feedHelper=EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-    //	IEntityManagerHelper processHelper=EntityHelperFactory.getEntityHelper(ENTITY_TYPE
-    // .PROCESS);
-    //	IEntityManagerHelper clusterHelper=EntityHelperFactory.getEntityHelper(ENTITY_TYPE
-    // .CLUSTER);
 
     public List<String> getDataSets() {
         return dataSets;
@@ -324,7 +278,7 @@ public class Bundle {
         //this.oldCluster=this.clusterData;
         //this.clusterData=newCluster;
 
-        this.oldClusters = new ArrayList(this.clusters);
+        this.oldClusters = new ArrayList<String>(this.clusters);
         this.clusters = Util.generateUniqueClusterEntity(clusters);
 
         List<String> newDataSet = new ArrayList<String>();
@@ -385,7 +339,6 @@ public class Bundle {
         Unmarshaller u = jc.createUnmarshaller();
 
         Process processElement = (Process) u.unmarshal((new StringReader(processData)));
-        LateProcess lp = new LateProcess();
 
         if (processElement.getLateProcess() != null) {
 
@@ -534,10 +487,7 @@ public class Bundle {
         //lets submit all data first
         submitFeeds(prismHelper);
 
-        ServiceResponse processSubmission =
-                prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
-
-        return processSubmission;
+        return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
     public ServiceResponse submitBundle(boolean isUnique) throws Exception {
@@ -554,17 +504,12 @@ public class Bundle {
         //lets submit all data first
         for (String dataset : getDataSets()) {
 
-            ServiceResponse dataSubmission = feedHelper.submitEntity(URLS.SUBMIT_URL, dataset);
+         feedHelper.submitEntity(URLS.SUBMIT_URL, dataset);
 
-            //Assert.assertEquals(Util.parseResponse(dataSubmission).getStatus(),
-            // APIResult.Status.SUCCEEDED,
-            // "dataset "+Util.readDatasetName(dataset)+" has not been submitted successfully!");
+
         }
 
-        ServiceResponse processSubmission =
-                processHelper.submitEntity(URLS.SUBMIT_URL, getProcessData());
-
-        return processSubmission;
+        return processHelper.submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
     public String submitAndScheduleBundle(PrismHelper prismHelper, boolean isUnique)
@@ -597,43 +542,6 @@ public class Bundle {
             return coordinatorStatus.get(0);
         } else return null;
 
-    }
-
-    public void setProcessClusterValidity(String clusterName, String startDate, String endDate)
-    throws Exception {
-
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
-
-        for (Cluster cluster : processElement.getClusters().getCluster()) {
-            if (cluster.getName().equalsIgnoreCase(clusterName)) {
-                org.apache.falcon.regression.core.generated.process.Validity newValidity =
-                        new org.apache.falcon.regression.core.generated.process.Validity();
-                if (startDate != null) {
-                    newValidity.setStart(InstanceUtil.oozieDateToDate(startDate).toDate());
-                } else {
-                    newValidity.setStart(cluster.getValidity().getStart());
-                }
-
-                if (endDate != null) {
-                    newValidity.setEnd(InstanceUtil.oozieDateToDate(endDate).toDate());
-                } else {
-                    newValidity.setEnd(cluster.getValidity().getEnd());
-                }
-
-                cluster.setValidity(newValidity);
-            }
-
-        }
-
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-        processData = sw.toString();
     }
 
     public void updateWorkFlowFile() throws Exception {
@@ -674,51 +582,6 @@ public class Bundle {
                 wfFile.getAbsolutePath());
     }
 
-    public void updateLibFile() throws Exception {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        Workflow wf = processElement.getWorkflow();
-        File bundleDirectory = new File(sBundleLocation + "/lib");
-        boolean gotAJarInBundleDirectory = false;
-        if (bundleDirectory.exists()) {
-            for (File f : bundleDirectory.listFiles()) {
-                if (f.getName().contains(".jar")) {
-                    gotAJarInBundleDirectory = true;
-                    if (f.length() != HadoopUtil
-                            .getFileLength(colohelper, new Path(wf.getLib() + "/" + f.getName()))) {
-                        System.out.println(
-                                "Copying " + sBundleLocation + "/lib/" + f.getName() + " to " +
-                                        wf.getLib());
-                        HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getLib()),
-                                sBundleLocation + "/lib/" + f.getName());
-                    }
-
-                }
-            }
-        }
-
-        //If found any jar file in bundle directory no need to look in common lib directory
-        if (gotAJarInBundleDirectory) {
-            return;
-        }
-
-        File commonLibDirectory = new File("src/test/resources/lib");
-        if (commonLibDirectory.exists()) {
-            for (File f : commonLibDirectory.listFiles()) {
-                if (f.getName().contains(".jar")) {
-                    if (f.length() != HadoopUtil
-                            .getFileLength(colohelper, new Path(wf.getLib() + "/" + f.getName()))) {
-                        System.out.println(
-                                "Copying src/test/resources/lib/" + f.getName() + " to " +
-                                        wf.getLib());
-                        HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getLib()),
-                                "src/test/resources/lib/" + f.getName());
-                    }
-                }
-            }
-        }
-
-    }
-
     public String submitAndScheduleBundle(PrismHelper prismHelper) throws Exception {
 
         if (colohelper != null) {
@@ -753,7 +616,7 @@ public class Bundle {
         return scheduleResult.getMessage();
     }
 
-    public String submitAndScheduleBundleWithFeedScheduled(PrismHelper prismHelper)
+    /*public String submitAndScheduleBundleWithFeedScheduled(PrismHelper prismHelper)
     throws Exception {
         ServiceResponse submitResponse = submitBundle(prismHelper);
         if (submitResponse.getCode() == 400)
@@ -788,30 +651,7 @@ public class Bundle {
             return coordinatorStatus.get(0);
         } else return null;
 
-    }
-
-    private void verifyBundleCoordinatorDeletion() throws Exception {
-        //make sure that the process coordinators are deleted
-        Util.verifyBundleDeletion(this);
-    }
-
-    public void validateBundleSubmission() throws Exception {
-        //just connect to the remote box to get the data from stores
-        List<String> processStoreData = Util.getProcessStoreInfo(getProcessHelper());
-        List<String> dataSetStoreData = Util.getDataSetStoreInfo(getFeedHelper());
-
-        //check if all data is present in the respective stores or not
-        for (String dataSet : dataSets) {
-            Assert.assertTrue(dataSetStoreData.contains(Util.readDatasetName(dataSet) + ".xml"),
-                    "DataSet " + Util.readDatasetName(dataSet) +
-                            " does not exist in the data store :O");
-        }
-
-        //check if process is present in the store or not
-        Assert.assertTrue(processStoreData.contains(Util.readEntityName(processData) + ".xml"),
-                "Process " + Util.readEntityName(processData) +
-                        " does not exist in the process store :O");
-    }
+    }*/
 
     public Bundle() {
     }
@@ -877,7 +717,7 @@ public class Bundle {
     }
 
 
-    public Date getInitialDatasetTime() throws Exception {
+    /*public Date getInitialDatasetTime() throws Exception {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
 
         Unmarshaller u = jc.createUnmarshaller();
@@ -898,7 +738,7 @@ public class Bundle {
         // .getStart());
         Date dt = dataElement.getClusters().getCluster().get(0).getValidity().getStart();
         return dt;
-    }
+    }*/
 
 
     public int getInitialDatasetFrequency() throws Exception {
@@ -952,7 +792,7 @@ public class Bundle {
         Unmarshaller u = jc.createUnmarshaller();
         Process processElement = (Process) u.unmarshal((new StringReader(processData)));
         String outputDataset = null;
-        int datasetIndex = 0;
+        int datasetIndex;
         for (datasetIndex = 0; datasetIndex < dataSets.size(); datasetIndex++) {
             outputDataset = dataSets.get(datasetIndex);
             if (outputDataset.contains(processElement.getOutputs().getOutput().get(0).getFeed())) {
@@ -982,7 +822,7 @@ public class Bundle {
         Unmarshaller u = jc.createUnmarshaller();
         Process processElement = (Process) u.unmarshal((new StringReader(processData)));
         String outputDataset = null;
-        int datasetIndex = 0;
+        int datasetIndex;
         for (datasetIndex = 0; datasetIndex < dataSets.size(); datasetIndex++) {
             outputDataset = dataSets.get(datasetIndex);
             if (outputDataset.contains(processElement.getOutputs().getOutput().get(0).getFeed())) {
@@ -1025,7 +865,7 @@ public class Bundle {
         return (Process) um.unmarshal(new StringReader(getProcessData()));
     }
 
-    public org.apache.falcon.regression.core.generated.cluster.Cluster getClusterObject()
+    /*public org.apache.falcon.regression.core.generated.cluster.Cluster getClusterObject()
     throws Exception {
         JAXBContext context =
                 JAXBContext.newInstance(
@@ -1033,9 +873,9 @@ public class Bundle {
         Unmarshaller um = context.createUnmarshaller();
         return (org.apache.falcon.regression.core.generated.cluster.Cluster) um
                 .unmarshal(new StringReader(getClusterData()));
-    }
+    }*/
 
-    public Feed getFeedObject(String name) throws Exception {
+    /*public Feed getFeedObject(String name) throws Exception {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
         for (String feed : getDataSets()) {
@@ -1045,11 +885,9 @@ public class Bundle {
         }
 
         return null;
-    }
+    }*/
 
     public String getFeed(String feedName) throws Exception {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
         for (String feed : getDataSets()) {
             if (Util.readDatasetName(feed).contains(feedName)) {
                 return feed;
@@ -1059,7 +897,7 @@ public class Bundle {
         return null;
     }
 
-    public void writeBundleToFiles() throws Exception {
+    /*public void writeBundleToFiles() throws Exception {
         for (String cluster : this.clusters) {
             addClusterFilePath(clusterHelper.writeEntityToFile(cluster));
         }
@@ -1069,7 +907,7 @@ public class Bundle {
         }
 
         setProcessFilePath(processHelper.writeEntityToFile(processData));
-    }
+    }*/
 
     //	public void submitBundleViaCLI() throws Exception
     //	{
@@ -1101,19 +939,19 @@ public class Bundle {
 
     }
 
-    public String readFeedNameFromFile(String feedFilePath) throws Exception {
+    /*public String readFeedNameFromFile(String feedFilePath) throws Exception {
 
         BufferedReader br = new BufferedReader(
                 new InputStreamReader(new FileInputStream(new File(feedFilePath))));
         String feed = "";
-        String line = new String();
+        String line;
         while ((line = br.readLine()) != null) {
             feed += line;
         }
 
         return Util.readDatasetName(feed);
 
-    }
+    }*/
 
     public void setInputFeedValidity(String startInstance, String endInstance) throws Exception {
         String feedName = Util.getInputFeedNameFromBundle(this);
@@ -1127,7 +965,7 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
-    public void setInputFeedRetentionLimit(int frquency, TimeUnit timeUnit) throws Exception {
+    /*public void setInputFeedRetentionLimit(int frquency, TimeUnit timeUnit) throws Exception {
         String feedName = Util.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         Retention retention = feedElement.getClusters().getCluster().get(0).getRetention();
@@ -1136,7 +974,7 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
 
 
-    }
+    }*/
 
     public String getFeedDataPathPrefix() throws Exception {
         Feed feedElement = InstanceUtil.getFeedElement(this, Util.getInputFeedNameFromBundle(this));
@@ -1149,11 +987,6 @@ public class Bundle {
     throws Exception {
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
-
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/HH:mm");
-
-        String start = formatter.print(startDate).replace("/", "T") + "Z";
-        String end = formatter.print(endDate).replace("/", "T") + "Z";
 
         Unmarshaller u = jc.createUnmarshaller();
 
@@ -1249,7 +1082,7 @@ public class Bundle {
         processData = sw.toString();
     }
 
-    public void setProcessLatePolicy(PolicyType policyType, String delay) throws Exception {
+    /*public void setProcessLatePolicy(PolicyType policyType, String delay) throws Exception {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
 
@@ -1260,7 +1093,7 @@ public class Bundle {
         lateProcess.setDelay(new Frequency(delay));
         lateProcess.setPolicy(policyType);
 
-		/*<LateInput> lateList=new ArrayList<LateInput>();
+		*//*<LateInput> lateList=new ArrayList<LateInput>();
 
 		for(Input input:processElement.getInputs().getInput())
 		{
@@ -1270,7 +1103,7 @@ public class Bundle {
 			lateList.add(late);
 		}
 
-		//	lateProcess.setLateInput(lateList);*/
+		//	lateProcess.setLateInput(lateList);*//*
 
         processElement.setLateProcess(lateProcess);
 
@@ -1279,9 +1112,9 @@ public class Bundle {
         marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         marshaller.marshal(processElement, sw);
         processData = sw.toString();
-    }
+    }*/
 
-    public String getFeedFilePath(String feedName) throws Exception {
+    /*public String getFeedFilePath(String feedName) throws Exception {
         for (String feedPath : this.feedFilePaths) {
             BufferedReader reader = new BufferedReader(new FileReader(new File(feedPath)));
             String data = "";
@@ -1295,9 +1128,9 @@ public class Bundle {
         }
         return null;
 
-    }
+    }*/
 
-    public String getClusterFilePath(String clusterName) throws Exception {
+    /*public String getClusterFilePath(String clusterName) throws Exception {
         for (String clusterPath : this.clusterFilePaths) {
             BufferedReader reader = new BufferedReader(new FileReader(new File(clusterPath)));
             String data = "";
@@ -1311,10 +1144,10 @@ public class Bundle {
         }
         return null;
 
-    }
+    }*/
 
 
-    public void listBundle() throws Exception {
+    /*public void listBundle() throws Exception {
         Assert.assertTrue(processHelper.list().contains(Util.readEntityName(processData)),
                 "Process was not listed post submission!");
         Assert.assertTrue(clusterHelper.list().contains(Util.readClusterName(clusterData)),
@@ -1326,7 +1159,7 @@ public class Bundle {
             Assert.assertTrue(dataList.contains(Util.readDatasetName(data)),
                     "Feed " + Util.readDatasetName(data) + " was not listed post submission!");
         }
-    }
+    }*/
 
     public void verifyDependencyListing() throws Exception {
         //display dependencies of process:
@@ -1349,6 +1182,7 @@ public class Bundle {
 
     }
 
+/*
     public void verifyFeedDependencyListing() throws Exception {
         for (String feed : getDataSets()) {
             for (String cluster : clusters) {
@@ -1359,6 +1193,7 @@ public class Bundle {
                     .contains("(process)" + Util.readEntityName(getProcessData())));
         }
     }
+*/
 
     public void addProcessInput(String feed, String feedName) throws Exception {
         Process processElement = InstanceUtil.getProcessElement(this);
@@ -1380,17 +1215,17 @@ public class Bundle {
 
     }
 
-    public void setProcessExecution(ExecutionType exeType) throws Exception {
+    /*public void setProcessExecution(ExecutionType exeType) throws Exception {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.setOrder(exeType);
         InstanceUtil.writeProcessElement(this, processElement);
-    }
+    }*/
 
-    public void setOutputDataInstance(String instance) throws Exception {
+    /*public void setOutputDataInstance(String instance) throws Exception {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.getOutputs().getOutput().get(0).setInstance(instance);
         InstanceUtil.writeProcessElement(this, processElement);
-    }
+    }*/
 
     public void setRetry(Retry retry) throws Exception {
         logger.info("old process: " + processData);
@@ -1411,6 +1246,7 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
+/*
     public void setProcessLatePolicy(PolicyType policy, int delay, TimeUnit periodicity,
                                      Frequency delayUnit)
     throws Exception {
@@ -1421,6 +1257,7 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, process);
 
     }
+*/
 
     public Cluster getClusterObjectFromProcess(String clusterName) throws Exception {
         for (Cluster cluster : getProcessObject().getClusters().getCluster()) {
@@ -1431,7 +1268,7 @@ public class Bundle {
         return null;
     }
 
-    public Cluster getClusterObjectFromProcess(Process processObject, String clusterName)
+    /*public Cluster getClusterObjectFromProcess(Process processObject, String clusterName)
     throws Exception {
         for (Cluster cluster : processObject.getClusters().getCluster()) {
             if (cluster.getName().equalsIgnoreCase(clusterName)) {
@@ -1439,7 +1276,7 @@ public class Bundle {
             }
         }
         return null;
-    }
+    }*/
 
     public void setCLusterColo(String colo) throws Exception {
         org.apache.falcon.regression.core.generated.cluster.Cluster c =
@@ -1483,7 +1320,6 @@ public class Bundle {
 
         this.clusters.add(clusterData);
         //now to add clusters to feeds
-        ArrayList<String> newFeeds = new ArrayList<String>();
         for (int i = 0; i < dataSets.size(); i++) {
             Feed feedObject = Util.getFeedObject(dataSets.get(i));
             org.apache.falcon.regression.core.generated.feed.Cluster cluster =
@@ -1523,13 +1359,13 @@ public class Bundle {
         prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
 
         for (String dataset : getDataSets()) {
-            ServiceResponse deleteResponse =
-                    prismHelper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
+
+             prismHelper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
         }
 
         for (String cluster : this.getClusters()) {
-            ServiceResponse deleteResponse =
-                    prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+
+            prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
         }
 
 
@@ -1553,7 +1389,7 @@ public class Bundle {
 
     }
 
-    public void addProcessProperty(String propertyName, String propertyValue) throws Exception {
+    /*public void addProcessProperty(String propertyName, String propertyValue) throws Exception {
         Process processElement = InstanceUtil.getProcessElement(this);
         Property p = new Property();
         p.setName(propertyName);
@@ -1564,7 +1400,7 @@ public class Bundle {
         processElement.setProperties(propList);
         InstanceUtil.writeProcessElement(this, processElement);
 
-    }
+    }*/
 
     public void setProcessPriority(String priority) throws Exception {
         Process processElement = InstanceUtil.getProcessElement(this);
@@ -1595,11 +1431,11 @@ public class Bundle {
 
     public static void submitCluster(Bundle... bundles) throws Exception {
 
-        for (int i = 0; i < bundles.length; i++) {
-            Util.print("cluster b1: " + bundles[i].getClusters().get(0));
+        for (Bundle bundle : bundles) {
+            Util.print("cluster b1: " + bundle.getClusters().get(0));
             ServiceResponse r =
                     prismHelper.getClusterHelper()
-                            .submitEntity(URLS.SUBMIT_URL, bundles[i].getClusters().get(0));
+                            .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
         }
 
@@ -1608,25 +1444,24 @@ public class Bundle {
 
     public static void deleteCluster(Bundle... bundles) throws Exception {
 
-        for (int i = 0; i < bundles.length; i++) {
-            Util.print("cluster b1: " + bundles[i].getClusters().get(0));
-            prismHelper.getClusterHelper().delete(URLS.DELETE_URL, bundles[i].getClusters().get(0));
+        for (Bundle bundle : bundles) {
+            Util.print("cluster b1: " + bundle.getClusters().get(0));
+            prismHelper.getClusterHelper().delete(URLS.DELETE_URL, bundle.getClusters().get(0));
         }
 
     }
 
     public List<Output> getAllOutputs() throws Exception {
 
-        ArrayList<Output> o = new ArrayList<Output>();
         Process p = InstanceUtil.getProcessElement(processData);
 
         return p.getOutputs().getOutput();
 
     }
 
-    public void addFeedPartition(String feedName, String partition) throws Exception {
+    /*public void addFeedPartition(String feedName, String partition) throws Exception {
 
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = InstanceUtil.getFeedElement( this, feedName);
         Partitions p = feedElement.getPartitions();
         Partition newPartiton = new Partition();
         newPartiton.setName(partition);
@@ -1634,7 +1469,7 @@ public class Bundle {
         feedElement.setPartitions(p);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
 
-    }
+    }*/
 
     public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
@@ -1694,7 +1529,7 @@ public class Bundle {
     }
 
 
-    public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
+    /*public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
                                     String inputBasePaths, int numberOfOutputs, String startTime,
                                     String endTime,
@@ -1751,7 +1586,7 @@ public class Bundle {
 
 
         return b;
-    }
+    }*/
 
     public String setProcessFeeds(String process, List<String> newDataSets,
                                   int numberOfInputs, int numberOfOptionalInput,
@@ -1827,9 +1662,9 @@ public class Bundle {
         Process p = InstanceUtil.getProcessElement(process);
         org.apache.falcon.regression.core.generated.process.Clusters cs =
                 new org.apache.falcon.regression.core.generated.process.Clusters();
-        for (int i = 0; i < newClusters.size(); i++) {
+        for (String newCluster : newClusters) {
             Cluster c = new Cluster();
-            c.setName(Util.readClusterName(newClusters.get(i)));
+            c.setName(Util.readClusterName(newCluster));
             org.apache.falcon.regression.core.generated.process.Validity v =
                     new org.apache.falcon.regression.core.generated.process.Validity();
             v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
@@ -1852,10 +1687,10 @@ public class Bundle {
         Clusters cs = new Clusters();
         f.setFrequency(new Frequency(5, TimeUnit.minutes));
 
-        for (int i = 0; i < newClusters.size(); i++) {
+        for (String newCluster : newClusters) {
             org.apache.falcon.regression.core.generated.feed.Cluster c =
                     new org.apache.falcon.regression.core.generated.feed.Cluster();
-            c.setName(Util.readClusterName(newClusters.get(i)));
+            c.setName(Util.readClusterName(newCluster));
             Location l = new Location();
             l.setType(LocationType.DATA);
             l.setPath(location + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
@@ -1922,8 +1757,8 @@ public class Bundle {
 
         Process p = InstanceUtil.getProcessElement(process);
 
-        for (int i = 0; i < properties.length; i++) {
-            p.getProperties().getProperty().add(properties[i]);
+        for (Property property : properties) {
+            p.getProperties().getProperty().add(property);
         }
 
         return InstanceUtil.processToString(p);
