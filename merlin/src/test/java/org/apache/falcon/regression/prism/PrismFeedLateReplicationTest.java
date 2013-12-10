@@ -114,13 +114,13 @@ public class PrismFeedLateReplicationTest {
             String postFix = "/US/ua2";
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua2, 90, 1, prefix, postFix);
 
 
             postFix = "/UK/ua3";
             prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
 
@@ -248,13 +248,13 @@ public class PrismFeedLateReplicationTest {
             String postFix = "/US/ua2";
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua2, 90, 1, prefix, postFix);
 
 
             postFix = "/UK/ua3";
             prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
 
             Thread.sleep(60000);
 
@@ -657,29 +657,29 @@ public class PrismFeedLateReplicationTest {
             String postFix = "/ua1/ua2";
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenishWithout_Success(ua2, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenishWithout_Success(ua2, 90, 1, prefix, postFix);
 
             postFix = "/ua2/ua2";
-            Util.lateDataReplenishWithout_Success(ua2, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenishWithout_Success(ua2, 90, 1, prefix, postFix);
 
             postFix = "/ua3/ua2";
-            Util.lateDataReplenishWithout_Success(ua2, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenishWithout_Success(ua2, 90, 1, prefix, postFix);
 
             //put _SUCCESS in parent folder UA2
-            Util.putFileInFolderHDFS(ua2, 90, 0, 1, prefix, "_SUCCESS");
+            Util.putFileInFolderHDFS(ua2, 90, 1, prefix, "_SUCCESS");
 
             postFix = "/ua1/ua3";
             Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
 
             postFix = "/ua2/ua3";
-            Util.lateDataReplenish(ua3, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
 
             postFix = "/ua3/ua3";
-            Util.lateDataReplenish(ua3, 90, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
 
             //put _SUCCESS in parent folder of UA3
-            Util.putFileInFolderHDFS(ua3, 90, 0, 1, prefix, "_SUCCESS");
+            Util.putFileInFolderHDFS(ua3, 90, 1, prefix, "_SUCCESS");
 
             Thread.sleep(15000);
 

@@ -185,13 +185,13 @@ public class PrismFeedReplicationTest {
             String postFix = "/US/ua2";
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 120, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua2, 120, 1, prefix, postFix);
 
 
             postFix = "/UK/ua3";
             prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 120, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 120, 1, prefix, postFix);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-100);
 
@@ -616,7 +616,7 @@ public class PrismFeedReplicationTest {
 
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(prefix.substring(1));
-            Util.lateDataReplenish(200, 0, 1, prefix);
+            Util.lateDataReplenish(200, 1, prefix);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-100);
 
@@ -697,7 +697,7 @@ public class PrismFeedReplicationTest {
 
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua1, prefix.substring(1));
-            Util.lateDataReplenish(ua1, 200, 0, 1, prefix);
+            Util.lateDataReplenish(ua1, 200, 1, prefix);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-100);
 
@@ -767,7 +767,7 @@ public class PrismFeedReplicationTest {
 
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua1, prefix.substring(1));
-            Util.lateDataReplenish(ua1, 120, 0, 1, prefix);
+            Util.lateDataReplenish(ua1, 120, 1, prefix);
 
             //clear target cluster
             Util.HDFSCleanup(ua2, prefix.substring(1));

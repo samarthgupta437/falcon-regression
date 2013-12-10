@@ -233,7 +233,7 @@ public class ProcessInstanceResumeTest {
             ProcessInstancesResult r = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z");
-            InstanceUtil.validateSuccessOnlyStart(r, b, WorkflowStatus.RUNNING);
+            InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
         } finally {
             b.deleteBundle(prismHelper);
         }

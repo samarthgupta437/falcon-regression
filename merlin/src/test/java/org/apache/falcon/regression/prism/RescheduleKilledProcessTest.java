@@ -103,7 +103,7 @@ public class RescheduleKilledProcessTest {
 
             String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(b1));
             Util.HDFSCleanup(ua1, prefix.substring(1));
-            Util.lateDataReplenish(ua1, 40, 0, 1, prefix);
+            Util.lateDataReplenish(ua1, 40, 1, prefix);
 
             System.out.println("process: " + b1.getProcessData());
 

@@ -75,13 +75,13 @@ public class FeedClusterUpdateTest {
             String postFix = "/US/ua2";
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 80, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua2, 80, 1, prefix, postFix);
 
 
             postFix = "/UK/ua3";
             prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 80, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 80, 1, prefix, postFix);
 
         } finally {
 

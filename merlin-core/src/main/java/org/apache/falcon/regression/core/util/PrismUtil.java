@@ -18,13 +18,11 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
-import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBContext;
@@ -39,6 +37,7 @@ public class PrismUtil {
 
     String cluster2Data = null;
 
+/*
     public static void verifyClusterSubmission(ServiceResponse r, String clusterData, String env,
                                                String expectedStatus,
                                                List<String> beforeSubmit, List<String> afterSubmit)
@@ -52,8 +51,9 @@ public class PrismUtil {
                     "exactly one colo cluster submission should have been there");
         }
     }
+*/
 
-    public static void compareDataStoreStates(List<String> initialState, List<String> finalState,
+    /*public static void compareDataStoreStates(List<String> initialState, List<String> finalState,
                                               String filename)
     throws Exception {
         finalState.removeAll(initialState);
@@ -61,7 +61,7 @@ public class PrismUtil {
         Assert.assertEquals(finalState.size(), 1);
         Assert.assertTrue(finalState.get(0).contains(filename));
 
-    }
+    }*/
 
     public static void compareDataStoreStates(List<String> initialState,
                                               List<String> finalState, String filename,

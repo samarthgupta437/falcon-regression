@@ -129,7 +129,7 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 // lets create data now:
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
 
@@ -239,7 +239,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 //now wait till the process is over
@@ -355,7 +355,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
 
@@ -464,7 +464,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -573,7 +573,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -676,7 +676,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -781,7 +781,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -887,7 +887,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -994,7 +994,7 @@ public class NewRetryTest {
             } else {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -1078,7 +1078,7 @@ public class NewRetryTest {
             } else {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -1179,7 +1179,7 @@ public class NewRetryTest {
             } else {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -1281,7 +1281,7 @@ public class NewRetryTest {
 
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -1435,7 +1435,7 @@ public class NewRetryTest {
             } else {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
@@ -1568,7 +1568,7 @@ public class NewRetryTest {
             } else {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
-                Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
+                Util.lateDataReplenish(UA3ColoHelper, 20, 0);
                 List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(

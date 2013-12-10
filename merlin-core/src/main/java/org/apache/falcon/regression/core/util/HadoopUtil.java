@@ -19,29 +19,24 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.testng.log4testng.Logger;
 
-import java.io.BufferedReader;
-import java.io.File;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.zip.GZIPInputStream;
 
 
 public class HadoopUtil {
 
     static Logger logger = Logger.getLogger(Util.class);
 
-    public static File getFileFromHDFSFolder(PrismHelper prismHelper,
+    /*public static File getFileFromHDFSFolder(PrismHelper prismHelper,
                                              String hdfsLocation, String localLocation)
     throws Exception {
 
@@ -67,9 +62,9 @@ public class HadoopUtil {
 
         return new File(destPath.toString());
 
-    }
+    }*/
 
-    public static File getFileFromHDFSFolder(ColoHelper coloHelper,
+    /*public static File getFileFromHDFSFolder(ColoHelper coloHelper,
                                              String hdfsLocation, String localLocation)
     throws Exception {
 
@@ -95,18 +90,18 @@ public class HadoopUtil {
 
         return new File(destPath.toString());
 
-    }
+    }*/
 
 
-    public static File getFileFromHDFSFolder(PrismHelper prismHelper,
+    /*public static File getFileFromHDFSFolder(PrismHelper prismHelper,
                                              String hdfsLocation) throws Exception {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
         return getFileFromHDFSFolder(prismHelper, hdfsLocation, "dataFromHDFS/");
-    }
+    }*/
 
 
-    public static ArrayList<File> getAllFilesFromHDFSFolder(
+    /*public static ArrayList<File> getAllFilesFromHDFSFolder(
             PrismHelper prismHelper, String hdfsLocation, String localBaseFolder) throws Exception {
 
         setSystemPropertyHDFS();
@@ -134,7 +129,7 @@ public class HadoopUtil {
 
         return returnList;
 
-    }
+    }*/
 
 
     public static void setSystemPropertyHDFS() {
@@ -144,7 +139,7 @@ public class HadoopUtil {
     }
 
 
-    public static ArrayList<String> getHDFSSubFolders(ColoHelper prismHelper,
+    /*public static ArrayList<String> getHDFSSubFolders(ColoHelper prismHelper,
                                                       String baseDir) throws IOException {
         setSystemPropertyHDFS();
 
@@ -169,12 +164,7 @@ public class HadoopUtil {
         return returnList;
 
 
-    }
-
-
-    public static String defaultFileName =
-            "/Users/samarth.gupta/testData/testFolder/zip/part-m-00000.gz" +
-                    ".1299112731669475part-m-00000.gz";
+    }*/
 
 
     public static Configuration getHadoopConfiguration(ColoHelper prismHelper) throws Exception {
@@ -184,7 +174,7 @@ public class HadoopUtil {
     }
 
 
-    public static ArrayList<Path> getAllFilesHDFSLocation(
+    /*public static ArrayList<Path> getAllFilesHDFSLocation(
             ColoHelper prismHelper, String hdfsLocation) throws Exception {
         setSystemPropertyHDFS();
 
@@ -200,7 +190,6 @@ public class HadoopUtil {
 
 
         for (FileStatus stat : stats) {
-            String currentPath = stat.getPath().toUri().getPath(); // gives directory name
             if (!stat.isDir()) {
                 returnList.add(stat.getPath());
             }
@@ -209,7 +198,7 @@ public class HadoopUtil {
 
         return returnList;
 
-    }
+    }*/
 
     public static ArrayList<Path> getAllFilesRecursivelyHDFS(
             ColoHelper colcoHelper, Path location) throws Exception {
@@ -324,9 +313,9 @@ public class HadoopUtil {
     private static boolean checkIfIsIgnored(String folder,
                                             String[] ignoreFolders) {
 
-        for (int i = 0; i < ignoreFolders.length; i++) {
+        for (String ignoreFolder : ignoreFolders) {
 
-            if (folder.contains(ignoreFolders[i])) {
+            if (folder.contains(ignoreFolder)) {
                 //	Util.print("ignored Folder found: "+ignoreFolders[i]);
                 return true;
             }
@@ -344,7 +333,7 @@ public class HadoopUtil {
 
     }
 
-    public static long getFileLength(ColoHelper coloHelper, Path fileHDFSLocaltion)
+    /*public static long getFileLength(ColoHelper coloHelper, Path fileHDFSLocaltion)
     throws Exception {
         setSystemPropertyHDFS();
         Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
@@ -356,9 +345,9 @@ public class HadoopUtil {
         }
         return 0;
 
-    }
+    }*/
 
-    public static void copyDataToFolders(PrismHelper prismHelper,
+    /*public static void copyDataToFolders(PrismHelper prismHelper,
                                          final String folderPrefix, final Path folder,
                                          final String... fileLocations) throws Exception {
         Configuration conf = new Configuration();
@@ -386,7 +375,7 @@ public class HadoopUtil {
         }
 
 
-    }
+    }*/
 
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
                                         final String fileLocation)
@@ -511,21 +500,21 @@ public class HadoopUtil {
 
     }
 
-    public static ArrayList<String> getAllRecords(Path path) throws Exception {
+    /*public static ArrayList<String> getAllRecords(Path path) throws Exception {
         ArrayList<Path> rrPaths =
                 HadoopUtil.getAllFilesRecursivelyHDFS(new Configuration(), path, "shouldNOtMatch");
         FileSystem fs = FileSystem.get(new Configuration());
         ArrayList<String> records = new ArrayList<String>();
         BufferedReader br;
-        for (int allPaths = 0; allPaths < rrPaths.size(); allPaths++) {
+        for (Path rrPath : rrPaths) {
 
-            if (!fs.exists(rrPaths.get(allPaths))) {
+            if (!fs.exists(rrPath)) {
                 System.out.println("File does not exists");
             }
 
-            FSDataInputStream in = fs.open(rrPaths.get(allPaths));
-            System.out.println("getting all records for path: " + rrPaths.get(allPaths));
-            if (rrPaths.get(allPaths).toString().endsWith(".gz"))
+            FSDataInputStream in = fs.open(rrPath);
+            System.out.println("getting all records for path: " + rrPath);
+            if (rrPath.toString().endsWith(".gz"))
                 br = new BufferedReader(new InputStreamReader(new GZIPInputStream(in)));
             else
                 br = new BufferedReader(new InputStreamReader(in));
@@ -540,9 +529,9 @@ public class HadoopUtil {
         }
 
         return records;
-    }
+    }*/
 
-    public static ArrayList<String> getAllRecords(ColoHelper prismHelper, Path path,
+    /*public static ArrayList<String> getAllRecords(ColoHelper prismHelper, Path path,
                                                   String... notToMatch)
     throws Exception {
         Configuration conf = new Configuration();
@@ -575,7 +564,7 @@ public class HadoopUtil {
         }
 
         return records;
-    }
+    }*/
 
 
 }

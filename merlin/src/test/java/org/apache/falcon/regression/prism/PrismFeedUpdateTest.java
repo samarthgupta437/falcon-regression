@@ -98,7 +98,7 @@ public class PrismFeedUpdateTest {
             //generate data in both the colos ua1 and ua3
             String prefix = InstanceUtil.getFeedPrefix(feed01);
             Util.HDFSCleanup(ua1, prefix.substring(1));
-            Util.lateDataReplenish(ua1, 70, 0, 1, prefix);
+            Util.lateDataReplenish(ua1, 70, 1, prefix);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
 

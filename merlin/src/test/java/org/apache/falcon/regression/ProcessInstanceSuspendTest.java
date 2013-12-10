@@ -314,7 +314,7 @@ public class ProcessInstanceSuspendTest {
             ProcessInstancesResult r = prismHelper.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z");
-            InstanceUtil.validateSuccessOnlyStart(r, b, WorkflowStatus.SUSPENDED);
+            InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.SUSPENDED);
             r = prismHelper.getProcessHelper()
                     .getRunningInstance(URLS.INSTANCE_RUNNING,
                             Util.readEntityName(b.getProcessData()));

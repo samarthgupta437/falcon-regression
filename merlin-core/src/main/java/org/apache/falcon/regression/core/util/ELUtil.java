@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+@SuppressWarnings({"deprecation", "MagicConstant"})
 public class ELUtil {
 
     static Logger logger = Logger.getLogger(ELUtil.class);
@@ -73,7 +74,7 @@ public class ELUtil {
 
     }
 
-    public static String testWith(String processStart, String processend, String startInstance,
+    /*public static String testWith(String processStart, String processend, String startInstance,
                                   String endInstance,
                                   boolean isMatch)
     throws Exception {
@@ -101,7 +102,7 @@ public class ELUtil {
             bundle.deleteBundle(prismHelper);
         }
 
-    }
+    }*/
 
     public static String testWith(String startInstance, String endInstance, boolean isMatch)
     throws Exception {
@@ -307,10 +308,10 @@ public class ELUtil {
 
 
     public static Date getMinutes(String expression, Calendar time) {
-        int hr = 0;
-        int mins = 0;
-        int day = 0;
-        int month = 0;
+        int hr;
+        int mins;
+        int day;
+        int month;
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(time.getTime());

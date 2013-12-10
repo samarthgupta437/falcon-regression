@@ -91,13 +91,13 @@ public class PrismFeedReplicationUpdateTest {
             String postFix = "/US/ua2";
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 80, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua2, 80, 1, prefix, postFix);
 
 
             postFix = "/UK/ua3";
             prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 80, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ua3, 80, 1, prefix, postFix);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
 
@@ -252,12 +252,12 @@ public class PrismFeedReplicationUpdateTest {
             //generate data in both the colos ua1 and ua3
             String prefix = InstanceUtil.getFeedPrefix(feed01);
             Util.HDFSCleanup(ua1, prefix.substring(1));
-            Util.lateDataReplenish(ua1, 70, 0, 1, prefix);
+            Util.lateDataReplenish(ua1, 70, 1, prefix);
 
 
             prefix = InstanceUtil.getFeedPrefix(feed02);
             Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 70, 0, 1, prefix);
+            Util.lateDataReplenish(ua3, 70, 1, prefix);
 
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-50);

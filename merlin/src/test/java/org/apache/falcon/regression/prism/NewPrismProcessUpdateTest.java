@@ -2201,7 +2201,7 @@ public class NewPrismProcessUpdateTest {
 
         String prefix = b.getFeedDataPathPrefix();
         Util.HDFSCleanup(prismHelper, prefix.substring(1));
-        Util.lateDataReplenish(prismHelper, 60, 0, 1, prefix);
+        Util.lateDataReplenish(prismHelper, 60, 1, prefix);
         final String START_TIME = InstanceUtil.getTimeWrtSystemTime(-2);
         String endTime = InstanceUtil.getTimeWrtSystemTime(6);
         b.setProcessPeriodicity(1, TimeUnit.minutes);

@@ -20,21 +20,19 @@ package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.coordinator.COORDINATORAPP;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
+import org.apache.falcon.regression.core.generated.feed.Cluster;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Output;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
-import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -62,7 +60,6 @@ import org.testng.Assert;
 import org.testng.log4testng.Logger;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -74,11 +71,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +98,7 @@ public class InstanceUtil {
 
     public static ProcessInstancesResult sendRequestProcessInstance(String url) throws Exception {
 
-        HttpRequestBase request = null;
+        HttpRequestBase request;
         if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
                 Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
                 Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
@@ -114,17 +109,6 @@ public class InstanceUtil {
             request = new HttpGet();
         request.setHeader("Remote-User", "rishu");
         return hitUrl(url, request);
-    }
-
-    public static ProcessInstancesResult sendRequestProcessInstanceRerun(
-            String url) throws Exception {
-        HttpPost post = new HttpPost(url);
-        post.setHeader("Content-Type", "text/xml");
-        //post.setEntity(new StringEntity(postData));
-        post.setHeader("Remote-User", "rishu");
-
-        return hitUrl(url, post);
-
     }
 
     public static ProcessInstancesResult hitUrl(String url, HttpRequestBase request)
@@ -140,7 +124,7 @@ public class InstanceUtil {
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
         StringBuilder string_response = new StringBuilder();
-        for (String line = null; (line = reader.readLine()) != null; ) {
+        for (String line; (line = reader.readLine()) != null; ) {
             string_response.append(line).append("\n");
         }
         String jsonString = string_response.toString();
@@ -177,20 +161,10 @@ public class InstanceUtil {
         Util.print("r.getMessage(): " + r.getMessage());
         Util.print("r.getStatusCode(): " + r.getStatusCode());
         Util.print("r.getStatus() " + r.getStatus());
-        Util.print("r.getInstances()" + r.getInstances());
+        Util.print("r.getInstances()" + Arrays.toString(r.getInstances()));
         return r;
     }
 
-
-    public static String insertSquareBraces(String malformedJSON) {
-        String correctJSON =
-                malformedJSON.substring(0, malformedJSON.indexOf("\"instances\"") + 12) + "[" +
-                        malformedJSON.substring(malformedJSON.indexOf("{\"instance\":"),
-                                malformedJSON.lastIndexOf('}')) + "]" +
-                        "}";
-        Util.print("correctJSON " + correctJSON);
-        return correctJSON;
-    }
 
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
                                        ProcessInstancesResult.WorkflowStatus ws)
@@ -204,7 +178,7 @@ public class InstanceUtil {
         ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
         int runningCount = 0;
         //Util.print("function runningInstancesInResult: Start");
-        Util.print("pArray: " + pArray.toString());
+        Util.print("pArray: " + Arrays.toString(pArray));
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
             Util.print(
                     "pArray[" + instanceIndex + "]: " + pArray[instanceIndex].getStatus() + " , " +
@@ -217,7 +191,7 @@ public class InstanceUtil {
         return runningCount;
     }
 
-    public static String getProcessInstanceStart(Bundle b, String clusterName) throws Exception {
+    /*public static String getProcessInstanceStart(Bundle b, String clusterName) throws Exception {
 
         JAXBContext jc = JAXBContext
                 .newInstance(org.apache.falcon.regression.core.generated.process.Process.class);
@@ -228,7 +202,7 @@ public class InstanceUtil {
 
         return InstanceUtil.dateToOozieDate(
                 b.getClusterObjectFromProcess(clusterName).getValidity().getStart());
-    }
+    }*/
 
     public static void validateSuccessWOInstances(ProcessInstancesResult r) {
         Assert.assertTrue(r.getMessage().contains("is successful"));
@@ -240,7 +214,7 @@ public class InstanceUtil {
     public static void validateSuccessWithStatusCode(ProcessInstancesResult r,
                                                      int expectedErrorCode) {
         Assert.assertEquals(r.getStatusCode(), expectedErrorCode,
-                "Parameter start is empty shiuld have the response");
+                "Parameter start is empty should have the response");
     }
 
     public static void writeProcessElement(Bundle bundle, Process processElement) throws Exception {
@@ -281,19 +255,16 @@ public class InstanceUtil {
         int index = 0;
         Feed dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(0)));
         if (!dataElement.getName().contains(feedName)) {
-            dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
             index = 1;
         }
         bundle.getDataSets().set(index, sw.toString());
     }
 
     public static void validateSuccessOnlyStart(ProcessInstancesResult r,
-                                                Bundle b, ProcessInstancesResult.WorkflowStatus ws)
+                                                ProcessInstancesResult.WorkflowStatus ws)
     throws Exception {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(1, runningInstancesInResult(r, ws));
-        //Assert.assertEquals(r.getInstances()[0].instance, getProcessInstanceStart(b,clusterName));
-
     }
 
     public static void validateResponse(ProcessInstancesResult r, int totalInstances,
@@ -306,7 +277,7 @@ public class InstanceUtil {
         int actualWaitingInstances = 0;
         int actualKilledInstances = 0;
         ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
-        Util.print("pArray: " + pArray.toString());
+        Util.print("pArray: " + Arrays.toString(pArray));
         Assert.assertEquals(pArray.length, totalInstances);
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
             Util.print(
@@ -345,7 +316,7 @@ public class InstanceUtil {
         //BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
         //CoordinatorJob jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0)
         // .getId());
-        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID, "any");
+        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
         ArrayList<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
@@ -365,9 +336,7 @@ public class InstanceUtil {
     public static boolean isWorkflowRunning(String workflowID) throws Exception {
         CoordinatorAction wfJob = oozieClient.getCoordActionInfo(workflowID);
         WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getExternalId());
-        if (wa.getStatus().toString().equals("RUNNING"))
-            return true;
-        return false;
+        return wa.getStatus().toString().equals("RUNNING");
     }
 
     public static void areWorkflowsRunning(PrismHelper prismHelper, String ProcessName,
@@ -405,7 +374,7 @@ public class InstanceUtil {
     }
 
 
-    public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
+    /*public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
                                                                  String processName,
                                                                  ENTITY_TYPE entityType)
     throws Exception {
@@ -415,7 +384,7 @@ public class InstanceUtil {
         //String coordId = getDefaultCoordinatorFromProcessName(processName);
         Util.print("default coordID: " + coordId);
         return oozieClient.getCoordJobInfo(coordId).getActions();
-    }
+    }*/
 
     public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
                                                                  String processName,
@@ -436,12 +405,14 @@ public class InstanceUtil {
                 getLatestBundleID(coloHelper, processName, entityType));
     }
 
+/*
     public static String getLatestCoordinatorID(ColoHelper coloHelper, String processName,
                                                 ENTITY_TYPE entityType)
     throws Exception {
         return getDefaultCoordIDFromBundle(coloHelper,
                 getLatestBundleID(coloHelper, processName, entityType));
     }
+*/
 
 
     public static String getDefaultCoordIDFromBundle(ColoHelper coloHelper, String bundleId)
@@ -452,11 +423,11 @@ public class InstanceUtil {
         List<CoordinatorJob> coords = bundleInfo.getCoordinators();
         int min = 100000;
         String minString = "";
-        for (int i = 0; i < coords.size(); i++) {
-            String strID = coords.get(i).getId();
+        for (CoordinatorJob coord : coords) {
+            String strID = coord.getId();
             if (min > Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
                 min = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-                minString = coords.get(i).getId();
+                minString = coord.getId();
             }
         }
 
@@ -474,7 +445,7 @@ public class InstanceUtil {
         String bundleID =
                 Util.getCoordID(Util.getOozieJobStatus(prismHelper, processName, "NONE").get(0));
         ArrayList<WorkflowAction> was = new ArrayList<WorkflowAction>();
-        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID, "any");
+        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
         for (String jobID : workflows) {
 
@@ -484,7 +455,7 @@ public class InstanceUtil {
         return was;
     }
 
-    public static void validateNumberOfInstanceWithStatus(List<CoordinatorAction> list,
+    /*public static void validateNumberOfInstanceWithStatus(List<CoordinatorAction> list,
                                                           CoordinatorAction.Status status,
                                                           int noOfInstance) {
 
@@ -496,8 +467,9 @@ public class InstanceUtil {
         }
         Assert.assertEquals(actualInstance, noOfInstance,
                 "number if process instance with desired status did not match");
-    }
+    }*/
 
+/*
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
                                                          status,
@@ -505,14 +477,15 @@ public class InstanceUtil {
     throws Exception {
         List<CoordinatorAction> list = getProcessInstanceList(coloHelper, processName, entityType);
         int instanceCount = 0;
-        for (int i = 0; i < list.size(); i++) {
+        for (CoordinatorAction aList : list) {
 
-            if (list.get(i).getStatus().equals(status))
+            if (aList.getStatus().equals(status))
                 instanceCount++;
         }
         return instanceCount;
 
     }
+*/
 
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
@@ -521,9 +494,9 @@ public class InstanceUtil {
     throws Exception {
         List<CoordinatorAction> list = getProcessInstanceList(coloHelper, processName, entityType);
         int instanceCount = 0;
-        for (int i = 0; i < list.size(); i++) {
+        for (CoordinatorAction aList : list) {
 
-            if (list.get(i).getStatus().equals(status))
+            if (aList.getStatus().equals(status))
                 instanceCount++;
         }
         return instanceCount;
@@ -540,8 +513,7 @@ public class InstanceUtil {
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        String str = fmt.print(jodaTime);
-        return str;
+        return fmt.print(jodaTime);
     }
 
     public static String addMinsToTime(String time, int minutes) throws ParseException {
@@ -554,8 +526,7 @@ public class InstanceUtil {
         else
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
 
-        String str = fmt.print(jodaTime);
-        return str;
+        return fmt.print(jodaTime);
     }
 
 
@@ -579,7 +550,7 @@ public class InstanceUtil {
     }
 
 
-    public static String getBundleCoordinator(ColoHelper coloHelper, String bundleID)
+    /*public static String getBundleCoordinator(ColoHelper coloHelper, String bundleID)
     throws Exception {
         String defaultCoordId = getDefaultCoordIDFromBundle(coloHelper, bundleID);
         Util.print(
@@ -587,19 +558,18 @@ public class InstanceUtil {
                         "(bundleID): " +
                         defaultCoordId);
         return getCoordWorkFlowCoordinator(coloHelper, defaultCoordId);
-    }
+    }*/
 
     public static List<CoordinatorJob> getBundleCoordinators(String bundleID,
                                                              IEntityManagerHelper helper)
     throws Exception {
         XOozieClient localOozieClient = new XOozieClient(helper.getOozieURL());
         BundleJob bundleInfo = localOozieClient.getBundleJobInfo(bundleID);
-        List<CoordinatorJob> coords = bundleInfo.getCoordinators();
-        return coords;
+        return bundleInfo.getCoordinators();
     }
 
 
-    public static String getCoordWorkFlowCoordinator(ColoHelper colo, String defaultCoordId)
+    /*public static String getCoordWorkFlowCoordinator(ColoHelper colo, String defaultCoordId)
     throws Exception {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
@@ -616,45 +586,17 @@ public class InstanceUtil {
         BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(path)));
         String line;
         line = br.readLine();
-        String strFile = new String();
+        String strFile = "";
         while (line != null) {
             // logger.info(line);
-            if (line != null)
-                strFile = strFile + line.trim();
+            strFile = strFile + line.trim();
             line = br.readLine();
         }
 
         return strFile;
-    }
+    }*/
 
-    public static String getCoordWorkFlowCoordinator(PrismHelper prismHelper, String defaultCoordId)
-    throws Exception {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
-        Util.print("function getCoordWorkFlowCoordinator: " + defaultCoordId);
-        String coordHdfsPath = getCoordHdfsPath(prismHelper, defaultCoordId);
-        Path path = new Path(coordHdfsPath + "/coordinator.xml");
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
-        final FileSystem fs = FileSystem.get(conf);
-        //FSDataInputStream in = fs.open(path);
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(path)));
-        String line;
-        line = br.readLine();
-        String strFile = new String();
-        while (line != null) {
-            // logger.info(line);
-            if (line != null)
-                strFile = strFile + line.trim();
-            line = br.readLine();
-        }
-
-        return strFile;
-    }
-
-    public static String getCoordHdfsPath(String CoordId)
+    /*public static String getCoordHdfsPath(String CoordId)
     throws OozieClientException, InterruptedException {
         CoordinatorJob coordJob = oozieClient.getCoordJobInfo(CoordId);
 
@@ -678,11 +620,10 @@ public class InstanceUtil {
                 .substring(eventConf.indexOf("<name>oozie.coord.application.path</name><value>") +
                         "<name>oozie.coord.application.path</name><value>".length());
         int endIndex = eventConf.indexOf("</value>");
-        String hdfsPath = eventConf.substring(0, endIndex);
-        return hdfsPath;
-    }
+        return eventConf.substring(0, endIndex);
+    }*/
 
-    public static String getCoordHdfsPath(PrismHelper prismHelper, String CoordId)
+    /*public static String getCoordHdfsPath(PrismHelper prismHelper, String CoordId)
     throws OozieClientException, InterruptedException {
 
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
@@ -708,9 +649,8 @@ public class InstanceUtil {
                 .substring(eventConf.indexOf("<name>oozie.coord.application.path</name><value>") +
                         "<name>oozie.coord.application.path</name><value>".length());
         int endIndex = eventConf.indexOf("</value>");
-        String hdfsPath = eventConf.substring(0, endIndex);
-        return hdfsPath;
-    }
+        return eventConf.substring(0, endIndex);
+    }*/
 
 
     public static String getLatestBundleID(ColoHelper coloHelper, String processName,
@@ -720,11 +660,10 @@ public class InstanceUtil {
 
         String max = "";
         int maxID = -1;
-        for (int i = 0; i < bundleIds.size(); i++) {
-            String strID = bundleIds.get(i);
+        for (String strID : bundleIds) {
             if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
                 maxID = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-                max = bundleIds.get(i);
+                max = strID;
             }
         }
         return max;
@@ -737,11 +676,10 @@ public class InstanceUtil {
 
         String max = "";
         int maxID = -1;
-        for (int i = 0; i < bundleIds.size(); i++) {
-            String strID = bundleIds.get(i);
+        for (String strID : bundleIds) {
             if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
                 maxID = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-                max = bundleIds.get(i);
+                max = strID;
             }
         }
         return max;
@@ -754,24 +692,25 @@ public class InstanceUtil {
 
         String max = "";
         int maxID = -1;
-        for (int i = 0; i < bundleIds.size(); i++) {
-            String strID = bundleIds.get(i);
+        for (String strID : bundleIds) {
             if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
                 maxID = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-                max = bundleIds.get(i);
+                max = strID;
             }
         }
         return max;
     }
 
+/*
     public static String getLatestCoordinator(ColoHelper coloHelper, String processName,
                                               ENTITY_TYPE entityType)
     throws Exception {
         return getBundleCoordinator(coloHelper,
                 getLatestBundleID(coloHelper, processName, entityType));
     }
+*/
 
-    public static String getProcessWorkFlowPath(ColoHelper coloHelper, String processName,
+    /*public static String getProcessWorkFlowPath(ColoHelper coloHelper, String processName,
                                                 ENTITY_TYPE entityType)
     throws Exception {
         String coordinator = getLatestCoordinator(coloHelper, processName, entityType);
@@ -782,69 +721,15 @@ public class InstanceUtil {
                         "<property><name>oozie.libpath</name><value>${nameNode}".length());
         return coordinator.substring(0, coordinator.indexOf("/lib</value>"));
 
-    }
+    }*/
 
-    //	public static COORDINATORAPP getLatestCoordinatorApp(String processName,
-    // String entityType) throws Exception {
-    //		String bundleID = getLatestBundleID(processName,entityType);
-    //		Util.print("fuction getLatestCoordinatorApp: bundleID = getLatestBundleID(processName,
-    // entityType) "+bundleID);
-    //		String coordStr = getBundleCoordinator(bundleID);
-    //		JAXBContext jc=JAXBContext.newInstance(COORDINATORAPP.class);
-    //		Unmarshaller u=jc.createUnmarshaller();
-    //
-    //		@SuppressWarnings("unchecked")
-    //		COORDINATORAPP coord=((JAXBElement<COORDINATORAPP>)u.unmarshal(new StringReader
-    // (coordStr))).getValue();
-    //
-    //		logger.info(coord.getName());
-    //		return coord;
-    //	}
-
-    public static COORDINATORAPP getLatestCoordinatorApp(ColoHelper coloHelper, String processName,
-                                                         ENTITY_TYPE entityType)
-    throws Exception {
-        String bundleID = getLatestBundleID(coloHelper, processName, entityType);
-        Util.print(
-                "fuction getLatestCoordinatorApp: bundleID = getLatestBundleID(processName," +
-                        "entityType) " +
-                        bundleID);
-        String coordStr = getBundleCoordinator(coloHelper, bundleID);
-        JAXBContext jc = JAXBContext.newInstance(COORDINATORAPP.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        @SuppressWarnings("unchecked")
-        COORDINATORAPP coord =
-                ((JAXBElement<COORDINATORAPP>) u.unmarshal(new StringReader(coordStr))).getValue();
-
-        logger.info(coord.getName());
-        return coord;
-    }
-
-    public static COORDINATORAPP getCoordinatorApp(
-            ColoHelper coloHelper, String entityName, String entityType, int coordNumber)
-    throws Exception {
-        String bundleID = getSequenceBundleID(entityName, entityType, coordNumber);
-        String coordStr = getBundleCoordinator(coloHelper, bundleID);
-        JAXBContext jc = JAXBContext.newInstance(COORDINATORAPP.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        @SuppressWarnings("unchecked")
-        COORDINATORAPP coord =
-                ((JAXBElement<COORDINATORAPP>) u.unmarshal(new StringReader(coordStr))).getValue();
-
-        logger.info(coord.getName());
-        return coord;
-    }
-
-    public static String getSequenceBundleID(String entityName,
+    /*public static String getSequenceBundleID(String entityName,
                                              String entityType, int coordNumber) throws Exception {
 
         List<String> bundleIds = Util.getBundles(entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
-        String bundleID = "";
-        for (int i = 0; i < bundleIds.size(); i++) {
-            String strID = bundleIds.get(i);
+        String bundleID;
+        for (String strID : bundleIds) {
             Util.print("getSequenceBundleID: " + strID);
             int key = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
             bundleMap.put(key, strID);
@@ -862,7 +747,7 @@ public class InstanceUtil {
             i++;
         }
         return null;
-    }
+    }*/
 
     public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber)
@@ -870,9 +755,8 @@ public class InstanceUtil {
 
         List<String> bundleIds = Util.getBundles(prismHelper, entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
-        String bundleID = "";
-        for (int i = 0; i < bundleIds.size(); i++) {
-            String strID = bundleIds.get(i);
+        String bundleID;
+        for (String strID : bundleIds) {
             Util.print("getSequenceBundleID: " + strID);
             int key = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
             bundleMap.put(key, strID);
@@ -892,98 +776,14 @@ public class InstanceUtil {
         return null;
     }
 
-    public static String getProcessInstanceNominalTime(ColoHelper coloHelper, String entityName,
-                                                       int bundleNumber,
-                                                       int instanceNumber, String entityType)
-    throws Exception {
-
-        String bundleID = getSequenceBundleID(entityName, entityType, bundleNumber);
-        String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        return getNominalTimeOfInstance(coordID, instanceNumber);
-    }
-
-    public static String getNominalTimeOfInstance(String coordID, int instanceNumber)
-    throws Exception {
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        List<CoordinatorAction> instanceList = coordInfo.getActions();
-        return dateToOozieDate(instanceList.get(instanceNumber).getNominalTime());
-
-    }
-
     public static String dateToOozieDate(Date dt) throws ParseException {
 
-		/*DateFormat formatter = Util.getIvoryDateFormat();
-        Calendar cal = Calendar.getInstance();
-		cal.setTime(dt);
-		TimeZone z = cal.getTimeZone();
-		int offset = z.getRawOffset();
-		int offsetHrs = offset / 1000 / 60 / 60;
-		int offsetMins = offset / 1000 / 60 % 60;
-		cal.add(Calendar.HOUR_OF_DAY, (-offsetHrs));
-		cal.add(Calendar.MINUTE, (-offsetMins));		
-		return formatter.format(cal.getTime());*/
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
         Util.print("jadaSystemTime: " + jodaTime);
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        String str = fmt.print(jodaTime);
-        return str;
+        return fmt.print(jodaTime);
     }
 
-
-    public static ArrayList<String> getCommonInstancesInBundles(ColoHelper coloHelper,
-                                                                String BundleID1,
-                                                                String BundleID2) throws Exception {
-        ArrayList<String> startInstanceList1 =
-                getBundleInsatnceStartTimeList(coloHelper, BundleID1);
-        ArrayList<String> startInstanceList2 =
-                getBundleInsatnceStartTimeList(coloHelper, BundleID2);
-        startInstanceList1.retainAll(startInstanceList2);
-        return startInstanceList1;
-
-
-    }
-
-
-    public static ArrayList<String> getBundleInsatnceStartTimeList(
-            ColoHelper coloHelper, String bundleID) throws Exception {
-
-        return getCoordInsatnceStartTimeList(
-                InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID));
-
-    }
-
-
-    public static ArrayList<String> getCoordInsatnceStartTimeList(
-            String coordId) throws Exception {
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordId);
-        ArrayList<String> list = new ArrayList<String>();
-        Util.print("coordID: " + coordId);
-        List<CoordinatorAction> actionList = coordInfo.getActions();
-
-        for (int i = 0; i < actionList.size(); i++) {
-            Util.print("actionTime: " +
-                    InstanceUtil.dateToOozieDate(actionList.get(i).getNominalTime()));
-            list.add(InstanceUtil.dateToOozieDate(actionList.get(i).getCreatedTime()));
-        }
-        return list;
-    }
-
-    public static ArrayList<String> getCoordInsatnceStartTimeList(
-            PrismHelper prismHelper, String coordId) throws Exception {
-
-        XOozieClient oozieClient = new XOozieClient(prismHelper.getProcessHelper().getOozieURL());
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordId);
-        ArrayList<String> list = new ArrayList<String>();
-        Util.print("coordID: " + coordId);
-        List<CoordinatorAction> actionList = coordInfo.getActions();
-
-        for (int i = 0; i < actionList.size(); i++) {
-            Util.print("actionTime: " +
-                    InstanceUtil.dateToOozieDate(actionList.get(i).getNominalTime()));
-            list.add(InstanceUtil.dateToOozieDate(actionList.get(i).getCreatedTime()));
-        }
-        return list;
-    }
 
     public static CoordinatorAction.Status getInstanceStatus(ColoHelper coloHelper,
                                                              String processName,
@@ -998,122 +798,12 @@ public class InstanceUtil {
 
     }
 
-    public static String getLateCoordIDFromProcess(String processName, int bundleNumber)
-    throws Exception {
-        String bundleID = InstanceUtil.getSequenceBundleID(processName, "PROCESS", bundleNumber);
-        return InstanceUtil.getLateCoordFromBundle(bundleID);
-    }
-
-    public static String getLateCoordFromBundle(String bundleID) throws Exception {
-        BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleID);
-        List<CoordinatorJob> coords = bundleInfo.getCoordinators();
-        int max = -1;
-        String maxString = "";
-        for (int i = 0; i < coords.size(); i++) {
-            String strID = coords.get(i).getId();
-            if (max < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
-                max = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-                maxString = coords.get(i).getId();
-            }
-        }
-        return maxString;
-    }
-
-    public static COORDINATORAPP getLateCoordinatorApp(ColoHelper colo,
-                                                       String entityName, int coordNumber)
-    throws Exception {
-        String coordStr = getCoordWorkFlowCoordinator(colo,
-                getLateCoordIDFromProcess(entityName, coordNumber));
-        JAXBContext jc = JAXBContext.newInstance(COORDINATORAPP.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        @SuppressWarnings("unchecked")
-        COORDINATORAPP coord =
-                ((JAXBElement<COORDINATORAPP>) u.unmarshal(new StringReader(coordStr))).getValue();
-
-        logger.info(coord.getName());
-        return coord;
-    }
-
-    public static ArrayList<String> getInputFoldersForInstance(ColoHelper coloHelper,
-                                                               String processName,
-                                                               int bundleNumber,
-                                                               int instanceNumber, boolean isGated)
-    throws Exception {
-
-        String bundleID = InstanceUtil
-                .getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
-        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-
-        return InstanceUtil.getInputFolderPathFromInstanceRunConf(
-                oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId())
-                        .getConf(), isGated);
-
-    }
-
-    public static ArrayList<String> getInputFolderPathFromInstanceRunConf(
-            String runConf, boolean isGated) {
-        String conf = "";
-
-
-        if (runConf.indexOf("input</name>") != -1)
-            conf = runConf.substring(runConf.indexOf("input</name>") + 12);
-        else if (runConf.indexOf("ivoryInPaths</name>") != -1)
-            conf = runConf.substring(runConf.indexOf("ivoryInPaths</name>") + 19);
-        else {
-            Util.print("cound not find any input path in runTimeConf");
-            return null;
-        }
-
-
-        //	Util.print("conf1: "+conf);
-
-
-        conf = conf.substring(conf.indexOf("<value>") + 7);
-        //	Util.print("conf2: "+conf);
-
-        conf = conf.substring(0, conf.indexOf("</value>"));
-        Util.print("conf3: " + conf);
-
-        //	return new ArrayList<String>(Arrays.asList(conf.split(",")));
-
-        ArrayList<String> inputWise = new ArrayList<String>(Arrays.asList(conf.split("#")));
-
-        ArrayList<String> returnObject = new ArrayList<String>();
-
-		/*	int size = 0;
-        if(isGated)
-			size = inputWise.size()-1;
-		else
-			size = inputWise.size();*/
-
-        int size = inputWise.size();
-
-        //inputWise.get(0).replaceAll("*/","");
-
-        for (int i = 0; i < size; i++) {
-            returnObject.addAll(Arrays.asList(inputWise.get(i).split(",")));
-        }
-
-
-        for (int i = 0; i < size; i++) {
-            if (returnObject.get(i).contains("*"))
-                returnObject.set(i,
-                        returnObject.get(i).substring(0, returnObject.get(i).indexOf("*") - 1));
-        }
-
-
-        return returnObject;
-    }
-
     public static void putDataInFolders(ColoHelper colo,
                                         final ArrayList<String> inputFoldersForInstance)
     throws Exception {
 
-        for (int i = 0; i < inputFoldersForInstance.size(); i++)
-            putDataInFolder(colo, inputFoldersForInstance.get(i));
+        for (String anInputFoldersForInstance : inputFoldersForInstance)
+            putDataInFolder(colo, anInputFoldersForInstance);
 
     }
 
@@ -1121,8 +811,8 @@ public class InstanceUtil {
                                         final ArrayList<String> inputFoldersForInstance,
                                         String type) throws Exception {
 
-        for (int i = 0; i < inputFoldersForInstance.size(); i++)
-            putDataInFolder(colo, inputFoldersForInstance.get(i), type);
+        for (String anInputFoldersForInstance : inputFoldersForInstance)
+            putDataInFolder(colo, anInputFoldersForInstance, type);
 
     }
 
@@ -1143,6 +833,7 @@ public class InstanceUtil {
 
         File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
         //System.out.println("files: "+files);
+        assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
                 // System.out.println("inside if block");
@@ -1171,7 +862,7 @@ public class InstanceUtil {
         Configuration conf = new Configuration();
         conf.set("fs.default.name",
                 "hdfs://" + Util.readPropertiesFile(colo.getEnvFileName(), "hadoop_url"));
-        File[] files = null;
+        File[] files;
 
         final FileSystem fs = FileSystem.get(conf);
 
@@ -1182,6 +873,7 @@ public class InstanceUtil {
         else
             files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
 
+        assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
@@ -1200,6 +892,7 @@ public class InstanceUtil {
 
     }
 
+/*
     public static CoordinatorAction.Status getLateInstanceStatus(String processName,
                                                                  int bundleNumber,
                                                                  int instanceNumber)
@@ -1210,6 +903,7 @@ public class InstanceUtil {
         return coordInfo.getActions().get(instanceNumber).getStatus();
 
     }
+*/
 
     public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord)
     throws Exception {
@@ -1233,41 +927,11 @@ public class InstanceUtil {
         return fmt.parseDateTime(time);
     }
 
-    public static DateTime stringToDate(String time, String format) throws ParseException {
+    /*public static DateTime stringToDate(String time, String format) throws ParseException {
         DateTimeFormatter fmt = DateTimeFormat.forPattern(format);
         fmt = fmt.withZoneUTC();
         return fmt.parseDateTime(time);
-    }
-
-    public static String dateToOozieDateWOOffSet(Date startTime) {
-
-        DateFormat formatter = Util.getIvoryDateFormat();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(startTime);
-        return formatter.format(cal.getTime());
-    }
-
-    public static long diffbw2time(String time1, String time2) throws ParseException {
-        DateFormat formatter = Util.getIvoryDateFormat();
-        Date dt1 = formatter.parse(time1);
-        Date dt2 = formatter.parse(time2);
-
-        Calendar calendar1 = Calendar.getInstance();
-        Calendar calendar2 = Calendar.getInstance();
-        calendar1.setTime(dt1);
-        calendar2.setTime(dt2);
-        long milliseconds1 = calendar1.getTimeInMillis();
-        long milliseconds2 = calendar2.getTimeInMillis();
-        long diff = milliseconds2 - milliseconds1;
-        long diffMinutes = diff / (60 * 1000);
-
-        return diffMinutes;
-
-    }
-
-    public static String parseCLIresponse(String cliKill) {
-        return cliKill.replaceAll("\n", " ");
-    }
+    }*/
 
 
     public static void createHDFSFolders(PrismHelper helper, ArrayList<String> folderList)
@@ -1316,12 +980,12 @@ public class InstanceUtil {
 
                 @Override
                 public Boolean run() throws Exception {
-                    for (int i = 0; i < fileName.length; i++) {
-                        logger.info("copying  " + fileName[i] + " to " + folder);
-                        if (fileName[i].equals("_SUCCESS"))
+                    for (String aFileName : fileName) {
+                        logger.info("copying  " + aFileName + " to " + folder);
+                        if (aFileName.equals("_SUCCESS"))
                             fs.mkdirs(new Path(folder + "/_SUCCESS"));
                         else
-                            fs.copyFromLocalFile(new Path(fileName[i]), new Path(folder));
+                            fs.copyFromLocalFile(new Path(aFileName), new Path(folder));
                     }
                     return true;
 
@@ -1330,7 +994,7 @@ public class InstanceUtil {
         }
     }
 
-    public static ArrayList<String> getMissingDependencyForInstance(ColoHelper colo,
+    /*public static ArrayList<String> getMissingDependencyForInstance(ColoHelper colo,
                                                                     String processName,
                                                                     int bundleNumber,
                                                                     int instanceNumber)
@@ -1349,9 +1013,9 @@ public class InstanceUtil {
         String[] missingDependencies =
                 actions.get(instanceNumber).getMissingDependencies().split("#");
         return new ArrayList<String>(Arrays.asList(missingDependencies));
-    }
+    }*/
 
-    public static ArrayList<String> getFolderlistFromDependencyList(
+    /*public static ArrayList<String> getFolderlistFromDependencyList(
             ArrayList<String> missingDependencyList) {
 
         for (int i = 0; i < missingDependencyList.size(); i++) {
@@ -1361,7 +1025,7 @@ public class InstanceUtil {
         }
 
         return missingDependencyList;
-    }
+    }*/
 
     /*	public static void createDataWithinDatesAndPrefix(DateTime startDateJoda,
             DateTime endDateJoda, String prefix,int interval) throws Exception {
@@ -1391,13 +1055,13 @@ public class InstanceUtil {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) dataFolder.add(dataDate);
 
         InstanceUtil.putDataInFolders(colo, dataFolder);
 
     }
 
+/*
     public static void verifyStatusLog(ProcessInstancesResult r) throws Exception {
 
         for (ProcessInstancesResult.ProcessInstance instance : r.getInstances()) {
@@ -1428,48 +1092,19 @@ public class InstanceUtil {
             }
         }
 
-		/*ProcessInstance[] pArray = r.getInstances();
+		*/
+/*ProcessInstance[] pArray = r.getInstances();
         Util.print("pArray: "+pArray.toString());
 
 		for(int instanceIndex = 0 ; instanceIndex < pArray.length; instanceIndex++)
 		{
 			Util.print("pArray["+instanceIndex+"]: "+pArray[instanceIndex].getStatus()+" ,
 			"+pArray[instanceIndex].getInstance()+ "  "+pArray[instanceIndex].get);
-		}*/
+		}*//*
+
 
     }
-
-    public static boolean isFilePresentInHDFS(final String parentLocation,
-                                              final String fileName) throws Exception {
-
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", hdfs_url);
-
-        //	final String newParentLocation = "hdfs://mk-qa-63"+parentLocation.substring
-        // (parentLocation.indexOf
-        // ("/data"));
-        final String newParentLocation =
-                parentLocation.substring(parentLocation.indexOf("/examples"));
-
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("rishu");
-
-        user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-            @Override
-            public Boolean run() throws Exception {
-                Path p = new Path(newParentLocation + "/" + fileName);
-                boolean status = fs.exists(p);
-                return status;
-
-            }
-
-
-        });
-        return true;
-    }
+*/
 
     public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
             Bundle bundle)
@@ -1477,11 +1112,9 @@ public class InstanceUtil {
         JAXBContext jc = JAXBContext
                 .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
-        org.apache.falcon.regression.core.generated.cluster.Cluster clusterElement =
-                (org.apache.falcon.regression.core.generated.cluster.Cluster) u
-                        .unmarshal((new StringReader(bundle.getClusters().get(0))));
 
-        return clusterElement;
+        return (org.apache.falcon.regression.core.generated.cluster.Cluster) u
+                .unmarshal((new StringReader(bundle.getClusters().get(0))));
     }
 
     public static void writeClusterElement(Bundle bundle,
@@ -1651,27 +1284,27 @@ public class InstanceUtil {
         return sw.toString();
     }
 
-    public static ArrayList<String> getReplicationCoordName(String bundlID,
+    public static ArrayList<String> getReplicationCoordName(String bundleID,
                                                             IEntityManagerHelper helper)
     throws Exception {
-        List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
+        List<CoordinatorJob> cords = InstanceUtil.getBundleCoordinators(bundleID, helper);
 
-        ArrayList<String> ReplicationCoordName = new ArrayList<String>();
-        for (int i = 0; i < coords.size(); i++) {
-            if (coords.get(i).getAppName().contains("FEED_REPLICATION"))
-                ReplicationCoordName.add(coords.get(i).getAppName());
+        ArrayList<String> ReplicationCordName = new ArrayList<String>();
+        for (CoordinatorJob cord : cords) {
+            if (cord.getAppName().contains("FEED_REPLICATION"))
+                ReplicationCordName.add(cord.getAppName());
         }
 
-        return ReplicationCoordName;
+        return ReplicationCordName;
     }
 
     public static String getRetentionCoordName(String bundlID,
                                                IEntityManagerHelper helper) throws Exception {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
         String RetentionCoordName = null;
-        for (int i = 0; i < coords.size(); i++) {
-            if (coords.get(i).getAppName().contains("FEED_RETENTION"))
-                return coords.get(i).getAppName();
+        for (CoordinatorJob coord : coords) {
+            if (coord.getAppName().contains("FEED_RETENTION"))
+                return coord.getAppName();
         }
 
         return RetentionCoordName;
@@ -1682,9 +1315,9 @@ public class InstanceUtil {
     throws Exception {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
         ArrayList<String> ReplicationCoordID = new ArrayList<String>();
-        for (int i = 0; i < coords.size(); i++) {
-            if (coords.get(i).getAppName().contains("FEED_REPLICATION"))
-                ReplicationCoordID.add(coords.get(i).getId());
+        for (CoordinatorJob coord : coords) {
+            if (coord.getAppName().contains("FEED_REPLICATION"))
+                ReplicationCoordID.add(coord.getId());
         }
 
         return ReplicationCoordID;
@@ -1694,9 +1327,9 @@ public class InstanceUtil {
                                              IEntityManagerHelper helper) throws Exception {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
         String RetentionCoordID = null;
-        for (int i = 0; i < coords.size(); i++) {
-            if (coords.get(i).getAppName().contains("FEED_RETENTION"))
-                return coords.get(i).getId();
+        for (CoordinatorJob coord : coords) {
+            if (coord.getAppName().contains("FEED_RETENTION"))
+                return coord.getId();
         }
 
         return RetentionCoordID;
@@ -1709,25 +1342,25 @@ public class InstanceUtil {
 
         List<org.apache.falcon.regression.core.generated.feed.Cluster> sourceClusters =
                 new ArrayList<org.apache.falcon.regression.core.generated.feed.Cluster>();
-        List<org.apache.falcon.regression.core.generated.feed.Cluster> targetClusters =
-                new ArrayList<org.apache.falcon.regression.core.generated.feed.Cluster>();
+        //List<org.apache.falcon.regression.core.generated.feed.Cluster> targetClusters =
+        //        new ArrayList<org.apache.falcon.regression.core.generated.feed.Cluster>();
 
 
         List<org.apache.falcon.regression.core.generated.feed.Cluster> clusterList =
                 f.getClusters().getCluster();
 
-        String baseFeedPath = new String();
+        String baseFeedPath = "";
 
         for (int i = 0; i < f.getLocations().getLocation().size(); i++) {
-            if (f.getLocations().getLocation().get(i).getType().equals("data"))
+            if (f.getLocations().getLocation().get(i).getType().toString().equals("data"))
                 baseFeedPath = f.getLocations().getLocation().get(i).getPath();
         }
 
-        for (int i = 0; i < clusterList.size(); i++) {
-            if (clusterList.get(i).getType().equals(ClusterType.SOURCE))
-                sourceClusters.add(clusterList.get(i));
-            else
-                targetClusters.add(clusterList.get(i));
+        for (Cluster aClusterList : clusterList) {
+            if (aClusterList.getType().equals(ClusterType.SOURCE))
+                sourceClusters.add(aClusterList);
+            //else
+            //    targetClusters.add(aClusterList);
         }
 
         if (sourceClusters.size() < 1)
@@ -1739,10 +1372,10 @@ public class InstanceUtil {
             Util.print("single cluster remote hadoop ls result: " + result);
         } else {
 
-            for (int i = 0; i < sourceClusters.size(); i++) {
+            for (Cluster sourceCluster : sourceClusters) {
                 ArrayList<String> result = Util.runRemoteScript(helper.getQaHost(),
                         helper.getUsername(), helper.getPassword(),
-                        "hadoop fs -ls " + baseFeedPath + sourceClusters.get(i).getPartition(),
+                        "hadoop fs -ls " + baseFeedPath + sourceCluster.getPartition(),
                         helper.getIdentityFile());
                 Util.print(" multiple cluster remote hadoop ls result: " + result);
 
@@ -1755,8 +1388,8 @@ public class InstanceUtil {
                                         final ArrayList<String> inputFoldersForInstance)
     throws Exception {
 
-        for (int i = 0; i < inputFoldersForInstance.size(); i++)
-            putDataInFolder(helper, inputFoldersForInstance.get(i));
+        for (String anInputFoldersForInstance : inputFoldersForInstance)
+            putDataInFolder(helper, anInputFoldersForInstance);
 
     }
 
@@ -1775,6 +1408,7 @@ public class InstanceUtil {
             fs.mkdirs(new Path(remoteLocation));
 
         File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
+        assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
@@ -1855,9 +1489,8 @@ public class InstanceUtil {
     public static Process getProcessElement(String process) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(process)));
 
-        return processElement;
+        return (Process) u.unmarshal((new StringReader(process)));
     }
 
     public static String addProcessInputFeed(String process, String feed,
@@ -1896,7 +1529,7 @@ public class InstanceUtil {
 
     public static ArrayList<String> getReplicationFolderFromInstanceRunConf(
             String runConf) {
-        String conf = "";
+        String conf;
         conf = runConf.substring(runConf.indexOf("ivoryInPaths</name>") + 19);
         //	Util.print("conf1: "+conf);
 
@@ -1925,8 +1558,8 @@ public class InstanceUtil {
                                             int lateDataFolderNumber)
     throws Exception {
 
-        for (int i = 0; i < inputFolderList.size(); i++)
-            putLateDataInFolder(helper, inputFolderList.get(i), lateDataFolderNumber);
+        for (String anInputFolderList : inputFolderList)
+            putLateDataInFolder(helper, anInputFolderList, lateDataFolderNumber);
     }
 
     public static void putLateDataInFolder(ColoHelper helper, final String remoteLocation,
@@ -1947,6 +1580,7 @@ public class InstanceUtil {
             files = new File("src/test/resources/OozieExampleInputData/2ndLateData").listFiles();
         }
 
+        assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
@@ -1971,12 +1605,12 @@ public class InstanceUtil {
 
     }
 
-    public static String setFeedRetention(String feed, Retention r) throws Exception {
+    /*public static String setFeedRetention(String feed, Retention r) throws Exception {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
         feedElement.getClusters().getCluster().get(0).setRetention(r);
         return InstanceUtil.feedElementToString(feedElement);
 
-    }
+    }*/
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
                                             String feedName, String coordType) throws Exception {
@@ -1989,13 +1623,13 @@ public class InstanceUtil {
 
         List<String> bundleID = Util.getBundles(feedName, "FEED", helper);
 
-        for (int i = 0; i < bundleID.size(); i++) {
+        for (String aBundleID : bundleID) {
 
             List<CoordinatorJob> coords =
-                    InstanceUtil.getBundleCoordinators(bundleID.get(i), helper);
+                    InstanceUtil.getBundleCoordinators(aBundleID, helper);
 
-            for (int j = 0; j < coords.size(); j++) {
-                if (coords.get(j).getAppName().contains(coordType))
+            for (CoordinatorJob coord : coords) {
+                if (coord.getAppName().contains(coordType))
                     numberOfCoord++;
             }
         }
@@ -2037,7 +1671,7 @@ public class InstanceUtil {
         return InstanceUtil.processToString(processElement);
     }
 
-    public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
+    /*public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
             ColoHelper coloHelper,
             String processName,
             ENTITY_TYPE entityType)
@@ -2070,7 +1704,7 @@ public class InstanceUtil {
         Util.print("default coordID: " + coordId);
 
         return list;
-    }
+    }*/
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
             ColoHelper coloHelper, String processName, String entityType)
@@ -2150,12 +1784,13 @@ public class InstanceUtil {
         return conf;
     }
 
-    public static String dateToOozieDate(DateTime jodaTime) throws ParseException {
+    /*public static String dateToOozieDate(DateTime jodaTime) throws ParseException {
         Util.print("jadaSystemTime: " + jodaTime);
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         return fmt.print(jodaTime);
-    }
+    }*/
 
+/*
     public static String getOutputFolderForProcessInstance(ColoHelper coloHelper,
                                                            String processName,
                                                            int instanceNumber)
@@ -2172,8 +1807,9 @@ public class InstanceUtil {
                 oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId())
                         .getConf());
     }
+*/
 
-    private static String getOutputFolderFromImstanceRunConf(String runConf) {
+    /*private static String getOutputFolderFromImstanceRunConf(String runConf) {
         String conf = runConf.substring(runConf.indexOf("output</name>") + 13);
         //	Util.print("conf1: "+conf);
 
@@ -2183,7 +1819,7 @@ public class InstanceUtil {
         conf = conf.substring(0, conf.indexOf("</value>"));
 
         return conf;
-    }
+    }*/
 
 
     public static String ClusterElementToString(
@@ -2198,7 +1834,7 @@ public class InstanceUtil {
         return sw.toString();
     }
 
-    public static Status getProcessCoordinatorStatus(ColoHelper coloHelper,
+    /*public static Status getProcessCoordinatorStatus(ColoHelper coloHelper,
                                                      String processName, int bundleNumber)
     throws Exception {
 
@@ -2208,28 +1844,7 @@ public class InstanceUtil {
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
         return coordInfo.getStatus();
-    }
-
-    public static String setProcessClusterName(String processData,
-                                               List<String> clusters) throws Exception {
-
-
-        Process p = InstanceUtil.getProcessElement(processData);
-
-        for (int i = 0; i < p.getClusters().getCluster().size(); i++) {
-            p.getClusters().getCluster().get(i)
-                    .setName(InstanceUtil.getClusterName(clusters.get(i)));
-        }
-
-        return InstanceUtil.processToString(p);
-    }
-
-    private static String getClusterName(String clusterData) throws Exception {
-
-        org.apache.falcon.regression.core.generated.cluster.Cluster c =
-                InstanceUtil.getClusterElement(clusterData);
-        return c.getName();
-    }
+    }*/
 
     public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
             String clusterData)
@@ -2237,11 +1852,9 @@ public class InstanceUtil {
         JAXBContext jc = JAXBContext
                 .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
-        org.apache.falcon.regression.core.generated.cluster.Cluster clusterElement =
-                (org.apache.falcon.regression.core.generated.cluster.Cluster) u
-                        .unmarshal((new StringReader(clusterData)));
 
-        return clusterElement;
+        return (org.apache.falcon.regression.core.generated.cluster.Cluster) u
+                .unmarshal((new StringReader(clusterData)));
     }
 
     @Deprecated
@@ -2260,9 +1873,9 @@ public class InstanceUtil {
             ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
                     .getStatusAllInstanceStatusForProcess(coloHelper, processName);
             int instanceWithStatus = 0;
-            for (int statusCount = 0; statusCount < statusList.size(); statusCount++) {
+            for (CoordinatorAction.Status aStatusList : statusList) {
 
-                if (statusList.get(statusCount).equals(expectedStatus))
+                if (aStatusList.equals(expectedStatus))
                     instanceWithStatus++;
 
             }
@@ -2291,9 +1904,9 @@ public class InstanceUtil {
                     .getStatusAllInstance(coloHelper, entityName, entityType);
 
             int instanceWithStatus = 0;
-            for (int statusCount = 0; statusCount < statusList.size(); statusCount++) {
+            for (CoordinatorAction.Status aStatusList : statusList) {
 
-                if (statusList.get(statusCount).equals(expectedStatus))
+                if (aStatusList.equals(expectedStatus))
                     instanceWithStatus++;
 
             }
@@ -2308,7 +1921,6 @@ public class InstanceUtil {
         Assert.assertTrue(false, "expceted state of instance was never reached");
     }
 
-    @Deprecated
     private static ArrayList<org.apache.oozie.client.CoordinatorAction.Status>
     getStatusAllInstanceStatusForProcess(
             ColoHelper coloHelper, String processName) throws Exception {
@@ -2337,7 +1949,7 @@ public class InstanceUtil {
         return statusList;
     }
 
-    public static ArrayList<Path> getAllOutputLocationForProcess(
+    /*public static ArrayList<Path> getAllOutputLocationForProcess(
             ColoHelper coloHelper, String processName) throws Exception {
 
         ArrayList<Path> returnObject = new ArrayList<Path>();
@@ -2350,9 +1962,8 @@ public class InstanceUtil {
 
         return returnObject;
 
-    }
+    }*/
 
-    @Deprecated
     private static CoordinatorJob getCoordJobForProcess(
             ColoHelper coloHelper, String processName) throws Exception {
 
@@ -2368,7 +1979,7 @@ public class InstanceUtil {
 
         String bundleID = InstanceUtil.getLatestBundleID(coloHelper, processName, entityType);
         //instanceUtil.getSequenceBundleID(coloHelper,processName,entityType, 0);
-        String coordID = new String();
+        String coordID;
         if (entityType.equals(ENTITY_TYPE.PROCESS))
             coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
         else
@@ -2387,7 +1998,7 @@ public class InstanceUtil {
 
     }
 
-    public static ArrayList<Path> getAllOutputLocationForProcess(
+    /*public static ArrayList<Path> getAllOutputLocationForProcess(
             ColoHelper coloHelper, Bundle bundle) throws Exception {
 
         List<Output> outputs = bundle.getAllOutputs();
@@ -2408,9 +2019,9 @@ public class InstanceUtil {
         return returnObject;
 
 
-    }
+    }*/
 
-    private static ArrayList<String> getValueFromConf(ColoHelper coloHelper,
+    /*private static ArrayList<String> getValueFromConf(ColoHelper coloHelper,
                                                       String processName, String valueFor,
                                                       int count) throws Exception {
         String bundleID =
@@ -2424,11 +2035,11 @@ public class InstanceUtil {
         return InstanceUtil.getValueFromInstanceRunConf(
                 oozieClient.getJobInfo(coordInfo.getActions().get(count).getExternalId()).getConf(),
                 valueFor);
-    }
+    }*/
 
-    private static ArrayList<String> getValueFromInstanceRunConf(String runConf,
+    /*private static ArrayList<String> getValueFromInstanceRunConf(String runConf,
                                                                  String valueFor) {
-        String conf = "";
+        String conf;
         conf = runConf.substring(runConf.indexOf(valueFor + "</name>") + 7 + valueFor.length());
         //	Util.print("conf1: "+conf);
 
@@ -2438,9 +2049,9 @@ public class InstanceUtil {
         conf = conf.substring(0, conf.indexOf("</value>"));
 
         return splitRunConfValue(conf);
-    }
+    }*/
 
-    public static ArrayList<String> splitRunConfValue(String value) {
+    /*public static ArrayList<String> splitRunConfValue(String value) {
         ArrayList<String> inputWise = new ArrayList<String>(Arrays.asList(value.split("#")));
 
         ArrayList<String> returnObject = new ArrayList<String>();
@@ -2448,8 +2059,8 @@ public class InstanceUtil {
 
         int size = inputWise.size();
 
-        for (int i = 0; i < size; i++) {
-            returnObject.addAll(Arrays.asList(inputWise.get(i).split(",")));
+        for (String anInputWise : inputWise) {
+            returnObject.addAll(Arrays.asList(anInputWise.split(",")));
         }
 
 
@@ -2460,7 +2071,7 @@ public class InstanceUtil {
         }
 
         return returnObject;
-    }
+    }*/
 
     public static void waitForBundleToReachState(
             ColoHelper coloHelper,
@@ -2511,7 +2122,6 @@ public class InstanceUtil {
 
     }
 
-    @Deprecated
     public static ArrayList<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
                                                                        DateTime startDateJoda,
                                                                        DateTime endDateJoda,
@@ -2526,14 +2136,13 @@ public class InstanceUtil {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) dataFolder.add(dataDate);
 
         InstanceUtil.createHDFSFolders(colo, dataFolder);
         return dataFolder;
     }
 
-    public static ArrayList<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
+    /*public static ArrayList<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
                                                                        DateTime startDateJoda,
                                                                        DateTime endDateJoda,
                                                                        String prefix,
@@ -2557,15 +2166,15 @@ public class InstanceUtil {
 
         InstanceUtil.createHDFSFolders(colo, dataFolder);
         return dataFolder;
-    }
+    }*/
 
-    public static String oozieDateToDataGenDate(String oozieDate) throws ParseException {
+    /*public static String oozieDateToDataGenDate(String oozieDate) throws ParseException {
 
         DateTime jodaTime = new DateTime(InstanceUtil.oozieDateToDate(oozieDate), DateTimeZone.UTC);
         DateTimeFormatter formatter =
                 DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
         String str = formatter.print(jodaTime);
         return str;
-    }
+    }*/
 }
 

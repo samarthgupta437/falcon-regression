@@ -175,13 +175,13 @@ public class FeedInstanceStatusTest {
             String postFix = "/US/ua2";
             String prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
-            Util.lateDataReplenish(ivoryqa1, 80, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(ivoryqa1, 80, 1, prefix, postFix);
 
 
             postFix = "/UK/ua3";
             prefix = b1.getFeedDataPathPrefix();
             Util.HDFSCleanup(gs1001, prefix.substring(1));
-            Util.lateDataReplenish(gs1001, 80, 0, 1, prefix, postFix);
+            Util.lateDataReplenish(gs1001, 80, 1, prefix, postFix);
 
 
             // both replication instances

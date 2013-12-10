@@ -30,12 +30,12 @@ public class AssertUtil {
     public static void failIfStringFoundInPath(
             ArrayList<Path> paths, String... shouldNotBePresent) {
 
-        for (int i = 0; i < paths.size(); i++) {
-            for (int j = 0; j < shouldNotBePresent.length; j++)
-                if (paths.get(i).toUri().toString().contains(shouldNotBePresent[j]))
+        for (Path path : paths) {
+            for (String aShouldNotBePresent : shouldNotBePresent)
+                if (path.toUri().toString().contains(aShouldNotBePresent))
                     Assert.assertTrue(false,
-                            "String " + shouldNotBePresent[j] + " was not expected in path " +
-                                    paths.get(i).toUri().toString());
+                            "String " + aShouldNotBePresent + " was not expected in path " +
+                                    path.toUri().toString());
         }
     }
 

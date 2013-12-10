@@ -23,8 +23,6 @@ import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
 
-import java.util.TimeZone;
-
 public class XmlUtil {
 
     public static Validity createValidity(String start, String end) throws Exception {
@@ -34,18 +32,6 @@ public class XmlUtil {
         //v.setTimezone(timeZone);
         return v;
     }
-
-
-    @Deprecated
-    public static Validity createValidity(String start, String end, TimeZone timeZone)
-    throws Exception {
-        Validity v = new Validity();
-        v.setStart(InstanceUtil.oozieDateToDate(start).toDate());
-        v.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
-        //v.setTimezone(timeZone);
-        return v;
-    }
-
 
     public static Retention createRtention(String limit, ActionType action) {
         Retention r = new Retention();
