@@ -19,17 +19,13 @@
 package org.apache.falcon.regression.hcat;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.falcon.regression.testHelper.TestClassHelper;
 import org.testng.annotations.Test;
 
-public class SubmitClusterHcat {
-
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ua4 = new ColoHelper("ua4.properties");
+public class SubmitClusterHcat extends TestClassHelper {
 
     // private HCatClient client;
 
@@ -40,11 +36,8 @@ public class SubmitClusterHcat {
         String feed02 = "";
         String process = "";
 
-        Bundle b;
+        Bundle b = getBundle(server1,"");
         try {
-            b = (Bundle) Bundle.readBundle("src/test/resources/hcat_2")[0][0];
-            b.generateUniqueBundle();
-            b = new Bundle(b, ua4.getEnvFileName());
 
             cluster = b.getClusters().get(0);
             feed01 = b.getDataSets().get(0);
@@ -60,32 +53,32 @@ public class SubmitClusterHcat {
 */
             System.out.println("Cluster: " + cluster);
             ServiceResponse r =
-                    prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster);
+                    prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster);
             Util.assertSucceeded(r);
 
             System.out.println("Feed: " + feed01);
-            r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed01);
+            r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed01);
             Util.assertSucceeded(r);
 
             System.out.println("Feed: " + feed02);
-            r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed02);
+            r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed02);
             Util.assertSucceeded(r);
 
             System.out.println("process: " + process);
-            r = prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, process);
+            r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, process);
             Util.assertSucceeded(r);
 
-            r = prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, process);
+            r = prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, process);
             Util.assertSucceeded(r);
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
-                prismHelper.getProcessHelper().delete(URLS.DELETE_URL, process);
-                prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed01);
-                prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed02);
-                prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+                prism.getProcessHelper().delete(URLS.DELETE_URL, process);
+                prism.getFeedHelper().delete(URLS.DELETE_URL, feed01);
+                prism.getFeedHelper().delete(URLS.DELETE_URL, feed02);
+                prism.getClusterHelper().delete(URLS.DELETE_URL, cluster);
             } catch (Exception e) {
                 e.printStackTrace();
             }

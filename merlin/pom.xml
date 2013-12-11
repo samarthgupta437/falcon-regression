@@ -28,7 +28,101 @@
     <description>Merlin - Regression test suite for Apache Falcon</description>
     <name>Apache Falcon Regression Suite</name>
     <packaging>jar</packaging>
+     <profiles>
+        <profile>
+            <id>hadoop-1</id>
+	    <properties>
+                <hadoop1.version>1.1.2</hadoop1.version>
+            </properties>
+              <dependencies>
+		<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-core</artifactId>
+                	<exclusions>
+                    		<exclusion>
+                        		<groupId>org.eclipse.jdt</groupId>
+                        		<artifactId>core</artifactId>
+                    		</exclusion>
+                    		<exclusion>
+                        		<groupId>tomcat</groupId>
+                        		<artifactId>jasper-runtime</artifactId>
+                    		</exclusion>
+                    		<exclusion>
+                        		<groupId>tomcat</groupId>
+                        		<artifactId>jasper-compiler</artifactId>
+                    		</exclusion>
+                	</exclusions>
+            	</dependency>
+		<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-test</artifactId>
+                	<exclusions>
+                    		<exclusion>
+                        		<groupId>org.slf4j</groupId>
+                        		<artifactId>slf4j-api</artifactId>
+                    		</exclusion>
+                    		<exclusion>
+                        		<groupId>org.apache.ftpserver</groupId>
+                        		<artifactId>ftpserver-core</artifactId>
+                    		</exclusion>
+                    		<exclusion>
+                        		<groupId>org.apache.ftpserver</groupId>
+                        		<artifactId>ftpserver-deprecated</artifactId>
+                    		</exclusion>
+                	</exclusions>
+                </dependency>
+		<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-client</artifactId>
+                	<exclusions>
+                    		<exclusion>
+                        		<groupId>org.glassfish</groupId>
+                        		<artifactId>javax.servlet</artifactId>
+                    		</exclusion>
+                	</exclusions>
+            	</dependency>
+              </dependencies>
+        </profile>
 
+        <profile>
+            <id>hadoop-2</id>
+              <dependencies>
+		<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-client</artifactId>
+                	<exclusions>
+                    		<exclusion>
+                        		<groupId>org.glassfish</groupId>
+                        		<artifactId>javax.servlet</artifactId>
+                    		</exclusion>
+                	</exclusions>
+            	</dependency>
+
+            	<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-hdfs</artifactId>
+                	<classifier>tests</classifier>
+            	</dependency>
+<!--
+            	<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-common</artifactId>
+                	<classifier>tests</classifier>
+            	</dependency>
+-->
+<!--
+            	<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-yarn-server-resourcemanager</artifactId>
+            	</dependency>
+
+            	<dependency>
+                	<groupId>org.apache.hadoop</groupId>
+                	<artifactId>hadoop-yarn-server-nodemanager</artifactId>
+            	</dependency>-->
+              </dependencies>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>org.apache.falcon</groupId>
