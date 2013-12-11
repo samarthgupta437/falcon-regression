@@ -30,22 +30,16 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.testng.Assert;
-import org.testng.log4testng.Logger;
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 
 public class DataEntityHelperImpl extends IEntityManagerHelper {
-
-    Logger logger = Logger.getLogger(this.getClass());
 
     public DataEntityHelperImpl() {
     }
@@ -66,11 +60,11 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data));
     }
 
-    public ServiceResponse updateFeed(String processName, String newProcess) throws Exception {
+    /*public ServiceResponse updateFeed(String processName, String newProcess) throws Exception {
 
         String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" + processName;
         return Util.sendRequest(url + colo, newProcess);
-    }
+    }*/
 
     public ServiceResponse getEntityDefinition(Util.URLS url, String data) throws Exception {
         //throw new UnsupportedOperationException("Not supported yet.");
@@ -122,14 +116,14 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return suspend(this.hostname + url.getValue(), data);
     }
 
-    public ServiceResponse validateEntity(String url, String data) throws Exception {
+    /*public ServiceResponse validateEntity(String url, String data) throws Exception {
 
         if (!(Thread.currentThread().getStackTrace()[1].getMethodName().contains("Wrong"))) {
             url += "/feed";
         }
 
         return Util.sendRequest(url + colo, data);
-    }
+    }*/
 
     public void validateResponse(String response, APIResult.Status expectedResponse,
                                  String filename) throws Exception {
@@ -181,14 +175,14 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
 
-    @Override
+    /*@Override
     public ProcessInstancesResult getRunningInstance(
             String processRuningInstance, String name) throws Exception {
 
         String url = this.hostname + processRuningInstance + "/" + name + allColo;
 
         return InstanceUtil.sendRequestProcessInstance(url);
-    }
+    }*/
 
     @Override
     public ProcessInstancesResult getRunningInstance(
@@ -223,6 +217,11 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
+    @Override
+    public String list() throws Exception {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
 
     public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
     throws Exception {
@@ -252,15 +251,15 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
 
-    public String writeEntityToFile(String entity) throws Exception {
+    /*public String writeEntityToFile(String entity) throws Exception {
         File file = new File("/tmp/" + Util.readDatasetName(entity) + ".xml");
         BufferedWriter bf = new BufferedWriter(new FileWriter(file));
         bf.write(entity);
         bf.close();
         return "/tmp/" + Util.readDatasetName(entity) + ".xml";
-    }
+    }*/
 
-    @Override
+    /*@Override
     public String submitEntityViaCLI(String filePath) throws Exception {
 
         return Util.executeCommand(
@@ -339,7 +338,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     public String list() throws Exception {
         return Util.executeCommand(
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type feed");
-    }
+    }*/
 
     @Override
     public String getDependencies(String entityName) throws Exception {
@@ -389,17 +388,19 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return writer.toString();
     }
 
+/*
     @Override
     public ProcessInstancesResult getInstanceRerun(String EntityName, String params)
     throws Exception {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+*/
 
-    @Override
+    /*@Override
     public String getProcessInstanceStatusViaCli(String EntityName,
                                                  String start, String end, String colos)
     throws Exception {
         // TODO Auto-generated method stub
         return null;
-    }
+    }*/
 }

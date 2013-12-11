@@ -31,22 +31,16 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.testng.Assert;
-import org.testng.log4testng.Logger;
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 
 public class ProcessEntityHelperImpl extends IEntityManagerHelper {
-
-    Logger logger = Logger.getLogger(this.getClass());
 
     public ProcessEntityHelperImpl() {
 
@@ -158,7 +152,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 //		return resume(url.getValue(), data);
 //	}
 
-    public ServiceResponse validateEntity(String url, String data) throws Exception {
+    /*public ServiceResponse validateEntity(String url, String data) throws Exception {
 
         //System.out.println(Thread.currentThread().getStackTrace()[2].getMethodName());
         if (!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong"))) {
@@ -167,7 +161,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
 
         return Util.sendRequest(url, data);
-    }
+    }*/
 
     public void validateResponse(String response, APIResult.Status expectedResponse,
                                  String filename) throws Exception {
@@ -222,14 +216,14 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
 
-    @Override
+    /*@Override
     public ProcessInstancesResult getRunningInstance(
             String processRuningInstance, String name) throws Exception {
 
         String url = this.hostname + processRuningInstance + "/" + name + allColo;
 
         return InstanceUtil.sendRequestProcessInstance(url);
-    }
+    }*/
 
     @Override
     public ProcessInstancesResult getRunningInstance(
@@ -254,7 +248,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
 
-    @Override
+    /*@Override
     public String getProcessInstanceStatusViaCli(
             String EntityName, String start, String end, String colos)
     throws Exception {
@@ -270,7 +264,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
 
         return Util.executeCommand(command);
-    }
+    }*/
 
 
     @Override
@@ -302,7 +296,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public ServiceResponse updateProcess(String processName, String newProcess) throws Exception {
+    /*public ServiceResponse updateProcess(String processName, String newProcess) throws Exception {
 
         String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" + processName;
         return Util.sendRequest(url + colo, newProcess);
@@ -378,7 +372,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.executeCommand(
                 BASE_COMMAND + " entity -suspend -url " + this.hostname + " -type process -name " +
                         entityName);
-    }
+    }  */
 
     public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
     throws Exception {
@@ -389,7 +383,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    @Override
+    /*@Override
     public ProcessInstancesResult getInstanceRerun(String EntityName, String params)
     throws Exception {
         String url =
@@ -414,9 +408,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         bf.write(entity);
         bf.close();
         return "/tmp/" + Util.readEntityName(entity) + ".xml";
-    }
+    } */
 
-    public String getProcessInstanceStatusCLI(
+    /*public String getProcessInstanceStatusCLI(
             String processName, String start, String end) throws Exception {
         String command = "";
         if (end != null)
@@ -430,20 +424,20 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
         return Util.executeCommand(command);
 
-    }
+    }*/
 
-    public String CLIHelp() throws Exception {
+    /*public String CLIHelp() throws Exception {
         return Util.executeCommand(BASE_COMMAND + " help");
-    }
+    }*/
 
-    public String getProcessInstanceRunningCLI(String processName) throws Exception {
+    /*public String getProcessInstanceRunningCLI(String processName) throws Exception {
         String command =
                 BASE_COMMAND + " instance -running -url " + this.hostname + " -processName " +
                         processName;
         return Util.executeCommand(command);
-    }
+    }*/
 
-    public String getProcessInstanceSuspendCLI(String processName,
+    /*public String getProcessInstanceSuspendCLI(String processName,
                                                String start, String end) throws Exception {
         String command = "";
         if (end != null)
@@ -456,9 +450,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                     " -start " + start;
 
         return Util.executeCommand(command);
-    }
+    }*/
 
-    public String processInstanceRerunCLI(String processName,
+    /*public String processInstanceRerunCLI(String processName,
                                           String start, String end) throws Exception {
         String command = "";
         if (end != null)
@@ -471,9 +465,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                     " -start " + start;
 
         return Util.executeCommand(command);
-    }
+    }*/
 
-    public String processInstanceResumeCLI(String processName,
+    /*public String processInstanceResumeCLI(String processName,
                                            String start, String end) throws Exception {
         String command = "";
         if (end != null)
@@ -486,9 +480,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                     " -start " + start;
 
         return Util.executeCommand(command);
-    }
+    }*/
 
-    public String processInstanceKillCLI(String processName, String start,
+    /*public String processInstanceKillCLI(String processName, String start,
                                          String end) throws Exception {
         String command = "";
         if (end != null)
@@ -501,9 +495,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                     " -start " + start;
 
         return Util.executeCommand(command);
-    }
+    }*/
 
-    public String processInstanceSuspendCLI(String processName,
+    /*public String processInstanceSuspendCLI(String processName,
                                             String start, String end) throws Exception {
         String command = "";
         if (end != null)
@@ -516,7 +510,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                     " -start " + start;
 
         return Util.executeCommand(command);
-    }
+    }*/
 
     public String list() throws Exception {
         return Util.executeCommand(
@@ -531,7 +525,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                         " -type process -name " + entityName);
     }
 
-    public String getProcessInstanceStatusCLI(String processName,
+    /*public String getProcessInstanceStatusCLI(String processName,
                                               String start, String end, int runid, String type)
     throws Exception {
         String command = "";
@@ -571,7 +565,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
         return Util.executeCommand(command);
 
-    }
+    }*/
 
     @Override
     public ServiceResponse submitEntity(URLS url, String data) throws Exception {

@@ -29,7 +29,7 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 
 public class EntityHelperFactory {
 
-    public static <T> IEntityManagerHelper getEntityHelper(ENTITY_TYPE type) {
+    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type) {
         if (type.equals(ENTITY_TYPE.DATA)) {
             return new DataEntityHelperImpl();
         }
@@ -45,7 +45,7 @@ public class EntityHelperFactory {
         return null;
     }
 
-    public static <T> IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName)
+    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName)
     throws Exception {
         if (type.equals(ENTITY_TYPE.DATA)) {
             return new DataEntityHelperImpl(envFileName);

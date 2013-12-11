@@ -38,20 +38,8 @@ public abstract class IEntityManagerHelper {
     protected String CLIENT_LOCATION = "src/test/resources/IvoryClient/IvoryCLI.jar";
     protected String BASE_COMMAND = "java -jar " + CLIENT_LOCATION;
 
-    public String getBASE_COMMAND() {
-        return BASE_COMMAND;
-    }
-
-    public String getCLIENT_LOCATION() {
-        return CLIENT_LOCATION;
-    }
-
     public String getActiveMQ() {
         return activeMQ;
-    }
-
-    public String getHadoopGetCommand() {
-        return hadoopGetCommand;
     }
 
     public String getHadoopLocation() {
@@ -117,13 +105,13 @@ public abstract class IEntityManagerHelper {
 
     protected String identityFile;
 
-    public String getServiceStatusMsg() {
+    /*public String getServiceStatusMsg() {
         return serviceStatusMsg;
-    }
+    }*/
 
-    public String getServiceStatusCmd() {
+    /*public String getServiceStatusCmd() {
         return serviceStatusCmd;
-    }
+    }*/
 
     protected String serviceStatusMsg;
 
@@ -190,7 +178,7 @@ public abstract class IEntityManagerHelper {
 
     public abstract ServiceResponse submitEntity(Util.URLS url, String data) throws Exception;
 
-    public abstract ServiceResponse validateEntity(String url, String data) throws Exception;
+    /*public abstract ServiceResponse validateEntity(String url, String data) throws Exception;*/
 
     public abstract ServiceResponse schedule(String url, String data) throws Exception;
 
@@ -228,9 +216,11 @@ public abstract class IEntityManagerHelper {
     public abstract ProcessInstancesResult getRunningInstance(URLS processRuningInstance,
                                                               String name) throws Exception;
 
-    public abstract ProcessInstancesResult getRunningInstance(String processRuningInstance,
+
+    /*public abstract ProcessInstancesResult getRunningInstance(String processRuningInstance,
                                                               String name)
-    throws Exception;
+    throws Exception;*/
+
 
     public abstract ProcessInstancesResult getProcessInstanceStatus(
             String readEntityName, String params) throws Exception;
@@ -238,7 +228,7 @@ public abstract class IEntityManagerHelper {
     public abstract ProcessInstancesResult getProcessInstanceSuspend(
             String readEntityName, String params) throws Exception;
 
-    public abstract String writeEntityToFile(String entity) throws Exception;
+/*    public abstract String writeEntityToFile(String entity) throws Exception;
 
     public abstract String submitEntityViaCLI(String filePath) throws Exception;
 
@@ -259,7 +249,7 @@ public abstract class IEntityManagerHelper {
     public abstract String suspendViaCLI(String filePath) throws Exception;
 
     public abstract String updateViaCLI(String processName, String newProcessFilePath)
-    throws Exception;
+    throws Exception;*/
 
     public abstract String list() throws Exception;
 
@@ -273,8 +263,10 @@ public abstract class IEntityManagerHelper {
 
     public abstract String toString(Object object) throws Exception;
 
+/*
     public abstract ProcessInstancesResult getInstanceRerun(String EntityName, String params)
     throws Exception;
+*/
 
     public abstract ProcessInstancesResult getProcessInstanceKill(String readEntityName,
                                                                   String string) throws Exception;
@@ -291,7 +283,9 @@ public abstract class IEntityManagerHelper {
         return colo;
     }
 
+/*
     public abstract String getProcessInstanceStatusViaCli(String EntityName,
                                                           String start, String end, String colos)
     throws Exception;
+*/
 }

@@ -28,13 +28,9 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
-import org.testng.log4testng.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.StringWriter;
 import java.util.List;
 
@@ -48,8 +44,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     public ClusterEntityHelperImpl(String envFileName) throws Exception {
         super(envFileName);
     }
-
-    Logger logger = Logger.getLogger(this.getClass());
 
     public ServiceResponse delete(String url, String data) throws Exception {
         //throw new UnsupportedOperationException("Not supported yet.");
@@ -103,10 +97,12 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+/*
     public ServiceResponse validateEntity(String url, String data) throws Exception {
 
         return Util.sendRequest(url, data);
     }
+*/
 
     public void validateResponse(String response, APIResult.Status expectedResponse,
                                  String filename) throws Exception {
@@ -160,15 +156,15 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-    public String writeEntityToFile(String entity) throws Exception {
+    /*public String writeEntityToFile(String entity) throws Exception {
         File file = new File("/tmp/" + Util.readClusterName(entity) + ".xml");
         BufferedWriter bf = new BufferedWriter(new FileWriter(file));
         bf.write(entity);
         bf.close();
         return "/tmp/" + Util.readClusterName(entity) + ".xml";
-    }
+    }*/
 
-    @Override
+    /*@Override
     public String submitEntityViaCLI(String filePath) throws Exception {
 
         //System.out.println(BASE_COMMAND+ " entity -submit -url "+this.hostname+" -type cluster
@@ -176,17 +172,17 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return Util.executeCommand(
                 BASE_COMMAND + " entity -submit -url " + this.hostname + " -type cluster -file " +
                         filePath);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public String validateEntityViaCLI(String entityName) throws Exception {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -validate -url " + this.hostname + " -type cluster -name " +
                         entityName);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public String submitAndScheduleViaCLI(String filePath) throws Exception {
 
         return Util.executeCommand(
@@ -245,7 +241,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     public String updateViaCLI(String processName, String newProcessFilePath) throws Exception {
         return null;
     }
-
+*/
     public String list() throws Exception {
         return Util.executeCommand(
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type cluster");
@@ -259,11 +255,11 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
                         " -type cluster -name " + entityName);
     }
 
-    @Override
+    /*@Override
     public ProcessInstancesResult getRunningInstance(String processRuningInstance, String name)
     throws Exception {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
+    }*/
 
     @Override
     public List<String> getArchiveInfo() throws Exception {
@@ -299,11 +295,11 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return writer.toString();
     }
 
-    @Override
+    /*@Override
     public ProcessInstancesResult getInstanceRerun(String EntityName, String params)
     throws Exception {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
+    }*/
 
     @Override
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName,
@@ -326,12 +322,12 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-    @Override
+    /*@Override
     public String getProcessInstanceStatusViaCli(String EntityName,
                                                  String start, String end, String colos)
     throws Exception {
         // TODO Auto-generated method stub
         return null;
-    }
+    }*/
 
 }
