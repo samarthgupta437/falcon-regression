@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -38,10 +39,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Process instance resume tests.
+ */
 public class ProcessInstanceResumeTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -52,8 +56,7 @@ public class ProcessInstanceResumeTest {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, ivoryqa1.getEnvFileName());
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
@@ -74,18 +77,30 @@ public class ProcessInstanceResumeTest {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
 
         InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
     }
 
+    private Bundle bundle;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+    public void setup(Method method) throws Exception {
+        Util.print("setup " + method.getName());
         //Util.restartService(ivoryqa1.getClusterHelper());
 
+        bundle = (Bundle) Util.readELBundles()[0][0];
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown(Method method) throws Exception {
+        Util.print("tearDown " + method.getName());
+
+        if (bundle != null) {
+            bundle.deleteBundle(prismHelper);
+        }
     }
 
 
@@ -107,20 +122,21 @@ public class ProcessInstanceResumeTest {
             b.setProcessConcurrency(6);
             b.submitAndScheduleBundle(prismHelper);
             Thread.sleep(15000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
             Thread.sleep(10000);
-            r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(r, 6, 2, 4, 0, 0);
-            r = prismHelper.getProcessHelper()
+            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+
+            result = prismHelper.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?end=2010-01-02T01:15Z");
-            Assert.assertTrue(r.getMessage().contains("Parameter start is empty"),
+            Assert.assertTrue(result.getMessage().contains("Parameter start is empty"),
                     "start instance was not mentioned, RESUME should have fialed");
-            //instanceUtil.validateSuccessWithStatusCode(r, 2);
+            //instanceUtil.validateSuccessWithStatusCode(result, 2);
         } finally {
             b.deleteBundle(prismHelper);
         }
@@ -145,21 +161,22 @@ public class ProcessInstanceResumeTest {
             b.setProcessConcurrency(6);
             b.submitAndScheduleBundle(prismHelper);
             Thread.sleep(15000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
             Thread.sleep(10000);
-            r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(r, 6, 2, 4, 0, 0);
+            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+
             prismHelper.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:16Z");
-            r = prismHelper.getProcessHelper()
+            result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(r, 6, 5, 1, 0, 0);
+            InstanceUtil.validateResponse(result, 6, 5, 1, 0, 0);
         } finally {
             b.deleteBundle(prismHelper);
         }
@@ -168,7 +185,7 @@ public class ProcessInstanceResumeTest {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_resumeMany() throws Exception {
-        Bundle b = new Bundle();
+        Bundle b = null;
 
         try {
 
@@ -184,23 +201,26 @@ public class ProcessInstanceResumeTest {
             b.setProcessConcurrency(6);
             b.submitAndScheduleBundle(prismHelper);
             Thread.sleep(15000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
             Thread.sleep(10000);
-            r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(r, 6, 2, 4, 0, 0);
+            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+
             prismHelper.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            r = prismHelper.getProcessHelper()
+            result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(r, 6, 6, 0, 0, 0);
+            InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
         } finally {
-            b.deleteBundle(prismHelper);
+            if (b != null) {
+                b.deleteBundle(prismHelper);
+            }
         }
     }
 
@@ -344,10 +364,10 @@ public class ProcessInstanceResumeTest {
             b.setProcessConcurrency(6);
             b.submitAndScheduleBundle(prismHelper);
             Thread.sleep(15000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z");
-            Assert.assertTrue(true);
+            // Assert.assertTrue(true);
         } finally {
             b.deleteBundle(prismHelper);
         }
@@ -376,13 +396,13 @@ public class ProcessInstanceResumeTest {
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:25Z");
             Thread.sleep(10000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:25Z");
-            r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:25Z");
-            InstanceUtil.validateResponse(r, 6, 6, 0, 0, 0);
+            InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
         } finally {
             b.deleteBundle(prismHelper);
         }
@@ -406,21 +426,22 @@ public class ProcessInstanceResumeTest {
             b.setProcessConcurrency(6);
             b.submitAndScheduleBundle(prismHelper);
             Thread.sleep(15000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
             Thread.sleep(10000);
-            r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(r, 6, 2, 4, 0, 0);
+            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+
             prismHelper.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            r = prismHelper.getProcessHelper()
+            result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(r, 6, 6, 0, 0, 0);
+            InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
 
         } finally {
             b.deleteBundle(prismHelper);
@@ -436,8 +457,7 @@ public class ProcessInstanceResumeTest {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, ivoryqa1.getEnvFileName());
         b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();

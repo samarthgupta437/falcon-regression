@@ -27,6 +27,9 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 
 
+/**
+ * EL Validations tests.
+ */
 public class ELValidationsTest {
 
     String response;
@@ -43,12 +46,10 @@ public class ELValidationsTest {
 
     @Test(groups = {"0.1", "0.2"})
     public void startInstBeforeFeedStart_today02() throws Exception {
-        //Start instance  now(-40,0) of feed raaw-logs16-ac91a90f-4a52-4b10-8541-4d63883a621e is
-        // before the start of
-        // feed 2009-02-02T20:00Z
+        // Start instance  now(-40,0) of feed raaw-logs16-ac91a90f-4a52-4b10-8541-4d63883a621e is
+        // before the start of feed 2009-02-02T20:00Z
         response = ELUtil.testWith("2009-02-02T20:00Z", "2011-12-31T00:00Z", "2009-02-02T20:00Z",
-                "2011-12-31T00:00Z",
-                "now(-40,0)", "currentYear(20,30,24,20)", false);
+                "2011-12-31T00:00Z", "now(-40,0)", "currentYear(20,30,24,20)", false);
         validate(response);
     }
 
@@ -65,28 +66,22 @@ public class ELValidationsTest {
     }
 
     /*
-
-
         @Test(groups = { "0.1","0.2"})(groups = {"sanity"})
-        public void test() throws Exception
-        {
+        public void test() throws Exception {
             response = ELUtil.testWith("2009-02-02T20:00Z","2011-12-31T00:00Z","now(-40,0)",
             "currentYear(20,30,24,
             20)",false);
             validate(response);
         }
 
-
         @Test(groups = { "0.1","0.2"})(groups = {"sanity"})
-        public void startInstBeforeFeedStart_mix() throws Exception
-        {
+        public void startInstBeforeFeedStart_mix() throws Exception {
             response = ELUtil.testWith("currentYear(-36,0,22,0)","now(4,20)",false);
             validate(response);
         }
 
         @Test(groups = { "0.1","0.2"})
-        public void endInstBeforeStartTime() throws Exception
-        {
+        public void endInstBeforeStartTime() throws Exception {
             response = ELUtil.testWith("lastYear(-20,0,0,0)","lastYear(-10,0,0,0)",false);
             validate(response);
         }
@@ -103,33 +98,26 @@ public class ELValidationsTest {
         // test case when processtime is super set of feedtime line
 
         @Test(groups = { "0.1","0.2"})
-        public void startInstBeforeFeedStart_P() throws Exception
-        {
+        public void startInstBeforeFeedStart_P() throws Exception {
             String response = ELUtil.testWith("2009-03-01T00:00Z","2012-02-01T00:00Z","today(144,
             0)","today(144,40)",
             false);
             validate(response);
         }
 
-
         @Test(groups = { "0.1","0.2"})
-        public void bothInstAfterFeedEnd() throws Exception
-        {
+        public void bothInstAfterFeedEnd() throws Exception {
             response = ELUtil.testWith("currentYear(48,0,22,0)","currentYear(50,0,22,0)",false);
             validate(response);
         }
     */
+
     private void validate(String response) {
-        if (!
-                (((response.contains("End instance ") || response.contains("Start instance"))
-                        && (response.contains("for feed") || response.contains("of feed"))
-                        && (response.contains("is before the start of feed") ||
-                        response.contains("is after the end of feed"))) ||
-                        (response.contains("End instance") &&
-                                response.contains("is before the start instance")))
-                )
+        if (!(((response.contains("End instance ") || response.contains("Start instance"))
+                && (response.contains("for feed") || response.contains("of feed"))
+                && (response.contains("is before the start of feed") || response.contains("is after the end of feed")))
+                || (response.contains("End instance") && response.contains("is before the start instance")))) {
             Assert.assertTrue(false);
+        }
     }
-
-
 }

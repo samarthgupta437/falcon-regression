@@ -35,11 +35,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Queue name tests.
+ */
 public class QueueName {
 
-
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -49,9 +51,7 @@ public class QueueName {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
-
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
@@ -72,8 +72,9 @@ public class QueueName {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
 
         InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
     }
@@ -87,7 +88,7 @@ public class QueueName {
     @Test(groups = {"0.1", "0.2"})
     public void setQueueNameAndPriority() throws Exception {
 
-        Bundle b = new Bundle();
+        Bundle b = null;
         try {
 
             b = (Bundle) Util.readELBundles()[0][0];
@@ -107,10 +108,9 @@ public class QueueName {
             InstanceUtil
                     .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
         } finally {
-            b.deleteBundle(prismHelper);
-
+            if (b != null) {
+                b.deleteBundle(prismHelper);
+            }
         }
     }
-
-
 }

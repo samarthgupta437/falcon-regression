@@ -34,12 +34,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Process lib path tests.
+ */
 public class ProcessLibPath {
 
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -50,8 +52,7 @@ public class ProcessLibPath {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
@@ -72,8 +73,9 @@ public class ProcessLibPath {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
 
         InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
     }
@@ -117,7 +119,7 @@ public class ProcessLibPath {
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
 
-        Bundle b = new Bundle();
+        Bundle b = null;
         try {
 
             b = (Bundle) Util.readELBundles()[0][0];
@@ -137,9 +139,9 @@ public class ProcessLibPath {
             InstanceUtil
                     .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
         } finally {
-            b.deleteBundle(prismHelper);
-
+            if (b != null) {
+                b.deleteBundle(prismHelper);
+            }
         }
     }
-
 }

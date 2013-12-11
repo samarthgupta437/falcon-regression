@@ -38,10 +38,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Process instance kill tests.
+ */
 public class ProcessInstanceKillsTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -52,8 +55,7 @@ public class ProcessInstanceKillsTest {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
@@ -74,8 +76,9 @@ public class ProcessInstanceKillsTest {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
 
         InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
     }
@@ -280,15 +283,15 @@ public class ProcessInstanceKillsTest {
             b.setProcessConcurrency(6);
             b.submitAndScheduleBundle(prismHelper);
             Thread.sleep(15000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:15Z");
-            //instanceUtil.validateSuccess(r, b, WorkflowStatus.KILLED);
+            //instanceUtil.validateSuccess(result, b, WorkflowStatus.KILLED);
             Thread.sleep(15000);
-            r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
-            InstanceUtil.validateResponse(r, 5, 2, 0, 0, 3);
+            InstanceUtil.validateResponse(result, 5, 2, 0, 0, 3);
         } finally {
             b.deleteBundle(prismHelper);
 
@@ -314,15 +317,15 @@ public class ProcessInstanceKillsTest {
             b.setProcessConcurrency(6);
             b.submitAndScheduleBundle(prismHelper);
             Thread.sleep(15000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:20Z");
             //instanceUtil.validateSuccess(r, b, WorkflowStatus.KILLED);
             Thread.sleep(15000);
-            r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
-            InstanceUtil.validateResponse(r, 5, 4, 0, 0, 1);
+            InstanceUtil.validateResponse(result, 5, 4, 0, 0, 1);
         } finally {
             b.deleteBundle(prismHelper);
 
@@ -406,8 +409,7 @@ public class ProcessInstanceKillsTest {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
         b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");

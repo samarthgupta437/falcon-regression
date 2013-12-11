@@ -35,23 +35,22 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * EL Expression test.
+ */
 public class ELExp_FutureAndLatest {
 
-
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-
         Util.print("in @BeforeClass");
 
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
-
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
@@ -72,18 +71,17 @@ public class ELExp_FutureAndLatest {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
 
         InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
     }
-
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
         Util.print("test name: " + method.getName());
     }
-
 
     @Test(groups = {"singleCluster"}, dataProvider = "EL-DP", dataProviderClass = Bundle.class)
     public void latestTest(Bundle b) throws Exception {
@@ -110,10 +108,8 @@ public class ELExp_FutureAndLatest {
 
             b.submitAndScheduleBundle(prismHelper);
 
-            InstanceUtil
-                    .waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                            CoordinatorAction.Status.SUCCEEDED,
-                            20);
+            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
+                    CoordinatorAction.Status.SUCCEEDED, 20);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -121,15 +117,12 @@ public class ELExp_FutureAndLatest {
         } finally {
             b.deleteBundle(prismHelper);
         }
-
     }
-
 
     @Test(groups = {"singleCluster"}, dataProvider = "EL-DP", dataProviderClass = Bundle.class)
     public void futureTest(Bundle b) throws Exception {
         try {
             b = new Bundle(b, ivoryqa1.getEnvFileName());
-
 
             b.setInputFeedDataPath(
                     "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
@@ -150,10 +143,8 @@ public class ELExp_FutureAndLatest {
 
             b.submitAndScheduleBundle(prismHelper);
 
-            InstanceUtil
-                    .waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                            CoordinatorAction.Status.SUCCEEDED,
-                            20);
+            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
+                    CoordinatorAction.Status.SUCCEEDED, 20);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,7 +152,6 @@ public class ELExp_FutureAndLatest {
         } finally {
             b.deleteBundle(prismHelper);
         }
-
     }
 
     @AfterClass(alwaysRun = true)
@@ -171,14 +161,11 @@ public class ELExp_FutureAndLatest {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
-
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
         b.setInputFeedDataPath("/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
         Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
     }
-
 }

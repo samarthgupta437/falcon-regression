@@ -20,13 +20,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.apache.falcon.regression;
 
+package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.process.PolicyType;
-import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Retry;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -56,27 +55,24 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Retry tests.
+ */
 public class NewRetryTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper UA1ColoHelper = new ColoHelper("mk-qa.config.properties");
-    ColoHelper UA2ColoHelper = new ColoHelper("ivoryqa-1.config.properties");
-    ColoHelper UA3ColoHelper = new ColoHelper("gs1001.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper UA3ColoHelper = new ColoHelper("gs1001.config.properties");
 
-    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+    private final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-
     }
-
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
     public void testRetryInProcessZeroAttemptUpdate(Bundle bundle, String retryType, int delay,
-                                                    String delayUnits,
-                                                    int retryAttempts)
-    throws Exception {
+                                                    String delayUnits, int retryAttempts) throws Exception {
 
         bundle = new Bundle(bundle, UA3ColoHelper);
         displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
@@ -112,7 +108,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             //ServiceResponse response=prismHelper.getProcessHelper().submitAndSchedule(URLS
@@ -130,8 +126,8 @@ public class NewRetryTest {
                 // lets create data now:
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+                //List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
 
                 //schedule process
                 Util.assertSucceeded(
@@ -143,16 +139,15 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+                // String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
 
-                org.apache.falcon.regression.core.generated.process.Process oldProcessObject =
-                        bundle.getProcessObject();
+                // org.apache.falcon.regression.core.generated.process.Process oldProcessObject =
+                //        bundle.getProcessObject();
 
                 int defaultRetries = bundle.getProcessObject().getRetry().getAttempts();
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setAttempts((0));
 
                 bundle.setRetry(retry);
@@ -226,7 +221,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             ServiceResponse response =
@@ -240,8 +235,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 //now wait till the process is over
 
                 Util.assertSucceeded(
@@ -251,20 +246,20 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+                // String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //waitTillCertainPercentageOfProcessHasStarted(bundleId,25);
 
                 while (!validateFailureRetries(UA3ColoHelper,
                         getDefaultOozieCoord(UA3ColoHelper, bundleId), 1)) {
                     //wait
+                    Thread.sleep(100);
                 }
 
-                org.apache.falcon.regression.core.generated.process.Process oldProcessObject =
-                        bundle.getProcessObject();
+//                org.apache.falcon.regression.core.generated.process.Process oldProcessObject =
+//                        bundle.getProcessObject();
 
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setAttempts((retryAttempts - 2));
 
                 bundle.setRetry(retry);
@@ -342,7 +337,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             ServiceResponse response =
@@ -356,8 +351,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+//                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
 
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
@@ -367,19 +362,17 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //waitTillCertainPercentageOfProcessHasStarted(bundleId,25);
 
                 while (!validateFailureRetries(UA3ColoHelper,
                         getDefaultOozieCoord(UA3ColoHelper, bundleId), 1)) {
                     //wait
+                    Thread.sleep(100);
                 }
 
-                Process oldProcessObject = bundle.getProcessObject();
-
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setAttempts((retryAttempts - 1));
 
                 bundle.setRetry(retry);
@@ -451,7 +444,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             ServiceResponse response =
@@ -465,8 +458,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -476,19 +469,17 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //waitTillCertainPercentageOfProcessHasStarted(bundleId,25);
 
                 while (!validateFailureRetries(UA3ColoHelper,
                         getDefaultOozieCoord(UA3ColoHelper, bundleId), 2)) {
                     //wait
+                    Thread.sleep(100);
                 }
 
-                Process oldProcessObject = bundle.getProcessObject();
-
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setAttempts((2));
 
                 bundle.setRetry(retry);
@@ -560,7 +551,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             ServiceResponse response =
@@ -574,7 +565,7 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
+                // List<String> initialData =
                         Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
@@ -584,14 +575,13 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
 
-                Process oldProcessObject = bundle.getProcessObject();
+//                Process oldProcessObject = bundle.getProcessObject();
 
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setAttempts((4));
 
                 bundle.setRetry(retry);
@@ -663,7 +653,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             ServiceResponse response =
@@ -677,8 +667,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -687,14 +677,13 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
 
-                Process oldProcessObject = bundle.getProcessObject();
+//                Process oldProcessObject = bundle.getProcessObject();
 
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setDelay(
                         new Frequency("minutes(" + (retry.getDelay().getFrequency() + 1) + ")"));
 
@@ -768,7 +757,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             ServiceResponse response =
@@ -782,8 +771,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -792,14 +781,13 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
 
-                Process oldProcessObject = bundle.getProcessObject();
+//                Process oldProcessObject = bundle.getProcessObject();
 
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setDelay(
                         new Frequency("minutes(" + (retry.getDelay().getFrequency() - 1) + ")"));
 
@@ -874,7 +862,7 @@ public class NewRetryTest {
 
             bundle.setProcessValidity(startDate, endDate);
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             //submit and schedule process
             ServiceResponse response =
@@ -888,8 +876,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -898,14 +886,13 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
 
-                Process oldProcessObject = bundle.getProcessObject();
+//                Process oldProcessObject = bundle.getProcessObject();
 
-                Retry retry = new Retry();
-                retry = bundle.getProcessObject().getRetry();
+                Retry retry = bundle.getProcessObject().getRetry();
                 retry.setDelay(new Frequency("minutes(0)"));
 
                 bundle.setRetry(retry);
@@ -968,7 +955,7 @@ public class NewRetryTest {
             bundle.generateUniqueBundle();
 
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             submitClusters(bundle);
 
@@ -995,8 +982,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -1005,7 +992,7 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //now to validate all failed instances to check if they were retried or not.
                 validateRetry(UA3ColoHelper, bundleId,
@@ -1052,7 +1039,7 @@ public class NewRetryTest {
 
             bundle.generateUniqueBundle();
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             submitClusters(bundle);
 
@@ -1079,8 +1066,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -1089,11 +1076,12 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 while (!validateFailureRetries(UA3ColoHelper,
                         getDefaultOozieCoord(UA3ColoHelper, bundleId), 1)) {
                     //keep waiting
+                    Thread.sleep(100);
                 }
 
                 //validateRetry(bundleId,1);
@@ -1153,7 +1141,7 @@ public class NewRetryTest {
 // Util.getInputFeedFromBundle(bundle));
 
             bundle.generateUniqueBundle();
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             submitClusters(bundle);
 
@@ -1180,8 +1168,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -1190,7 +1178,7 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
 
                 //now to validate all failed instances to check if they were retried or not.
@@ -1253,7 +1241,7 @@ public class NewRetryTest {
 //        List<String> initialData=Util.getHadoopLateData(UA3ColoHelper,
 // Util.getInputFeedFromBundle(bundle));
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
             bundle.generateUniqueBundle();
 
             submitClusters(bundle);
@@ -1282,8 +1270,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -1291,33 +1279,30 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                ArrayList<DateTime> dates = null;
-
+                ArrayList<DateTime> dates;
                 do {
-
                     dates = Util.getStartTimeForRunningCoordinators(UA3ColoHelper, bundleId);
 
                 } while (dates == null);
 
-
                 System.out.println("Start time: " + formatter.print(startDate));
                 System.out.println("End time: " + formatter.print(endDate));
                 System.out.println("candidate nominal time:" + formatter.print(dates.get(0)));
-                DateTime now = dates.get(0);
 
+/*
+                DateTime now = dates.get(0);
                 if (formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0))) >
                         0) {
                     now = startDate;
                 }
-
-
+*/
                 //now wait till the process is over
-
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 while (!validateFailureRetries(UA3ColoHelper,
                         getDefaultOozieCoord(UA3ColoHelper, bundleId), 1)) {
                     //keep waiting
+                    Thread.sleep(100);
                 }
 
                 System.out.println("now suspending the process altogether....");
@@ -1408,7 +1393,7 @@ public class NewRetryTest {
 //        List<String> initialData=Util.getHadoopLateData(UA3ColoHelper,
 // Util.getInputFeedFromBundle(bundle));
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
             bundle.generateUniqueBundle();
 
             submitClusters(bundle);
@@ -1445,12 +1430,10 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                ArrayList<DateTime> dates = null;
 
+                ArrayList<DateTime> dates;
                 do {
-
                     dates = Util.getStartTimeForRunningCoordinators(UA3ColoHelper, bundleId);
-
                 } while (dates == null);
 
 
@@ -1466,35 +1449,23 @@ public class NewRetryTest {
 
 
                 //now wait till the process is over
-
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
-
-                boolean inserted = false;
-
-                int tryingToInsertData = 0;
-
                 while (true) {
-
                     //keep dancing
                     String insertionFolder =
                             Util.findFolderBetweenGivenTimeStamps(now, now.plusMinutes(5),
                                     initialData);
 
-                    if (!inserted &&
-                            validateFailureRetries(UA3ColoHelper,
-                                    getDefaultOozieCoord(UA3ColoHelper, bundleId),
-                                    bundle.getProcessObject().getRetry().getAttempts())) {
+                    if (validateFailureRetries(UA3ColoHelper,
+                            getDefaultOozieCoord(UA3ColoHelper, bundleId),
+                            bundle.getProcessObject().getRetry().getAttempts())) {
                         System.out.println("inserting data in folder " + insertionFolder + " at " +
                                 DateTime.now());
                         Util.injectMoreData(UA3ColoHelper, insertionFolder,
                                 "src/test/resources/OozieExampleInputData/lateData");
-                        inserted = true;
                         break;
                     }
 
                     Thread.sleep(1000);
-                    tryingToInsertData++;
-                    status = Util.getBundleStatus(UA3ColoHelper, bundleId);
                 }
 
                 //now to validate all failed instances to check if they were retried or not.
@@ -1543,7 +1514,7 @@ public class NewRetryTest {
             bundle.generateUniqueBundle();
 
 
-            bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
+            bundle.setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
             submitClusters(bundle);
 
@@ -1569,8 +1540,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(response);
                 Util.HDFSCleanup(UA3ColoHelper, "lateDataTest/testFolders/");
                 Util.lateDataReplenish(UA3ColoHelper, 20, 0, 0);
-                List<String> initialData =
-                        Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
+//                List<String> initialData =
+                Util.getHadoopLateData(UA3ColoHelper, Util.getInputFeedFromBundle(bundle));
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
@@ -1579,7 +1550,7 @@ public class NewRetryTest {
                         Util.getOozieJobStatus(UA3ColoHelper,
                                 Util.readEntityName(bundle.getProcessData()), "NONE")
                                 .get(0));
-                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
+//                String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 validateRetry(UA3ColoHelper, bundleId,
                         (bundle.getProcessObject().getRetry().getAttempts()) / 2);
@@ -1616,10 +1587,10 @@ public class NewRetryTest {
 
 
     private void validateRetry(ColoHelper coloHelper, String bundleId, int maxNumberOfRetries)
-    throws Exception {
+        throws Exception {
         //validate that all failed processes were retried the specified number of times.
         int attempt = 0;
-        boolean result = false;
+        boolean result;
         while (true) {
             result = ensureAllFailedInstancesHaveRetried(coloHelper, bundleId, maxNumberOfRetries);
 
@@ -1635,13 +1606,11 @@ public class NewRetryTest {
         Assert.assertTrue(result, "all retries were not attempted correctly!");
 
         //now validate correctness of retry timings
-
     }
 
 
     private boolean validateFailureRetries(ColoHelper coloHelper, CoordinatorJob coordinator,
-                                           int maxNumberOfRetries)
-    throws Exception {
+                                           int maxNumberOfRetries) throws Exception {
 
         if (maxNumberOfRetries < 0) {
             maxNumberOfRetries = 0;
@@ -1712,6 +1681,7 @@ public class NewRetryTest {
         return null;
     }
 
+/*
     private CoordinatorJob getLateOozieCoord(String bundleId) throws Exception {
         XOozieClient client = new XOozieClient(Util.readPropertiesFile("oozie_url"));
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
@@ -1723,6 +1693,7 @@ public class NewRetryTest {
         }
         return null;
     }
+*/
 
     @DataProvider(name = "DP")
     public Object[][] getData() throws Exception {
@@ -1730,7 +1701,7 @@ public class NewRetryTest {
         String[] retryTypes = new String[]{"periodic", "exp-backoff"};//,"exp-backoff"
         Integer[] delays = new Integer[]{2,
                 0};//0,-1,3 //removing -1 since this should be checked at validation level while
-                // setting
+        // setting
         String[] delayUnits = new String[]{"minutes"};
         Integer[] retryAttempts = new Integer[]{2, 0, 3};//0,-1,2
 
@@ -1765,6 +1736,7 @@ public class NewRetryTest {
     }
 
 
+/*
     private boolean allRelevantWorkflowsAreOver(ColoHelper coloHelper, String bundleId,
                                                 String insertionFolder)
     throws Exception {
@@ -1802,31 +1774,21 @@ public class NewRetryTest {
 
         return finished;
     }
+*/
 
 
     private boolean ensureAllFailedInstancesHaveRetried(ColoHelper coloHelper, String bundleId,
-                                                        int maxNumberOfRetries)
-    throws Exception {
-        boolean retried = false;
-
+                                                        int maxNumberOfRetries) throws Exception {
         CoordinatorJob defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
         //CoordinatorJob lateCoordinator=getLateOozieCoord(bundleId);
-
-        boolean retriedAllDefault =
-                validateFailureRetries(coloHelper, defaultCoordinator, maxNumberOfRetries);
         //boolean retriedAllLate=validateFailureRetries(lateCoordinator, maxNumberOfRetries);
-
         //if(retriedAllDefault && retriedAllLate)
-        if (retriedAllDefault) {
-            return true;
-        }
-        return retried;
+        return validateFailureRetries(coloHelper, defaultCoordinator, maxNumberOfRetries);
     }
 
 
-    private void waitTillCertainPercentageOfProcessHasStarted(ColoHelper coloHelper,
-                                                              String bundleId, int percentage)
-    throws Exception {
+    private void waitTillCertainPercentageOfProcessHasStarted(ColoHelper coloHelper, String bundleId,
+                                                              int percentage) throws Exception {
 
         CoordinatorJob defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
 
@@ -1838,7 +1800,7 @@ public class NewRetryTest {
 
         int percentageConversion = (percentage * totalCount) / 100;
 
-        while (true && percentageConversion > 0) {
+        while (percentageConversion > 0) {
             int doneBynow = 0;
             for (CoordinatorAction action : defaultCoordinator.getActions()) {
                 CoordinatorAction actionInfo = getOozieActionInfo(coloHelper, action.getId());
@@ -1852,6 +1814,7 @@ public class NewRetryTest {
         }
     }
 
+/*
     private void waitTillCertainPercentageOfProcessAreKilled(ColoHelper coloHelper, String bundleId,
                                                              int percentage)
     throws Exception {
@@ -1880,10 +1843,11 @@ public class NewRetryTest {
             }
         }
     }
+*/
 
 
     private CoordinatorAction getOozieActionInfo(ColoHelper colohelper, String actionId)
-    throws Exception {
+        throws Exception {
         XOozieClient client = new XOozieClient(colohelper.getProcessHelper().getOozieURL());
         return client.getCoordActionInfo(actionId);
     }
@@ -1891,9 +1855,7 @@ public class NewRetryTest {
 
     private HashMap<String, Integer> getFailureRetriesForEachWorkflow(ColoHelper coloHelper,
                                                                       CoordinatorJob coordinator)
-    throws Exception {
-        boolean retriedAll = true;
-        boolean wentInside = false;
+        throws Exception {
         XOozieClient client = new XOozieClient(coloHelper.getClusterHelper().getOozieURL());
 
         HashMap<String, Integer> workflowRetryMap = new HashMap<String, Integer>();
@@ -1904,15 +1866,11 @@ public class NewRetryTest {
                 continue;
             }
 
-
             WorkflowJob actionInfo = client.getJobInfo(action.getExternalId());
-
-
             System.out.println("adding workflow " + actionInfo.getId() + " to the map");
             workflowRetryMap.put(actionInfo.getId(), actionInfo.getRun());
-
-
         }
+
         return workflowRetryMap;
     }
 
@@ -1994,14 +1952,16 @@ public class NewRetryTest {
                                 5000,
                                 "oops! this is out of expected delay range for workflow id  " +
                                         action.getExternalId());
-                        //Assert.assertEquals(formatter.print(temp.plusMinutes(expectedDelay)), instanceRetryTimes.get(i));
+                        //Assert.assertEquals(formatter.print(temp.plusMinutes(expectedDelay)),
+                        // instanceRetryTimes.get(i));
                     }
                 } else {
                     //check for exponential
 
                     for (int i = 0; i < instanceFinishTimes.size() - 1; i++) {
                         DateTime temp = formatter.parseDateTime(instanceFinishTimes.get(i));
-                        //Assert.assertEquals(formatter.print(temp.plusMinutes(expectedDelay)), instanceRetryTimes.get(i));
+                        //Assert.assertEquals(formatter.print(temp.plusMinutes(expectedDelay)),
+                        // instanceRetryTimes.get(i));
                         Assert.assertEquals(temp.plusMinutes(expectedDelay).getMillis(),
                                 formatter.parseDateTime(instanceRetryTimes.get(i)).getMillis(),
                                 5000,
@@ -2015,9 +1975,8 @@ public class NewRetryTest {
 
     }
 
-    private Retry getRetry(Bundle bundle, int delay, String delayUnits, String retryType,
-                           int retryAttempts)
-    throws Exception {
+    private Retry getRetry(int delay, String delayUnits, String retryType,
+                           int retryAttempts) throws Exception {
         Retry retry = new Retry();
         retry.setAttempts(retryAttempts);
         retry.setDelay(new Frequency(delayUnits + "(" + delay + ")"));
@@ -2025,8 +1984,7 @@ public class NewRetryTest {
         return retry;
     }
 
-    private void displayInputs(String m, int delay, String policy, int retryAttempts)
-    throws Exception {
+    private void displayInputs(String m, int delay, String policy, int retryAttempts) throws Exception {
         System.out.println("******************");
         System.out.println("This test case is being executed with:");
         System.out.println("test case=" + m);
@@ -2059,6 +2017,5 @@ public class NewRetryTest {
                     prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
         }
     }
-
 }
 

@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression;
 
-
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.testng.annotations.BeforeMethod;
@@ -27,15 +26,15 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-
+/**
+ * ELTest.
+ */
 public class ELTest {
-
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
         Util.print("test name: " + method.getName());
     }
-
 
     @Test(groups = {"singleCluster"}, dataProvider = "EL-DP")
     public void ExpressionLanguageTest(String startInstance, String endInstance) throws Exception {
@@ -57,5 +56,4 @@ public class ELTest {
                 {"lastYear(12,0,22,0)", "lastYear(13,1,22,0)"}
         };
     }
-
 }

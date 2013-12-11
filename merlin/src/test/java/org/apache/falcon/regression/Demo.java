@@ -18,12 +18,8 @@
 
 package org.apache.falcon.regression;
 
-import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
-import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
-import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -32,40 +28,38 @@ import org.apache.oozie.client.rest.RestConstants;
 import org.testng.annotations.Test;
 
 
+/**
+ * Demo.
+ */
 public class Demo {
 
-    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);
+//    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
+//    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);
 
     PrismHelper prismHelper = new PrismHelper("prism.properties");
     ColoHelper gs1001 = new ColoHelper("gs1001.config.properties");
-    /*
 
-	@Test(dataProvider="demo-DP") 
-	public void demoBundle(Bundle bundle) throws Exception {
+/*
+    @Test(dataProvider = "demo-DP")
+    public void demoBundle(Bundle bundle) throws Exception {
 
-		try{
-			bundle.submitAndScheduleBundle();
+        try {
+            bundle.submitAndScheduleBundle();
 
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-			throw new TestNGException(e.getMessage());
-		}
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new TestNGException(e.getMessage());
+        } finally {
+            bundle.deleteBundle();
+        }
+    }
 
-		finally
-		{
-			bundle.deleteBundle();
-		}
-	}
+    @DataProvider(name = "demo-DP")
+    public static Object[][] getTestData(Method m) throws Exception {
 
-	@DataProvider(name="demo-DP")
-	public static Object[][] getTestData(Method m) throws Exception
-	{
-
-		return Util.readDemoBundle();
-	}*/
+        return Util.readDemoBundle();
+    }
+*/
 
     @Test
     public void test() throws Exception {
@@ -73,40 +67,40 @@ public class Demo {
 
         XOozieClient oozieClient =
                 new XOozieClient(Util.readPropertiesFile(gs1001.getEnvFileName(), "oozie_url"));
-        Bundle b = new Bundle();
-        try {
+//        Bundle b = new Bundle();
+//        try {
+/*
+            b = (Bundle) Util.readELBundles()[0][0];
+            b = new Bundle(b, gs1001.getEnvFileName());
+            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+            String startTime = instanceUtil.getTimeWrtSystemTime(-20);
+            String endTime = instanceUtil.getTimeWrtSystemTime(200);
 
-			/*		b = (Bundle)Util.readELBundles()[0][0];
-            b  = new Bundle(b,gs1001.getEnvFileName());
-			b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-			String startTime = instanceUtil.getTimeWrtSystemTime(-20);
-			String endTime = instanceUtil.getTimeWrtSystemTime(200);
+            b.setProcessValidity(startTime, endTime);
+            b.setProcessPeriodicity(5, TimeUnit.minutes);
+            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+            b.setOutputFeedLocationData("/examples/samarth/output-data/aggregator/aggregatedLogs/"
+                    + "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+            b.setProcessConcurrency(3);
+            b.setProcessTimeOut(1, TimeUnit.minutes);
+            b.submitAndScheduleBundle(prismHelper);
+*/
 
-
-			b.setProcessValidity(startTime,endTime);
-			b.setProcessPeriodicity(5,TimeUnit.minutes);
-			b.setOutputFeedPeriodicity(5,TimeUnit.minutes);
-			b.setOutputFeedLocationData("/examples/samarth/output-data/aggregator/aggregatedLogs/$
-			{YEAR}/${MONTH}/$
-			{DAY}/${HOUR}/${MINUTE}");
-			b.setProcessConcurrency(3);
-			b.setProcessTimeOut(1, TimeUnit.minutes);
-			b.submitAndScheduleBundle(prismHelper);*/
             //	String coordID = instanceUtil.getLatestCoordinator(gs1001, b.getProcessName(),
             // ENTITY_TYPE.PROCESS);
             CoordinatorJob coord =
                     oozieClient.getCoordJobInfo("0000806-130523172649012-oozie-oozi-C");
 
             String actionId_1 = coord.getId() + "@" + 1;
-            String actionId_2 = coord.getId() + "@" + 2;
-            String actionId_3 = coord.getId() + "@" + 3;
+//            String actionId_2 = coord.getId() + "@" + 2;
+//            String actionId_3 = coord.getId() + "@" + 3;
             CoordinatorAction coordActionInfo_1 = oozieClient.getCoordActionInfo(actionId_1);
-            CoordinatorAction coordActionInfo_2 = oozieClient.getCoordActionInfo(actionId_2);
-            CoordinatorAction coordActionInfo_3 = oozieClient.getCoordActionInfo(actionId_3);
-            String status_1 = coordActionInfo_1.getStatus().name();
-            String status_2 = coordActionInfo_2.getStatus().name();
-
-            String status_3 = coordActionInfo_3.getStatus().name();
+//            CoordinatorAction coordActionInfo_2 = oozieClient.getCoordActionInfo(actionId_2);
+//            CoordinatorAction coordActionInfo_3 = oozieClient.getCoordActionInfo(actionId_3);
+//            String status_1 = coordActionInfo_1.getStatus().name();
+//            String status_2 = coordActionInfo_2.getStatus().name();
+//
+//            String status_3 = coordActionInfo_3.getStatus().name();
 
             Util.print(coordActionInfo_1.getId());
             Util.print(coordActionInfo_1.getJobId());
@@ -141,8 +135,8 @@ public class Demo {
                     Integer.toString(1), true, true);
             System.out.println("rerun done");
 
-        } finally {
-            //	b.deleteBundle(prismHelper);
-        }
+//        } finally {
+//            	b.deleteBundle(prismHelper);
+//        }
     }
 }

@@ -37,13 +37,16 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-
+/**
+ * Process instance mixed colo tests.
+ */
+@SuppressWarnings("deprecation")
 public class ProcessInstanceColoMixedTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ua1 = new ColoHelper("mk-qa.config.properties");
-    ColoHelper ua2 = new ColoHelper("ivoryqa-1.config.properties");
-    ColoHelper ua3 = new ColoHelper("gs1001.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ua1 = new ColoHelper("mk-qa.config.properties");
+    private final ColoHelper ua2 = new ColoHelper("ivoryqa-1.config.properties");
+    private final ColoHelper ua3 = new ColoHelper("gs1001.config.properties");
 
 
     @BeforeMethod(alwaysRun = true)
@@ -196,8 +199,7 @@ public class ProcessInstanceColoMixedTest {
             //add clusters to process
 
             String processStartTime = InstanceUtil.getTimeWrtSystemTime(-16);
-            String processEndTime = InstanceUtil.getTimeWrtSystemTime(20);
-
+            // String processEndTime = InstanceUtil.getTimeWrtSystemTime(20);
 
             process = InstanceUtil
                     .setProcessCluster(process, null,
@@ -219,12 +221,12 @@ public class ProcessInstanceColoMixedTest {
             //submit and schedule process
             Util.print("process: " + process);
 
-            r = prismHelper.getProcessHelper()
+            prismHelper.getProcessHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
             Util.print("Wait till process goes into running ");
 
-            int i = 0;
+            int i;
 
             for (i = 0; i < 30; i++) {
                 Status sUa1 =

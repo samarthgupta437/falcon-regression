@@ -27,10 +27,8 @@ import junit.framework.Assert;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
-import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.testng.TestNGException;
@@ -39,11 +37,17 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
+/**
+ * Feed resume tests.
+ */
 public class FeedResumeTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final IEntityManagerHelper feedHelper = prismHelper.getFeedHelper();
+
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
@@ -51,37 +55,32 @@ public class FeedResumeTest {
     }
 
 
-    IEntityManagerHelper feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
+//    IEntityManagerHelper feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
+//    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
 
     @Test(groups = {"singleCluster"}, dataProvider = "DP")
     public void resumeSuspendedFeed(Bundle bundle) throws Exception {
-
         try {
             bundle.generateUniqueBundle();
 
             bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-
-            bundle.submitCluster(bundle);
+            Bundle.submitCluster(bundle);
 
             String feed = Util.getInputFeedFromBundle(bundle);
 
-            Util.assertSucceeded(prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-            Util.assertSucceeded(prismHelper.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
+            Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+            Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
+
+            final ArrayList<String> jobStatus =
+                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1);
+            Assert.assertTrue(jobStatus.get(0).contains("SUSPENDED"));
 
 
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1)
-                            .get(0)
-                            .contains("SUSPENDED"));
+            Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
+            ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
 
-            Util.assertSucceeded(prismHelper.getFeedHelper().resume(URLS.RESUME_URL, feed));
-
-            ServiceResponse response = prismHelper.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
-
-            String colo = prismHelper.getFeedHelper().getColo();
+            String colo = feedHelper.getColo();
             Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
 
             Assert.assertTrue(
@@ -93,16 +92,15 @@ public class FeedResumeTest {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            prismHelper.getFeedHelper()
+            feedHelper
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
     }
 
 
     public void submitCluster(Bundle bundle) throws Exception {
-        ServiceResponse response =
-                prismHelper.getClusterHelper()
-                        .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse response = prismHelper.getClusterHelper().submitEntity(
+                URLS.SUBMIT_URL, bundle.getClusters().get(0));
 
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
@@ -116,15 +114,12 @@ public class FeedResumeTest {
             submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
 
-
-            Util.assertFailed(prismHelper.getFeedHelper().resume(URLS.RESUME_URL, feed));
-
+            Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
 
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         }
-
     }
 
 
@@ -135,20 +130,18 @@ public class FeedResumeTest {
             submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
 
-            Util.assertSucceeded(prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+            Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-            Util.assertSucceeded(prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed));
+            Util.assertSucceeded(feedHelper.delete(URLS.DELETE_URL, feed));
 
-            Util.assertFailed(prismHelper.getFeedHelper().resume(URLS.RESUME_URL, feed));
-
+            Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
 
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
 
-            prismHelper.getFeedHelper()
+            feedHelper
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
     }
@@ -162,19 +155,17 @@ public class FeedResumeTest {
             submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
 
-            Util.assertSucceeded(prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+            Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
+            Assert.assertTrue(Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
                             .get(0)
                             .contains("RUNNING"));
 
-            Util.assertSucceeded(prismHelper.getFeedHelper().resume(URLS.RESUME_URL, feed));
+            Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
 
-            ServiceResponse response = prismHelper.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
-            String colo = prismHelper.getFeedHelper().getColo();
+            ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
+            String colo = feedHelper.getColo();
             Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
             Assert.assertTrue(
                     Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
@@ -185,10 +176,7 @@ public class FeedResumeTest {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-
+            feedHelper.delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
     }
 
@@ -197,5 +185,4 @@ public class FeedResumeTest {
     public Object[][] getData(Method m) throws Exception {
         return Util.readELBundles();
     }
-
 }
