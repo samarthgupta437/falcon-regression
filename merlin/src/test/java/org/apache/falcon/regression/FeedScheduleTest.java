@@ -36,9 +36,12 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
+/**
+ * Feed schedule tests.
+ */
 public class FeedScheduleTest {
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
 
     @BeforeMethod(alwaysRun = true)
@@ -54,11 +57,10 @@ public class FeedScheduleTest {
 
             bundle = (Bundle) Util.readELBundles()[0][0];
             bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            bundle.submitCluster(bundle);
+            Bundle.submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
 
-            ServiceResponse response =
-                    prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+            ServiceResponse response = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
             Util.assertSucceeded(response);
 
             response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
@@ -95,12 +97,12 @@ public class FeedScheduleTest {
 
             bundle = (Bundle) Util.readELBundles()[0][0];
             bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            bundle.submitCluster(bundle);
+            Bundle.submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
             //submit feed
-            ServiceResponse response =
-                    prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+            ServiceResponse response = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
             Util.assertSucceeded(response);
+
             //now schedule the thing
             response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             Util.assertSucceeded(response);
@@ -113,12 +115,9 @@ public class FeedScheduleTest {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-
-
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
-
     }
 
 
@@ -129,7 +128,7 @@ public class FeedScheduleTest {
 
             bundle = (Bundle) Util.readELBundles()[0][0];
             bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            bundle.submitCluster(bundle);
+            Bundle.submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
             Util.assertSucceeded(prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
@@ -152,9 +151,7 @@ public class FeedScheduleTest {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-
+            prismHelper.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
     }
 
@@ -165,10 +162,10 @@ public class FeedScheduleTest {
 
             bundle = (Bundle) Util.readELBundles()[0][0];
             bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            bundle.submitCluster(bundle);
+            Bundle.submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
-            Util.assertSucceeded(prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+            Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(
+                    URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
             //now suspend
             Util.assertSucceeded(prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed));
@@ -184,7 +181,6 @@ public class FeedScheduleTest {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
@@ -193,10 +189,8 @@ public class FeedScheduleTest {
     @Test(groups = {"singleCluster"}, dataProvider = "DP", dataProviderClass = FeedSubmitTest.class)
     public void scheduleNonExistentFeed(Bundle bundle) throws Exception {
         bundle.generateUniqueBundle();
-        bundle.submitCluster(bundle);
+        Bundle.submitCluster(bundle);
         String feed = Util.getInputFeedFromBundle(bundle);
         Util.assertFailed(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
     }
-
-
 }

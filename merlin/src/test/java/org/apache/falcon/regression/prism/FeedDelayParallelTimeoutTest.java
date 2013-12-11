@@ -32,7 +32,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class Feed_Delay_Parallel_TimeoutTest {
+public class FeedDelayParallelTimeoutTest {
 
     PrismHelper prismHelper = new PrismHelper("prism.properties");
     ColoHelper gs1001 = new ColoHelper("gs1001.config.properties");

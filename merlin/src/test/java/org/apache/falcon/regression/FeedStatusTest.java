@@ -27,10 +27,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
-import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
-import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.testng.Assert;
@@ -41,10 +38,13 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
+/**
+ * Feed status tests.
+ */
 public class FeedStatusTest {
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
     //ColoHelper ivoryqa1 = new ColoHelper("gs1001.config.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
@@ -52,14 +52,13 @@ public class FeedStatusTest {
     }
 
 
-    IEntityManagerHelper feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
+//    IEntityManagerHelper feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
+//    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
 
     public void submitCluster(Bundle bundle) throws Exception {
 
-        ServiceResponse response =
-                prismHelper.getClusterHelper()
-                        .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse response = prismHelper.getClusterHelper().submitEntity(
+                URLS.SUBMIT_URL, bundle.getClusters().get(0));
 
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
@@ -101,10 +100,7 @@ public class FeedStatusTest {
 
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-
-
         }
-
     }
 
 
@@ -142,7 +138,6 @@ public class FeedStatusTest {
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
-
     }
 
 
@@ -176,7 +171,6 @@ public class FeedStatusTest {
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
-
     }
 
 
@@ -213,7 +207,6 @@ public class FeedStatusTest {
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
-
     }
 
 
@@ -232,10 +225,8 @@ public class FeedStatusTest {
         // Assert.assertEquals(Util.statusMessage(response.getMessage(),"status"),"FAILED");
     }
 
-
     @DataProvider(name = "DP")
     public Object[][] getData(Method m) throws Exception {
         return Util.readELBundles();
     }
-
 }

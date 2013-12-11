@@ -44,9 +44,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Embedded pig script test.
+ */
 public class EmbeddedPigScriptTest {
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("gs1001.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("gs1001.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {

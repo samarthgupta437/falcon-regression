@@ -39,12 +39,10 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
+/**
+ * Feed submit and schedule tests.
+ */
 public class FeedSubmitAndScheduleTest {
-
-	/*
-     * To change this template, choose Tools | Templates
-	 * and open the template in the editor.
-	 */
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
@@ -52,11 +50,11 @@ public class FeedSubmitAndScheduleTest {
     }
 
 
-    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
-    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+//    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
+//    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
+//    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
 
     @Test(groups = {"singleCluster"}, dataProvider = "DP")

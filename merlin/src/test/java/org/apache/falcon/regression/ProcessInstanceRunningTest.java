@@ -41,8 +41,8 @@ import java.util.List;
 
 public class ProcessInstanceRunningTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("gs1001.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("gs1001.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -53,8 +53,7 @@ public class ProcessInstanceRunningTest {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
@@ -75,8 +74,9 @@ public class ProcessInstanceRunningTest {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
 
         InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
     }
@@ -215,22 +215,23 @@ public class ProcessInstanceRunningTest {
             b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
             b.submitAndScheduleBundle(prismHelper);
-            org.apache.oozie.client.Job.Status s = null;
+            org.apache.oozie.client.Job.Status status = null;
             for (int i = 0; i < 45; i++) {
-                s = InstanceUtil.getDefaultCoordinatorStatus(ivoryqa1,
+                status = InstanceUtil.getDefaultCoordinatorStatus(ivoryqa1,
                         Util.getProcessName(b.getProcessData()), 0);
-                if (s.equals(org.apache.oozie.client.Job.Status.SUCCEEDED))
+                if (status.equals(org.apache.oozie.client.Job.Status.SUCCEEDED))
                     break;
                 Thread.sleep(45000);
             }
 
-            if (!s.equals(org.apache.oozie.client.Job.Status.SUCCEEDED))
-                Assert.assertTrue(false, "The job did not succeeded even in long time");
+            Assert.assertNotNull(status);
+            Assert.assertEquals(status, org.apache.oozie.client.Job.Status.SUCCEEDED,
+                    "The job did not succeeded even in long time");
 
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prismHelper.getProcessHelper()
                     .getRunningInstance(URLS.INSTANCE_RUNNING,
                             Util.readEntityName(b.getProcessData()));
-            InstanceUtil.validateSuccessWOInstances(r);
+            InstanceUtil.validateSuccessWOInstances(result);
         } finally {
             b.deleteBundle(prismHelper);
         }
@@ -244,13 +245,10 @@ public class ProcessInstanceRunningTest {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
-
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, ivoryqa1.getEnvFileName());
         b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
         Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
     }
-
 }

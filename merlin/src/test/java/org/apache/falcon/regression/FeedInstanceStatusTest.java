@@ -36,22 +36,24 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 
 
+/**
+ * Feed instance status tests.
+ */
 public class FeedInstanceStatusTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
 
-    ColoHelper mkqa = new ColoHelper("mk-qa.config.properties");
+    private final ColoHelper mkqa = new ColoHelper("mk-qa.config.properties");
 
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
-    ColoHelper gs1001 = new ColoHelper("gs1001.config.properties");
+    private final ColoHelper gs1001 = new ColoHelper("gs1001.config.properties");
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Util.restartService(mkqa.getClusterHelper());
         Util.restartService(ivoryqa1.getClusterHelper());
-
     }
 
 
@@ -104,12 +106,11 @@ public class FeedInstanceStatusTest {
             String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
 
 
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                            InstanceUtil.addMinsToTime(startTime, 65)),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "US/${cluster.colo}");
+            feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    InstanceUtil.addMinsToTime(startTime, 65)),
+                    XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                    Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
+                    "US/${cluster.colo}");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
                             InstanceUtil.addMinsToTime(startTime, 85)),
@@ -126,14 +127,14 @@ public class FeedInstanceStatusTest {
             Util.print("feed: " + feed);
 
             //status before submit
-            ProcessInstancesResult responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 100) + "&end=" +
                             InstanceUtil.addMinsToTime(startTime, 120));
 
             r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
             Thread.sleep(10000);
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + startTime + "&end=" + InstanceUtil
                                     .addMinsToTime(startTime, 100));
@@ -142,32 +143,31 @@ public class FeedInstanceStatusTest {
             Thread.sleep(15000);
 
             // both replication instances
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + startTime + "&end=" + InstanceUtil
                                     .addMinsToTime(startTime, 100));
 
 
             // single instance at -30
-            responseInstance =
                     prismHelper.getFeedHelper().getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + InstanceUtil
                                     .addMinsToTime(startTime, 20));
 
             //single at -10
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 40));
 
 
             //single at 10
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 40));
 
 
             //single at 30
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 40));
 
@@ -185,30 +185,30 @@ public class FeedInstanceStatusTest {
 
 
             // both replication instances
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + startTime + "&end=" + InstanceUtil
                                     .addMinsToTime(startTime, 100));
 
             // single instance at -30
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 20));
 
             //single at -10
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 40));
 
 
             //single at 10
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 40));
 
 
             //single at 30
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 40));
 
@@ -217,74 +217,72 @@ public class FeedInstanceStatusTest {
 
 
             //suspend instances -10
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceSuspend(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 40));
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 20) + "&end=" +
                             InstanceUtil.addMinsToTime(startTime, 40));
 
             //resuspend -10 and suspend -30 source specific
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceSuspend(Util.readDatasetName(feed),
                             "?start=" + InstanceUtil
                                     .addMinsToTime(startTime, 20) + "&end=" +
                                     InstanceUtil.addMinsToTime(startTime, 40));
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 20) + "&end=" +
                             InstanceUtil.addMinsToTime(startTime, 40));
 
 
             //resume -10 and -30
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceResume(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 20) + "&end=" +
                             InstanceUtil.addMinsToTime(startTime, 40));
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 20) + "&end=" +
                             InstanceUtil.addMinsToTime(startTime, 40));
 
             //get running instances
-            responseInstance =
-                    prismHelper.getFeedHelper()
-                            .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readDatasetName(feed));
+            prismHelper.getFeedHelper().getRunningInstance(URLS.INSTANCE_RUNNING, Util.readDatasetName(feed));
 
             //rerun succeeded instance
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceRerun(Util.readDatasetName(feed), "?start=" + startTime);
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + startTime + "&end=" + InstanceUtil
                                     .addMinsToTime(startTime, 20));
 
             //kill instance
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceKill(Util.readDatasetName(feed), "?start=" + InstanceUtil
                             .addMinsToTime(startTime, 44));
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceKill(Util.readDatasetName(feed), "?start=" + startTime);
 
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + startTime + "&end=" + InstanceUtil
                                     .addMinsToTime(startTime, 120));
 
 
             //rerun killed instance
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceRerun(Util.readDatasetName(feed), "?start=" + startTime);
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + startTime + "&end=" + InstanceUtil
                                     .addMinsToTime(startTime, 120));
 
 
             //kill feed
-            r = prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed);
-            responseInstance = prismHelper.getFeedHelper()
+            prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed);
+            ProcessInstancesResult responseInstance = prismHelper.getFeedHelper()
                     .getProcessInstanceStatus(Util.readDatasetName(feed),
                             "?start=" + startTime + "&end=" + InstanceUtil
                                     .addMinsToTime(startTime, 120));
@@ -292,12 +290,10 @@ public class FeedInstanceStatusTest {
             Util.print(responseInstance.getMessage());
 
         } finally {
-
             b1.deleteBundle(prismHelper);
             b2.deleteBundle(prismHelper);
             b3.deleteBundle(prismHelper);
         }
-
     }
 
 	
@@ -483,11 +479,7 @@ public class FeedInstanceStatusTest {
 			b2.deleteBundle(prismHelper);
 			b3.deleteBundle(prismHelper);
 		}
-		
-}
-	
-
-
+    }
 	
 	@Test(groups = {"multiCluster"})
 	public void feedInstanceStatus_s1s_s1e_t1s_t1e_s2s_s2e() throws Exception
@@ -717,10 +709,8 @@ public class FeedInstanceStatusTest {
 			b2.deleteBundle(prismHelper);
 			b3.deleteBundle(prismHelper);
 		}
-		
-}	
-	
-	
+    }
+
 	@Test(groups = {"multiCluster"})
 	public void feedInstanceStatus_s1s_s1e_s2s_t1s_t1e_s2e() throws Exception
 	{
@@ -855,8 +845,7 @@ public class FeedInstanceStatusTest {
 			b2.deleteBundle(prismHelper);
 			b3.deleteBundle(prismHelper);
 		}
-		
-}*/
-
+    }
+*/
 
 }

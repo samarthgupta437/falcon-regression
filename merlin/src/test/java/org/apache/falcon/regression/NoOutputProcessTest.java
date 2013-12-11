@@ -37,10 +37,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class NoOutputPorcessTest {
+/**
+ * Null output process tests.
+ */
+public class NoOutputProcessTest {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -51,8 +54,7 @@ public class NoOutputPorcessTest {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, ivoryqa1.getEnvFileName());
 
@@ -73,8 +75,9 @@ public class NoOutputPorcessTest {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
 
         InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
     }
@@ -106,10 +109,9 @@ public class NoOutputPorcessTest {
             Thread.sleep(15000);
 
             //wait for all the instances to complete
-            InstanceUtil
-                    .waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                            CoordinatorAction.Status.SUCCEEDED,
-                            20);
+            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
+                    CoordinatorAction.Status.SUCCEEDED,
+                    20);
 
             Assert.assertEquals(consumer.getMessageData().size(), 3,
                     " Message for all the 3 instance not found");
@@ -149,10 +151,9 @@ public class NoOutputPorcessTest {
             Thread.sleep(15000);
 
             //wait for all the instances to complete
-            InstanceUtil
-                    .waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                            CoordinatorAction.Status.SUCCEEDED,
-                            20);
+            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
+                    CoordinatorAction.Status.SUCCEEDED,
+                    20);
 
             Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
                     " Message for all the 3 instance not found");
@@ -165,11 +166,8 @@ public class NoOutputPorcessTest {
             Util.dumpConsumerData(consumerInternalMsg);
             Util.dumpConsumerData(consumerProcess);
 
-
         } finally {
             b.deleteBundle(prismHelper);
-
         }
     }
-
 }

@@ -26,10 +26,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
-import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
-import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.testng.Assert;
@@ -40,24 +37,22 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
+/**
+ * Feed submission tests.
+ */
 public class FeedSubmitTest {
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
         Util.print("test name: " + method.getName());
     }
 
-
-    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
-    IEntityManagerHelper feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-
     public void submitCluster(Bundle bundle) throws Exception {
         //submit the cluster
-        ServiceResponse response =
-                prismHelper.getClusterHelper()
-                        .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse response = prismHelper.getClusterHelper().submitEntity(
+                URLS.SUBMIT_URL, bundle.getClusters().get(0));
 
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
@@ -102,7 +97,7 @@ public class FeedSubmitTest {
             response = prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed);
             Util.assertSucceeded(response);
 
-            response = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+            prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -111,7 +106,6 @@ public class FeedSubmitTest {
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
-
     }
 
 
@@ -174,6 +168,4 @@ public class FeedSubmitTest {
     public static Object[][] getData(Method m) throws Exception {
         return Util.readELBundles();
     }
-
-
 }

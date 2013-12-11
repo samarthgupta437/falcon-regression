@@ -1136,11 +1136,8 @@ public class InstanceUtil {
      * method has been replaced
      */
     public static String setFeedCluster(String feed,
-                                        org.apache.falcon.regression.core.generated.feed.Validity
-                                                v1,
-                                        Retention r1, String n1, ClusterType t1, String partition)
-    throws Exception {
-
+                                        org.apache.falcon.regression.core.generated.feed.Validity v1,
+                                        Retention r1, String n1, ClusterType t1, String partition) throws Exception {
 
         org.apache.falcon.regression.core.generated.feed.Cluster c1 =
                 new org.apache.falcon.regression.core.generated.feed.Cluster();

@@ -24,7 +24,6 @@ import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.hcatalog.api.HCatClient;
 import org.testng.annotations.Test;
 
 public class SubmitClusterHcat {
@@ -32,7 +31,7 @@ public class SubmitClusterHcat {
     PrismHelper prismHelper = new PrismHelper("prism.properties");
     ColoHelper ua4 = new ColoHelper("ua4.properties");
 
-    private HCatClient client;
+    // private HCatClient client;
 
     @Test(enabled = true, timeOut = 1800000)
     public void SubmitCluster_hcat() {
@@ -41,7 +40,7 @@ public class SubmitClusterHcat {
         String feed02 = "";
         String process = "";
 
-        Bundle b = new Bundle();
+        Bundle b;
         try {
             b = (Bundle) Bundle.readBundle("src/test/resources/hcat_2")[0][0];
             b.generateUniqueBundle();
@@ -80,7 +79,6 @@ public class SubmitClusterHcat {
             Util.assertSucceeded(r);
 
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {
             try {
@@ -89,7 +87,6 @@ public class SubmitClusterHcat {
                 prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed02);
                 prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
