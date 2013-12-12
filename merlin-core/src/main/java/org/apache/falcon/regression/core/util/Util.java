@@ -909,7 +909,8 @@ public class Util {
         return jobList;
     }
 
-    /*public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState)
+    /*public static ArrayList<String> getOozieFeedJobStatus(String processName,
+    String expectedState)
     throws Exception {
 
         String statusCommand =
@@ -3217,7 +3218,7 @@ public class Util {
 
     public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
                                            String folderPrefix, String fileToBePut)
-        throws Exception {
+    throws Exception {
         List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
         Util.print("folderData: " + folderPaths.toString());
 
@@ -3277,7 +3278,7 @@ public class Util {
 
     public static ArrayList<String> getBundles(PrismHelper coloHelper,
                                                String entityName, ENTITY_TYPE entityType)
-        throws Exception {
+    throws Exception {
 
         if (entityType.equals(ENTITY_TYPE.FEED)) {
             return runRemoteScript(
@@ -3317,7 +3318,7 @@ public class Util {
     public static Properties getPropertiesObj(String filename) {
         try {
             Properties properties = new Properties();
-            System.out.println("filename: "+ filename);
+            System.out.println("filename: " + filename);
             FileInputStream conf_stream =
                     new FileInputStream(new File("src/main/resources/" + filename));
             properties.load(conf_stream);
