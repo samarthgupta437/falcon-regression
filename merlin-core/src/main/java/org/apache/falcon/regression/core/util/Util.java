@@ -677,7 +677,7 @@ public class Util {
             logger.info("will read from config file for env: " + System.getProperty("environment"));
             FileInputStream conf_stream =
                     new FileInputStream(
-                            new File("merlin/src/main/resources/" + System.getProperty
+                            new File("src/main/resources/" + System.getProperty
                                     ("environment")));
 
 
@@ -701,7 +701,7 @@ public class Util {
         try {
             //logger.info("will read from config file for env: "+System.getProperty("environment"));
             FileInputStream conf_stream =
-                    new FileInputStream(new File("merlin/src/main/resources/" + filename));
+                    new FileInputStream(new File("src/main/resources/" + filename));
 
 
             Properties properties = new Properties();
@@ -735,7 +735,7 @@ public class Util {
     }
 
     public static Object[][] readELBundles() throws Exception {
-        final String FILEPATH = "merlin/src/test/resources/ELbundle";
+        final String FILEPATH = "src/test/resources/ELbundle";
 
         List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
 
@@ -3319,7 +3319,7 @@ public class Util {
             Properties properties = new Properties();
             System.out.println("filename: "+ filename);
             FileInputStream conf_stream =
-                    new FileInputStream(new File("merlin/src/main/resources/" + filename));
+                    new FileInputStream(new File("src/main/resources/" + filename));
             properties.load(conf_stream);
             conf_stream.close();
             return properties;
