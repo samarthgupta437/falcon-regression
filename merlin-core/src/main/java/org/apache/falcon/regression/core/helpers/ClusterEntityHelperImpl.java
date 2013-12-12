@@ -84,6 +84,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     public ServiceResponse submitEntity(String url, String data) throws Exception {
         //throw new UnsupportedOperationException("Not supported yet.");
+        System.out.println("Submitting cluster: "+data);
         url += "/cluster" + colo;
 
         return Util.sendRequest(url, data);
@@ -111,8 +112,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ServiceResponse submitEntity(Util.URLS url, String data) throws Exception {
-        // TODO Auto-generated method stub
-        //throw new UnsupportedOperationException("Not supported yet.");
+        System.out.println("Submitting cluster: "+data);
         return submitEntity(this.hostname + url.getValue(), data);
     }
 

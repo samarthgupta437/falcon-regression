@@ -82,6 +82,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -158,7 +159,7 @@ public class Util {
         }
 
 
-        request.setHeader("Remote-User", System.getenv("USER"));
+        request.setHeader("Remote-User", System.getProperty("user.name"));
 
         logger.info("hitting the url: " + url);
 
@@ -196,7 +197,7 @@ public class Util {
         HttpPost post = new HttpPost(url);
 
         post.setHeader("Content-Type", "text/xml");
-        post.setHeader("Remote-User", System.getenv("USER"));
+        post.setHeader("Remote-User", System.getProperty("user.name"));
         post.setEntity(new StringEntity(data));
 
         System.out.println("hitting the URL: " + url);
@@ -307,10 +308,13 @@ public class Util {
     }*/
 
     public static File[] getFiles(String directoryPath) throws Exception {
+        if(directoryPath.contains("/test-classes"))
+            directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
+                    +"/test-classes".length()+1,directoryPath.length());
         System.out.println("directoryPath: " + directoryPath);
-
-        File dir = new File(directoryPath);
-
+        URL url = Util.class.getResource("/"+directoryPath) ;
+        System.out.println("url"+url);
+        File dir = new File(url.toURI());
         return dir.listFiles();
     }
 
@@ -700,9 +704,8 @@ public class Util {
 
         try {
             //logger.info("will read from config file for env: "+System.getProperty("environment"));
-            FileInputStream conf_stream =
-                    new FileInputStream(new File("src/main/resources/" + filename));
-
+            InputStream conf_stream =
+                    Util.class.getResourceAsStream("/" + filename);
 
             Properties properties = new Properties();
             properties.load(conf_stream);
@@ -735,7 +738,7 @@ public class Util {
     }
 
     public static Object[][] readELBundles() throws Exception {
-        final String FILEPATH = "src/test/resources/ELbundle";
+        final String FILEPATH = "ELbundle";
 
         List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
 
@@ -3318,8 +3321,9 @@ public class Util {
         try {
             Properties properties = new Properties();
             System.out.println("filename: "+ filename);
-            FileInputStream conf_stream =
-                    new FileInputStream(new File("src/main/resources/" + filename));
+            InputStream conf_stream =
+                    //new FileInputStream(new File("src/main/resources/" + filename));
+                    Util.class.getResourceAsStream("/" + filename);
             properties.load(conf_stream);
             conf_stream.close();
             return properties;

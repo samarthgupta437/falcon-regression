@@ -96,7 +96,17 @@ public class InstanceUtil {
 
   public static ProcessInstancesResult sendRequestProcessInstance(String
                                                                     url) throws Exception {
-    return sendRequestProcessInstance(url, System.getProperty("user.name"));
+      HttpRequestBase request;
+      if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
+              Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
+              Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
+              Thread.currentThread().getStackTrace()[3].getMethodName().contains("Rerun")) {
+          request = new HttpPost();
+
+      } else
+          request = new HttpGet();
+      request.setHeader("Remote-User", System.getProperty("user.name"));
+      return hitUrl(url, request);
   }
 
   public static ProcessInstancesResult sendRequestProcessInstance(String
@@ -228,7 +238,7 @@ public class InstanceUtil {
     java.io.StringWriter sw = new StringWriter();
     Marshaller marshaller = jc.createMarshaller();
     marshaller.marshal(processElement, sw);
-    logger.info("modified process is: " + sw);
+    //logger.info("modified process is: " + sw);
     bundle.setProcessData(sw.toString());
   }
 
@@ -1132,7 +1142,7 @@ public class InstanceUtil {
     java.io.StringWriter sw = new StringWriter();
     Marshaller marshaller = jc.createMarshaller();
     marshaller.marshal(c, sw);
-    logger.info("modified process is: " + sw);
+    //logger.info("modified process is: " + sw);
     bundle.setClusterData(sw.toString());
   }
 
@@ -1833,7 +1843,7 @@ public class InstanceUtil {
     java.io.StringWriter sw = new StringWriter();
     Marshaller marshaller = jc.createMarshaller();
     marshaller.marshal(c, sw);
-    logger.info("modified process is: " + sw);
+    //logger.info("modified process is: " + sw);
     return sw.toString();
   }
 

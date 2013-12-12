@@ -27,11 +27,20 @@ import org.apache.oozie.client.XOozieClient;
 import org.apache.oozie.client.rest.RestConstants;
 import org.testng.annotations.Test;
 
+import java.util.Properties;
+
 
 /**
  * Demo.
  */
 public class Demo {
+
+    public static void main(String[] args) {
+        String file = "prism.properties";
+        Properties properties = Util.getPropertiesObj(file);
+        System.out.println("properties = " + properties);
+    }
+
 
 //    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
 //    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);
