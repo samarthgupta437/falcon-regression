@@ -100,8 +100,6 @@
         <oozie.version>3.2.2</oozie.version>
         <falcon.oozie.version>4.0.0-falcon</falcon.oozie.version>
         <activemq.version>5.4.3</activemq.version>
-        <hive.version>0.11.0</hive.version>
-        <hcatalog.version>0.11.0</hcatalog.version>
         <hadoop-distcp.version>0.9</hadoop-distcp.version>
         <jetty.version>6.1.26</jetty.version>
         <internal.maven.repo>file:///tmp/falcontemprepo</internal.maven.repo>
@@ -457,7 +455,7 @@
                 <artifactId>commons-el</artifactId>
                 <version>1.0</version>
             </dependency>
-
+<!--
             <dependency>
                 <groupId>org.apache.falcon</groupId>
                 <artifactId>falcon-client</artifactId>
@@ -469,42 +467,11 @@
                 <artifactId>falcon-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+-->
             <dependency>
                 <groupId>org.apache.falcon</groupId>
                 <artifactId>falcon-merlin-core</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-common</artifactId>
-                <version>${hive.version}</version>
-            </dependency>
-
-            <!--  this is needed for embedded oozie -->
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-exec</artifactId>
-                <version>${hive.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.hive</groupId>
-                <artifactId>hive-metastore</artifactId>
-                <version>${hive.version}</version>
-                <exclusions>
-                    <exclusion> <!--Oozie already imports this-->
-                        <groupId>org.apache.derby</groupId>
-                        <artifactId>derby</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.hcatalog</groupId>
-                <artifactId>webhcat-java-client</artifactId>
-                <version>${hcatalog.version}</version>
             </dependency>
 
             <dependency>
