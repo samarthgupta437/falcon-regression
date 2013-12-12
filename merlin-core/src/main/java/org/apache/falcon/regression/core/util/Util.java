@@ -97,8 +97,8 @@ public class Util {
 
     //This section is for properties that are read from the config.properties file and then used
     // throughout
-    final static Properties properties = getPropertiesObj
-            ("src/main/resources/" + System.getProperty("environment"));
+/*    final static Properties properties = getPropertiesObj
+            ("src/main/resources/" + "invalid.properties");
     final static String HOST_NAME = properties.getProperty("qa_host");
     final static String USER_NAME = properties.getProperty("username");
     final static String PASSWORD = properties.getProperty("password");
@@ -109,7 +109,7 @@ public class Util {
     //final static String HOSTNAME = properties.getProperty("ivory_hostname");
     //final static String ACTIVEMQ = properties.getProperty("activemq_url");
     final static String IDENTITY_FILE = properties.getProperty("identityFile",
-            System.getProperty("user.home") + "/.ssh/id_rsa");
+            System.getProperty("user.home") + "/.ssh/id_rsa");      */
     static Logger logger = Logger.getLogger(Util.class);
     //config file property section ends here
 
@@ -677,7 +677,8 @@ public class Util {
             logger.info("will read from config file for env: " + System.getProperty("environment"));
             FileInputStream conf_stream =
                     new FileInputStream(
-                            new File("src/main/resources/" + System.getProperty("environment")));
+                            new File("merlin/src/main/resources/" + System.getProperty
+                                    ("environment")));
 
 
             Properties properties = new Properties();
@@ -700,7 +701,7 @@ public class Util {
         try {
             //logger.info("will read from config file for env: "+System.getProperty("environment"));
             FileInputStream conf_stream =
-                    new FileInputStream(new File("src/main/resources/" + filename));
+                    new FileInputStream(new File("merlin/src/main/resources/" + filename));
 
 
             Properties properties = new Properties();
@@ -734,7 +735,7 @@ public class Util {
     }
 
     public static Object[][] readELBundles() throws Exception {
-        final String FILEPATH = "src/test/resources/ELbundle";
+        final String FILEPATH = "merlin/src/test/resources/ELbundle";
 
         List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
 
@@ -796,6 +797,7 @@ public class Util {
 
     }
 
+/*
     public static ArrayList<String> getOozieJobStatus(String processName) throws Exception {
 
         logger.info(OOZIE_LOCATION + "/oozie jobs -oozie " + OOZIE_URL +
@@ -828,6 +830,7 @@ public class Util {
 
 
     }
+*/
 
     public static ArrayList<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
                                                       String expectedState)
@@ -906,7 +909,7 @@ public class Util {
         return jobList;
     }
 
-    public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState)
+    /*public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState)
     throws Exception {
 
         String statusCommand =
@@ -938,7 +941,7 @@ public class Util {
 
         logger.info(jobList.get(0));
         return jobList;
-    }
+    }*/
 
     public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState,
                                                           PrismHelper coloHelper)
@@ -2109,7 +2112,7 @@ public class Util {
         logger.info("created all late data folders.....");
     }
 
-    public static void createLateDataFolders(List<String> folderList) throws Exception {
+    /*public static void createLateDataFolders(List<String> folderList) throws Exception {
         logger.info("creating late data folders.....");
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + HADOOP_URL + "");
@@ -2132,7 +2135,7 @@ public class Util {
         }
 
         logger.info("created all late data folders.....");
-    }
+    }*/
 
     public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
                                          String directory)
@@ -2331,10 +2334,12 @@ public class Util {
         return null;
     }
 
+/*
     public static void HDFSCleanup(String hdfsPath) throws Exception {
         runRemoteScript(HOST_NAME, USER_NAME, PASSWORD, HADOOP_LOCATION + "  dfs -rmr" +
                 "  hdfs://" + HADOOP_URL + "/" + hdfsPath, IDENTITY_FILE);
     }
+*/
 
     public static void HDFSCleanup(PrismHelper prismHelper, String hdfsPath) throws Exception {
         runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
@@ -2355,7 +2360,7 @@ public class Util {
                 "src/test/resources/OozieExampleInputData/normalInput");
     }
 
-    public static void lateDataReplenish(String baseFolder, int interval,
+    /*public static void lateDataReplenish(String baseFolder, int interval,
                                          int minuteSkip)
     throws Exception {
         List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
@@ -2364,16 +2369,16 @@ public class Util {
         Util.copyDataToFolders(baseFolder, folderData,
                 "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS",
                 "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
-    }
+    }*/
 
-    public static void lateDataReplenish(String baseFolder, int interval,
+    /*public static void lateDataReplenish(String baseFolder, int interval,
                                          int minuteSkip, String... files)
     throws Exception {
         List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFolders(folderData);
         Util.copyDataToFolders(baseFolder, folderData, files);
-    }
+    }*/
 
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
                                          int minuteSkip, String... files)
@@ -2458,7 +2463,7 @@ public class Util {
 
     }*/
 
-    public static void lateDataReplenish(int interval, int minuteSkip,
+    /*public static void lateDataReplenish(int interval, int minuteSkip,
                                          String folderPrefix)
     throws Exception {
         List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
@@ -2468,7 +2473,7 @@ public class Util {
         Util.copyDataToFolders(folderPrefix, folderPaths,
                 "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS",
                 "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
-    }
+    }*/
 
     public static void lateDataReplenish(PrismHelper prismHelper, int interval,
                                          int minuteSkip,
@@ -2506,7 +2511,7 @@ public class Util {
         }
     }
 
-    public static void createLateDataFolders(List<String> folderList, final String FolderPrefix)
+    /*public static void createLateDataFolders(List<String> folderList, final String FolderPrefix)
     throws Exception {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + HADOOP_URL + "");
@@ -2526,7 +2531,7 @@ public class Util {
                 }
             });
         }
-    }
+    }*/
 
     public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
                                          List<String> folderList,
@@ -2577,7 +2582,7 @@ public class Util {
         }
     }
 
-    public static void copyDataToFolders(final String folderPrefix, List<String> folderList,
+    /*public static void copyDataToFolders(final String folderPrefix, List<String> folderList,
                                          String... fileLocations)
     throws Exception {
         Configuration conf = new Configuration();
@@ -2602,7 +2607,7 @@ public class Util {
                 });
             }
         }
-    }
+    }*/
 
     public static String getFeedName(String feedData) throws Exception {
         JAXBContext processContext = JAXBContext.newInstance(Feed.class);
@@ -3312,9 +3317,9 @@ public class Util {
     public static Properties getPropertiesObj(String filename) {
         try {
             Properties properties = new Properties();
-
+            System.out.println("filename: "+ filename);
             FileInputStream conf_stream =
-                    new FileInputStream(new File("src/main/resources/" + filename));
+                    new FileInputStream(new File("merlin/src/main/resources/" + filename));
             properties.load(conf_stream);
             conf_stream.close();
             return properties;

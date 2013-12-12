@@ -47,7 +47,7 @@ public class ProcessInstanceResumeTest {
     private final PrismHelper prismHelper = new PrismHelper("prism.properties");
     private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
-    @BeforeClass(alwaysRun = true)
+  //  @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
@@ -449,7 +449,7 @@ public class ProcessInstanceResumeTest {
     }
 
 
-    @AfterClass(alwaysRun = true)
+  //  @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
 

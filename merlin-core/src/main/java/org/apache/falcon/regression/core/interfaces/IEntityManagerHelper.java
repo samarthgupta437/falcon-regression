@@ -142,6 +142,7 @@ public abstract class IEntityManagerHelper {
     }
 
     public IEntityManagerHelper(String envFileName) throws Exception {
+        System.out.println("envFileName: "+envFileName);
         Properties prop = Util.getPropertiesObj(envFileName);
         this.qaHost = prop.getProperty("qa_host");
         this.hostname = prop.getProperty("ivory_hostname");

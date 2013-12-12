@@ -535,13 +535,14 @@ public class Bundle {
         Thread.sleep(7000);
         //also fetch the coordinator info
         //return Util.getOozieCoordinator(Util.readEntityName(processData));
-        List<String> coordinatorStatus = Util.getOozieJobStatus(Util.readEntityName(processData));
+       /* List<String> coordinatorStatus = Util.getOozieJobStatus(Util.readEntityName
+        // (processData));
 
         if (!coordinatorStatus.isEmpty()) {
             //validate that the coordinator is up and RUNNING in state after submission
             return coordinatorStatus.get(0);
-        } else return null;
-
+        } else return null;*/
+        return null;
     }
 
     public void updateWorkFlowFile() throws Exception {
