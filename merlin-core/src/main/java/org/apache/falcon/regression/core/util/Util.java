@@ -3336,22 +3336,23 @@ public class Util {
 
         List<Bundle> bundleList = new ArrayList<Bundle>();
 
-        ArrayList<String> dataSets = new ArrayList<String>();
-        String processData = "";
-        String clusterData = "";
+        List<String> dataSets = new ArrayList<String>();
+        String processData = new String();
+        String clusterData = new String();
 
-        for (File file : files) {
+        for (int i = 0; i < files.length; i++) {
 
-            if (!(file.getName().contains("svn")
-                    || file.getName().contains(".DS")
-                    || file.getName() == null)) {
-
-                if (file.isDirectory()) {
-                    bundleList.addAll(getDataFromFolder(file
-                            .getAbsolutePath()));
+            if (files[i].getName().contains("svn")
+                    || files[i].getName().contains(".DS")
+                    || files[i].getName() == null) {
+                continue;
+            } else {
+                if (files[i].isDirectory()) {
+                    bundleList.addAll(getDataFromFolder(new String(files[i]
+                            .getAbsolutePath())));
                 } else {
 
-                    String data = fileToString(new File(file.getAbsolutePath()));
+                    String data = fileToString(new File(files[i].getAbsolutePath()));
 
                     if (data.contains("uri:ivory:process:0.1") ||
                             data.contains("uri:falcon:process:0.1")) {
@@ -3370,10 +3371,10 @@ public class Util {
             }
 
         }
-        if (!(dataSets.isEmpty()) && !processData.equals("")
+        if (!(dataSets.isEmpty()) && processData != ""
                 && !"".equals(clusterData)) {
             bundleList.add(new Bundle(dataSets, processData, clusterData));
-        } else if (!processData.equals("")
+        } else if (processData != ""
                 && !"".equals(clusterData))
             bundleList.add(new Bundle(dataSets, processData, clusterData));
 
