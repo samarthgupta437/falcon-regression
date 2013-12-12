@@ -92,24 +92,30 @@ public class InstanceUtil {
 
     }
 
-    //static XOozieClient oozieClient=new XOozieClient(Util.readPropertiesFile("oozie_url"));
-    //static String hdfs_url = "hdfs://"+Util.readPropertiesFile("hadoop_url");
-    static Logger logger = Logger.getLogger(InstanceUtil.class);
+  static Logger logger = Logger.getLogger(InstanceUtil.class);
 
-    public static ProcessInstancesResult sendRequestProcessInstance(String url) throws Exception {
+  public static ProcessInstancesResult sendRequestProcessInstance(String
+                                                                    url) throws Exception {
+    return sendRequestProcessInstance(url, System.getProperty("user.name"));
+  }
 
-        HttpRequestBase request;
-        if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Rerun")) {
-            request = new HttpPost();
+  public static ProcessInstancesResult sendRequestProcessInstance(String
+                                                                    url,
+                                                                  String user
+  ) throws Exception {
 
-        } else
-            request = new HttpGet();
-        request.setHeader("Remote-User", System.getProperty("user.name"));
-        return hitUrl(url, request);
-    }
+    HttpRequestBase request;
+    if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
+      Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
+      Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
+      Thread.currentThread().getStackTrace()[3].getMethodName().contains("Rerun")) {
+      request = new HttpPost();
+
+    } else
+      request = new HttpGet();
+    request.setHeader("Remote-User", user);
+    return hitUrl(url, request);
+  }
 
     public static ProcessInstancesResult hitUrl(String url, HttpRequestBase request)
     throws Exception {
