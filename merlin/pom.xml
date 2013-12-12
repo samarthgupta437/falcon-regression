@@ -124,11 +124,12 @@
         </profile>
     </profiles>
     <dependencies>
+    <!--
         <dependency>
             <groupId>org.apache.falcon</groupId>
             <artifactId>falcon-client</artifactId>
         </dependency>
-
+    -->
         <dependency>
             <groupId>org.apache.falcon</groupId>
             <artifactId>falcon-merlin-core</artifactId>
@@ -137,16 +138,6 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.hcatalog</groupId>
-            <artifactId>webhcat-java-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-common</artifactId>
         </dependency>
     </dependencies>
 </project>
