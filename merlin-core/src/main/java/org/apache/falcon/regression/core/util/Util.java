@@ -909,7 +909,8 @@ public class Util {
         return jobList;
     }
 
-    /*public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState)
+    /*public static ArrayList<String> getOozieFeedJobStatus(String processName,
+    String expectedState)
     throws Exception {
 
         String statusCommand =
@@ -3217,7 +3218,7 @@ public class Util {
 
     public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
                                            String folderPrefix, String fileToBePut)
-        throws Exception {
+    throws Exception {
         List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
         Util.print("folderData: " + folderPaths.toString());
 
@@ -3277,7 +3278,7 @@ public class Util {
 
     public static ArrayList<String> getBundles(PrismHelper coloHelper,
                                                String entityName, ENTITY_TYPE entityType)
-        throws Exception {
+    throws Exception {
 
         if (entityType.equals(ENTITY_TYPE.FEED)) {
             return runRemoteScript(
@@ -3317,7 +3318,7 @@ public class Util {
     public static Properties getPropertiesObj(String filename) {
         try {
             Properties properties = new Properties();
-            System.out.println("filename: "+ filename);
+            System.out.println("filename: " + filename);
             FileInputStream conf_stream =
                     new FileInputStream(new File("src/main/resources/" + filename));
             properties.load(conf_stream);
@@ -3336,22 +3337,23 @@ public class Util {
 
         List<Bundle> bundleList = new ArrayList<Bundle>();
 
-        ArrayList<String> dataSets = new ArrayList<String>();
-        String processData = "";
-        String clusterData = "";
+        List<String> dataSets = new ArrayList<String>();
+        String processData = new String();
+        String clusterData = new String();
 
-        for (File file : files) {
+        for (int i = 0; i < files.length; i++) {
 
-            if (!(file.getName().contains("svn")
-                    || file.getName().contains(".DS")
-                    || file.getName() == null)) {
-
-                if (file.isDirectory()) {
-                    bundleList.addAll(getDataFromFolder(file
-                            .getAbsolutePath()));
+            if (files[i].getName().contains("svn")
+                    || files[i].getName().contains(".DS")
+                    || files[i].getName() == null) {
+                continue;
+            } else {
+                if (files[i].isDirectory()) {
+                    bundleList.addAll(getDataFromFolder(new String(files[i]
+                            .getAbsolutePath())));
                 } else {
 
-                    String data = fileToString(new File(file.getAbsolutePath()));
+                    String data = fileToString(new File(files[i].getAbsolutePath()));
 
                     if (data.contains("uri:ivory:process:0.1") ||
                             data.contains("uri:falcon:process:0.1")) {
@@ -3370,10 +3372,10 @@ public class Util {
             }
 
         }
-        if (!(dataSets.isEmpty()) && !processData.equals("")
+        if (!(dataSets.isEmpty()) && processData != ""
                 && !"".equals(clusterData)) {
             bundleList.add(new Bundle(dataSets, processData, clusterData));
-        } else if (!processData.equals("")
+        } else if (processData != ""
                 && !"".equals(clusterData))
             bundleList.add(new Bundle(dataSets, processData, clusterData));
 
