@@ -107,7 +107,7 @@ public class InstanceUtil {
 
         } else
             request = new HttpGet();
-        request.setHeader("Remote-User", "rishu");
+        request.setHeader("Remote-User", System.getProperty("user.name"));
         return hitUrl(url, request);
     }
 
