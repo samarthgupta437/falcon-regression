@@ -231,7 +231,7 @@ public class Util {
 
         Properties properties = new Properties();
 
-        properties.load(new FileInputStream("src/main/resources/errorMapping.properties"));
+        properties.load(Util.class.getResourceAsStream("/" + "errorMapping.properties"));
 
 
         return properties.getProperty(filename);
@@ -679,11 +679,8 @@ public class Util {
 
         try {
             logger.info("will read from config file for env: " + System.getProperty("environment"));
-            FileInputStream conf_stream =
-                    new FileInputStream(
-                            new File("src/main/resources/" + System.getProperty
-                                    ("environment")));
-
+            InputStream conf_stream =
+                    Util.class.getResourceAsStream("/" + System.getProperty("environment"));
 
             Properties properties = new Properties();
             properties.load(conf_stream);

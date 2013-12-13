@@ -45,7 +45,7 @@ public class ZipUtil {
     public static String unzipFileToString(String filePath) throws Exception {
         StringBuilder outputBuffer = new StringBuilder();
 
-        @Cleanup InputStream in = new GZIPInputStream(new FileInputStream(filePath));
+        @Cleanup InputStream in = new GZIPInputStream(Util.class.getResourceAsStream("/" + filePath));
 
         byte[] buffer = new byte[2048];
 
