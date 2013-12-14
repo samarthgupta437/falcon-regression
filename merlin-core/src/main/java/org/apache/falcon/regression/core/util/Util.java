@@ -2335,20 +2335,11 @@ public class Util {
         return null;
     }
 
-/*
-    public static void HDFSCleanup(String hdfsPath) throws Exception {
-        runRemoteScript(HOST_NAME, USER_NAME, PASSWORD, HADOOP_LOCATION + "  dfs -rmr" +
-                "  hdfs://" + HADOOP_URL + "/" + hdfsPath, IDENTITY_FILE);
-    }
-*/
-
     public static void HDFSCleanup(PrismHelper prismHelper, String hdfsPath) throws Exception {
-        runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
-                prismHelper.getProcessHelper().getUsername(),
-                prismHelper.getProcessHelper().getPassword(),
-                prismHelper.getProcessHelper().getHadoopLocation() + "  dfs -rmr  " +
-                        "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "/" + hdfsPath,
-                prismHelper.getProcessHelper().getIdentityFile());
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
+        final FileSystem fs = FileSystem.get(conf);
+        HadoopUtil.deleteDirIfExists(hdfsPath, fs);
     }
 
     public static void lateDataReplenish(PrismHelper prismHelper, int interval,
@@ -2360,26 +2351,6 @@ public class Util {
         Util.copyDataToFolders(prismHelper, folderData,
                 "src/test/resources/OozieExampleInputData/normalInput");
     }
-
-    /*public static void lateDataReplenish(String baseFolder, int interval,
-                                         int minuteSkip)
-    throws Exception {
-        List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
-
-        Util.createLateDataFolders(folderData);
-        Util.copyDataToFolders(baseFolder, folderData,
-                "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS",
-                "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
-    }*/
-
-    /*public static void lateDataReplenish(String baseFolder, int interval,
-                                         int minuteSkip, String... files)
-    throws Exception {
-        List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
-
-        Util.createLateDataFolders(folderData);
-        Util.copyDataToFolders(baseFolder, folderData, files);
-    }*/
 
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
                                          int minuteSkip, String... files)
