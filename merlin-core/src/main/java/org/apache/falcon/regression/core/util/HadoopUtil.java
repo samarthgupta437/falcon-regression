@@ -188,7 +188,6 @@ public class HadoopUtil {
                 + coloHelper.getProcessHelper().getHadoopURL());
 
         final FileSystem fs = FileSystem.get(conf);
-
         UserGroupInformation user = UserGroupInformation
                 .createRemoteUser("hdfs");
 
@@ -313,6 +312,14 @@ public class HadoopUtil {
 
     public static void createDir(String path, FileSystem fs) throws IOException {
         System.out.println("creating hdfs dir: " + path);
+        deleteDirIfExists(path, fs);
         fs.mkdirs(new Path(path));
+    }
+
+    public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
+        Path path = new Path(hdfsPath);
+        if (fs.exists(path)){
+         fs.delete(path, true);
+        }
     }
 }

@@ -1388,6 +1388,4 @@ public class PrismFeedReplicationPartitionExpTest {
             prismHelper.getClusterHelper().delete(URLS.DELETE_URL, b3.getClusters().get(0));
         }
     }
-
-
 }
