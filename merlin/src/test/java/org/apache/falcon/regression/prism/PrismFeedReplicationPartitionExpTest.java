@@ -184,13 +184,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //partition is left blank
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
         try {
             b1 = new Bundle(b1, ua1.getEnvFileName());
@@ -280,13 +280,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // path for data in target cluster should also be customized
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -429,13 +429,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // path for data in target cluster should also be customized
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -575,13 +575,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //ua3 is the source and ua1 and ua2 are target
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -725,13 +725,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // source cluster path in 33 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -888,13 +888,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //ua3 is the source and ua1 and ua2 are target
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -1034,13 +1034,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // source cluster path in 33 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -1175,13 +1175,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //ua3 is the source and ua1 and ua2 are target
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -1333,13 +1333,13 @@ public class PrismFeedReplicationPartitionExpTest {
     @Test(enabled = true)
     public void moreThanOneClusterWithSameNameDiffValidity() throws Exception {
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
         try {
             b1 = new Bundle(b1, ua1.getEnvFileName());
