@@ -35,170 +35,17 @@ import java.util.ArrayList;
 public class HadoopUtil {
 
     static Logger logger = Logger.getLogger(Util.class);
-
-    /*public static File getFileFromHDFSFolder(PrismHelper prismHelper,
-                                             String hdfsLocation, String localLocation)
-    throws Exception {
-
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
-        //	logger.info("getting file: "+ hdfsLocation);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-        Path srcPath = Util.stringToPath(hdfsLocation);
-        Path destPath = Util.stringToPath(localLocation + srcPath.getName());
-
-        File f = new File(destPath.toString());
-        if (f.exists())
-            f.delete();
-
-        fs.copyToLocalFile(srcPath, destPath);
-
-        return new File(destPath.toString());
-
-    }*/
-
-    /*public static File getFileFromHDFSFolder(ColoHelper coloHelper,
-                                             String hdfsLocation, String localLocation)
-    throws Exception {
-
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
-        //	logger.info("getting file: "+ hdfsLocation);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + coloHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-        Path srcPath = Util.stringToPath(hdfsLocation);
-        Path destPath = Util.stringToPath(localLocation + srcPath.getName());
-
-        File f = new File(destPath.toString());
-        if (f.exists())
-            f.delete();
-
-        fs.copyToLocalFile(srcPath, destPath);
-
-        return new File(destPath.toString());
-
-    }*/
-
-
-    /*public static File getFileFromHDFSFolder(PrismHelper prismHelper,
-                                             String hdfsLocation) throws Exception {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-        return getFileFromHDFSFolder(prismHelper, hdfsLocation, "dataFromHDFS/");
-    }*/
-
-
-    /*public static ArrayList<File> getAllFilesFromHDFSFolder(
-            PrismHelper prismHelper, String hdfsLocation, String localBaseFolder) throws Exception {
-
-        setSystemPropertyHDFS();
-
-        ArrayList<File> returnList = new ArrayList<File>();
-
-        logger.info("getting file from folder: " + hdfsLocation);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        FileStatus[] stats = fs.listStatus(Util.stringToPath(hdfsLocation));
-
-
-        for (FileStatus stat : stats) {
-            String currentPath = stat.getPath().toUri().getPath(); // gives directory name
-            if (!stat.isDir()) {
-                returnList.add(getFileFromHDFSFolder(prismHelper, currentPath, localBaseFolder));
-            }
-
-
-        }
-
-
-        return returnList;
-
-    }*/
-
-
     public static void setSystemPropertyHDFS() {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
     }
 
-
-    /*public static ArrayList<String> getHDFSSubFolders(ColoHelper prismHelper,
-                                                      String baseDir) throws IOException {
-        setSystemPropertyHDFS();
-
-        ArrayList<String> returnList = new ArrayList<String>();
-
-        logger.info("getting folder list from: " + baseDir);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        FileStatus[] stats = fs.listStatus(Util.stringToPath(baseDir));
-
-
-        for (FileStatus stat : stats) {
-            if (stat.isDir())
-                returnList.add(stat.getPath().toUri().getPath());
-
-        }
-
-
-        return returnList;
-
-
-    }*/
-
-
     public static Configuration getHadoopConfiguration(ColoHelper prismHelper) throws Exception {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
         return conf;
     }
-
-
-    /*public static ArrayList<Path> getAllFilesHDFSLocation(
-            ColoHelper prismHelper, String hdfsLocation) throws Exception {
-        setSystemPropertyHDFS();
-
-        ArrayList<Path> returnList = new ArrayList<Path>();
-
-        //logger.info("getting file from folder: "+ hdfsLocation);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        FileStatus[] stats = fs.listStatus(Util.stringToPath(hdfsLocation));
-
-
-        for (FileStatus stat : stats) {
-            if (!stat.isDir()) {
-                returnList.add(stat.getPath());
-            }
-
-        }
-
-        return returnList;
-
-    }*/
 
     public static ArrayList<Path> getAllFilesRecursivelyHDFS(
             ColoHelper colcoHelper, Path location) throws Exception {
@@ -333,50 +180,6 @@ public class HadoopUtil {
 
     }
 
-    /*public static long getFileLength(ColoHelper coloHelper, Path fileHDFSLocaltion)
-    throws Exception {
-        setSystemPropertyHDFS();
-        Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        if (fs.exists(fileHDFSLocaltion)) {
-            return fs.getFileStatus(fileHDFSLocaltion).getLen();
-        }
-        return 0;
-
-    }*/
-
-    /*public static void copyDataToFolders(PrismHelper prismHelper,
-                                         final String folderPrefix, final Path folder,
-                                         final String... fileLocations) throws Exception {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://"
-                + prismHelper.getProcessHelper().getHadoopURL());
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation
-                .createRemoteUser("hdfs");
-
-
-        for (final String file : fileLocations) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws Exception {
-                    //	logger.info("copying  "+file+" to "+folderPrefix+folder);
-                    fs.copyFromLocalFile(new Path(file), new Path(
-                            folderPrefix + folder));
-                    return true;
-
-                }
-            });
-        }
-
-
-    }*/
-
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
                                         final String fileLocation)
     throws Exception {
@@ -404,7 +207,7 @@ public class HadoopUtil {
 
     }
 
-
+    @Deprecated
     public static ArrayList<String> getHDFSSubFoldersName(ColoHelper prismHelper,
                                                           String baseDir) throws IOException {
         setSystemPropertyHDFS();
@@ -416,6 +219,14 @@ public class HadoopUtil {
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
 
         final FileSystem fs = FileSystem.get(conf);
+        return getHDFSSubFoldersName(fs, baseDir);
+    }
+
+    public static ArrayList<String> getHDFSSubFoldersName(FileSystem fs,
+                                                          String baseDir) throws IOException {
+        setSystemPropertyHDFS();
+
+        ArrayList<String> returnList = new ArrayList<String>();
 
         FileStatus[] stats = fs.listStatus(Util.stringToPath(baseDir));
 
@@ -429,15 +240,19 @@ public class HadoopUtil {
 
 
         return returnList;
-
-
     }
 
     public static boolean isFilePresentHDFS(ColoHelper prismHelper,
                                             String hdfsPath, String fileToCheckFor)
-    throws Exception {
+    throws IOException {
 
-        ArrayList<String> fileNames = getAllFileNamesFromHDFS(prismHelper, hdfsPath);
+        logger.info("getting file from folder: " + hdfsPath);
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
+
+        final FileSystem fs = FileSystem.get(conf);
+
+        ArrayList<String> fileNames = getAllFileNamesFromHDFS(fs, hdfsPath);
 
         for (String filePath : fileNames) {
 
@@ -449,19 +264,13 @@ public class HadoopUtil {
     }
 
     private static ArrayList<String> getAllFileNamesFromHDFS(
-            ColoHelper prismHelper, String hdfsPath) throws Exception {
+            FileSystem fs, String hdfsPath) throws IOException {
         setSystemPropertyHDFS();
 
         ArrayList<String> returnList = new ArrayList<String>();
 
         logger.info("getting file from folder: " + hdfsPath);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
         FileStatus[] stats = fs.listStatus(Util.stringToPath(hdfsPath));
-
 
         for (FileStatus stat : stats) {
             String currentPath = stat.getPath().toUri().getPath(); // gives directory name
@@ -472,16 +281,19 @@ public class HadoopUtil {
 
         }
         return returnList;
-
     }
 
-    public static boolean isDirPresent(ColoHelper prismHelper, String path) throws Exception {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
+    @Deprecated
+    public static boolean isDirPresent(ColoHelper prismHelper, String path) throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
         final FileSystem fs = FileSystem.get(conf);
+        return isDirPresent(fs, path);
+    }
+
+    public static boolean isDirPresent(FileSystem fs, String path) throws IOException {
+        setSystemPropertyHDFS();
+
         boolean isPresent = fs.exists(new Path(path));
         if (isPresent)
             System.out.println("dir exists");
@@ -491,80 +303,16 @@ public class HadoopUtil {
 
     }
 
-    public static void createDir(ColoHelper prismHelper, String path) throws Exception {
+    @Deprecated
+    public static void createDir(ColoHelper prismHelper, String path) throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
         final FileSystem fs = FileSystem.get(conf);
-        System.out.println("creating hdfs dir: " + path);
-        fs.mkdirs(new Path(path));
-
+        createDir(path, fs);
     }
 
-    /*public static ArrayList<String> getAllRecords(Path path) throws Exception {
-        ArrayList<Path> rrPaths =
-                HadoopUtil.getAllFilesRecursivelyHDFS(new Configuration(), path, "shouldNOtMatch");
-        FileSystem fs = FileSystem.get(new Configuration());
-        ArrayList<String> records = new ArrayList<String>();
-        BufferedReader br;
-        for (Path rrPath : rrPaths) {
-
-            if (!fs.exists(rrPath)) {
-                System.out.println("File does not exists");
-            }
-
-            FSDataInputStream in = fs.open(rrPath);
-            System.out.println("getting all records for path: " + rrPath);
-            if (rrPath.toString().endsWith(".gz"))
-                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(in)));
-            else
-                br = new BufferedReader(new InputStreamReader(in));
-
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                records.add(line);
-            }
-
-            br.close();
-        }
-
-        return records;
-    }*/
-
-    /*public static ArrayList<String> getAllRecords(ColoHelper prismHelper, Path path,
-                                                  String... notToMatch)
-    throws Exception {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-        ArrayList<Path> rrPaths =
-                HadoopUtil.getAllFilesRecursivelyHDFS(prismHelper, path, notToMatch);
-        FileSystem fs = FileSystem.get(conf);
-        ArrayList<String> records = new ArrayList<String>();
-        BufferedReader br;
-        for (int allPaths = 0; allPaths < rrPaths.size(); allPaths++) {
-
-            if (!fs.exists(rrPaths.get(allPaths))) {
-                System.out.println("File does not exists");
-            }
-
-            FSDataInputStream in = fs.open(rrPaths.get(allPaths));
-            System.out.println("getting all records for path: " + rrPaths.get(allPaths));
-            if (rrPaths.get(allPaths).toString().endsWith(".gz"))
-                br = new BufferedReader(new InputStreamReader(new GZIPInputStream(in)));
-            else
-                br = new BufferedReader(new InputStreamReader(in));
-
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                records.add(line);
-            }
-
-            br.close();
-        }
-
-        return records;
-    }*/
-
-
+    public static void createDir(String path, FileSystem fs) throws IOException {
+        System.out.println("creating hdfs dir: " + path);
+        fs.mkdirs(new Path(path));
+    }
 }
