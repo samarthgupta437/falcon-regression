@@ -59,11 +59,11 @@ public class FeedRetentionTest {
         Bundle b2 = new Bundle();
 
         try {
-            b1 = (Bundle) Bundle.readBundle("src/test/resources/impressionRC")[0][0];
+            b1 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
             b1.generateUniqueBundle();
             b1 = new Bundle(b1, gs1001.getEnvFileName());
 
-            b2 = (Bundle) Bundle.readBundle("src/test/resources/impressionRC")[0][0];
+            b2 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
             b2.generateUniqueBundle();
             b2 = new Bundle(b2, ivoryqa1.getEnvFileName());
 

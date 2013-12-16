@@ -256,7 +256,7 @@ public class NewPrismProcessUpdateTest {
             timeOut = 1800000)
     public void updateProcessConcurrencyWorkflowExecutionInEachColoWithOneColoDown(Bundle bundle)
     throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
         Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
@@ -372,7 +372,7 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessFrequencyInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
         Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
@@ -496,7 +496,7 @@ public class NewPrismProcessUpdateTest {
     public void updateProcessConcurrencyInEachColoWithOneProcessRunning(Bundle bundle)
     throws Exception {
         Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
         Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
@@ -600,7 +600,7 @@ public class NewPrismProcessUpdateTest {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessIncreaseValidityInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -700,7 +700,7 @@ public class NewPrismProcessUpdateTest {
     public void updateProcessConcurrencyInEachColoWithOneProcessSuspended(Bundle bundle)
     throws Exception {
         Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
         Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
@@ -815,7 +815,7 @@ public class NewPrismProcessUpdateTest {
             timeOut = 1200000)
     public void updateProcessConcurrencyInEachColoWithOneColoDown(Bundle bundle) throws Exception {
         Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
         Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
@@ -946,7 +946,7 @@ public class NewPrismProcessUpdateTest {
     public void updateProcessConcurrencyExecutionWorkflowInEachColoWithOneProcessRunning()
     throws Exception {
         Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -1038,7 +1038,7 @@ public class NewPrismProcessUpdateTest {
     public void updateProcessConcurrencyExecutionWorkflowInEachColoWithOneProcessSuspended()
     throws Exception {
         Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -1133,7 +1133,7 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessAddNewInputInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -1224,7 +1224,7 @@ public class NewPrismProcessUpdateTest {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessAddNewInputInEachColoWithOneProcessSuspended() throws Exception {
         Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -1318,7 +1318,7 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessAddNewInputInEachColoWithOneColoDown() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -1432,7 +1432,7 @@ public class NewPrismProcessUpdateTest {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessDecreaseValidityInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -1624,7 +1624,7 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessFrequencyInEachColoWithOneProcessRunning_Daily() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
@@ -1699,7 +1699,7 @@ public class NewPrismProcessUpdateTest {
     public void
     updateProcessFrequencyInEachColoWithOneProcessRunning_dailyToMonthly_withStartChange()
     throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("src/test/resources/updateBundle")[0][0];
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
