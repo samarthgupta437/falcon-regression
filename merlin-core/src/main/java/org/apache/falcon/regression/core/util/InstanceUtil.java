@@ -48,6 +48,7 @@ import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job.Status;
+import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
@@ -1901,7 +1902,7 @@ public class InstanceUtil {
     }
   }
 
-
+  @Deprecated
   public static void waitTillInstanceReachState(ColoHelper coloHelper,
                                                 String entityName, int numberOfInstance,
                                                 org.apache.oozie.client.CoordinatorAction
@@ -1933,6 +1934,73 @@ public class InstanceUtil {
 
     Assert.assertTrue(false, "expceted state of instance was never reached");
   }
+
+    public static void waitTillInstanceReachState(OozieClient client, String entityName,
+                                                  int numberOfInstance,
+                                                  org.apache.oozie.client.CoordinatorAction
+                                                          .Status expectedStatus,
+                                                  int totalMinutesToWait, ENTITY_TYPE entityType)
+    throws InterruptedException, OozieClientException {
+        String filter = "";
+        // get the bunlde ids
+        if (entityType.equals(ENTITY_TYPE.FEED)) {
+            filter = "name=FALCON_FEED_" + entityName;
+        } else {
+            filter = "name=FALCON_PROCESS_" + entityName;
+        }
+        List<BundleJob> bundleJobs = new ArrayList<BundleJob>();
+        int retries = 0;
+        while ((bundleJobs.size() == 0) && (retries < 20)) {
+            bundleJobs = OozieUtil.getBundles(client, filter, 0, 10);
+            retries++;
+            Thread.sleep(5000);
+        }
+        if (bundleJobs.size() == 0) {
+            Assert.assertTrue(false, "Could not retrieve bundles");
+        }
+        List<String> bundleIds = OozieUtil.getBundleIds(bundleJobs);
+        String bundleId = OozieUtil.getMaxId(bundleIds);
+        logger.info(String.format("Using bundle %s", bundleId));
+        String coordId = null;
+        List<CoordinatorJob> coords = client.getBundleJobInfo(bundleId).getCoordinators();
+        List<String> cIds = new ArrayList<String>();
+        if (entityType.equals(ENTITY_TYPE.PROCESS)) {
+            for (CoordinatorJob coord : coords) {
+                cIds.add(coord.getId());
+            }
+            coordId = OozieUtil.getMinId(cIds);
+        } else {
+            for (CoordinatorJob coord : coords) {
+                if (coord.getAppName().contains("FEED_REPLICATION")) {
+                    cIds.add(coord.getId());
+                }
+            }
+            coordId = cIds.get(0);
+        }
+        logger.info(String.format("Using coordinator id: %s", coordId));
+        int maxTries = 20;
+        int totalSleepTime = totalMinutesToWait * 60 * 1000;
+        int sleepTime = totalSleepTime/maxTries;
+        logger.info(String.format("Sleep for %d seconds", sleepTime/1000 ));
+        for (int i = 0; i < maxTries; i++) {
+            logger.info(String.format("Try %d of %d",  (i + 1), maxTries));
+            int instanceWithStatus = 0;
+            CoordinatorJob coordinatorJob = client.getCoordJobInfo(coordId);
+            List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
+            for (CoordinatorAction coordinatorAction : coordinatorActions) {
+                logger.info(String.format("Coordinator Action %s status is %s",
+                        coordinatorAction.getId(), coordinatorAction.getStatus()));
+                if (expectedStatus == coordinatorAction.getStatus()) {
+                    instanceWithStatus++;
+                }
+            }
+
+            if (instanceWithStatus >= numberOfInstance)
+                return;
+            Thread.sleep(sleepTime);
+        }
+        Assert.assertTrue(false, "expceted state of instance was never reached");
+    }
 
   private static ArrayList<org.apache.oozie.client.CoordinatorAction.Status>
   getStatusAllInstanceStatusForProcess(

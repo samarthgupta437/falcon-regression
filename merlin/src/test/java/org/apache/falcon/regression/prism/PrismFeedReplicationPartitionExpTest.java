@@ -28,10 +28,12 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -184,13 +186,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //partition is left blank
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
         try {
             b1 = new Bundle(b1, ua1.getEnvFileName());
@@ -225,23 +227,23 @@ public class PrismFeedReplicationPartitionExpTest {
             String feed = b1.getDataSets().get(0);
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
                     ClusterType.SOURCE, null, null);
 
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE, "",
                             "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b2.getClusters().get(0)), ClusterType.TARGET, "",
                             "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/$" +
                                     "{MINUTE}");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                     Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE, "", null);
 
             //clean target if old data exists
@@ -280,13 +282,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // path for data in target cluster should also be customized
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -346,11 +348,10 @@ public class PrismFeedReplicationPartitionExpTest {
             HadoopUtil.copyDataToFolder(ua3, new Path("/localDC/rc/billing/2012/10/01/12/05/ua3/"),
                     "log_01.txt");
 
-
-            InstanceUtil.waitTillInstanceReachState(ua2, Util.getFeedName(feed), 2,
+            OozieClient client = OozieUtil.getClient(ua2.getFeedHelper().getOozieURL());
+            InstanceUtil.waitTillInstanceReachState(client, Util.getFeedName(feed), 2,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
-
             Assert.assertEquals(
                     InstanceUtil
                             .checkIfFeedCoordExist(ua2.getFeedHelper(), Util.readDatasetName(feed),
@@ -429,13 +430,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // path for data in target cluster should also be customized
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -452,23 +453,23 @@ public class PrismFeedReplicationPartitionExpTest {
             String feed = b1.getDataSets().get(0);
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
                     ClusterType.SOURCE, null, null);
 
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b1.getClusters().get(0)), null, null, null);
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b2.getClusters().get(0)), ClusterType.TARGET,
                             "${cluster.colo}",
                             "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/$" +
                                     "{MINUTE}");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                     Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE, null,
                     "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
@@ -485,12 +486,8 @@ public class PrismFeedReplicationPartitionExpTest {
             Thread.sleep(10000);
             AssertUtil.assertSucceeded(r);
 
-/*			r= prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-            AssertUtil.assertSucceeded(r);
-			Thread.sleep(15000);*/
-
-
-            InstanceUtil.waitTillInstanceReachState(ua2, Util.getFeedName(feed), 2,
+            OozieClient client = OozieUtil.getClient(ua2.getFeedHelper().getOozieURL());
+            InstanceUtil.waitTillInstanceReachState(client, Util.getFeedName(feed), 2,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
 
@@ -575,13 +572,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //ua3 is the source and ua1 and ua2 are target
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -601,22 +598,22 @@ public class PrismFeedReplicationPartitionExpTest {
                                     "{MINUTE}/");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
                     ClusterType.SOURCE, null);
 
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET,
                             "${cluster.colo}");
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b2.getClusters().get(0)), ClusterType.TARGET,
                             "${cluster.colo}");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                     Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE, null);
 
             //clean target if old data exists
@@ -633,11 +630,13 @@ public class PrismFeedReplicationPartitionExpTest {
 
             r = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             Thread.sleep(15000);
+            OozieClient ua1OozieClient = OozieUtil.getClient(ua1.getFeedHelper().getOozieURL());
+            OozieClient ua2Oozieclient = OozieUtil.getClient(ua2.getFeedHelper().getOozieURL());
 
-            InstanceUtil.waitTillInstanceReachState(ua1, Util.getFeedName(feed), 1,
+            InstanceUtil.waitTillInstanceReachState(ua1OozieClient, Util.getFeedName(feed), 1,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
-            InstanceUtil.waitTillInstanceReachState(ua2, Util.getFeedName(feed), 3,
+            InstanceUtil.waitTillInstanceReachState(ua2Oozieclient, Util.getFeedName(feed), 3,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
 
@@ -725,13 +724,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // source cluster path in 33 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -767,24 +766,24 @@ public class PrismFeedReplicationPartitionExpTest {
             String feed = b1.getDataSets().get(0);
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
                     ClusterType.SOURCE, null, null);
 
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE, null,
                             "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b2.getClusters().get(0)), ClusterType.TARGET,
                             "${cluster.colo}",
                             "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/$" +
                                     "{MINUTE}");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                     Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE, null, null);
 
             //clean target if old data exists
@@ -801,11 +800,13 @@ public class PrismFeedReplicationPartitionExpTest {
             r = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             AssertUtil.assertSucceeded(r);
             Thread.sleep(15000);
+            OozieClient ua1OozieClient = OozieUtil.getClient(ua1.getFeedHelper().getOozieURL());
+            OozieClient ua2OozieClient = OozieUtil.getClient(ua2.getFeedHelper().getOozieURL());
 
-            InstanceUtil.waitTillInstanceReachState(ua1, Util.getFeedName(feed), 1,
+            InstanceUtil.waitTillInstanceReachState(ua1OozieClient, Util.getFeedName(feed), 1,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
-            InstanceUtil.waitTillInstanceReachState(ua2, Util.getFeedName(feed), 3,
+            InstanceUtil.waitTillInstanceReachState(ua2OozieClient, Util.getFeedName(feed), 3,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
 
@@ -888,13 +889,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //ua3 is the source and ua1 and ua2 are target
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -948,11 +949,13 @@ public class PrismFeedReplicationPartitionExpTest {
 
             r = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             Thread.sleep(15000);
+            OozieClient ua1OozieClient = OozieUtil.getClient(ua1.getFeedHelper().getOozieURL());
+            OozieClient ua2OozieClient = OozieUtil.getClient(ua2.getFeedHelper().getOozieURL());
 
-            InstanceUtil.waitTillInstanceReachState(ua1, Util.getFeedName(feed), 1,
+            InstanceUtil.waitTillInstanceReachState(ua1OozieClient, Util.getFeedName(feed), 1,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
-            InstanceUtil.waitTillInstanceReachState(ua2, Util.getFeedName(feed), 2,
+            InstanceUtil.waitTillInstanceReachState(ua2OozieClient, Util.getFeedName(feed), 2,
                     org.apache.oozie.client
                             .CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
@@ -1034,13 +1037,13 @@ public class PrismFeedReplicationPartitionExpTest {
         // source cluster path in 33 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -1076,24 +1079,24 @@ public class PrismFeedReplicationPartitionExpTest {
             String feed = b1.getDataSets().get(0);
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
                     ClusterType.SOURCE, null, null);
 
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE,
                             "${cluster.colo}",
                             "/source/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b2.getClusters().get(0)), ClusterType.TARGET, null,
                             "/clusterPath/localDC/rc/billing/replicated/${YEAR}/${MONTH}/${DAY}/$" +
                                     "{HOUR}/${MINUTE}");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                     Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
                     "${cluster.colo}",
                     "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
@@ -1113,7 +1116,9 @@ public class PrismFeedReplicationPartitionExpTest {
             AssertUtil.assertSucceeded(r);
             Thread.sleep(15000);
 
-            InstanceUtil.waitTillInstanceReachState(ua2, Util.getFeedName(feed), 2,
+            OozieClient ua2OozieClient = OozieUtil.getClient(ua2.getFeedHelper().getOozieURL());
+
+            InstanceUtil.waitTillInstanceReachState(ua2OozieClient, Util.getFeedName(feed), 2,
                     org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 7,
                     ENTITY_TYPE.FEED);
 
@@ -1175,13 +1180,13 @@ public class PrismFeedReplicationPartitionExpTest {
         //ua3 is the source and ua1 and ua2 are target
 
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
 
         try {
@@ -1219,24 +1224,24 @@ public class PrismFeedReplicationPartitionExpTest {
                     "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
                     ClusterType.SOURCE, null);
 
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET,
                             "${cluster.colo}",
                             "/localDC/rc/billing/ua1/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b2.getClusters().get(0)), ClusterType.TARGET,
                             "${cluster.colo}",
                             "/localDC/rc/billing/ua2/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z")
-                    , XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                    , XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                     Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
                     "${cluster.colo}");
 
@@ -1256,8 +1261,8 @@ public class PrismFeedReplicationPartitionExpTest {
 
             r = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             Thread.sleep(15000);
-
-            InstanceUtil.waitTillInstanceReachState(ua1, Util.getFeedName(feed), 1,
+            OozieClient ua1OozieClient = OozieUtil.getClient(ua1.getFeedHelper().getOozieURL());
+            InstanceUtil.waitTillInstanceReachState(ua1OozieClient, Util.getFeedName(feed), 1,
                     org.apache.oozie.client
                             .CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
             InstanceUtil.waitTillInstanceReachState(ua2, Util.getFeedName(feed), 3,
@@ -1333,13 +1338,13 @@ public class PrismFeedReplicationPartitionExpTest {
     @Test(enabled = true)
     public void moreThanOneClusterWithSameNameDiffValidity() throws Exception {
         Bundle b1 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b1.generateUniqueBundle();
         Bundle b2 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b2.generateUniqueBundle();
         Bundle b3 = (Bundle) Bundle
-                .readBundle("src/test/resources/LocalDC_feedReplicaltion_BillingRC")[0][0];
+                .readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         b3.generateUniqueBundle();
         try {
             b1 = new Bundle(b1, ua1.getEnvFileName());
@@ -1355,22 +1360,22 @@ public class PrismFeedReplicationPartitionExpTest {
             String feed = b1.getDataSets().get(0);
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
                     ClusterType.SOURCE, null, null);
 
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE, "",
                             "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             feed = InstanceUtil
                     .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                             Util.readClusterName(b3.getClusters().get(0)), ClusterType.TARGET, "",
                             "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             feed = InstanceUtil.setFeedCluster(feed,
                     XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                    XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                     Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE, "", null);
 
             Util.print("feed: " + feed);
@@ -1388,6 +1393,4 @@ public class PrismFeedReplicationPartitionExpTest {
             prismHelper.getClusterHelper().delete(URLS.DELETE_URL, b3.getClusters().get(0));
         }
     }
-
-
 }
