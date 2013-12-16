@@ -33,9 +33,13 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job.Status;
@@ -48,9 +52,12 @@ import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
 import org.testng.TestNGException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Random;
@@ -68,6 +75,40 @@ public class NewPrismProcessUpdateTest {
     ColoHelper UA2ColoHelper = new ColoHelper("ivoryqa-1.config.properties");
     ColoHelper UA3ColoHelper = new ColoHelper("gs1001.config.properties");
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+    String WORKFLOW_PATH = "/tmp/falcon-oozie-wf";
+    FileSystem ua1FS, ua2FS, ua3FS = null;
+
+    @BeforeClass
+    public void setup() throws IOException{
+        ua1FS = HadoopUtil.getFileSystem(UA1ColoHelper.getClusterHelper().getHadoopURL
+                ());
+        setupOozieData(ua1FS);
+        ua2FS = HadoopUtil.getFileSystem(UA2ColoHelper.getClusterHelper().getHadoopURL
+                ());
+        setupOozieData(ua2FS);
+        ua3FS = HadoopUtil.getFileSystem(UA3ColoHelper.getClusterHelper().getHadoopURL
+                ());
+        setupOozieData(ua3FS);
+    }
+
+    public void setupOozieData(FileSystem fs) throws IOException {
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH, fs);
+        //create dir on hdfs
+        fs.mkdirs(new Path(WORKFLOW_PATH));
+        fs.setPermission(new Path(WORKFLOW_PATH), new FsPermission("777"));
+        fs.mkdirs(new Path(WORKFLOW_PATH + "/lib"));
+        fs.copyFromLocalFile(new Path("src/test/resources/oozie/workflow.xml"),
+                new Path(WORKFLOW_PATH + "/workflow.xml"));
+        fs.copyFromLocalFile(new Path("src/test/resources/oozie/oozie-examples-3.1.5.jar"),
+                new Path(WORKFLOW_PATH + "/lib/oozie-examples-3.1.5.jar"));
+    }
+
+    @AfterClass
+    public void teardown() throws IOException {
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH, ua1FS);
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH, ua2FS);
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH, ua3FS);
+   }
 
     @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
             timeOut = 1200000)
@@ -78,7 +119,6 @@ public class NewPrismProcessUpdateTest {
         Bundle UA3Bundle = new Bundle(bundle, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            //UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             final String START_TIME = InstanceUtil.getTimeWrtSystemTime(-20);
@@ -1630,6 +1670,9 @@ public class NewPrismProcessUpdateTest {
         Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
         Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
+            UA1Bundle.setProcessWorkflow(WORKFLOW_PATH);
+            UA2Bundle.setProcessWorkflow(WORKFLOW_PATH);
+            UA3Bundle.setProcessWorkflow(WORKFLOW_PATH);
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
 
             usualGrind(UA3ColoHelper, UA2Bundle);
