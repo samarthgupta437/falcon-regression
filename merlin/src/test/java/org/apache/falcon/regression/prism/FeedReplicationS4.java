@@ -39,10 +39,10 @@ public class FeedReplicationS4 {
     @Test(enabled = true, timeOut = 1200000)
     public void ReplicationFromS4() throws Exception {
 
-        Bundle b1 = (Bundle) Bundle.readBundle("src/test/resources/S4Replication")[0][0];
+        Bundle b1 = (Bundle) Bundle.readBundle("S4Replication")[0][0];
         b1.generateUniqueBundle();
 
-        Bundle b2 = (Bundle) Bundle.readBundle("src/test/resources/S4Replication")[0][0];
+        Bundle b2 = (Bundle) Bundle.readBundle("S4Replication")[0][0];
         b2.generateUniqueBundle();
 
 

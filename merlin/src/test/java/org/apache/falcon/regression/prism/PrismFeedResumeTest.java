@@ -591,7 +591,7 @@ public class PrismFeedResumeTest {
 
     @DataProvider(name = "DP")
     public Object[][] getData() throws Exception {
-        return Util.readBundles("src/test/resources/LateDataBundles");
+        return Util.readBundles("LateDataBundles");
     }
 
 
