@@ -62,6 +62,7 @@ public class TestClassHelper {
         }
         return true;
     }
+
     public Bundle getBundle(ColoHelper cluster, String... xmlLocation) {
         Bundle b;
         try {

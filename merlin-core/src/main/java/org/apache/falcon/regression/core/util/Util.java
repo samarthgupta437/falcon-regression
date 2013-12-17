@@ -308,12 +308,12 @@ public class Util {
     }*/
 
     public static File[] getFiles(String directoryPath) throws Exception {
-        if(directoryPath.contains("/test-classes"))
+        if (directoryPath.contains("/test-classes"))
             directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
-                    +"/test-classes".length()+1,directoryPath.length());
+                    + "/test-classes".length() + 1, directoryPath.length());
         System.out.println("directoryPath: " + directoryPath);
-        URL url = Util.class.getResource("/"+directoryPath) ;
-        System.out.println("url"+url);
+        URL url = Util.class.getResource("/" + directoryPath);
+        System.out.println("url" + url);
         File dir = new File(url.toURI());
         return dir.listFiles();
     }
@@ -3296,7 +3296,7 @@ public class Util {
         try {
             Properties properties = new Properties();
 
-            System.out.println("filename: "+ filename);
+            System.out.println("filename: " + filename);
             InputStream conf_stream =
                     //new FileInputStream(new File("src/main/resources/" + filename));
                     Util.class.getResourceAsStream("/" + filename);
