@@ -497,7 +497,7 @@ public class PrismProcessSuspendTest {
 
     @DataProvider(name = "DP")
     public Object[][] getData() throws Exception {
-        return Util.readBundles("src/test/resources/LateDataBundles");
+        return Util.readBundles("LateDataBundles");
     }
 
 }

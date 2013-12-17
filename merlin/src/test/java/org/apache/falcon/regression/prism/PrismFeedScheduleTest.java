@@ -824,6 +824,6 @@ UA1Bundle.getDataSets().get(0)));
 
     @DataProvider(name = "DP")
     public Object[][] getData() throws Exception {
-        return Util.readBundles("src/test/resources/LateDataBundles");
+        return Util.readBundles("LateDataBundles");
     }
 }

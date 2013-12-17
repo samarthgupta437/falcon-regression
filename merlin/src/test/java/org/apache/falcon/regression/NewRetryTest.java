@@ -1734,8 +1734,8 @@ public class NewRetryTest {
         String[] delayUnits = new String[]{"minutes"};
         Integer[] retryAttempts = new Integer[]{2, 0, 3};//0,-1,2
 
-        //Object [][] bundleData=Util.readBundles("src/test/resources/RetryTests");
-        Bundle[] bundleData = Util.getBundleData("src/test/resources/RetryTests");
+        //Object [][] bundleData=Util.readBundles("RetryTests");
+        Bundle[] bundleData = Util.getBundleData("RetryTests");
 
         Object[][] testData = new Object[retryTypes.length * delays.length * delayUnits.length *
                 bundleData.length *
