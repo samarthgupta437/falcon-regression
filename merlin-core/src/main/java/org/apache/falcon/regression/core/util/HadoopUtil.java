@@ -310,10 +310,12 @@ public class HadoopUtil {
         createDir(path, fs);
     }
 
-    public static void createDir(String path, FileSystem fs) throws IOException {
+    public static void createDir(String path, FileSystem... fileSystems) throws IOException {
         System.out.println("creating hdfs dir: " + path);
-        deleteDirIfExists(path, fs);
-        fs.mkdirs(new Path(path));
+        for(FileSystem fs:fileSystems) {
+            deleteDirIfExists(path, fs);
+            fs.mkdirs(new Path(path));
+        }
     }
 
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {

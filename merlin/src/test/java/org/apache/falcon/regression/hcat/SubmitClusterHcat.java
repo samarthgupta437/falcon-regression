@@ -25,7 +25,12 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.TestClassHelper;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+
 public class SubmitClusterHcat extends TestClassHelper {
+    public SubmitClusterHcat() throws IOException {
+        super();
+    }
 
     // private HCatClient client;
 
@@ -36,7 +41,7 @@ public class SubmitClusterHcat extends TestClassHelper {
         String feed02 = "";
         String process = "";
 
-        Bundle b = getBundle(server1,"");
+        Bundle b = getBundle(server1, "");
         try {
 
             cluster = b.getClusters().get(0);

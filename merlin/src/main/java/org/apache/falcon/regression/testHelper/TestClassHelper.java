@@ -3,8 +3,13 @@ package org.apache.falcon.regression.testHelper;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.oozie.client.OozieClient;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -25,13 +30,25 @@ import java.util.Arrays;
  * limitations under the License.
  */
 
-public abstract class TestClassHelper {
+public class TestClassHelper {
 
-    protected PrismHelper prism = new PrismHelper("prism.properties");
-    protected ColoHelper server1 = new ColoHelper("mk-qa.config.properties");
-    protected ColoHelper server2 = new ColoHelper("ivoryqa-1.config.properties");
-    protected ColoHelper server3 = new ColoHelper("gs1001.config.properties");
-    protected ColoHelper server4 = new ColoHelper("ua4.properties");
+    public PrismHelper prism = new PrismHelper("prism.properties");
+    public ColoHelper server1 = new ColoHelper("mk-qa.config.properties");
+    public ColoHelper server2 = new ColoHelper("ivoryqa-1.config.properties");
+    public ColoHelper server3 = new ColoHelper("gs1001.config.properties");
+    public FileSystem server1FS, server2FS, server3FS = null;
+    public OozieClient server1OC, server2OC, server3OC = null;
+    public String baseHDFSDir = "/tmp/falcon-regression";
+
+    public TestClassHelper() throws IOException {
+        server1FS = HadoopUtil.getFileSystem(server1.getClusterHelper().getHadoopURL());
+        server2FS = HadoopUtil.getFileSystem(server2.getClusterHelper().getHadoopURL());
+        server3FS = HadoopUtil.getFileSystem(server3.getClusterHelper().getHadoopURL());
+        server1OC = OozieUtil.getClient(server1.getClusterHelper().getOozieURL());
+        server2OC = OozieUtil.getClient(server2.getClusterHelper().getOozieURL());
+        server3OC = OozieUtil.getClient(server3.getClusterHelper().getOozieURL());
+        HadoopUtil.createDir(baseHDFSDir, server1FS, server2FS, server3FS);
+    }
 
     public boolean checkServices() {
         //restart server as precaution
@@ -39,8 +56,6 @@ public abstract class TestClassHelper {
             Util.restartService(server1.getClusterHelper());
             Util.restartService(server2.getClusterHelper());
             Util.restartService(server3.getClusterHelper());
-            Util.restartService(server4.getClusterHelper());
-
         } catch (Exception e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File
             // Templates.
@@ -67,5 +82,4 @@ public abstract class TestClassHelper {
         }
         return null;
     }
-
 }

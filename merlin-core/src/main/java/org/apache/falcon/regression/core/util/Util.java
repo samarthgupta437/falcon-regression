@@ -308,12 +308,12 @@ public class Util {
     }*/
 
     public static File[] getFiles(String directoryPath) throws Exception {
-        if(directoryPath.contains("/test-classes"))
+        if (directoryPath.contains("/test-classes"))
             directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
-                    +"/test-classes".length()+1,directoryPath.length());
+                    + "/test-classes".length() + 1, directoryPath.length());
         System.out.println("directoryPath: " + directoryPath);
-        URL url = Util.class.getResource("/"+directoryPath) ;
-        System.out.println("url"+url);
+        URL url = Util.class.getResource("/" + directoryPath);
+        System.out.println("url" + url);
         File dir = new File(url.toURI());
         return dir.listFiles();
     }
@@ -2335,10 +2335,15 @@ public class Util {
         return null;
     }
 
+    @Deprecated
     public static void HDFSCleanup(PrismHelper prismHelper, String hdfsPath) throws Exception {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
         final FileSystem fs = FileSystem.get(conf);
+        HDFSCleanup(fs, hdfsPath);
+    }
+
+    public static void HDFSCleanup(FileSystem fs, String hdfsPath) throws Exception {
         HadoopUtil.deleteDirIfExists(hdfsPath, fs);
     }
 
@@ -3291,7 +3296,7 @@ public class Util {
         try {
             Properties properties = new Properties();
 
-            System.out.println("filename: "+ filename);
+            System.out.println("filename: " + filename);
             InputStream conf_stream =
                     //new FileInputStream(new File("src/main/resources/" + filename));
                     Util.class.getResourceAsStream("/" + filename);

@@ -20,13 +20,12 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.falcon.regression.testHelper.TestClassHelper;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -35,6 +34,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,10 +42,18 @@ import java.util.List;
 /**
  * Process instance resume tests.
  */
-public class ProcessInstanceResumeTest {
+public class ProcessInstanceResumeTest extends TestClassHelper{
 
-    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
-    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    String baseTestDir = baseHDFSDir + "/ProcessInstanceResumeTest";
+    String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath = baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+
+    Bundle b = new Bundle();
+    private Bundle bundle;
+
+    public ProcessInstanceResumeTest() throws IOException {
+        super();
+    }
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -57,41 +65,40 @@ public class ProcessInstanceResumeTest {
 
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
+        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server2.getEnvFileName());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
-        b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
+        Util.HDFSCleanup(server2FS, prefix.substring(1));
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
 
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
         ArrayList<String> dataFolder = new ArrayList<String>();
-
+        int i = 0;
         for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
+            dataFolder.add(i, prefix + dataDate);
+            i++;
         }
 
-        InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
+        InstanceUtil.putDataInFolders(server2FS, dataFolder);
     }
-
-    private Bundle bundle;
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("setup " + method.getName());
-        //Util.restartService(ivoryqa1.getClusterHelper());
 
         bundle = (Bundle) Util.readELBundles()[0][0];
+        b = (Bundle) Util.readELBundles()[0][0];
+        b = new Bundle(b, server2.getEnvFileName());
+        b.setInputFeedDataPath(feedInputPath);
+        b.setOutputFeedLocationData(feedOutputPath);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -99,127 +106,100 @@ public class ProcessInstanceResumeTest {
         Util.print("tearDown " + method.getName());
 
         if (bundle != null) {
-            bundle.deleteBundle(prismHelper);
+            bundle.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_onlyEnd() throws Exception {
-        Bundle b = new Bundle();
-
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+            b.setProcessConcurrency(6);
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
             Thread.sleep(10000);
-            ProcessInstancesResult result = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
             InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            result = prismHelper.getProcessHelper()
+            result = prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?end=2010-01-02T01:15Z");
             Assert.assertTrue(result.getMessage().contains("Parameter start is empty"),
                     "start instance was not mentioned, RESUME should have fialed");
             //instanceUtil.validateSuccessWithStatusCode(result, 2);
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_resumeSome() throws Exception {
-        Bundle b = new Bundle();
-
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
             Thread.sleep(10000);
-            ProcessInstancesResult result = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
             InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:16Z");
-            result = prismHelper.getProcessHelper()
+            result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
             InstanceUtil.validateResponse(result, 6, 5, 1, 0, 0);
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_resumeMany() throws Exception {
-        Bundle b = null;
-
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
             Thread.sleep(10000);
-            ProcessInstancesResult result = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
             InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            result = prismHelper.getProcessHelper()
+            result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
             InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
         } finally {
             if (b != null) {
-                b.deleteBundle(prismHelper);
+                b.deleteBundle(prism);
             }
         }
     }
@@ -227,224 +207,161 @@ public class ProcessInstanceResumeTest {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_single() throws Exception {
-        Bundle b = new Bundle();
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(1);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(5000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z");
             Thread.sleep(5000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z");
             Thread.sleep(5000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            ProcessInstancesResult r = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z");
             InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_nonExistent() throws Exception {
-        Bundle b = new Bundle();
-
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
             ProcessInstancesResult r =
-                    prismHelper.getProcessHelper()
+                    prism.getProcessHelper()
                             .getProcessInstanceResume("invalidName", "?end=2010-01-02T01:15Z");
             InstanceUtil.validateSuccessWithStatusCode(r, 777);
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_noParams() throws Exception {
-        Bundle b = new Bundle();
-
         try {
 
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
             ProcessInstancesResult r =
-                    prismHelper.getProcessHelper().getProcessInstanceResume("invalidName", null);
+                    prism.getProcessHelper().getProcessInstanceResume("invalidName", null);
             InstanceUtil.validateSuccessWithStatusCode(r, 777);
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_deleted() throws Exception {
-        Bundle b = new Bundle();
-
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
+            prism.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
             Thread.sleep(5000);
-            ProcessInstancesResult r = prismHelper.getProcessHelper()
+            ProcessInstancesResult r = prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z");
             InstanceUtil.validateSuccessWithStatusCode(r, 777);
 
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_nonSuspended() throws Exception {
-        Bundle b = new Bundle();
-
         try {
 
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z");
-            // Assert.assertTrue(true);
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_lastInstance() throws Exception {
-        Bundle b = new Bundle();
-
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:25Z");
             Thread.sleep(10000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:25Z");
-            ProcessInstancesResult result = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:25Z");
             InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
     @Test(groups = {"singleCluster"})
     public void ap() throws Exception {
-        Bundle b = new Bundle();
-
         try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
             b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+            b.submitAndScheduleBundle(prism);
             Thread.sleep(15000);
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
             Thread.sleep(10000);
-            ProcessInstancesResult result = prismHelper.getProcessHelper()
+            ProcessInstancesResult result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
             InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            prismHelper.getProcessHelper()
+            prism.getProcessHelper()
                     .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            result = prismHelper.getProcessHelper()
+            result = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
             InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
 
         } finally {
-            b.deleteBundle(prismHelper);
+            b.deleteBundle(prism);
         }
     }
 
@@ -458,9 +375,9 @@ public class ProcessInstanceResumeTest {
 
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
-        b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b = new Bundle(b, server2.getEnvFileName());
+        b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
+        Util.HDFSCleanup(server2FS, prefix.substring(1));
     }
 }
