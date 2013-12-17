@@ -820,6 +820,7 @@ public class InstanceUtil {
 
     }
 
+    @Deprecated
     public static void putDataInFolders(FileSystem fs,
                                         final ArrayList<String> inputFoldersForInstance)
     throws Exception {

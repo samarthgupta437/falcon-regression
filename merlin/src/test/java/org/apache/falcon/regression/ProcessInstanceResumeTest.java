@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -86,8 +87,7 @@ public class ProcessInstanceResumeTest extends TestClassHelper{
             dataFolder.add(i, prefix + dataDate);
             i++;
         }
-
-        InstanceUtil.putDataInFolders(server2FS, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server2FS,"src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
