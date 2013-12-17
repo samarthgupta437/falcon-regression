@@ -1215,7 +1215,7 @@ public class PrismProcessDeleteTest {
 
     @DataProvider(name = "DP")
     public Object[][] getData() throws Exception {
-        return Util.readBundles("src/test/resources/LateDataBundles");
+        return Util.readBundles("LateDataBundles");
     }
 
     private void compareDataStoreStates(List<String> initialState, List<String> finalState,
