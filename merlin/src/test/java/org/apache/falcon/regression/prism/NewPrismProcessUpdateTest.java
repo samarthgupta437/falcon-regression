@@ -33,9 +33,13 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job.Status;
@@ -48,9 +52,13 @@ import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
 import org.testng.TestNGException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Random;
@@ -58,8 +66,14 @@ import java.util.Random;
 public class NewPrismProcessUpdateTest {
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testSetup(Method method)  throws Exception {
         Util.print("test name: " + method.getName());
+        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
+        b.generateUniqueBundle();
+        UA1Bundle = new Bundle(b, UA1ColoHelper);
+        UA2Bundle = new Bundle(b, UA2ColoHelper);
+        UA3Bundle = new Bundle(b, UA3ColoHelper);
+        setBundleWFPath(UA1Bundle, UA2Bundle, UA3Bundle);
     }
 
 
@@ -68,17 +82,57 @@ public class NewPrismProcessUpdateTest {
     ColoHelper UA2ColoHelper = new ColoHelper("ivoryqa-1.config.properties");
     ColoHelper UA3ColoHelper = new ColoHelper("gs1001.config.properties");
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+    String WORKFLOW_PATH = "/tmp/falcon-oozie-wf";
+    String WORKFLOW_PATH2 = "/tmp/falcon-oozie-wf2";
+    FileSystem ua1FS, ua2FS, ua3FS = null;
+    Bundle UA1Bundle = null;
+    Bundle UA2Bundle = null;
+    Bundle UA3Bundle = null;
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
-    public void updateProcessFrequencyInEachColoWithOneProcessRunning_Monthly(Bundle bundle)
+    @BeforeClass
+    public void setup() throws Exception {
+        ua1FS = HadoopUtil.getFileSystem(UA1ColoHelper.getClusterHelper().getHadoopURL
+                ());
+        setupOozieData(ua1FS, WORKFLOW_PATH, WORKFLOW_PATH2);
+        ua2FS = HadoopUtil.getFileSystem(UA2ColoHelper.getClusterHelper().getHadoopURL
+                ());
+        setupOozieData(ua2FS, WORKFLOW_PATH, WORKFLOW_PATH2);
+        ua3FS = HadoopUtil.getFileSystem(UA3ColoHelper.getClusterHelper().getHadoopURL
+                ());
+        setupOozieData(ua3FS, WORKFLOW_PATH, WORKFLOW_PATH2);
+
+        Util.restartService(UA3ColoHelper.getClusterHelper());
+    }
+
+    public void setupOozieData(FileSystem fs, String... workflowPaths) throws IOException {
+        for (String workflowPath: workflowPaths) {
+        HadoopUtil.deleteDirIfExists(workflowPath, fs);
+        //create dir on hdfs
+        fs.mkdirs(new Path(workflowPath));
+        fs.setPermission(new Path(workflowPath), new FsPermission("777"));
+        fs.mkdirs(new Path(workflowPath + "/lib"));
+        fs.copyFromLocalFile(new Path("src/test/resources/oozie/workflow.xml"),
+                new Path(workflowPath + "/workflow.xml"));
+        fs.copyFromLocalFile(new Path("src/test/resources/oozie/oozie-examples-3.1.5.jar"),
+                new Path(workflowPath + "/lib/oozie-examples-3.1.5.jar"));
+        }
+    }
+
+    @AfterClass
+    public void teardown() throws IOException {
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH, ua1FS);
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH, ua2FS);
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH, ua3FS);
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH2, ua1FS);
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH2, ua2FS);
+        HadoopUtil.deleteDirIfExists(WORKFLOW_PATH2, ua3FS);
+    }
+
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
+    public void updateProcessFrequencyInEachColoWithOneProcessRunning_Monthly()
     throws Exception {
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(bundle, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            //UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             final String START_TIME = InstanceUtil.getTimeWrtSystemTime(-20);
@@ -156,14 +210,8 @@ public class NewPrismProcessUpdateTest {
     @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessRollStartTimeForwardInEachColoWithOneProcessRunning()
     throws Exception {
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();
@@ -252,19 +300,12 @@ public class NewPrismProcessUpdateTest {
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1800000)
-    public void updateProcessConcurrencyWorkflowExecutionInEachColoWithOneColoDown(Bundle bundle)
+    @Test(groups = {"multiCluster"}, timeOut = 1800000)
+    public void updateProcessConcurrencyWorkflowExecutionInEachColoWithOneColoDown()
     throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
-
         try {
 
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();
@@ -284,7 +325,7 @@ public class NewPrismProcessUpdateTest {
             int initialConcurrency = UA2Bundle.getProcessObject().getParallel();
 
             UA2Bundle.setProcessConcurrency(UA2Bundle.getProcessObject().getParallel() + 3);
-            UA2Bundle.setProcessWorkflow("/examples/apps/aggregator1");
+            UA2Bundle.setProcessWorkflow(WORKFLOW_PATH2);
             UA2Bundle.getProcessObject().setOrder(getRandomExecutionType(UA2Bundle));
             //suspend
             Util.shutDownService(UA3ColoHelper.getProcessHelper());
@@ -300,13 +341,13 @@ public class NewPrismProcessUpdateTest {
             Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
                     initialConcurrency);
             Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                    "/examples/apps/phailFs/workflow.xml");
+                    WORKFLOW_PATH);
             Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
                     UA2Bundle.getProcessObject().getOrder());
 
             String coloString = getResponse(UA2ColoHelper, UA2Bundle, true);
             Assert.assertEquals(Util.getProcessObject(coloString).getWorkflow().getPath(),
-                    "/examples/apps/aggregator1");
+                    WORKFLOW_PATH2);
 
             Util.startService(UA3ColoHelper.getProcessHelper());
 
@@ -333,7 +374,7 @@ public class NewPrismProcessUpdateTest {
             Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
                     initialConcurrency + 3);
             Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                    "/examples/apps/aggregator1");
+                    WORKFLOW_PATH2);
             Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
                     UA2Bundle.getProcessObject().getOrder());
             dualComparison(UA2Bundle, UA3ColoHelper);
@@ -372,10 +413,6 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessFrequencyInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
 
@@ -435,17 +472,12 @@ public class NewPrismProcessUpdateTest {
     }
 
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
-    public void updateProcessNameInEachColoWithOneProcessRunning(Bundle bundle) throws Exception {
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
+    public void updateProcessNameInEachColoWithOneProcessRunning() throws Exception {
 
         System.out.println("executing: updateProcessNameInEachColoWithOneProcessRunning");
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(bundle, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();
@@ -491,19 +523,11 @@ public class NewPrismProcessUpdateTest {
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
-    public void updateProcessConcurrencyInEachColoWithOneProcessRunning(Bundle bundle)
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
+    public void updateProcessConcurrencyInEachColoWithOneProcessRunning()
     throws Exception {
-        Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
-
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            //UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
@@ -600,14 +624,8 @@ public class NewPrismProcessUpdateTest {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessIncreaseValidityInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();
@@ -695,18 +713,11 @@ public class NewPrismProcessUpdateTest {
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
-    public void updateProcessConcurrencyInEachColoWithOneProcessSuspended(Bundle bundle)
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
+    public void updateProcessConcurrencyInEachColoWithOneProcessSuspended()
     throws Exception {
-        Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
@@ -811,17 +822,10 @@ public class NewPrismProcessUpdateTest {
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
-    public void updateProcessConcurrencyInEachColoWithOneColoDown(Bundle bundle) throws Exception {
-        Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
+    public void updateProcessConcurrencyInEachColoWithOneColoDown() throws Exception {
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            //UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-1);
@@ -945,15 +949,8 @@ public class NewPrismProcessUpdateTest {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessConcurrencyExecutionWorkflowInEachColoWithOneProcessRunning()
     throws Exception {
-        Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
@@ -1037,15 +1034,8 @@ public class NewPrismProcessUpdateTest {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessConcurrencyExecutionWorkflowInEachColoWithOneProcessSuspended()
     throws Exception {
-        Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(2);
@@ -1133,14 +1123,8 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessAddNewInputInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
@@ -1223,15 +1207,8 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessAddNewInputInEachColoWithOneProcessSuspended() throws Exception {
-        Bundle b = new Bundle();
-        b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(1);
@@ -1318,14 +1295,8 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessAddNewInputInEachColoWithOneColoDown() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
@@ -1432,15 +1403,8 @@ public class NewPrismProcessUpdateTest {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessDecreaseValidityInEachColoWithOneProcessRunning() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
-
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();
@@ -1518,14 +1482,8 @@ public class NewPrismProcessUpdateTest {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessIncreaseValidityInEachColoWithOneProcessSuspended() throws Exception {
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             String startTime = InstanceUtil.getTimeWrtSystemTime(-1);
@@ -1622,14 +1580,16 @@ public class NewPrismProcessUpdateTest {
         }
     }
 
+    private void setBundleWFPath(Bundle... bundles) throws Exception{
+        for(Bundle bundle: bundles) {
+            bundle.setProcessWorkflow(WORKFLOW_PATH);
+        }
+    }
+
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessFrequencyInEachColoWithOneProcessRunning_Daily() throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
+            setBundleWFPath(UA1Bundle, UA2Bundle, UA3Bundle);
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
 
             usualGrind(UA3ColoHelper, UA2Bundle);
@@ -1699,11 +1659,6 @@ public class NewPrismProcessUpdateTest {
     public void
     updateProcessFrequencyInEachColoWithOneProcessRunning_dailyToMonthly_withStartChange()
     throws Exception {
-        Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
 
@@ -1773,19 +1728,12 @@ public class NewPrismProcessUpdateTest {
     }
 
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
     @SuppressWarnings("SleepWhileInLoop")
-    public void updateProcessRollStartTimeBackwardsToPastInEachColoWithOneProcessRunning(
-            Bundle bundle)
+    public void updateProcessRollStartTimeBackwardsToPastInEachColoWithOneProcessRunning()
     throws Exception {
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(bundle, UA3ColoHelper);
-
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();
@@ -1853,16 +1801,11 @@ public class NewPrismProcessUpdateTest {
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
-    public void updateProcessRollStartTimeForwardInEachColoWithOneProcessSuspended(Bundle bundle)
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
+    public void updateProcessRollStartTimeForwardInEachColoWithOneProcessSuspended()
     throws Exception {
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(bundle, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();
@@ -1955,18 +1898,11 @@ public class NewPrismProcessUpdateTest {
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"multiCluster"}, dataProviderClass = Bundle.class,
-            timeOut = 1200000)
-    public void updateProcessRollStartTimeBackwardsInEachColoWithOneProcessSuspended(Bundle bundle)
+    @Test(groups = {"multiCluster"}, timeOut = 1200000)
+    public void updateProcessRollStartTimeBackwardsInEachColoWithOneProcessSuspended()
     throws Exception {
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b.generateUniqueBundle();
-        Bundle UA1Bundle = new Bundle(b, UA1ColoHelper);
-        Bundle UA2Bundle = new Bundle(b, UA2ColoHelper);
-        Bundle UA3Bundle = new Bundle(b, UA3ColoHelper);
         try {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
-            UA2Bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
             usualGrind(UA3ColoHelper, UA2Bundle);
 
             //UA2Bundle.generateUniqueBundle();

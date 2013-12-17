@@ -626,7 +626,7 @@ public class Util {
     }
 
     public static Object[][] readBundles() throws Exception {
-        final String FILEPATH = "src/test/resources/bundles";
+        final String FILEPATH = "bundles";
 
         List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
 
@@ -2927,23 +2927,19 @@ public class Util {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStopCmd(),
                 helper.getServiceUser(), helper.getIdentityFile());
+        Thread.sleep(10000);
     }
 
     public static void startService(IEntityManagerHelper helper) throws Exception {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
                 helper.getIdentityFile());
+        Thread.sleep(10000);
     }
 
     public static void restartService(IEntityManagerHelper helper) throws Exception {
         Util.print("restarting service for: " + helper.getQaHost());
 
-        //check if needs to be restarted or not
-        //	ArrayList<String> tomcatStatus = runRemoteScriptAsSudo(helper.getQaHost(),
-        // helper.getUsername(),
-        // helper.getPassword()," /etc/init.d/tomcat6 status");
-        //	if(tomcatStatus.get(0).contains("Tomcat servlet engine is running with pid"))
-        //		return;
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStopCmd(), helper.getServiceUser(),
                 helper.getIdentityFile());
@@ -2951,6 +2947,7 @@ public class Util {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
                 helper.getIdentityFile());
+        Thread.sleep(10000);
     }
 
     private static ArrayList<String> runRemoteScriptAsSudo(String hostName,
@@ -2987,8 +2984,12 @@ public class Util {
         if (null == runAs || runAs.isEmpty()) {
             runCmd = "sudo -S -p '' " + command;
         } else {
-            runCmd = String.format("sudo su %s -c p '%s'", runAs, command);
+            runCmd = String.format("sudo su - %s -c '%s'", runAs, command);
         }
+        System.out.println(
+                "host_name: " + hostName + " user_name: " + userName + " password: " + password +
+                        " command: " +
+                        runCmd);
         channel.setCommand(runCmd);
         InputStream in = channel.getInputStream();
         OutputStream out = channel.getOutputStream();

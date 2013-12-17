@@ -322,4 +322,10 @@ public class HadoopUtil {
          fs.delete(path, true);
         }
     }
+
+    public static FileSystem getFileSystem(String fs) throws IOException {
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", "hdfs://" + fs);
+        return FileSystem.get(conf);
+    }
 }

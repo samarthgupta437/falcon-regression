@@ -637,7 +637,9 @@
                     <groups>${testng.groups}</groups>
                     <excludedGroups>${testng.exclude.groups}</excludedGroups>
                     <additionalClasspathElements>
-                      <additionalClasspathElement>merlin/src/test/resources/hadoop-conf</additionalClasspathElement>
+                        <!-- Hack to get the dir in CP through CLI and idea -->
+                        <additionalClasspathElement>merlin/src/test/resources/hadoop-conf</additionalClasspathElement>
+                        <additionalClasspathElement>src/test/resources/hadoop-conf</additionalClasspathElement>
                     </additionalClasspathElements>
                     <!--<skipTests>true</skipTests>-->
                 </configuration>
