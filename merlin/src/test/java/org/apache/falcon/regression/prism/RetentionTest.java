@@ -113,7 +113,7 @@ public class RetentionTest {
 
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) throws Exception {
-        Bundle[] bundles = Util.getBundleData("src/test/resources/RetentionBundles/valid/bundle1");
+        Bundle[] bundles = Util.getBundleData("RetentionBundles/valid/bundle1");
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         String[] periods = new String[]{"0", "10080", "60", "8",
                 "24"};// "0","10080","60","1","24"  //not using a negative value like -4 since
@@ -157,7 +157,7 @@ public class RetentionTest {
 
     @DataProvider(name = "DP")
     public Object[][] getBundles(Method m) throws Exception {
-        return Util.readBundles("src/test/resources/RetentionBundles/valid/bundle1");
+        return Util.readBundles("RetentionBundles/valid/bundle1");
     }
 
     private String setFeedPathValue(String feed, String pathValue) throws Exception {
