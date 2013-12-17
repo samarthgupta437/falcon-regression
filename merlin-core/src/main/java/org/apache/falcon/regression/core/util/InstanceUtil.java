@@ -326,13 +326,8 @@ public class InstanceUtil {
 
     String bundleID =
       Util.getCoordID(Util.getOozieJobStatus(prismHelper, processName, "NONE").get(0));
-    oozieClient = new XOozieClient(
-      Util.readPropertiesFile(prismHelper.getEnvFileName(), "oozie_url"));
+    oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
 
-
-    //BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-    //CoordinatorJob jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0)
-    // .getId());
     List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
     ArrayList<String> toBeReturned = new ArrayList<String>();
@@ -815,6 +810,7 @@ public class InstanceUtil {
 
   }
 
+    @Deprecated
   public static void putDataInFolders(ColoHelper colo,
                                       final ArrayList<String> inputFoldersForInstance)
     throws Exception {
@@ -823,6 +819,15 @@ public class InstanceUtil {
       putDataInFolder(colo, anInputFoldersForInstance);
 
   }
+
+    public static void putDataInFolders(FileSystem fs,
+                                        final ArrayList<String> inputFoldersForInstance)
+    throws Exception {
+
+        for (String anInputFoldersForInstance : inputFoldersForInstance)
+            putDataInFolder(fs, anInputFoldersForInstance, null);
+
+    }
 
   public static void putDataInFolders(ColoHelper colo,
                                       final ArrayList<String> inputFoldersForInstance,
@@ -872,7 +877,7 @@ public class InstanceUtil {
 
   }
 
-
+  @Deprecated
   public static void putDataInFolder(ColoHelper colo, final String remoteLocation, String type)
     throws Exception {
 
@@ -908,6 +913,23 @@ public class InstanceUtil {
     }
 
   }
+
+
+    public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type)
+    throws Exception {
+        String inputPath = "src/test/resources/OozieExampleInputData/normalInput";
+        if ((null != type) && type.equals("late")) {
+            inputPath = "src/test/resources/lateData";
+        }
+        File[] files = new File(inputPath).listFiles();
+        assert files != null;
+        for (final File file : files) {
+            if (!file.isDirectory()) {
+                Util.print("putDataInFolder: " + remoteLocation);
+                fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(remoteLocation));
+            }
+        }
+    }
 
 /*
     public static CoordinatorAction.Status getLateInstanceStatus(String processName,

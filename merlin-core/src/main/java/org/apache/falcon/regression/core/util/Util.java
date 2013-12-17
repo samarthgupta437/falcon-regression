@@ -2335,10 +2335,15 @@ public class Util {
         return null;
     }
 
+    @Deprecated
     public static void HDFSCleanup(PrismHelper prismHelper, String hdfsPath) throws Exception {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
         final FileSystem fs = FileSystem.get(conf);
+        HDFSCleanup(fs, hdfsPath);
+    }
+
+    public static void HDFSCleanup(FileSystem fs, String hdfsPath) throws Exception {
         HadoopUtil.deleteDirIfExists(hdfsPath, fs);
     }
 
