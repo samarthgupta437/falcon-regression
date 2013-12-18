@@ -25,8 +25,12 @@ package org.apache.falcon.regression.core.interfaces;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.oozie.client.OozieClient;
 
 import java.util.List;
 import java.util.Properties;
@@ -98,6 +102,18 @@ public abstract class IEntityManagerHelper {
     protected String serviceStopCmd;
     protected String serviceRestartCmd;
     protected String serviceStatusCmd;
+
+    public OozieClient getOozieClient() {
+        return oozieClient;
+    }
+
+    protected OozieClient oozieClient;
+
+    public FileSystem getHadoopFS() {
+        return hadoopFS;
+    }
+
+    protected FileSystem hadoopFS;
 
     public String getIdentityFile() {
         return identityFile;
@@ -173,6 +189,8 @@ public abstract class IEntityManagerHelper {
                 prop.getProperty("service_status_cmd", "/etc/init.d/tomcat6 status");
         this.identityFile = prop.getProperty("identityFile",
                 System.getProperty("user.home") + "/.ssh/id_rsa");
+        this.hadoopFS = HadoopUtil.getFileSystem(this.hadoopURL);
+        this.oozieClient = OozieUtil.getClient(this.oozieURL);
     }
 
     public abstract ServiceResponse submitEntity(String url, String data) throws Exception;

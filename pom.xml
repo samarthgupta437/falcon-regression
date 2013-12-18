@@ -98,6 +98,7 @@
         <hadoop.profile>1</hadoop.profile>
         <slf4j.version>1.6.1</slf4j.version>
         <oozie.version>3.2.2</oozie.version>
+        <!--<oozie.version>4.0.0.2.0.6.0-76</oozie.version>-->
         <falcon.oozie.version>4.0.0-falcon</falcon.oozie.version>
         <activemq.version>5.4.3</activemq.version>
         <hadoop-distcp.version>0.9</hadoop-distcp.version>

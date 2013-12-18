@@ -41,12 +41,12 @@ public class TestClassHelper {
     public String baseHDFSDir = "/tmp/falcon-regression";
 
     public TestClassHelper() throws IOException {
-        server1FS = HadoopUtil.getFileSystem(server1.getClusterHelper().getHadoopURL());
-        server2FS = HadoopUtil.getFileSystem(server2.getClusterHelper().getHadoopURL());
-        server3FS = HadoopUtil.getFileSystem(server3.getClusterHelper().getHadoopURL());
-        server1OC = OozieUtil.getClient(server1.getClusterHelper().getOozieURL());
-        server2OC = OozieUtil.getClient(server2.getClusterHelper().getOozieURL());
-        server3OC = OozieUtil.getClient(server3.getClusterHelper().getOozieURL());
+        server1FS = server1.getClusterHelper().getHadoopFS();
+        server2FS = server2.getClusterHelper().getHadoopFS();
+        server3FS = server3.getClusterHelper().getHadoopFS();
+        server1OC = server1.getClusterHelper().getOozieClient();
+        server2OC = server2.getClusterHelper().getOozieClient();
+        server3OC = server3.getClusterHelper().getOozieClient();
         HadoopUtil.createDir(baseHDFSDir, server1FS, server2FS, server3FS);
     }
 

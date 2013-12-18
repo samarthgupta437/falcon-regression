@@ -27,14 +27,16 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.testng.log4testng.Logger;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class HadoopUtil {
 
-    static Logger logger = Logger.getLogger(Util.class);
+    static Logger logger = Logger.getLogger(HadoopUtil.class);
     public static void setSystemPropertyHDFS() {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
@@ -329,5 +331,22 @@ public class HadoopUtil {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + fs);
         return FileSystem.get(conf);
+    }
+
+    public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
+                                       List<String> remoteLocations)
+    throws Exception {
+        File[] files = new File(inputPath).listFiles();
+        assert files != null;
+        for (final File file : files) {
+            if (!file.isDirectory()) {
+                for (String remoteLocation : remoteLocations) {
+                    logger.info(String.format("Copy file %s to folder %s", file.toString(),
+                            remoteLocation));
+                    fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
+                            new Path(remoteLocation));
+                }
+            }
+        }
     }
 }

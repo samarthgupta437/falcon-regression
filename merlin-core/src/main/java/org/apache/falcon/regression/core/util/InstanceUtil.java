@@ -820,6 +820,7 @@ public class InstanceUtil {
 
     }
 
+    @Deprecated
     public static void putDataInFolders(FileSystem fs,
                                         final ArrayList<String> inputFoldersForInstance)
     throws Exception {
@@ -1373,6 +1374,7 @@ public class InstanceUtil {
         return RetentionCoordID;
     }
 
+    /*
     public static void verifyDataInTarget(IEntityManagerHelper helper,
                                           String feed) throws Exception {
 
@@ -1421,6 +1423,7 @@ public class InstanceUtil {
         }
 
     }
+    */
 
     public static void putDataInFolders(PrismHelper helper,
                                         final ArrayList<String> inputFoldersForInstance)
