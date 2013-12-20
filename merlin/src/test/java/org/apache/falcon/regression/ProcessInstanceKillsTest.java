@@ -158,10 +158,10 @@ public class ProcessInstanceKillsTest extends TestClassHelper {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(40);
-        String startTimeData = InstanceUtil.getTimeWrtSystemTime(-15);
-        String endTimeData = InstanceUtil.getTimeWrtSystemTime(5);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(-20);
+        String endTime = InstanceUtil.getTimeWrtSystemTime(400);
+        String startTimeData = InstanceUtil.getTimeWrtSystemTime(-150);
+        String endTimeData = InstanceUtil.getTimeWrtSystemTime(50);
         InstanceUtil.createDataWithinDatesAndPrefix(server2,
                 InstanceUtil.oozieDateToDate(startTimeData),
                 InstanceUtil.oozieDateToDate(endTimeData), testDir + "/", 1);
@@ -191,8 +191,8 @@ public class ProcessInstanceKillsTest extends TestClassHelper {
         b.setProcessConcurrency(6);
         b.submitAndScheduleBundle(prism);
         Thread.sleep(15000);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(1);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(40);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(10);
+        String endTime = InstanceUtil.getTimeWrtSystemTime(400);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
                         "?start=" + startTime + "&end=" + endTime);
