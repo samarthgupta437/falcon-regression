@@ -43,11 +43,11 @@ import java.util.List;
 /**
  * Process instance resume tests.
  */
-public class ProcessInstanceResumeTest extends TestClassHelper{
+public class ProcessInstanceResumeTest extends TestClassHelper {
 
-    String baseTestDir = baseHDFSDir + "/ProcessInstanceResumeTest";
-    String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceResumeTest";
+    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
     Bundle b = new Bundle();
     private Bundle bundle;
@@ -87,7 +87,7 @@ public class ProcessInstanceResumeTest extends TestClassHelper{
             dataFolder.add(i, prefix + dataDate);
             i++;
         }
-        HadoopUtil.flattenAndPutDataInFolder(server2FS,"src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server2FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -104,265 +104,217 @@ public class ProcessInstanceResumeTest extends TestClassHelper{
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
-
         if (bundle != null) {
             bundle.deleteBundle(prism);
         }
+        b.deleteBundle(prism);
     }
-
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_onlyEnd() throws Exception {
-        try {
-            b.setProcessConcurrency(6);
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            prism.getProcessHelper()
-                    .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
-            Thread.sleep(10000);
-            ProcessInstancesResult result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+        b.setProcessConcurrency(6);
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        prism.getProcessHelper()
+                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
+        Thread.sleep(10000);
+        ProcessInstancesResult result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
+        InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            result = prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?end=2010-01-02T01:15Z");
-            Assert.assertTrue(result.getMessage().contains("Parameter start is empty"),
-                    "start instance was not mentioned, RESUME should have fialed");
-            //instanceUtil.validateSuccessWithStatusCode(result, 2);
-        } finally {
-            b.deleteBundle(prism);
-        }
+        result = prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?end=2010-01-02T01:15Z");
+        Assert.assertTrue(result.getMessage().contains("Parameter start is empty"),
+                "start instance was not mentioned, RESUME should have fialed");
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_resumeSome() throws Exception {
-        try {
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            prism.getProcessHelper()
-                    .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
-            Thread.sleep(10000);
-            ProcessInstancesResult result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        prism.getProcessHelper()
+                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
+        Thread.sleep(10000);
+        ProcessInstancesResult result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
+        InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z&end=2010-01-02T01:16Z");
-            result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(result, 6, 5, 1, 0, 0);
-        } finally {
-            b.deleteBundle(prism);
-        }
+        prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:16Z");
+        result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
+        InstanceUtil.validateResponse(result, 6, 5, 1, 0, 0);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_resumeMany() throws Exception {
-        try {
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            prism.getProcessHelper()
-                    .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            Thread.sleep(10000);
-            ProcessInstancesResult result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        prism.getProcessHelper()
+                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
+        Thread.sleep(10000);
+        ProcessInstancesResult result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
+        InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
-        } finally {
-            if (b != null) {
-                b.deleteBundle(prism);
-            }
-        }
+        prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
+        result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
+        InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_single() throws Exception {
-        try {
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(1);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(5000);
-            prism.getProcessHelper()
-                    .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z");
-            Thread.sleep(5000);
-            prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z");
-            Thread.sleep(5000);
-            ProcessInstancesResult r = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z");
-            InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
-        } finally {
-            b.deleteBundle(prism);
-        }
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(1);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(5000);
+        prism.getProcessHelper()
+                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z");
+        Thread.sleep(5000);
+        prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z");
+        Thread.sleep(5000);
+        ProcessInstancesResult r = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z");
+        InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_nonExistent() throws Exception {
-        try {
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            ProcessInstancesResult r =
-                    prism.getProcessHelper()
-                            .getProcessInstanceResume("invalidName", "?end=2010-01-02T01:15Z");
-            InstanceUtil.validateSuccessWithStatusCode(r, 777);
-        } finally {
-            b.deleteBundle(prism);
-        }
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        ProcessInstancesResult r =
+                prism.getProcessHelper()
+                        .getProcessInstanceResume("invalidName", "?end=2010-01-02T01:15Z");
+        InstanceUtil.validateSuccessWithStatusCode(r, 777);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_noParams() throws Exception {
-        try {
-
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            ProcessInstancesResult r =
-                    prism.getProcessHelper().getProcessInstanceResume("invalidName", null);
-            InstanceUtil.validateSuccessWithStatusCode(r, 777);
-        } finally {
-            b.deleteBundle(prism);
-        }
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        ProcessInstancesResult r =
+                prism.getProcessHelper().getProcessInstanceResume("invalidName", null);
+        InstanceUtil.validateSuccessWithStatusCode(r, 777);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_deleted() throws Exception {
-        try {
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            prism.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
-            Thread.sleep(5000);
-            ProcessInstancesResult r = prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z");
-            InstanceUtil.validateSuccessWithStatusCode(r, 777);
-
-        } finally {
-            b.deleteBundle(prism);
-        }
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        prism.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
+        Thread.sleep(5000);
+        ProcessInstancesResult r = prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z");
+        InstanceUtil.validateSuccessWithStatusCode(r, 777);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_nonSuspended() throws Exception {
-        try {
-
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z");
-        } finally {
-            b.deleteBundle(prism);
-        }
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z");
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_lastInstance() throws Exception {
-        try {
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            prism.getProcessHelper()
-                    .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:25Z");
-            Thread.sleep(10000);
-            prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:25Z");
-            ProcessInstancesResult result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:25Z");
-            InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
-        } finally {
-            b.deleteBundle(prism);
-        }
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        prism.getProcessHelper()
+                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:25Z");
+        Thread.sleep(10000);
+        prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:25Z");
+        ProcessInstancesResult result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:25Z");
+        InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
     }
 
     @Test(groups = {"singleCluster"})
     public void ap() throws Exception {
-        try {
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prism);
-            Thread.sleep(15000);
-            prism.getProcessHelper()
-                    .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            Thread.sleep(10000);
-            ProcessInstancesResult result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
+        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        b.setProcessPeriodicity(5, TimeUnit.minutes);
+        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        b.setProcessConcurrency(6);
+        b.submitAndScheduleBundle(prism);
+        Thread.sleep(15000);
+        prism.getProcessHelper()
+                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
+        Thread.sleep(10000);
+        ProcessInstancesResult result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
+        InstanceUtil.validateResponse(result, 6, 2, 4, 0, 0);
 
-            prism.getProcessHelper()
-                    .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
-            result = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
-            InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
-
-        } finally {
-            b.deleteBundle(prism);
-        }
+        prism.getProcessHelper()
+                .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
+        result = prism.getProcessHelper()
+                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
+        InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
     }
 
 
@@ -372,7 +324,6 @@ public class ProcessInstanceResumeTest extends TestClassHelper{
 
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
-
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, server2.getEnvFileName());
