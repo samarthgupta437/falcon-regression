@@ -82,6 +82,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class Util {
 
@@ -547,6 +548,7 @@ public class Util {
         return bundleSet.toArray(new Bundle[bundleSet.size()]);
     }
 
+    @Deprecated
     public static ArrayList<String> getOozieJobStatus(PrismHelper coloHelper, String processName)
     throws Exception {
 
@@ -588,6 +590,32 @@ public class Util {
 
     }
 
+    public static boolean verifyOozieJobStatus(OozieClient client, String processName,
+                                               ENTITY_TYPE entityType, Job.Status expectedStatus)
+            throws OozieClientException, InterruptedException {
+        for (int seconds = 0; seconds < 20; seconds++) {
+            Job.Status status = getOozieJobStatus(client, processName, entityType);
+            logger.debug("Current status: " + status);
+            if (status == expectedStatus) {
+                return true;
+            }
+            TimeUnit.SECONDS.sleep(1);
+        }
+        return false;
+    }
+
+    public static Job.Status getOozieJobStatus(OozieClient client, String processName, ENTITY_TYPE entityType)
+            throws OozieClientException, InterruptedException {
+        String filter = String.format("name=FALCON_%s_%s", entityType, processName);
+        List<Job.Status> statuses = OozieUtil.getBundleStatuses(client, filter, 0, 10);
+        if (statuses.isEmpty()) {
+            return null;
+        } else {
+            return statuses.get(0);
+        }
+    }
+
+    @Deprecated
     public static ArrayList<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
                                                       String expectedState)
     throws Exception {
@@ -626,6 +654,7 @@ public class Util {
         return jobList;
     }
 
+    @Deprecated
     public static ArrayList<String> getOozieJobStatus(String processName, String expectedState,
                                                       ColoHelper colohelper)
     throws Exception {
@@ -663,6 +692,7 @@ public class Util {
         return jobList;
     }
 
+    @Deprecated
     public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState,
                                                           PrismHelper coloHelper)
     throws Exception {
