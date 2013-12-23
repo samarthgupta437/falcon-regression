@@ -55,11 +55,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.oozie.client.BundleJob;
-import org.apache.oozie.client.CoordinatorAction;
-import org.apache.oozie.client.CoordinatorJob;
-import org.apache.oozie.client.WorkflowJob;
-import org.apache.oozie.client.XOozieClient;
+import org.apache.oozie.client.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -1543,6 +1539,7 @@ public class Util {
 
     }
 
+    @Deprecated
     public static ArrayList<String> getBundles(PrismHelper coloHelper, String entityName,
                                                String entityType)
     throws Exception {
@@ -1566,6 +1563,12 @@ public class Util {
                             "|grep 000|awk '{print $1}'",
                     coloHelper.getFeedHelper().getIdentityFile());
         }
+    }
+
+    public static List<String> getBundles(OozieClient client, String entityName, ENTITY_TYPE entityType)
+            throws OozieClientException {
+        String filter = "name=FALCON_" + entityType + "_" + entityName;
+        return OozieUtil.getBundleIds(client, filter, 0, 10);
     }
 
     public static String setFeedPathValue(String feed, String pathValue) throws Exception {
@@ -2075,6 +2078,7 @@ public class Util {
         return newList;
     }
 
+    @Deprecated
     public static ArrayList<String> getBundles(String entityName, String entityType,
                                                IEntityManagerHelper helper)
     throws Exception {

@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -128,14 +129,13 @@ public class PrismFeedSnSTest {
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0)));
         //ensure only one bundle is there
-        Assert.assertEquals(
-                Util.getBundles(UA1ColoHelper, Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getDataSets().get(0)));
-        Assert.assertEquals(
-                Util.getBundles(UA2ColoHelper, Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
+                        ENTITY_TYPE.FEED).size(), 1);
         //now check if they have been scheduled correctly or not
         Assert.assertTrue(
                 Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
@@ -179,9 +179,8 @@ public class PrismFeedSnSTest {
                 Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
                         "SUSPENDED",
                         UA1ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertEquals(
-                Util.getBundles(UA1ColoHelper, Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
 
         Util.assertSucceeded(UA1ColoHelper.getFeedHelper()
                 .resume(URLS.RESUME_URL, UA1Bundle.getDataSets().get(0)));
@@ -209,9 +208,8 @@ public class PrismFeedSnSTest {
                 Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
                         "SUSPENDED",
                         UA2ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertEquals(
-                Util.getBundles(UA2ColoHelper, Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(UA2Bundle.getDataSets().get(0)),ENTITY_TYPE.FEED).size(), 1);
         Util.assertSucceeded(UA2ColoHelper.getFeedHelper()
                 .resume(URLS.RESUME_URL, UA2Bundle.getDataSets().get(0)));
         Assert.assertTrue(

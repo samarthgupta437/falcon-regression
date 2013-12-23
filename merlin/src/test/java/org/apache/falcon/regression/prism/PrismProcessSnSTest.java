@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.testng.Assert;
@@ -205,9 +206,8 @@ public class PrismProcessSnSTest {
 
         Util.assertSucceeded(UA1ColoHelper.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Assert.assertEquals(
-                Util.getBundles(UA1ColoHelper, Util.readEntityName(UA1Bundle.getProcessData()),
-                        "process").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(UA1Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
         Assert.assertTrue(
                 Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
                         UA1ColoHelper).get(0)
@@ -244,9 +244,8 @@ public class PrismProcessSnSTest {
         //now check if they have been scheduled correctly or not
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Assert.assertEquals(
-                Util.getBundles(UA1ColoHelper, Util.readEntityName(UA1Bundle.getProcessData()),
-                        "process").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readEntityName(UA1Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
         Util.assertSucceeded(UA1ColoHelper.getProcessHelper()
                 .resume(URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
 
@@ -255,9 +254,8 @@ public class PrismProcessSnSTest {
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getProcessData()));
 
-        Assert.assertEquals(
-                Util.getBundles(UA2ColoHelper, Util.readEntityName(UA2Bundle.getProcessData()),
-                        "process").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
         Assert.assertTrue(
                 Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "SUSPENDED",
                         UA2ColoHelper)

@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -167,7 +168,7 @@ public class NewRetryTest {
                 // "process was not updated successfully");
                 String newBundleId = InstanceUtil
                         .getLatestBundleID(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "process");
+                                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
@@ -281,7 +282,7 @@ public class NewRetryTest {
                             "process was not updated successfully");
                     String newBundleId = InstanceUtil
                             .getLatestBundleID(UA3ColoHelper,
-                                    Util.readEntityName(bundle.getProcessData()), "process");
+                                    Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                     Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
@@ -393,7 +394,7 @@ public class NewRetryTest {
                         "process was not updated successfully");
                 String newBundleId = InstanceUtil
                         .getLatestBundleID(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "process");
+                                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
@@ -502,7 +503,7 @@ public class NewRetryTest {
                         "process was not updated successfully");
                 String newBundleId = InstanceUtil
                         .getLatestBundleID(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "process");
+                                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
@@ -604,7 +605,7 @@ public class NewRetryTest {
                         .contains("updated successfully"), "process was not updated successfully");
                 String newBundleId = InstanceUtil
                         .getLatestBundleID(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "process");
+                                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
@@ -708,7 +709,7 @@ public class NewRetryTest {
                         .contains("updated successfully"), "process was not updated successfully");
                 String newBundleId = InstanceUtil
                         .getLatestBundleID(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "process");
+                                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
@@ -814,7 +815,7 @@ public class NewRetryTest {
                         "process was not updated successfully");
                 String newBundleId = InstanceUtil
                         .getLatestBundleID(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "process");
+                                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
@@ -919,7 +920,7 @@ public class NewRetryTest {
                         "process was updated successfully!!!");
                 String newBundleId = InstanceUtil
                         .getLatestBundleID(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "process");
+                                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
