@@ -40,14 +40,18 @@ public class TestClassHelper {
     public OozieClient server1OC, server2OC, server3OC = null;
     public String baseHDFSDir = "/tmp/falcon-regression";
 
-    public TestClassHelper() throws IOException {
+    public TestClassHelper() {
         server1FS = server1.getClusterHelper().getHadoopFS();
         server2FS = server2.getClusterHelper().getHadoopFS();
         server3FS = server3.getClusterHelper().getHadoopFS();
         server1OC = server1.getClusterHelper().getOozieClient();
         server2OC = server2.getClusterHelper().getOozieClient();
         server3OC = server3.getClusterHelper().getOozieClient();
-        HadoopUtil.createDir(baseHDFSDir, server1FS, server2FS, server3FS);
+        try {
+            HadoopUtil.createDir(baseHDFSDir, server1FS, server2FS, server3FS);
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
     }
 
     public boolean checkServices() {
