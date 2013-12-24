@@ -214,6 +214,7 @@ public class FeedStatusTest {
     public void getStatusForNonExistentFeed(Bundle bundle) throws Exception {
 
         bundle.generateUniqueBundle();
+        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
         submitCluster(bundle);
         String feed = Util.getInputFeedFromBundle(bundle);
         ServiceResponse response = prismHelper.getFeedHelper().getStatus(URLS.STATUS_URL, feed);

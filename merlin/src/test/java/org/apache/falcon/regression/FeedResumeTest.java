@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression;
 
 
@@ -37,7 +33,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 
 /**
  * Feed resume tests.
@@ -53,10 +48,6 @@ public class FeedResumeTest {
     public void testName(Method method) {
         Util.print("test name: " + method.getName());
     }
-
-
-//    IEntityManagerHelper feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-//    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
 
     @Test(groups = {"singleCluster"}, dataProvider = "DP")
     public void resumeSuspendedFeed(Bundle bundle) throws Exception {
@@ -111,6 +102,7 @@ public class FeedResumeTest {
     public void resumeNonExistentFeed(Bundle bundle) throws Exception {
         try {
             bundle.generateUniqueBundle();
+            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
             submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
 
@@ -127,6 +119,7 @@ public class FeedResumeTest {
     public void resumeDeletedFeed(Bundle bundle) throws Exception {
         try {
             bundle.generateUniqueBundle();
+            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
             submitCluster(bundle);
             String feed = Util.getInputFeedFromBundle(bundle);
 

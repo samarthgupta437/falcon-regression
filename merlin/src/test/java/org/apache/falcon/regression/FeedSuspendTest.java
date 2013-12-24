@@ -164,15 +164,13 @@ public class FeedSuspendTest {
     @Test(groups = {"singleCluster"}, dataProvider = "DP")
     public void suspendNonExistentFeed(Bundle bundle) throws Exception {
         bundle.generateUniqueBundle();
+        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
         submitCluster(bundle);
 
         String feed = Util.getInputFeedFromBundle(bundle);
-
         ServiceResponse response = prismHelper.getFeedHelper().suspend(URLS.SCHEDULE_URL, feed);
-
         Util.assertFailed(response);
-
-    }
+                                                                    }
 
     @Test(groups = {"singleCluster"}, dataProvider = "DP")
     public void suspendSubmittedFeed(Bundle bundle) throws Exception {

@@ -189,6 +189,7 @@ public class FeedScheduleTest {
     @Test(groups = {"singleCluster"}, dataProvider = "DP", dataProviderClass = FeedSubmitTest.class)
     public void scheduleNonExistentFeed(Bundle bundle) throws Exception {
         bundle.generateUniqueBundle();
+        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
         Bundle.submitCluster(bundle);
         String feed = Util.getInputFeedFromBundle(bundle);
         Util.assertFailed(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
