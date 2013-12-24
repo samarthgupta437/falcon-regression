@@ -33,11 +33,13 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.oozie.client.Job;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Feed submit and schedule tests.
@@ -49,10 +51,6 @@ public class FeedSubmitAndScheduleTest {
         Util.print("test name: " + method.getName());
     }
 
-
-//    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-//    IEntityManagerHelper clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER);
-//    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);
     private final PrismHelper prismHelper = new PrismHelper("prism.properties");
     private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
 
@@ -66,34 +64,16 @@ public class FeedSubmitAndScheduleTest {
                     prismHelper.getClusterHelper()
                             .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0)))
                     .getStatusCode(), 200);
-            //            for(String dataset:bundle.getDataSets())
-            //            {
-            //               Assert.assertEquals(Util.parseResponse(prismHelper.getFeedHelper()
-            // .submitEntity(URLS
-            // .SUBMIT_URL,dataset)).getStatusCode(),200);
-            //            }
-
-
-            //ServiceResponse response=processHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL,
-            // bundle.getProcessData());
             ServiceResponse response = prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
-
-
             Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
             Assert.assertEquals(Util.parseResponse(response).getStatus(),
                     APIResult.Status.SUCCEEDED);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-
-            Thread.sleep(5000);
-
-            //Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(bundle.getProcessData()),
-            // "RUNNING").get(0).contains("RUNNING"));
+            TimeUnit.SECONDS.sleep(5);
         } finally {
             bundle.deleteBundle(prismHelper);
         }
-
     }
 
     @Test(groups = {"singleCluster"}, dataProvider = "DP")
@@ -114,23 +94,16 @@ public class FeedSubmitAndScheduleTest {
             Assert.assertEquals(Util.parseResponse(response).getStatus(),
                     APIResult.Status.SUCCEEDED);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "RUNNING", ivoryqa1)
-                            .get(0).contains("RUNNING"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
             //try to submitand schedule the same process again
             response = prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
             Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "RUNNING", ivoryqa1)
-                            .get(0).contains("RUNNING"));
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
         } finally {
             bundle.deleteBundle(prismHelper);
         }
@@ -168,7 +141,6 @@ public class FeedSubmitAndScheduleTest {
                             .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0)))
                     .getStatusCode(), 200);
 
-
             ServiceResponse response = prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
@@ -176,12 +148,8 @@ public class FeedSubmitAndScheduleTest {
             Assert.assertEquals(Util.parseResponse(response).getStatus(),
                     APIResult.Status.SUCCEEDED);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "RUNNING", ivoryqa1)
-                            .get(0).contains("RUNNING"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
             response = prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
@@ -215,21 +183,14 @@ public class FeedSubmitAndScheduleTest {
             Assert.assertEquals(Util.parseResponse(response).getStatus(),
                     APIResult.Status.SUCCEEDED);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "RUNNING", ivoryqa1)
-                            .get(0).contains("RUNNING"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
             Assert.assertEquals(
                     Util.parseResponse(prismHelper.getFeedHelper()
                             .delete(URLS.DELETE_URL, bundle.getDataSets().get(0)))
                             .getStatusCode(), 200);
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "KILLED", ivoryqa1)
-                            .get(0).contains("KILLED"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.KILLED));
             response = prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
@@ -237,11 +198,8 @@ public class FeedSubmitAndScheduleTest {
             Assert.assertEquals(Util.parseResponse(response).getStatus(),
                     APIResult.Status.SUCCEEDED);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "RUNNING", ivoryqa1)
-                            .get(0).contains("RUNNING"));
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
         } finally {
             bundle.deleteBundle(prismHelper);
         }
@@ -266,23 +224,16 @@ public class FeedSubmitAndScheduleTest {
             Assert.assertEquals(Util.parseResponse(response).getStatus(),
                     APIResult.Status.SUCCEEDED);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-            Thread.sleep(20000);
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "RUNNING", ivoryqa1)
-                            .get(0).contains("RUNNING"));
-
+            TimeUnit.SECONDS.sleep(20);
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
             Assert.assertEquals(Util.parseResponse(
                     prismHelper.getFeedHelper()
                             .suspend(URLS.SUSPEND_URL, bundle.getDataSets().get(0)))
                     .getStatusCode(),
                     200);
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "SUSPENDED", ivoryqa1)
-                            .get(0).contains("SUSPEND"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
             response = prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
@@ -290,11 +241,8 @@ public class FeedSubmitAndScheduleTest {
             Assert.assertEquals(Util.parseResponse(response).getStatus(),
                     APIResult.Status.SUCCEEDED);
             Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(bundle.getDataSets().get(0)),
-                            "SUSPENDED", ivoryqa1)
-                            .get(0).contains("SUSPEND"));
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         } finally {
             bundle.deleteBundle(prismHelper);
         }

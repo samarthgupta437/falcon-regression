@@ -43,7 +43,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorJob;
-import org.apache.oozie.client.Job.Status;
+import org.apache.oozie.client.Job;
 import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -56,7 +56,6 @@ import org.testng.TestNGException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -142,7 +141,6 @@ public class NewPrismProcessUpdateTest {
             UA2Bundle.setOutputFeedPeriodicity(1, TimeUnit.months);
             UA2Bundle.setProcessValidity(START_TIME, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -153,7 +151,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
             //UA2Bundle.getProcessObject().setFrequency(getRandomFrequency(UA2Bundle));
@@ -164,7 +162,6 @@ public class NewPrismProcessUpdateTest {
             Util.print("updated process: " + updatedProcess);
 
             //now to update
-            String updatedTime = new DateTime(DateTimeZone.UTC).plusMinutes(2).toString();
             while (Util
                     .parseResponse(prismHelper.getProcessHelper()
                             .update((UA2Bundle.getProcessData()), updatedProcess))
@@ -179,12 +176,9 @@ public class NewPrismProcessUpdateTest {
             Thread.sleep(60000);
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            //	Util.verifyNoJobsFoundInOozie(Util.getOozieJobStatus(UA3ColoHelper,
-            // Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
             waitingForBundleFinish(UA3ColoHelper, oldBundleId, 5);
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
@@ -229,11 +223,6 @@ public class NewPrismProcessUpdateTest {
 
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
-            //    String newStartTime = instanceUtil.addMinsToTime(UA2Bundle.getProcessObject()
-            // .getClusters()
-            // .getCluster().get(0).getValidity().getStart(), 3);
-
-
             String newStartTime = InstanceUtil.addMinsToTime(InstanceUtil.dateToOozieDate(
                     UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                             .getStart()), 20);
@@ -243,10 +232,8 @@ public class NewPrismProcessUpdateTest {
 
             UA2Bundle.setProcessValidity(newStartTime, newEndTime);
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
-            //Util.assertSucceeded(prismHelper.getProcessHelper().update(UA2Bundle.getProcessData(),
-            // UA2Bundle.getProcessData()));
             System.out.println("updated process: " + UA2Bundle.getProcessData());
             while (Util.parseResponse(
                     prismHelper.getProcessHelper()
@@ -261,14 +248,11 @@ public class NewPrismProcessUpdateTest {
 
             String prismString = getResponse(prismHelper, UA2Bundle, true);
 
-            //UA2Bundle.verifyDependencyListing();
-
             dualComparison(UA2Bundle, UA3ColoHelper);
             while (!Util.isBundleOver(UA3ColoHelper, oldBundleId)) {
             }
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
                             Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size();
@@ -282,10 +266,7 @@ public class NewPrismProcessUpdateTest {
                                             UA2Bundle.getProcessObject().getClusters().getCluster()
                                                     .get(0).getValidity()
                                                     .getEnd())));
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int expectedNumberOfWorkflows =
                     getExpectedNumberOfWorkflowInstances(newStartTime, InstanceUtil
                             .dateToOozieDate(
@@ -354,15 +335,10 @@ public class NewPrismProcessUpdateTest {
 
             dualComparisonFailure(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            // one is updated correctly.
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
-
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
-
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             while (Util.parseResponse(
                     prismHelper.getProcessHelper()
                             .update(UA2Bundle.getProcessData(), UA2Bundle.getProcessData()))
@@ -379,9 +355,7 @@ public class NewPrismProcessUpdateTest {
             Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
                     UA2Bundle.getProcessObject().getOrder());
             dualComparison(UA2Bundle, UA3ColoHelper);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
@@ -434,7 +408,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
             Util.print("original process: " + UA2Bundle.getProcessData());
@@ -461,15 +435,11 @@ public class NewPrismProcessUpdateTest {
             // correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA2Bundle.deleteBundle(prismHelper);
             UA3Bundle.deleteBundle(prismHelper);
-
         }
-
     }
 
 
@@ -492,7 +462,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             Thread.sleep(20000);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
@@ -513,9 +483,7 @@ public class NewPrismProcessUpdateTest {
             // correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), false);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
@@ -547,7 +515,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
 
             //now to update
@@ -573,17 +541,14 @@ public class NewPrismProcessUpdateTest {
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, 0,
                     Util.readEntityName(UA2Bundle.getProcessData()),
                     false);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper, Util.readEntityName(UA2Bundle
-                            .getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
-            String status =
-                    Util.getOozieJobStatus(UA3ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData())).get(0);
+            Job.Status status = Util.getOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                    Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             boolean doesExist = false;
-            while (!status.equalsIgnoreCase("SUCCEEDED") || !status.equalsIgnoreCase("FAILED") ||
-                    !status.equalsIgnoreCase("DONEWITHERROR")) {
+            while (status != Job.Status.SUCCEEDED && status != Job.Status.FAILED &&
+                    status != Job.Status.DONEWITHERROR) {
                 int statusCount = InstanceUtil
                         .getInstanceCountWithStatus(UA3ColoHelper,
                                 Util.readEntityName(UA2Bundle.getProcessData()),
@@ -593,11 +558,10 @@ public class NewPrismProcessUpdateTest {
                     doesExist = true;
                     break;
                 }
-                status = Util.getOozieJobStatus(UA3ColoHelper,
-                        Util.readEntityName(UA2Bundle.getProcessData())).get(0);
-                if (status.contains("No Jobs match your criteria!"))
-                    Assert.assertTrue(false,
-                            "message No Jobs match your criteria! should not been there");
+                status = Util.getOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                Assert.assertNotNull(status,
+                            "status must not be null!");
                 Thread.sleep(30000);
             }
 
@@ -629,7 +593,6 @@ public class NewPrismProcessUpdateTest {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
             usualGrind(UA3ColoHelper, UA2Bundle);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -651,8 +614,7 @@ public class NewPrismProcessUpdateTest {
                             .getStart()),
                     newEndTime);
 
-            //Thread.sleep(60000);
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             while (Util.parseResponse(
                     prismHelper.getProcessHelper()
@@ -702,10 +664,7 @@ public class NewPrismProcessUpdateTest {
                                             UA2Bundle.getProcessObject().getClusters().getCluster()
                                                     .get(0).getValidity()
                                                     .getEnd())));
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
@@ -738,7 +697,7 @@ public class NewPrismProcessUpdateTest {
                     UA3ColoHelper.getProcessHelper()
                             .schedule(URLS.SCHEDULE_URL, UA2Bundle.getProcessData()));
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             Thread.sleep(20000);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
@@ -761,28 +720,21 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getParallel() + 3);
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), false);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper()
                     .resume(URLS.RESUME_URL, UA2Bundle.getProcessData()));
-            Assert.assertTrue(
-                    Util.getOozieJobStatus(UA3ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData())).get(0)
-                            .contains("RUNNING"));
+            Assert.assertTrue(Util.verifyOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                    UA2Bundle.getProcessData(), ENTITY_TYPE.PROCESS, Job.Status.RUNNING));
 
-            String status =
-                    Util.getOozieJobStatus(UA3ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData())).get(0);
+            Job.Status status = Util.getOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                            Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             boolean doesExist = false;
-            while (!status.equalsIgnoreCase("SUCCEEDED") || !status.equalsIgnoreCase("FAILED") ||
-                    !status
-                            .equalsIgnoreCase("DONEWITHERROR")) {
+            while (status != Job.Status.SUCCEEDED && status != Job.Status.FAILED &&
+                    status != Job.Status.DONEWITHERROR) {
                 if (InstanceUtil
                         .getInstanceCountWithStatus(UA3ColoHelper,
                                 Util.readEntityName(UA2Bundle.getProcessData()),
@@ -792,8 +744,8 @@ public class NewPrismProcessUpdateTest {
                     doesExist = true;
                     break;
                 }
-                status = Util.getOozieJobStatus(UA3ColoHelper,
-                        Util.readEntityName(UA2Bundle.getProcessData())).get(0);
+                status = Util.getOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
             }
 
             Assert.assertTrue(doesExist, "Er! The desired concurrency levels are never reached!!!");
@@ -833,7 +785,6 @@ public class NewPrismProcessUpdateTest {
             String endTime = InstanceUtil.getTimeWrtSystemTime(5);
             UA2Bundle.setProcessValidity(startTime, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
 
@@ -845,9 +796,6 @@ public class NewPrismProcessUpdateTest {
             String oldBundleId = InstanceUtil
                     .getLatestBundleID(UA3ColoHelper,
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
-            //Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
-            // UA2Bundle.getProcessData()));
-
 
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
@@ -867,15 +815,8 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getParallel());
 
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
-            //verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
-            // Util.readEntityName(UA2Bundle.getProcessData()), false);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
-            //waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            // one is updated correctly.
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             while (Util
                     .parseResponse(updateProcessConcurrency(UA2Bundle,
@@ -889,14 +830,12 @@ public class NewPrismProcessUpdateTest {
             prismString = dualComparison(UA2Bundle, UA3ColoHelper);
             dualComparison(UA2Bundle, UA2ColoHelper);
 
-            String status = Util.getOozieJobStatus(UA3ColoHelper,
-                    Util.readEntityName(UA2Bundle.getProcessData()))
-                    .get(0);
+            Job.Status status = Util.getOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                    Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             boolean doesExist = false;
-            while (!status.equalsIgnoreCase("SUCCEEDED") || !status.equalsIgnoreCase("FAILED") ||
-                    !status
-                            .equalsIgnoreCase("DONEWITHERROR")) {
+            while (status != Job.Status.SUCCEEDED && status != Job.Status.FAILED &&
+                    status != Job.Status.DONEWITHERROR) {
                 if (InstanceUtil
                         .getInstanceCountWithStatus(UA3ColoHelper,
                                 Util.readEntityName(UA2Bundle.getProcessData()),
@@ -906,8 +845,8 @@ public class NewPrismProcessUpdateTest {
                     doesExist = true;
                     break;
                 }
-                status = Util.getOozieJobStatus(UA3ColoHelper,
-                        Util.readEntityName(UA2Bundle.getProcessData())).get(0);
+                status = Util.getOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
                 Thread.sleep(30000);
             }
 
@@ -941,7 +880,6 @@ public class NewPrismProcessUpdateTest {
         } finally {
 
             Util.restartService(UA3ColoHelper.getProcessHelper());
-            //UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
             UA3Bundle.deleteBundle(prismHelper);
         }
@@ -958,7 +896,6 @@ public class NewPrismProcessUpdateTest {
             String endTime = InstanceUtil.getTimeWrtSystemTime(6);
             UA2Bundle.setProcessValidity(startTime, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -969,7 +906,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             Thread.sleep(30000);
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
@@ -1000,13 +937,10 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getOrder());
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
@@ -1043,7 +977,6 @@ public class NewPrismProcessUpdateTest {
             String endTime = InstanceUtil.getTimeWrtSystemTime(6);
             UA2Bundle.setProcessValidity(startTime, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1054,7 +987,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             Thread.sleep(25000);
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
@@ -1090,13 +1023,10 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getOrder());
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
@@ -1132,7 +1062,6 @@ public class NewPrismProcessUpdateTest {
             String endTime = InstanceUtil.getTimeWrtSystemTime(6);
             UA2Bundle.setProcessValidity(startTime, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1143,7 +1072,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             Thread.sleep(20000);
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
 
@@ -1156,8 +1085,6 @@ public class NewPrismProcessUpdateTest {
             System.out.println(inputFeed);
             Util.assertSucceeded(
                     prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
-            //Util.assertSucceeded(prismHelper.getProcessHelper().update(UA2Bundle.getProcessData(),
-            // UA2Bundle.getProcessData()));
 
             while (Util.parseResponse(
                     prismHelper.getProcessHelper()
@@ -1172,14 +1099,10 @@ public class NewPrismProcessUpdateTest {
 
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
 
             int finalNumberOfInstances =
@@ -1216,7 +1139,6 @@ public class NewPrismProcessUpdateTest {
             String endTime = InstanceUtil.getTimeWrtSystemTime(6);
             UA2Bundle.setProcessValidity(startTime, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1227,7 +1149,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             Thread.sleep(10000);
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
 
@@ -1260,14 +1182,10 @@ public class NewPrismProcessUpdateTest {
 
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
 
             int finalNumberOfInstances =
@@ -1304,7 +1222,6 @@ public class NewPrismProcessUpdateTest {
             String endTime = InstanceUtil.getTimeWrtSystemTime(6);
             UA2Bundle.setProcessValidity(startTime, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1342,15 +1259,11 @@ public class NewPrismProcessUpdateTest {
 
             dualComparisonFailure(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), false);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             while (Util.parseResponse(
                     prismHelper.getProcessHelper()
@@ -1359,18 +1272,12 @@ public class NewPrismProcessUpdateTest {
                 System.out.println("update didnt SUCCEED in last attempt");
                 Thread.sleep(10000);
             }
-            //Util.assertSucceeded(prismHelper.getProcessHelper().update((UA2Bundle
-            // .getProcessData()),
-            // UA2Bundle.getProcessData()));
             prismString = getResponse(prismHelper, UA2Bundle, true);
             dualComparisonFailure(UA2Bundle, UA3ColoHelper);
             UA2Bundle.verifyDependencyListing();
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
 
             int finalNumberOfInstances =
@@ -1408,7 +1315,6 @@ public class NewPrismProcessUpdateTest {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
             usualGrind(UA3ColoHelper, UA2Bundle);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1418,8 +1324,7 @@ public class NewPrismProcessUpdateTest {
                     .getLatestBundleID(UA3ColoHelper,
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
-            //Thread.sleep(10000);
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
@@ -1450,8 +1355,7 @@ public class NewPrismProcessUpdateTest {
             dualComparison(UA2Bundle, UA3ColoHelper);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             int finalNumberOfInstances = InstanceUtil
                     .getProcessInstanceList(UA3ColoHelper,
                             Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS)
@@ -1462,10 +1366,7 @@ public class NewPrismProcessUpdateTest {
                             .getStart(),
                             UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                     .getValidity().getEnd()));
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper, Util.readEntityName(UA2Bundle
-                            .getProcessData()), "RUNNING"));
-
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int expectedNumberOfWorkflows =
                     getExpectedNumberOfWorkflowInstances(InstanceUtil.dateToOozieDate(
                             UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
@@ -1491,7 +1392,6 @@ public class NewPrismProcessUpdateTest {
             String endTime = InstanceUtil.getTimeWrtSystemTime(3);
             UA2Bundle.setProcessValidity(startTime, endTime);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1502,7 +1402,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
             Thread.sleep(30000);
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
@@ -1528,38 +1428,13 @@ public class NewPrismProcessUpdateTest {
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper()
                     .resume(URLS.RESUME_URL, UA2Bundle.getProcessData()));
 
-            //        		for(int wait = 0 ; wait <45 ; wait++)
-            //			{
-            //				if(instanceUtil.getDefaultCoordinatorStatus(UA3ColoHelper,
-            // Util.readEntityName(UA2Bundle.getProcessData()),0).equals(Status.SUCCEEDED))
-            //					break;
-            //				Thread.sleep(60000);
-            //			}
-            //
-            //        UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util
-            // .readEntityName(UA2Bundle
-            // .getProcessData()),"?start="+UA2Bundle.getProcessObject().getClusters().getCluster
-            // ().get(0)
-            // .getValidity().getStart());
-            //	UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util.readEntityName
-            // (UA2Bundle.getProcessData
-            // ()),"?start="+UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
-            // .getValidity().getStart()
-            // +"&end="+instanceUtil.addMinsToTime(newEndTime,11));
-            //	UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util.readEntityName
-            // (UA2Bundle.getProcessData
-            // ()),"?start="+UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
-            // .getValidity().getStart()
-            // +"&end="+newEndTime);
-            //
             String prismString = dualComparison(UA2Bundle, UA2ColoHelper);
 
 
             dualComparison(UA2Bundle, UA3ColoHelper);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             int finalNumberOfInstances = InstanceUtil
                     .getProcessInstanceList(UA3ColoHelper,
                             Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS)
@@ -1570,9 +1445,7 @@ public class NewPrismProcessUpdateTest {
                             .getStart(),
                             UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                     .getValidity().getEnd()));
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
@@ -1595,17 +1468,13 @@ public class NewPrismProcessUpdateTest {
 
             usualGrind(UA3ColoHelper, UA2Bundle);
 
-
             //set daily process
-
             final String START_TIME = InstanceUtil.getTimeWrtSystemTime(-20);
             String endTime = InstanceUtil.getTimeWrtSystemTime(4000);
             UA2Bundle.setProcessPeriodicity(1, TimeUnit.days);
             UA2Bundle.setOutputFeedPeriodicity(1, TimeUnit.days);
             UA2Bundle.setProcessValidity(START_TIME, endTime);
 
-
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1616,7 +1485,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
             Util.print("original process: " + UA2Bundle.getProcessData());
@@ -1630,7 +1499,6 @@ public class NewPrismProcessUpdateTest {
             //now to update
             String updatedTime = new DateTime(DateTimeZone.UTC).plusMinutes(2).toString();
 
-
             ServiceResponse response =
                     prismHelper.getProcessHelper().update(updatedProcess, updatedProcess);
             Util.assertSucceeded(response);
@@ -1643,9 +1511,7 @@ public class NewPrismProcessUpdateTest {
             // correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
@@ -1665,9 +1531,7 @@ public class NewPrismProcessUpdateTest {
 
             usualGrind(UA3ColoHelper, UA2Bundle);
 
-
             //set daily process
-
             final String START_TIME = InstanceUtil.getTimeWrtSystemTime(-20);
             String endTime = InstanceUtil.getTimeWrtSystemTime(4000 * 60);
             UA2Bundle.setProcessPeriodicity(1, TimeUnit.days);
@@ -1675,7 +1539,6 @@ public class NewPrismProcessUpdateTest {
             UA2Bundle.setProcessValidity(START_TIME, endTime);
 
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1686,7 +1549,7 @@ public class NewPrismProcessUpdateTest {
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int coordCount = Util.getNumberOfWorkflowInstances(UA3ColoHelper, oldBundleId);
 
             Util.print("original process: " + UA2Bundle.getProcessData());
@@ -1712,13 +1575,10 @@ public class NewPrismProcessUpdateTest {
                     new Frequency(1, TimeUnit.months));
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
@@ -1737,7 +1597,6 @@ public class NewPrismProcessUpdateTest {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
             usualGrind(UA3ColoHelper, UA2Bundle);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1761,7 +1620,7 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                             .getEnd()));
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             Util.assertSucceeded(
                     prismHelper.getProcessHelper()
@@ -1776,8 +1635,7 @@ public class NewPrismProcessUpdateTest {
 
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
                             Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size();
@@ -1785,10 +1643,7 @@ public class NewPrismProcessUpdateTest {
                     getExpectedNumberOfWorkflowInstances(oldStartTime,
                             UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                     .getValidity().getEnd()));
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
-
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             int expectedNumberOfWorkflows = getExpectedNumberOfWorkflowInstances(newStartTime,
                     UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                             .getEnd());
@@ -1809,7 +1664,6 @@ public class NewPrismProcessUpdateTest {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
             usualGrind(UA3ColoHelper, UA2Bundle);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1832,7 +1686,7 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                             .getEnd()));
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             Util.assertSucceeded(
                     UA3ColoHelper.getProcessHelper()
@@ -1843,37 +1697,13 @@ public class NewPrismProcessUpdateTest {
                     prismHelper.getProcessHelper()
                             .update(UA2Bundle.getProcessData(), UA2Bundle.getProcessData()));
 
-
-            //            for (int wait = 0; wait < 45; wait++) {
-            //                if (instanceUtil.getDefaultCoordinatorStatus(UA3ColoHelper,
-            // Util.readEntityName(UA2Bundle.getProcessData()), 0).equals(Status.SUCCEEDED)) {
-            //                    break;
-            //                }
-            //                Thread.sleep(60000);
-            //            }
-            //
-            //            UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util
-            // .readEntityName(UA2Bundle
-            // .getProcessData()), "?start=" + newStartTime);
-            //            UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util
-            // .readEntityName(UA2Bundle
-            // .getProcessData()), "?start=" + newStartTime + "&end=" + UA2Bundle
-            // .getProcessObject().getClusters()
-            // .getCluster().get(0).getValidity().getEnd());
-            //            UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util
-            // .readEntityName(UA2Bundle
-            // .getProcessData()), "?start=" + newStartTime + "&end=" + UA2Bundle
-            // .getProcessObject().getClusters()
-            // .getCluster().get(0).getValidity().getEnd());
-
             String prismString = dualComparison(UA2Bundle, UA2ColoHelper);
 
             UA2Bundle.verifyDependencyListing();
 
             dualComparison(UA2Bundle, UA3ColoHelper);
             //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
+            // one is updated correctly.
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
                             Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size();
@@ -1888,9 +1718,7 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                             .getEnd()));
 
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
@@ -1906,7 +1734,6 @@ public class NewPrismProcessUpdateTest {
             UA2Bundle.addClusterToBundle(UA3Bundle.getClusters().get(0), ClusterType.TARGET);
             usualGrind(UA3ColoHelper, UA2Bundle);
 
-            //UA2Bundle.generateUniqueBundle();
             UA2Bundle.submitBundle(prismHelper);
             //now to schedule in 1 colo and let it remain in another
             Util.assertSucceeded(
@@ -1929,7 +1756,7 @@ public class NewPrismProcessUpdateTest {
                     UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                             .getEnd()));
 
-            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, "RUNNING");
+            waitForProcessToReachACertainState(UA3ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
             Util.assertSucceeded(
                     UA3ColoHelper.getProcessHelper()
@@ -1942,44 +1769,12 @@ public class NewPrismProcessUpdateTest {
             verifyNewBundleCreation(UA3ColoHelper, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
 
-            //            for (int wait = 0; wait < 45; wait++) {
-            //                if (instanceUtil.getDefaultCoordinatorStatus(UA3ColoHelper,
-            // Util.readEntityName(UA2Bundle.getProcessData()), 0).equals(Status.SUCCEEDED)) {
-            //                    break;
-            //                }
-            //                Thread.sleep(60000);
-            //            }
-            //
-            //            UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util
-            // .readEntityName(UA2Bundle
-            // .getProcessData()), "?start=" + newStartTime);
-            //            UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util
-            // .readEntityName(UA2Bundle
-            // .getProcessData()), "?start=" + newStartTime + "&end=" + UA2Bundle
-            // .getProcessObject().getClusters()
-            // .getCluster().get(0).getValidity().getEnd());
-            //            UA3ColoHelper.getProcessHelper().getProcessInstanceStatus(Util
-            // .readEntityName(UA2Bundle
-            // .getProcessData()), "?start=" + newStartTime + "&end=" + UA2Bundle
-            // .getProcessObject().getClusters()
-            // .getCluster().get(0).getValidity().getEnd());
-
-            String prismString = dualComparison(UA2Bundle, UA2ColoHelper);
+           String prismString = dualComparison(UA2Bundle, UA2ColoHelper);
 
             UA2Bundle.verifyDependencyListing();
 
             dualComparison(UA2Bundle, UA3ColoHelper);
             waitingForBundleFinish(UA3ColoHelper, oldBundleId);
-            //ensure that the running process has new coordinators created; while the submitted
-            // one is updated
-            // correctly.
-            //int finalNumberOfInstances=instanceUtil.getProcessInstanceListFromAllBundles
-            // (UA3ColoHelper,
-            // Util.getProcessName(UA2Bundle.getProcessData()), "PROCESS").size();
-            //Assert.assertEquals(finalNumberOfInstances,getExpectedNumberOfWorkflowInstances
-            // (oldStartTime,
-            // UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
-            // .getEnd()));
 
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(UA3ColoHelper,
@@ -1988,24 +1783,17 @@ public class NewPrismProcessUpdateTest {
                     getExpectedNumberOfWorkflowInstances(oldStartTime,
                             UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                     .getValidity().getEnd()));
-            Util.verifyNoJobsFoundInOozie(
-                    Util.getOozieJobStatus(UA2ColoHelper,
-                            Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING"));
+            checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } finally {
             UA1Bundle.deleteBundle(prismHelper);
             UA2Bundle.deleteBundle(prismHelper);
             UA3Bundle.deleteBundle(prismHelper);
-
         }
     }
-
 
     private String setProcessTimeOut(String process, int mag, TimeUnit unit) throws Exception {
 
         Process p = InstanceUtil.getProcessElement(process);
-
-
-        //TimeUnit b;
 
         Frequency f = new Frequency(mag, unit);
 
@@ -2054,8 +1842,6 @@ public class NewPrismProcessUpdateTest {
         String prismResponse = getResponse(prismHelper, bundle, true);
         String coloResponse = getResponse(coloHelper, bundle, true);
         AssertJUnit.assertEquals(prismResponse, coloResponse);
-
-        //AssertJUnit.assertEquals(getResponse(prismHelper, bundle), getResponse(coloHelper, bundle));
         return getResponse(prismHelper, bundle, true);
     }
 
@@ -2091,7 +1877,6 @@ public class NewPrismProcessUpdateTest {
                     "eeks! new bundle is not getting created!!!!");
             System.out.println("old bundleId=" + originalBundleId);
             System.out.println("new bundleId=" + newBundleId);
-            //Util.validateNumberOfWorkflowInstances(prismHelper,originalBundleCount, newBundleId, newBundleId);
         } else {
             AssertJUnit.assertEquals("eeks! new bundle is getting created!!!!", newBundleId,
                     originalBundleId);
@@ -2101,15 +1886,12 @@ public class NewPrismProcessUpdateTest {
     }
 
     private void waitForProcessToReachACertainState(ColoHelper coloHelper, Bundle bundle,
-                                                    String state)
+                                                    Job.Status state)
     throws Exception {
 
 
-        while (!Util.getOozieJobStatus(coloHelper, Util.readEntityName(bundle.getProcessData()))
-                .get(0)
-                .contains(state.toUpperCase()))
-            ;
-        {
+        while (Util.getOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
+                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS) != state) {
             //keep waiting
             Thread.sleep(10000);
 
@@ -2120,7 +1902,7 @@ public class NewPrismProcessUpdateTest {
                 .getLatestBundleID(coloHelper, Util.readEntityName(bundle.getProcessData()),
                         ENTITY_TYPE.PROCESS));
 
-        while (!coord.getStatus().equals(Status.valueOf(state.toUpperCase()))) {
+        while (coord.getStatus() != state) {
             Thread.sleep(10000);
 
             coord = getDefaultOozieCoord(coloHelper, InstanceUtil
@@ -2257,5 +2039,10 @@ public class NewPrismProcessUpdateTest {
             }
         }
         return null;
+    }
+
+    private void checkNotStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
+        Assert.assertNotEquals(Util.getOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
+                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS), expectedStatus);
     }
 }

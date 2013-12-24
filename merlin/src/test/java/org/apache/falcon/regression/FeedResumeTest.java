@@ -25,8 +25,10 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.oozie.client.Job;
 import org.testng.TestNGException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -61,24 +63,16 @@ public class FeedResumeTest {
 
             Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
             Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
-
-            final ArrayList<String> jobStatus =
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1);
-            Assert.assertTrue(jobStatus.get(0).contains("SUSPENDED"));
-
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
             Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
             ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
 
             String colo = feedHelper.getColo();
             Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
-                            .get(0)
-                            .contains("RUNNING"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -150,21 +144,16 @@ public class FeedResumeTest {
 
             Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-            Assert.assertTrue(Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
-                            .get(0)
-                            .contains("RUNNING"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
             Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
 
             ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
             String colo = feedHelper.getColo();
             Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
-                            .get(0)
-                            .contains("RUNNING"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());

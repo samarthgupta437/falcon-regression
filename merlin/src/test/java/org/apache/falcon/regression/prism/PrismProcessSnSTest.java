@@ -29,6 +29,8 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -48,6 +50,8 @@ public class PrismProcessSnSTest {
     PrismHelper prismHelper = new PrismHelper("prism.properties");
     ColoHelper UA1ColoHelper = new ColoHelper("mk-qa.config.properties");
     ColoHelper UA2ColoHelper = new ColoHelper("ivoryqa-1.config.properties");
+    OozieClient UA1OozieClient = UA1ColoHelper.getFeedHelper().getOozieClient();
+    OozieClient UA2OozieClient = UA2ColoHelper.getFeedHelper().getOozieClient();
 
     @Test(dataProvider = "DP", groups = {"prism", "0.2"})
     public void testProcessSnSOnBothColos(Bundle bundle) throws Exception {
@@ -59,32 +63,18 @@ public class PrismProcessSnSTest {
 
         //schedule both bundles
         submitAndScheduleProcess(UA1Bundle);
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper).get(0)
-                        .contains("RUNNING"));
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper));
-
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.RUNNING);
+        checkNotStatus(UA1OozieClient, UA2Bundle, Job.Status.RUNNING);
         submitAndScheduleProcess(UA2Bundle);
 
         //now check if they have been scheduled correctly or not
-
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper).get(0)
-                        .contains("RUNNING"));
-
+        checkStatus(UA2OozieClient, UA2Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
         ServiceResponse response =
                 prismHelper.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, UA2Bundle.getProcessData());
         System.out.println(response.getMessage());
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper));
+        checkNotStatus(UA2OozieClient, UA1Bundle, Job.Status.RUNNING);
 
     }
 
@@ -100,30 +90,16 @@ public class PrismProcessSnSTest {
         submitProcess(UA1Bundle);
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper).get(0)
-                        .contains("RUNNING"));
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper));
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.RUNNING);
+        checkNotStatus(UA1OozieClient, UA2Bundle, Job.Status.RUNNING);
 
         submitProcess(UA2Bundle);
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         //now check if they have been scheduled correctly or not
-
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper).get(0)
-                        .contains("RUNNING"));
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
-
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper));
+        checkNotStatus(UA2OozieClient, UA1Bundle, Job.Status.RUNNING);
 
     }
 
@@ -140,30 +116,15 @@ public class PrismProcessSnSTest {
         submitProcess(UA1Bundle);
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper).get(0)
-                        .contains("RUNNING"));
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper));
-
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.RUNNING);
+        checkNotStatus(UA1OozieClient, UA2Bundle, Job.Status.RUNNING);
         submitProcess(UA2Bundle);
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         //now check if they have been scheduled correctly or not
-
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper).get(0)
-                        .contains("RUNNING"));
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
-
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper));
+        checkNotStatus(UA2OozieClient, UA1Bundle, Job.Status.RUNNING);
 
     }
 
@@ -177,30 +138,14 @@ public class PrismProcessSnSTest {
 
         //schedule both bundles
         submitAndScheduleProcess(UA1Bundle);
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper).get(0)
-                        .contains("RUNNING"));
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper));
-
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.RUNNING);
+        checkNotStatus(UA1OozieClient, UA2Bundle, Job.Status.RUNNING);
         submitAndScheduleProcess(UA2Bundle);
 
         //now check if they have been scheduled correctly or not
-
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper).get(0)
-                        .contains("RUNNING"));
-
+        checkStatus(UA2OozieClient, UA2Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
-
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper));
-
+        checkNotStatus(UA2OozieClient, UA1Bundle, Job.Status.RUNNING);
 
         //reschedule trial
 
@@ -208,14 +153,8 @@ public class PrismProcessSnSTest {
                 .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
         Assert.assertEquals(Util.getBundles(UA1ColoHelper.getFeedHelper().getOozieClient(),
                         Util.readEntityName(UA1Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper).get(0)
-                        .contains("RUNNING"));
-        Util.verifyNoJobsFoundInOozie(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA1ColoHelper));
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.RUNNING);
+        checkNotStatus(UA1OozieClient, UA2Bundle, Job.Status.RUNNING);
     }
 
     @Test(dataProvider = "DP", groups = {"prism", "0.2"})
@@ -232,15 +171,8 @@ public class PrismProcessSnSTest {
 
         Util.assertSucceeded(UA1ColoHelper.getProcessHelper()
                 .suspend(URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "SUSPENDED",
-                        UA1ColoHelper)
-                        .get(0).contains("SUSPENDED"));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper).get(0)
-                        .contains("RUNNING"));
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.SUSPENDED);
+        checkStatus(UA2OozieClient, UA2Bundle, Job.Status.RUNNING);
         //now check if they have been scheduled correctly or not
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
@@ -256,15 +188,8 @@ public class PrismProcessSnSTest {
 
         Assert.assertEquals(Util.getBundles(UA2ColoHelper.getFeedHelper().getOozieClient(),
                 Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "SUSPENDED",
-                        UA2ColoHelper)
-                        .get(0).contains("SUSPENDED"));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "SUSPENDED",
-                        UA1ColoHelper)
-                        .get(0).contains("SUSPENDED"));
-
+        checkStatus(UA2OozieClient, UA2Bundle, Job.Status.SUSPENDED);
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.SUSPENDED);
     }
 
     @Test(dataProvider = "DP", groups = {"prism", "0.2"})
@@ -290,26 +215,12 @@ public class PrismProcessSnSTest {
 
         Util.assertSucceeded(
                 prismHelper.getProcessHelper().delete(URLS.DELETE_URL, UA1Bundle.getProcessData()));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "KILLED",
-                        UA1ColoHelper).get(0)
-                        .contains("KILLED"));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "RUNNING",
-                        UA2ColoHelper).get(0)
-                        .contains("RUNNING"));
-
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.KILLED);
+        checkStatus(UA2OozieClient, UA2Bundle, Job.Status.RUNNING);
         Util.assertSucceeded(
                 prismHelper.getProcessHelper().delete(URLS.DELETE_URL, UA2Bundle.getProcessData()));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA2Bundle.getProcessData()), "KILLED",
-                        UA2ColoHelper).get(0)
-                        .contains("KILLED"));
-        Assert.assertTrue(
-                Util.getOozieJobStatus(Util.readEntityName(UA1Bundle.getProcessData()), "KILLED",
-                        UA1ColoHelper).get(0)
-                        .contains("KILLED"));
-
+        checkStatus(UA2OozieClient, UA2Bundle, Job.Status.KILLED);
+        checkStatus(UA1OozieClient, UA1Bundle, Job.Status.KILLED);
         Util.assertSucceeded(prismHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         Util.assertSucceeded(prismHelper.getProcessHelper()
@@ -334,12 +245,6 @@ public class PrismProcessSnSTest {
         UA1Bundle.generateUniqueBundle();
         UA2Bundle.generateUniqueBundle();
 
-        //Util.assertFailed(UA1ColoHelper.getProcessHelper().submitAndSchedule(URLS
-        // .SUBMIT_AND_SCHEDULE_URL,
-        // UA1Bundle.getProcessData()));
-        //Util.assertFailed(UA2ColoHelper.getProcessHelper().submitAndSchedule(URLS
-        // .SUBMIT_AND_SCHEDULE_URL,
-        // UA2Bundle.getProcessData()));
         Assert.assertEquals(Util.parseResponse(UA1ColoHelper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()))
                 .getStatusCode(), 404);
@@ -348,170 +253,16 @@ public class PrismProcessSnSTest {
                 .getStatusCode(), 404);
 
     }
-//        
-//        
-//        @Test(dataProvider="DP",groups={"prism","0.2"})
-//        public void testProcessSnSOn1ColoWhileOtherColoIsDown(Bundle bundle) throws Exception
-//        {
-//            try{
-//            Bundle UA1Bundle=new Bundle(bundle,UA1ColoHelper.getEnvFileName());
-//            Bundle UA2Bundle=new Bundle(bundle,UA2ColoHelper.getEnvFileName());
-//            
-//            UA1Bundle.generateUniqueBundle();
-//            UA2Bundle.generateUniqueBundle();
-//            
-//            
-//            submitProcess(UA2Bundle);
-//            
-//            Util.shutDownService(UA1ColoHelper.getProcessHelper());
-//            
-//            Util.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS
-// .SUBMIT_AND_SCHEDULE_URL,
-// UA2Bundle.getProcessData()));
-//            
-//            //now check if they have been scheduled correctly or not
-//            
-//            Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(UA2Bundle
-// .getProcessData()),"RUNNING",
-// UA2ColoHelper).get(0).contains("RUNNING"));
-//            
-//            //check if there is no criss cross
-//            
-//            Util.verifyNoJobsFoundInOozie(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),
-// "RUNNING",UA2ColoHelper));
-//            }
-//            catch(Exception e)
-//            {
-//                e.printStackTrace();
-//                throw new TestNGException(e.getMessage());
-//            }
-//            finally{
-//                
-//                Util.restartService(UA1ColoHelper.getProcessHelper());
-//                
-//            }
-//            
-//        } 
-//        
-//
-//        @Test(dataProvider="DP",groups={"prism","0.2"})
-//        public void testProcessSnSOn1ColoWhileThatColoIsDown(Bundle bundle) throws Exception
-//        {
-//            try{
-//            Bundle UA1Bundle=new Bundle(bundle,UA1ColoHelper.getEnvFileName());
-//            Bundle UA2Bundle=new Bundle(bundle,UA2ColoHelper.getEnvFileName());
-//            
-//            UA1Bundle.generateUniqueBundle();
-//            UA2Bundle.generateUniqueBundle();
-//            
-//            
-//            Util.shutDownService(UA1ColoHelper.getProcessHelper());
-//            
-//            Util.assertFailed(prismHelper.getProcessHelper().submitAndSchedule(URLS
-// .SUBMIT_AND_SCHEDULE_URL,
-// UA1Bundle.getProcessData()));
-//            Util.verifyNoJobsFoundInOozie(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),
-// "RUNNING",UA2ColoHelper));
-//            }
-//            catch(Exception e)
-//            {
-//                e.printStackTrace();
-//                throw new TestNGException(e.getMessage());
-//            }
-//            finally{
-//                
-//                Util.restartService(UA1ColoHelper.getProcessHelper());
-//                
-//            }
-//            
-//        } 
-//        
-//        
-//        @Test(dataProvider="DP",groups={"prism","0.2"})
-//        public void testProcessScheduleOn1ColoWhileAnotherColoHasSuspendedProcess(Bundle
-// bundle) throws Exception
-//        {
-//            try{
-//            Bundle UA1Bundle=new Bundle(bundle,UA1ColoHelper.getEnvFileName());
-//            Bundle UA2Bundle=new Bundle(bundle,UA2ColoHelper.getEnvFileName());
-//            
-//            UA1Bundle.generateUniqueBundle();
-//            UA2Bundle.generateUniqueBundle();
-//            
-//            submitAndScheduleProcess(UA1Bundle);
-//            Util.assertSucceeded(UA1ColoHelper.getProcessHelper().suspend(URLS.SUSPEND_URL,
-// UA1Bundle.getProcessData()));
-//            Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),"SUSPENDED",
-// UA1ColoHelper).get(0).contains("SUSPENDED"));
-//            
-//            submitAndScheduleProcess(UA2Bundle);
-//            Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(UA2Bundle
-// .getProcessData()),"RUNNING",
-// UA2ColoHelper).get(0).contains("RUNNING"));
-//            Util.verifyNoJobsFoundInOozie(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),
-// "RUNNING",UA2ColoHelper));
-//            Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),"SUSPENDED",
-// UA1ColoHelper).get(0).contains("SUSPENDED"));
-//            Util.verifyNoJobsFoundInOozie(Util.getOozieJobStatus(Util.readEntityName(UA2Bundle
-// .getProcessData()),
-// "RUNNING",UA1ColoHelper));
-//            
-//            }
-//            catch(Exception e)
-//            {
-//                e.printStackTrace();
-//                throw new TestNGException(e.getMessage());
-//            }
-//            
-//        } 
-//        
-//
-//        @Test(dataProvider="DP",groups={"prism","0.2"})
-//        public void testProcessScheduleOn1ColoWhileAnotherColoHasKilledProcess(Bundle bundle)
-// throws Exception
-//        {
-//            try{
-//            Bundle UA1Bundle=new Bundle(bundle,UA1ColoHelper.getEnvFileName());
-//            Bundle UA2Bundle=new Bundle(bundle,UA2ColoHelper.getEnvFileName());
-//            
-//            UA1Bundle.generateUniqueBundle();
-//            UA2Bundle.generateUniqueBundle();
-//            
-//            submitAndScheduleProcess(UA1Bundle);
-//            Util.assertSucceeded(prismHelper.getProcessHelper().delete(URLS.DELETE_URL,
-// UA1Bundle.getProcessData()));
-//            Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),"KILLED",
-// UA1ColoHelper).get(0).contains("KILLED"));
-//            
-//            submitAndScheduleProcess(UA2Bundle);
-//            Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(UA2Bundle
-// .getProcessData()),"RUNNING",
-// UA2ColoHelper).get(0).contains("RUNNING"));
-//            Util.verifyNoJobsFoundInOozie(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),
-// "RUNNING",UA2ColoHelper));
-//            Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(UA1Bundle
-// .getProcessData()),"KILLED",
-// UA1ColoHelper).get(0).contains("KILLED"));
-//            Util.verifyNoJobsFoundInOozie(Util.getOozieJobStatus(Util.readEntityName(UA2Bundle
-// .getProcessData()),
-// "RUNNING",UA1ColoHelper));
-//            
-//            }
-//            catch(Exception e)
-//            {
-//                e.printStackTrace();
-//                throw new TestNGException(e.getMessage());
-//            }
-//            
-//        } 
 
+    private void checkStatus(OozieClient client, Bundle bundle, Job.Status status) throws Exception {
+        Assert.assertTrue(Util.verifyOozieJobStatus(client, Util.readEntityName(bundle.getProcessData()),
+                ENTITY_TYPE.PROCESS, status));
+    }
+
+    private void checkNotStatus(OozieClient client, Bundle bundle, Job.Status status) throws Exception {
+        Assert.assertTrue(Util.getOozieJobStatus(client, Util.readEntityName(bundle.getProcessData()),
+                ENTITY_TYPE.PROCESS) != status);
+    }
 
     private void submitProcess(Bundle bundle) throws Exception {
 
