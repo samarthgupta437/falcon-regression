@@ -21,7 +21,6 @@ package org.apache.falcon.regression.core.util;
 import com.google.gson.GsonBuilder;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.Cluster;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
@@ -208,19 +207,6 @@ public class InstanceUtil {
         return runningCount;
     }
 
-    /*public static String getProcessInstanceStart(Bundle b, String clusterName) throws Exception {
-
-        JAXBContext jc = JAXBContext
-                .newInstance(org.apache.falcon.regression.core.generated.process.Process.class);
-
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(b.getProcessData())));
-
-        return InstanceUtil.dateToOozieDate(
-                b.getClusterObjectFromProcess(clusterName).getValidity().getStart());
-    }*/
-
     public static void validateSuccessWOInstances(ProcessInstancesResult r) {
         Assert.assertTrue(r.getMessage().contains("is successful"));
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
@@ -385,19 +371,6 @@ public class InstanceUtil {
 
     }
 
-
-    /*public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
-                                                                 String processName,
-                                                                 ENTITY_TYPE entityType)
-    throws Exception {
-
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
-        String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
-        //String coordId = getDefaultCoordinatorFromProcessName(processName);
-        Util.print("default coordID: " + coordId);
-        return oozieClient.getCoordJobInfo(coordId).getActions();
-    }*/
-
     public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
                                                                  String processName,
                                                                  String entityType)
@@ -416,16 +389,6 @@ public class InstanceUtil {
         return getDefaultCoordIDFromBundle(coloHelper,
                 getLatestBundleID(coloHelper, processName, entityType));
     }
-
-/*
-    public static String getLatestCoordinatorID(ColoHelper coloHelper, String processName,
-                                                ENTITY_TYPE entityType)
-    throws Exception {
-        return getDefaultCoordIDFromBundle(coloHelper,
-                getLatestBundleID(coloHelper, processName, entityType));
-    }
-*/
-
 
     public static String getDefaultCoordIDFromBundle(ColoHelper coloHelper, String bundleId)
     throws OozieClientException {
@@ -466,38 +429,6 @@ public class InstanceUtil {
         }
         return was;
     }
-
-    /*public static void validateNumberOfInstanceWithStatus(List<CoordinatorAction> list,
-                                                          CoordinatorAction.Status status,
-                                                          int noOfInstance) {
-
-        int actualInstance = 0;
-        for (int i = 0; i < list.size(); i++) {
-
-            if (list.get(i).getStatus().equals(status))
-                actualInstance++;
-        }
-        Assert.assertEquals(actualInstance, noOfInstance,
-                "number if process instance with desired status did not match");
-    }*/
-
-/*
-    public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
-                                                 org.apache.oozie.client.CoordinatorAction.Status
-                                                         status,
-                                                 ENTITY_TYPE entityType)
-    throws Exception {
-        List<CoordinatorAction> list = getProcessInstanceList(coloHelper, processName, entityType);
-        int instanceCount = 0;
-        for (CoordinatorAction aList : list) {
-
-            if (aList.getStatus().equals(status))
-                instanceCount++;
-        }
-        return instanceCount;
-
-    }
-*/
 
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
@@ -561,17 +492,6 @@ public class InstanceUtil {
         return getDefaultCoordIDFromBundle(coloHelper, bundleID);
     }
 
-
-    /*public static String getBundleCoordinator(ColoHelper coloHelper, String bundleID)
-    throws Exception {
-        String defaultCoordId = getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        Util.print(
-                "function getBundleCoordinator: defaultCoordId = getDefaultCoordIDFromBundle" +
-                        "(bundleID): " +
-                        defaultCoordId);
-        return getCoordWorkFlowCoordinator(coloHelper, defaultCoordId);
-    }*/
-
     public static List<CoordinatorJob> getBundleCoordinators(String bundleID,
                                                              IEntityManagerHelper helper)
     throws Exception {
@@ -579,91 +499,6 @@ public class InstanceUtil {
         BundleJob bundleInfo = localOozieClient.getBundleJobInfo(bundleID);
         return bundleInfo.getCoordinators();
     }
-
-
-    /*public static String getCoordWorkFlowCoordinator(ColoHelper colo, String defaultCoordId)
-    throws Exception {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
-        Util.print("function getCoordWorkFlowCoordinator: " + defaultCoordId);
-        String coordHdfsPath = getCoordHdfsPath(defaultCoordId);
-        Path path = new Path(coordHdfsPath + "/coordinator.xml");
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name",
-                "hdfs://" + Util.readPropertiesFile(colo.getEnvFileName(), "hadoop_url"));
-        final FileSystem fs = FileSystem.get(conf);
-        //FSDataInputStream in = fs.open(path);
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(path)));
-        String line;
-        line = br.readLine();
-        String strFile = "";
-        while (line != null) {
-            // logger.info(line);
-            strFile = strFile + line.trim();
-            line = br.readLine();
-        }
-
-        return strFile;
-    }*/
-
-    /*public static String getCoordHdfsPath(String CoordId)
-    throws OozieClientException, InterruptedException {
-        CoordinatorJob coordJob = oozieClient.getCoordJobInfo(CoordId);
-
-        for (int i = 0; i < 30; i++) {
-            if (coordJob.getActions().size() > 0)
-                break;
-
-            Thread.sleep(45000);
-            coordJob = oozieClient.getCoordJobInfo(CoordId);
-        }
-
-        if (coordJob.getActions().size() < 1)
-            Assert.assertTrue(false,
-                    "function getCoordHdfsPath: coordJob.getActions().size() was less than 1");
-
-        String eventConf = coordJob.getActions().get(0).getRunConf();
-        //Util.print(eventConf);
-        eventConf = eventConf.replaceAll("\r\n", "");
-        eventConf = eventConf.replaceAll(" ", "");
-        eventConf = eventConf
-                .substring(eventConf.indexOf("<name>oozie.coord.application.path</name><value>") +
-                        "<name>oozie.coord.application.path</name><value>".length());
-        int endIndex = eventConf.indexOf("</value>");
-        return eventConf.substring(0, endIndex);
-    }*/
-
-    /*public static String getCoordHdfsPath(PrismHelper prismHelper, String CoordId)
-    throws OozieClientException, InterruptedException {
-
-        XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
-        CoordinatorJob coordJob = oozieClient.getCoordJobInfo(CoordId);
-
-        for (int i = 0; i < 30; i++) {
-            if (coordJob.getActions().size() > 0)
-                break;
-
-            Thread.sleep(45000);
-            coordJob = oozieClient.getCoordJobInfo(CoordId);
-        }
-
-        if (coordJob.getActions().size() < 1)
-            Assert.assertTrue(false,
-                    "function getCoordHdfsPath: coordJob.getActions().size() was less than 1");
-
-        String eventConf = coordJob.getActions().get(0).getRunConf();
-        //Util.print(eventConf);
-        eventConf = eventConf.replaceAll("\r\n", "");
-        eventConf = eventConf.replaceAll(" ", "");
-        eventConf = eventConf
-                .substring(eventConf.indexOf("<name>oozie.coord.application.path</name><value>") +
-                        "<name>oozie.coord.application.path</name><value>".length());
-        int endIndex = eventConf.indexOf("</value>");
-        return eventConf.substring(0, endIndex);
-    }*/
-
 
     public static String getLatestBundleID(ColoHelper coloHelper, String processName,
                                            ENTITY_TYPE entityType)
@@ -712,54 +547,6 @@ public class InstanceUtil {
         }
         return max;
     }
-
-/*
-    public static String getLatestCoordinator(ColoHelper coloHelper, String processName,
-                                              ENTITY_TYPE entityType)
-    throws Exception {
-        return getBundleCoordinator(coloHelper,
-                getLatestBundleID(coloHelper, processName, entityType));
-    }
-*/
-
-    /*public static String getProcessWorkFlowPath(ColoHelper coloHelper, String processName,
-                                                ENTITY_TYPE entityType)
-    throws Exception {
-        String coordinator = getLatestCoordinator(coloHelper, processName, entityType);
-        coordinator = coordinator.replaceAll("\r\n", "");
-        coordinator = coordinator.replaceAll(" ", "");
-        coordinator = coordinator.substring(
-                coordinator.indexOf("<property><name>oozie.libpath</name><value>${nameNode}") +
-                        "<property><name>oozie.libpath</name><value>${nameNode}".length());
-        return coordinator.substring(0, coordinator.indexOf("/lib</value>"));
-
-    }*/
-
-    /*public static String getSequenceBundleID(String entityName,
-                                             String entityType, int coordNumber) throws Exception {
-
-        List<String> bundleIds = Util.getBundles(entityName, entityType);
-        Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
-        String bundleID;
-        for (String strID : bundleIds) {
-            Util.print("getSequenceBundleID: " + strID);
-            int key = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-            bundleMap.put(key, strID);
-        }
-
-        for (Map.Entry<Integer, String> entry : bundleMap.entrySet()) {
-            logger.info("Key = " + entry.getKey() + ", Value = " + entry.getValue());
-        }
-
-        int i = 0;
-        for (Integer key : bundleMap.keySet()) {
-            bundleID = bundleMap.get(key);
-            if (i == coordNumber)
-                return bundleID;
-            i++;
-        }
-        return null;
-    }*/
 
     public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber)
@@ -932,19 +719,6 @@ public class InstanceUtil {
         }
     }
 
-/*
-    public static CoordinatorAction.Status getLateInstanceStatus(String processName,
-                                                                 int bundleNumber,
-                                                                 int instanceNumber)
-    throws Exception {
-        String bundleID = InstanceUtil.getSequenceBundleID(processName, "PROCESS", bundleNumber);
-        String coordID = InstanceUtil.getLateCoordFromBundle(bundleID);
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        return coordInfo.getActions().get(instanceNumber).getStatus();
-
-    }
-*/
-
     public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord)
     throws Exception {
 
@@ -966,13 +740,6 @@ public class InstanceUtil {
         fmt = fmt.withZoneUTC();
         return fmt.parseDateTime(time);
     }
-
-    /*public static DateTime stringToDate(String time, String format) throws ParseException {
-        DateTimeFormatter fmt = DateTimeFormat.forPattern(format);
-        fmt = fmt.withZoneUTC();
-        return fmt.parseDateTime(time);
-    }*/
-
 
     public static void createHDFSFolders(PrismHelper helper, ArrayList<String> folderList)
     throws Exception {
@@ -1034,55 +801,6 @@ public class InstanceUtil {
         }
     }
 
-    /*public static ArrayList<String> getMissingDependencyForInstance(ColoHelper colo,
-                                                                    String processName,
-                                                                    int bundleNumber,
-                                                                    int instanceNumber)
-    throws Exception {
-        XOozieClient oozieClient =
-                new XOozieClient(Util.readPropertiesFile(colo.getEnvFileName(), "oozie_url"));
-        String bundleID = InstanceUtil.getSequenceBundleID(processName, "PROCESS", 0);
-
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-        CoordinatorJob jobInfo =
-                oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
-        List<CoordinatorAction> actions = jobInfo.getActions();
-
-        Util.print("conf from event: " + actions.get(instanceNumber).getMissingDependencies());
-
-        String[] missingDependencies =
-                actions.get(instanceNumber).getMissingDependencies().split("#");
-        return new ArrayList<String>(Arrays.asList(missingDependencies));
-    }*/
-
-    /*public static ArrayList<String> getFolderlistFromDependencyList(
-            ArrayList<String> missingDependencyList) {
-
-        for (int i = 0; i < missingDependencyList.size(); i++) {
-            missingDependencyList.set(i,
-                    missingDependencyList.get(i)
-                            .substring(0, missingDependencyList.get(i).lastIndexOf("/") + 1));
-        }
-
-        return missingDependencyList;
-    }*/
-
-    /*	public static void createDataWithinDatesAndPrefix(DateTime startDateJoda,
-            DateTime endDateJoda, String prefix,int interval) throws Exception {
-        List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda,endDateJoda,
-        interval);
-
-        for(int i = 0 ; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for(int i = 0 ; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
-
-        instanceUtil.putDataInFolders(dataFolder);
-
-    }*/
     public static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
                                                       DateTime endDateJoda, String prefix,
                                                       int interval)
@@ -1100,51 +818,6 @@ public class InstanceUtil {
         InstanceUtil.putDataInFolders(colo, dataFolder);
 
     }
-
-/*
-    public static void verifyStatusLog(ProcessInstancesResult r) throws Exception {
-
-        for (ProcessInstancesResult.ProcessInstance instance : r.getInstances()) {
-
-
-            if (instance.getStatus().equals(ProcessInstancesResult.WorkflowStatus.WAITING)) {
-
-                Assert.assertEquals(instance.getLogFile(), "-");
-                break;
-            } else if (instance.getStatus().equals(ProcessInstancesResult.WorkflowStatus.RUNNING) ||
-                    instance.getStatus().equals(ProcessInstancesResult.WorkflowStatus.SUSPENDED) ||
-                    instance.getStatus().equals(ProcessInstancesResult.WorkflowStatus.KILLED)) {
-                String workFlowUrl = instance.getLogFile();
-                ServiceResponse response = Util.sendRequest(workFlowUrl);
-                Assert.assertEquals(response.getCode(), 200);
-                break;
-
-            }
-
-            logger.info(instance.getLogFile());
-            Assert.assertTrue(instance.getLogFile().contains("oozie.log"),
-                    "oozie.log was not created at correct location");
-            String parentLocation = instance.getLogFile()
-                    .substring(0, instance.getLogFile().indexOf("oozie.log") - 1);
-            Assert.assertTrue(InstanceUtil.isFilePresentInHDFS(parentLocation, "oozie.log"));
-            for (ProcessInstancesResult.InstanceAction action : instance.actions) {
-                logger.info(action.getLogFile());
-            }
-        }
-
-		*/
-/*ProcessInstance[] pArray = r.getInstances();
-        Util.print("pArray: "+pArray.toString());
-
-		for(int instanceIndex = 0 ; instanceIndex < pArray.length; instanceIndex++)
-		{
-			Util.print("pArray["+instanceIndex+"]: "+pArray[instanceIndex].getStatus()+" ,
-			"+pArray[instanceIndex].getInstance()+ "  "+pArray[instanceIndex].get);
-		}*//*
-
-
-    }
-*/
 
     public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
             Bundle bundle)
@@ -1256,59 +929,6 @@ public class InstanceUtil {
         return feedElementToString(f);
     }
 
-
-    /*	public static String setFeedCluster(String feed,Validity v1,
-                Retention r1, String n1, ClusterType t1,String partition,Frequency delay ,
-                String ...locations) throws Exception {
-
-            Cluster c1 = new Cluster();
-            c1.setName(n1);
-            c1.setRetention(r1);
-            if(t1!=null)
-                c1.setType(t1);
-            c1.setValidity(v1);
-            if(partition!=null)
-                c1.setPartition(partition);
-            if(delay!=null)
-                c1.setDelay(delay);
-
-
-            Locations ls = new Locations();
-            if(null!=locations)
-            {
-                for(int i = 0 ; i < locations.length ; i++ )
-                {
-                    Location l = new Location();
-                    l.setPath(locations[i]);
-                    if(i==0)
-                        l.setType(LocationType.DATA);
-                    else if(i==1)
-                        l.setType(LocationType.STATS);
-                    else if(i==2)
-                        l.setType(LocationType.META);
-                    else if(i==3)
-                        l.setType(LocationType.TMP);
-                    else
-                        Assert.assertTrue(false,"correct value of localtions were not passed");
-
-                    ls.getLocation().add(l);
-                }
-
-                c1.setLocations(ls);
-            }
-            Feed f = getFeedElement(feed);
-
-            int numberOfInitialClusters = f.getClusters().getCluster().size();
-            if(n1 ==  null)
-                for(int i = 0 ; i < numberOfInitialClusters ; i++ )
-                    f.getClusters().getCluster().set(i,null);
-            else
-            {
-                f.getClusters().getCluster().add(c1);
-            }
-            return feedElementToString(f);
-        }
-    */
     public static Feed getFeedElement(String feed) throws Exception {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -1373,57 +993,6 @@ public class InstanceUtil {
 
         return RetentionCoordID;
     }
-
-    /*
-    public static void verifyDataInTarget(IEntityManagerHelper helper,
-                                          String feed) throws Exception {
-
-        Feed f = InstanceUtil.getFeedElement(feed);
-
-        List<org.apache.falcon.regression.core.generated.feed.Cluster> sourceClusters =
-                new ArrayList<org.apache.falcon.regression.core.generated.feed.Cluster>();
-        //List<org.apache.falcon.regression.core.generated.feed.Cluster> targetClusters =
-        //        new ArrayList<org.apache.falcon.regression.core.generated.feed.Cluster>();
-
-
-        List<org.apache.falcon.regression.core.generated.feed.Cluster> clusterList =
-                f.getClusters().getCluster();
-
-        String baseFeedPath = "";
-
-        for (int i = 0; i < f.getLocations().getLocation().size(); i++) {
-            if (f.getLocations().getLocation().get(i).getType().toString().equals("data"))
-                baseFeedPath = f.getLocations().getLocation().get(i).getPath();
-        }
-
-        for (Cluster aClusterList : clusterList) {
-            if (aClusterList.getType().equals(ClusterType.SOURCE))
-                sourceClusters.add(aClusterList);
-            //else
-            //    targetClusters.add(aClusterList);
-        }
-
-        if (sourceClusters.size() < 1)
-            Assert.assertTrue(false, "feed should have atleast one source cluster");
-        if (sourceClusters.size() == 1) {
-            ArrayList<String> result = Util.runRemoteScript(helper.getQaHost(),
-                    helper.getUsername(), helper.getPassword(),
-                    "hadoop fs -ls " + baseFeedPath, helper.getIdentityFile());
-            Util.print("single cluster remote hadoop ls result: " + result);
-        } else {
-
-            for (Cluster sourceCluster : sourceClusters) {
-                ArrayList<String> result = Util.runRemoteScript(helper.getQaHost(),
-                        helper.getUsername(), helper.getPassword(),
-                        "hadoop fs -ls " + baseFeedPath + sourceCluster.getPartition(),
-                        helper.getIdentityFile());
-                Util.print(" multiple cluster remote hadoop ls result: " + result);
-
-            }
-        }
-
-    }
-    */
 
     public static void putDataInFolders(PrismHelper helper,
                                         final ArrayList<String> inputFoldersForInstance)
@@ -1646,13 +1215,6 @@ public class InstanceUtil {
 
     }
 
-    /*public static String setFeedRetention(String feed, Retention r) throws Exception {
-        Feed feedElement = InstanceUtil.getFeedElement(feed);
-        feedElement.getClusters().getCluster().get(0).setRetention(r);
-        return InstanceUtil.feedElementToString(feedElement);
-
-    }*/
-
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
                                             String feedName, String coordType) throws Exception {
 
@@ -1711,41 +1273,6 @@ public class InstanceUtil {
 
         return InstanceUtil.processToString(processElement);
     }
-
-    /*public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
-            ColoHelper coloHelper,
-            String processName,
-            ENTITY_TYPE entityType)
-    throws Exception {
-
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
-
-        List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
-
-        System.out.println("bundle size for process is " +
-                Util.getBundles(coloHelper, processName, entityType).size());
-
-        for (String bundleId : Util.getBundles(coloHelper, processName, entityType)) {
-            BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
-            List<CoordinatorJob> coords = bundleInfo.getCoordinators();
-
-            System.out.println("number of coords in bundle " + bundleId + "=" + coords.size());
-
-            for (CoordinatorJob coord : coords) {
-                List<CoordinatorAction> actions =
-                        oozieClient.getCoordJobInfo(coord.getId()).getActions();
-                System.out.println("number of actions in coordinator " + coord.getId() + " is " +
-                        actions.size());
-                list.addAll(actions);
-            }
-        }
-
-        String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
-        //String coordId = getDefaultCoordinatorFromProcessName(processName);
-        Util.print("default coordID: " + coordId);
-
-        return list;
-    }*/
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
             ColoHelper coloHelper, String processName, String entityType)
@@ -1825,44 +1352,6 @@ public class InstanceUtil {
         return conf;
     }
 
-    /*public static String dateToOozieDate(DateTime jodaTime) throws ParseException {
-        Util.print("jadaSystemTime: " + jodaTime);
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        return fmt.print(jodaTime);
-    }*/
-
-/*
-    public static String getOutputFolderForProcessInstance(ColoHelper coloHelper,
-                                                           String processName,
-                                                           int instanceNumber)
-        throws Exception {
-        String bundleID =
-                InstanceUtil.getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, 0);
-        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        //Util.print("createdConf: " +coordInfo.getActions().get(instanceNumber).getCreatedConf());
-        //Util.print("runConf: " +coordInfo.getActions().get(instanceNumber).getRunConf());
-
-        return InstanceUtil.getOutputFolderFromImstanceRunConf(
-                oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId())
-                        .getConf());
-    }
-*/
-
-    /*private static String getOutputFolderFromImstanceRunConf(String runConf) {
-        String conf = runConf.substring(runConf.indexOf("output</name>") + 13);
-        //	Util.print("conf1: "+conf);
-
-        conf = conf.substring(conf.indexOf("<value>") + 7);
-        //Util.print("conf2: "+conf);
-
-        conf = conf.substring(0, conf.indexOf("</value>"));
-
-        return conf;
-    }*/
-
-
     public static String ClusterElementToString(
             org.apache.falcon.regression.core.generated.cluster.Cluster c)
     throws JAXBException {
@@ -1874,18 +1363,6 @@ public class InstanceUtil {
         //logger.info("modified process is: " + sw);
         return sw.toString();
     }
-
-    /*public static Status getProcessCoordinatorStatus(ColoHelper coloHelper,
-                                                     String processName, int bundleNumber)
-    throws Exception {
-
-        String bundleID = InstanceUtil
-                .getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
-        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        return coordInfo.getStatus();
-    }*/
 
     public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
             String clusterData)
@@ -2057,21 +1534,6 @@ public class InstanceUtil {
         return statusList;
     }
 
-    /*public static ArrayList<Path> getAllOutputLocationForProcess(
-            ColoHelper coloHelper, String processName) throws Exception {
-
-        ArrayList<Path> returnObject = new ArrayList<Path>();
-
-        CoordinatorJob coordInfo = InstanceUtil.getCoordJobForProcess(coloHelper, processName);
-        for (int count = 0; count < coordInfo.getActions().size(); count++) {
-            returnObject.add(new Path(InstanceUtil
-                    .getOutputFolderForProcessInstance(coloHelper, processName, count)));
-        }
-
-        return returnObject;
-
-    }*/
-
     private static CoordinatorJob getCoordJobForProcess(
             ColoHelper coloHelper, String processName) throws Exception {
 
@@ -2105,81 +1567,6 @@ public class InstanceUtil {
         return feedElementToString(f);
 
     }
-
-    /*public static ArrayList<Path> getAllOutputLocationForProcess(
-            ColoHelper coloHelper, Bundle bundle) throws Exception {
-
-        List<Output> outputs = bundle.getAllOutputs();
-        ArrayList<Path> returnObject = new ArrayList<Path>();
-
-        CoordinatorJob coordInfo =
-                InstanceUtil.getCoordJobForProcess(coloHelper, bundle.getProcessName());
-        for (int count = 0; count < coordInfo.getActions().size(); count++) {
-            for (Output o : outputs) {
-                ArrayList<String> paths = InstanceUtil
-                        .getValueFromConf(coloHelper, bundle.getProcessName(), o.getName(), count);
-                for (String strPath : paths)
-                    returnObject.add(new Path(strPath));
-
-            }
-        }
-
-        return returnObject;
-
-
-    }*/
-
-    /*private static ArrayList<String> getValueFromConf(ColoHelper coloHelper,
-                                                      String processName, String valueFor,
-                                                      int count) throws Exception {
-        String bundleID =
-                InstanceUtil.getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, 0);
-        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
-        CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        //Util.print("createdConf: " +coordInfo.getActions().get(instanceNumber).getCreatedConf());
-        //Util.print("runConf: " +coordInfo.getActions().get(instanceNumber).getRunConf());
-
-        return InstanceUtil.getValueFromInstanceRunConf(
-                oozieClient.getJobInfo(coordInfo.getActions().get(count).getExternalId()).getConf(),
-                valueFor);
-    }*/
-
-    /*private static ArrayList<String> getValueFromInstanceRunConf(String runConf,
-                                                                 String valueFor) {
-        String conf;
-        conf = runConf.substring(runConf.indexOf(valueFor + "</name>") + 7 + valueFor.length());
-        //	Util.print("conf1: "+conf);
-
-        conf = conf.substring(conf.indexOf("<value>") + 7);
-        //Util.print("conf2: "+conf);
-
-        conf = conf.substring(0, conf.indexOf("</value>"));
-
-        return splitRunConfValue(conf);
-    }*/
-
-    /*public static ArrayList<String> splitRunConfValue(String value) {
-        ArrayList<String> inputWise = new ArrayList<String>(Arrays.asList(value.split("#")));
-
-        ArrayList<String> returnObject = new ArrayList<String>();
-
-
-        int size = inputWise.size();
-
-        for (String anInputWise : inputWise) {
-            returnObject.addAll(Arrays.asList(anInputWise.split(",")));
-        }
-
-
-        for (int i = 0; i < size; i++) {
-            if (returnObject.get(i).contains("*"))
-                returnObject.set(i,
-                        returnObject.get(i).substring(0, returnObject.get(i).indexOf("*") - 1));
-        }
-
-        return returnObject;
-    }*/
 
     public static void waitForBundleToReachState(
             ColoHelper coloHelper,
@@ -2249,40 +1636,5 @@ public class InstanceUtil {
         InstanceUtil.createHDFSFolders(colo, dataFolder);
         return dataFolder;
     }
-
-    /*public static ArrayList<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
-                                                                       DateTime startDateJoda,
-                                                                       DateTime endDateJoda,
-                                                                       String prefix,
-                                                                       String postfix,
-                                                                       int interval)
-    throws Exception {
-        List<String> dataDates =
-                Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        if (postfix != null) {
-            for (int i = 0; i < dataDates.size(); i++)
-                dataDates.set(i, dataDates.get(i) + postfix);
-        }
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
-
-        InstanceUtil.createHDFSFolders(colo, dataFolder);
-        return dataFolder;
-    }*/
-
-    /*public static String oozieDateToDataGenDate(String oozieDate) throws ParseException {
-
-        DateTime jodaTime = new DateTime(InstanceUtil.oozieDateToDate(oozieDate), DateTimeZone.UTC);
-        DateTimeFormatter formatter =
-                DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.UTC);
-        String str = formatter.print(jodaTime);
-        return str;
-    }*/
 }
 
