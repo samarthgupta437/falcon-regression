@@ -140,10 +140,9 @@ public class NewRetryTest {
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
 
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
@@ -248,10 +247,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //waitTillCertainPercentageOfProcessHasStarted(bundleId,25);
@@ -364,10 +361,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);;
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //waitTillCertainPercentageOfProcessHasStarted(bundleId,25);
@@ -473,10 +468,8 @@ public class NewRetryTest {
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
 
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //waitTillCertainPercentageOfProcessHasStarted(bundleId,25);
@@ -581,10 +574,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
@@ -684,10 +675,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
@@ -789,10 +778,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
@@ -895,10 +882,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 waitTillCertainPercentageOfProcessHasStarted(UA3ColoHelper, bundleId, 25);
@@ -1002,10 +987,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 //now to validate all failed instances to check if they were retried or not.
@@ -1086,10 +1069,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 while (!validateFailureRetries(UA3ColoHelper,
@@ -1187,10 +1168,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
 
@@ -1288,10 +1267,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 ArrayList<DateTime> dates = null;
 
                 do {
@@ -1442,10 +1419,8 @@ public class NewRetryTest {
                 Util.assertSucceeded(
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 ArrayList<DateTime> dates = null;
 
                 do {
@@ -1576,10 +1551,8 @@ public class NewRetryTest {
                         prismHelper.getProcessHelper()
                                 .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
                 //now wait till the process is over
-                String bundleId = Util.getCoordID(
-                        Util.getOozieJobStatus(UA3ColoHelper,
-                                Util.readEntityName(bundle.getProcessData()), "NONE")
-                                .get(0));
+                String bundleId = Util.getBundles(UA3ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
                 validateRetry(UA3ColoHelper, bundleId,

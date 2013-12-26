@@ -1282,7 +1282,8 @@ public class Util {
         input.removeAll(expectedOutput);
 
         ArrayList<String> jobIds = getCoordinatorJobs(prismHelper,
-                getCoordID(getOozieFeedJobStatus(feedName, "NONE", prismHelper).get(0)));
+                Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                        feedName, ENTITY_TYPE.FEED).get(0));
 
         //create queuedata folderList:
         ArrayList<String> deletedFolders = new ArrayList<String>();
@@ -1332,11 +1333,8 @@ public class Util {
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-
-        String bundleId = Util.getCoordID(
-                Util.getOozieFeedJobStatus(
-                        Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), "NONE",
-                        prismHelper).get(0));
+        String bundleId = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
         ArrayList<String> workflows = getFeedRetentionJobs(prismHelper, bundleId);
         logger.info("got a workflow list of length:" + workflows.size());

@@ -310,8 +310,8 @@ public class InstanceUtil {
     public static ArrayList<String> getWorkflows(PrismHelper prismHelper, String processName,
                                                  WorkflowAction.Status ws) throws Exception {
 
-        String bundleID =
-                Util.getCoordID(Util.getOozieJobStatus(prismHelper, processName, "NONE").get(0));
+        String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                processName, ENTITY_TYPE.PROCESS).get(0);
         oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
 
         List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
@@ -417,8 +417,8 @@ public class InstanceUtil {
     throws Exception {
         XOozieClient oozieClient = new XOozieClient(prismHelper.getProcessHelper().getOozieURL());
 
-        String bundleID =
-                Util.getCoordID(Util.getOozieJobStatus(prismHelper, processName, "NONE").get(0));
+        String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                processName, ENTITY_TYPE.PROCESS).get(0);
         ArrayList<WorkflowAction> was = new ArrayList<WorkflowAction>();
         List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
