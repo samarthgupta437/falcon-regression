@@ -69,16 +69,9 @@ import org.xml.sax.InputSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -1967,20 +1960,24 @@ public class Util {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
                 helper.getIdentityFile());
-        Thread.sleep(10000);
+        int statusCode = 0;
+        for (int tries = 20; tries > 0; tries--) {
+            try {
+                statusCode = Util.sendRequest(helper.getHostname()).getCode();
+            } catch (IOException e) {
+            } catch (URISyntaxException e) {
+            }
+            if (statusCode == 200) return;
+            TimeUnit.SECONDS.sleep(5);
+        }
+        throw new RuntimeException("Service on" + helper.getHostname() + " did not start!");
     }
 
     public static void restartService(IEntityManagerHelper helper) throws Exception {
         Util.print("restarting service for: " + helper.getQaHost());
 
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
-                helper.getPassword(), helper.getServiceStopCmd(), helper.getServiceUser(),
-                helper.getIdentityFile());
-        Thread.sleep(10000);
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
-                helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
-                helper.getIdentityFile());
-        Thread.sleep(10000);
+        shutDownService(helper);
+        startService(helper);
     }
 
     private static ArrayList<String> runRemoteScriptAsSudo(String hostName,
