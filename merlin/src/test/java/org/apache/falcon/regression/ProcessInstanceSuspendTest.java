@@ -26,7 +26,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.TestClassHelper;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * Process instance suspend tests.
  */
-public class ProcessInstanceSuspendTest extends TestClassHelper {
+public class ProcessInstanceSuspendTest extends BaseSingleClusterTests {
 
     private String feedInputPath = "/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String feedOutputPath = "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -57,12 +57,12 @@ public class ProcessInstanceSuspendTest extends TestClassHelper {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server2.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName());
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -74,17 +74,17 @@ public class ProcessInstanceSuspendTest extends TestClassHelper {
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
         }
-        HadoopUtil.flattenAndPutDataInFolder(server2FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        Util.restartService(server2.getClusterHelper());
+        Util.restartService(server1.getClusterHelper());
         //System.out.println("Waiting 20 seconds...");
         //Thread.sleep(20000);
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -127,7 +127,7 @@ public class ProcessInstanceSuspendTest extends TestClassHelper {
         //wait for instance to succeed
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(server2, Util.getProcessName(b.getProcessData()), 0, 0)
+                    .getInstanceStatus(server1, Util.getProcessName(b.getProcessData()), 0, 0)
                     .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
 
@@ -269,9 +269,9 @@ public class ProcessInstanceSuspendTest extends TestClassHelper {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
     }
 }

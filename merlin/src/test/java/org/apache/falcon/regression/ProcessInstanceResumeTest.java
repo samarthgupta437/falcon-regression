@@ -26,7 +26,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.TestClassHelper;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * Process instance resume tests.
  */
-public class ProcessInstanceResumeTest extends TestClassHelper {
+public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
 
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceResumeTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -66,15 +66,15 @@ public class ProcessInstanceResumeTest extends TestClassHelper {
 
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server2.getEnvFileName());
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server2FS, prefix.substring(1));
+        Util.HDFSCleanup(server1FS, prefix.substring(1));
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -87,7 +87,7 @@ public class ProcessInstanceResumeTest extends TestClassHelper {
             dataFolder.add(i, prefix + dataDate);
             i++;
         }
-        HadoopUtil.flattenAndPutDataInFolder(server2FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -96,7 +96,7 @@ public class ProcessInstanceResumeTest extends TestClassHelper {
 
         bundle = (Bundle) Util.readELBundles()[0][0];
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
         b.setInputFeedDataPath(feedInputPath);
         b.setOutputFeedLocationData(feedOutputPath);
     }
@@ -105,7 +105,7 @@ public class ProcessInstanceResumeTest extends TestClassHelper {
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
         if (bundle != null) {
-            bundle.deleteBundle(prism);
+            bundle.deleteBundle(server1);
         }
         b.deleteBundle(prism);
     }
@@ -326,9 +326,9 @@ public class ProcessInstanceResumeTest extends TestClassHelper {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server2FS, prefix.substring(1));
+        Util.HDFSCleanup(server1FS, prefix.substring(1));
     }
 }

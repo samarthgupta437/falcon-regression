@@ -25,7 +25,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult.Workflo
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.TestClassHelper;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Process instance kill tests.
  */
-public class ProcessInstanceKillsTest extends TestClassHelper {
+public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
 
     String testDir = "/ProcessInstanceKillsTest";
     String baseTestHDFSDir = baseHDFSDir + testDir;
@@ -62,14 +62,14 @@ public class ProcessInstanceKillsTest extends TestClassHelper {
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server2FS, prefix.substring(1));
+        Util.HDFSCleanup(server1FS, prefix.substring(1));
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -85,14 +85,14 @@ public class ProcessInstanceKillsTest extends TestClassHelper {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(server2FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -162,7 +162,7 @@ public class ProcessInstanceKillsTest extends TestClassHelper {
         String endTime = InstanceUtil.getTimeWrtSystemTime(400);
         String startTimeData = InstanceUtil.getTimeWrtSystemTime(-150);
         String endTimeData = InstanceUtil.getTimeWrtSystemTime(50);
-        InstanceUtil.createDataWithinDatesAndPrefix(server2,
+        InstanceUtil.createDataWithinDatesAndPrefix(server1,
                 InstanceUtil.oozieDateToDate(startTimeData),
                 InstanceUtil.oozieDateToDate(endTimeData), testDir + "/", 1);
         b.setProcessValidity(startTime, endTime);
@@ -272,7 +272,7 @@ public class ProcessInstanceKillsTest extends TestClassHelper {
         b.submitAndScheduleBundle(prism);
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(server2, Util.readEntityName(b.getProcessData()), 0, 0)
+                    .getInstanceStatus(server1, Util.readEntityName(b.getProcessData()), 0, 0)
                     .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
             Thread.sleep(30000);
@@ -291,11 +291,11 @@ public class ProcessInstanceKillsTest extends TestClassHelper {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server2.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server2FS, prefix.substring(1));
+        Util.HDFSCleanup(server1FS, prefix.substring(1));
     }
 
 }
