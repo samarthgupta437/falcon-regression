@@ -1,9 +1,9 @@
 package org.apache.falcon.regression.prism;
 
-import org.apache.falcon.regression.testHelper.TestClassHelper;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.testng.annotations.Test;
 
-public class RetryTest extends TestClassHelper {
+public class RetryTest extends BaseSingleClusterTests {
 
    @Test(timeOut = 120000,groups = "multiCluster",enabled = false)
     public void FailedFeedReplicationRetry() {

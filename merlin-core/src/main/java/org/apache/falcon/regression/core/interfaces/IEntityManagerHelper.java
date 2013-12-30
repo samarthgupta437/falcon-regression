@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.OozieClient;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -104,13 +105,24 @@ public abstract class IEntityManagerHelper {
     protected String serviceStatusCmd;
 
     public OozieClient getOozieClient() {
-        return oozieClient;
+        if (null == this.oozieClient) {
+            this.oozieClient = OozieUtil.getClient(this.oozieURL);
+        }
+        return this.oozieClient;
     }
 
     protected OozieClient oozieClient;
 
     public FileSystem getHadoopFS() {
-        return hadoopFS;
+        if (null == this.hadoopFS) {
+            try {
+                this.hadoopFS = HadoopUtil.getFileSystem(this.hadoopURL);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        }
+        return this.hadoopFS;
     }
 
     protected FileSystem hadoopFS;
@@ -157,8 +169,8 @@ public abstract class IEntityManagerHelper {
 
     }
 
-    public IEntityManagerHelper(String envFileName) throws Exception {
-        System.out.println("envFileName: "+envFileName);
+    public IEntityManagerHelper(String envFileName) {
+        System.out.println("envFileName: " + envFileName);
         Properties prop = Util.getPropertiesObj(envFileName);
         this.qaHost = prop.getProperty("qa_host");
         this.hostname = prop.getProperty("ivory_hostname");
@@ -189,8 +201,8 @@ public abstract class IEntityManagerHelper {
                 prop.getProperty("service_status_cmd", "/etc/init.d/tomcat6 status");
         this.identityFile = prop.getProperty("identityFile",
                 System.getProperty("user.home") + "/.ssh/id_rsa");
-        this.hadoopFS = HadoopUtil.getFileSystem(this.hadoopURL);
-        this.oozieClient = OozieUtil.getClient(this.oozieURL);
+        this.hadoopFS = null;
+        this.oozieClient = null;
     }
 
     public abstract ServiceResponse submitEntity(String url, String data) throws Exception;
