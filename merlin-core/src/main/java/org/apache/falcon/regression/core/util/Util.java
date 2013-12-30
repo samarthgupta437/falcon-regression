@@ -2433,4 +2433,24 @@ public class Util {
             logger.info("message = " + s);
         }
     }
+
+    public static Bundle getBundle(ColoHelper cluster, String... xmlLocation) {
+        Bundle b;
+        try {
+            if (xmlLocation.length == 1)
+                b = (Bundle) Bundle.readBundle(xmlLocation[0])[0][0];
+            else if (xmlLocation.length == 0)
+                b = (Bundle) Util.readELBundles()[0][0];
+            else {
+                System.out.println("invalid size of xmlLocaltions return null");
+                return null;
+            }
+
+            b.generateUniqueBundle();
+            return new Bundle(b, cluster.getEnvFileName());
+        } catch (Exception e) {
+            System.out.println(Arrays.toString(e.getStackTrace()));
+        }
+        return null;
+    }
 }
