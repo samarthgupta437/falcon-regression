@@ -1,7 +1,7 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.oozie.client.BundleJob;
-import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.XOozieClient;
@@ -26,12 +26,7 @@ public class OozieUtil {
     public static List<String> getBundleIds(OozieClient client, String filter, int start, int len)
     throws OozieClientException {
         List<BundleJob> bundles = getBundles(client, filter, start, len);
-        List<String> ids = new ArrayList<String>();
-        for (BundleJob bundle : bundles) {
-            logger.info("Bundle Id: " + bundle.getId());
-            ids.add(bundle.getId());
-        }
-        return ids;
+        return getBundleIds(bundles);
     }
 
     public static List<String> getBundleIds(List<BundleJob> bundles) {
@@ -41,6 +36,20 @@ public class OozieUtil {
             ids.add(bundle.getId());
         }
         return ids;
+    }
+
+    public static List<Job.Status> getBundleStatuses(OozieClient client, String filter, int start, int len) throws OozieClientException {
+        List<BundleJob> bundles = getBundles(client, filter, start, len);
+        return getBundleStatuses(bundles);
+    }
+
+    public static List<Job.Status> getBundleStatuses(List<BundleJob> bundles) {
+        List<Job.Status> statuses = new ArrayList<Job.Status>();
+        for (BundleJob bundle : bundles) {
+            logger.info("Bundle Id: " + bundle.getId());
+            statuses.add(bundle.getStatus());
+        }
+        return statuses;
     }
 
     public static String getMaxId(List<String> ids) {

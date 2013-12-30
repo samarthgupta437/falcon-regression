@@ -1437,7 +1437,7 @@ public class Bundle {
             ServiceResponse r =
                     prismHelper.getClusterHelper()
                             .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
-            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"), r.getMessage());
         }
 
 

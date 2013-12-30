@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
@@ -29,10 +25,12 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
+import org.apache.oozie.client.Job;
 import org.testng.Assert;
 import org.testng.TestNGException;
 import org.testng.annotations.BeforeMethod;
@@ -64,32 +62,18 @@ public class PrismFeedSnSTest {
 
         //schedule both bundles
         submitAndScheduleFeed(UA1Bundle);
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0).contains("RUNNING"));
-        Assert.assertEquals(
-                Util.getOozieJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING", UA1ColoHelper)
-                        .get(0), "No Jobs match your criteria!");
-
-
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.RUNNING);
+        Assert.assertNotEquals(Util.getOozieJobStatus(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
         submitAndScheduleFeed(UA2Bundle);
 
         //now check if they have been scheduled correctly or not
 
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
         //check if there is no criss cross
-
-        Assert.assertEquals(
-                Util.getOozieJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING", UA2ColoHelper)
-                        .get(0), "No Jobs match your criteria!");
-
+        Assert.assertNotEquals(Util.getOozieJobStatus(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
     }
 
     @Test(dataProvider = "DP", groups = {"prism", "0.2"})
@@ -105,48 +89,27 @@ public class PrismFeedSnSTest {
         submitAndScheduleFeed(UA2Bundle);
 
         //now check if they have been scheduled correctly or not
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0).contains("RUNNING"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.RUNNING);
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
         //check if there is no criss cross
-        Assert.assertEquals(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0), "No Jobs match your criteria!");
-        Assert.assertEquals(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0), "No Jobs match your criteria!");
+        checkNotStatus(UA1ColoHelper, UA2Bundle, Job.Status.RUNNING);
+        checkNotStatus(UA2ColoHelper, UA1Bundle, Job.Status.RUNNING);
 
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0)));
         //ensure only one bundle is there
-        Assert.assertEquals(
-                Util.getBundles(UA1ColoHelper, Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getDataSets().get(0)));
-        Assert.assertEquals(
-                Util.getBundles(UA2ColoHelper, Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        Assert.assertEquals(Util.getBundles(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
+                        ENTITY_TYPE.FEED).size(), 1);
         //now check if they have been scheduled correctly or not
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0).contains("RUNNING"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
-
-
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.RUNNING);
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
     }
 
 
@@ -164,60 +127,32 @@ public class PrismFeedSnSTest {
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "SUSPENDED",
-                        UA1ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         //now check if they have been scheduled correctly or not
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "SUSPENDED",
-                        UA1ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertEquals(
-                Util.getBundles(UA1ColoHelper, Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
+        Assert.assertEquals(Util.getBundles(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                        Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
 
         Util.assertSucceeded(UA1ColoHelper.getFeedHelper()
                 .resume(URLS.RESUME_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0).contains("RUNNING"));
-
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.RUNNING);
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "SUSPENDED",
-                        UA2ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0).contains("RUNNING"));
-
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.SUSPENDED);
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.RUNNING);
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "SUSPENDED",
-                        UA2ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertEquals(
-                Util.getBundles(UA2ColoHelper, Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "feed").size(), 1);
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.SUSPENDED);
+        Assert.assertEquals(Util.getBundles(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         Util.assertSucceeded(UA2ColoHelper.getFeedHelper()
                 .resume(URLS.RESUME_URL, UA2Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
 
     }
@@ -236,25 +171,13 @@ public class PrismFeedSnSTest {
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .delete(URLS.DELETE_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "KILLED",
-                        UA1ColoHelper).get(0).contains("KILLED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .delete(URLS.DELETE_URL, UA2Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "KILLED",
-                        UA2ColoHelper).get(0).contains("KILLED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "KILLED",
-                        UA1ColoHelper).get(0).contains("KILLED"));
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.KILLED);
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0)));
@@ -300,18 +223,10 @@ public class PrismFeedSnSTest {
             //submitAndScheduleFeed(UA2Bundle);
 
             //now check if they have been scheduled correctly or not
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0).contains("RUNNING"));
-
+            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             //check if there is no criss cross
-
-            Assert.assertEquals(
-                    Util.getOozieJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0), "No Jobs match your criteria!");
+            Assert.assertNotEquals(Util.getOozieJobStatus(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -340,10 +255,8 @@ public class PrismFeedSnSTest {
             Util.assertFailed(prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL,
                             UA1Bundle.getDataSets().get(0)));
-            Assert.assertEquals(
-                    Util.getOozieJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0), "No Jobs match your criteria!");
+            Assert.assertNotEquals(Util.getOozieJobStatus(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -367,29 +280,12 @@ public class PrismFeedSnSTest {
             submitAndScheduleFeed(UA1Bundle);
             Util.assertSucceeded(prismHelper.getFeedHelper()
                     .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "SUSPENDED",
-                            UA1ColoHelper).get(0).contains("SUSPENDED"));
-
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
             submitAndScheduleFeed(UA2Bundle);
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0).contains("RUNNING"));
-            Assert.assertEquals(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0), "No Jobs match your criteria!");
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "SUSPENDED",
-                            UA1ColoHelper).get(0).contains("SUSPENDED"));
-            Assert.assertEquals(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA1ColoHelper).get(0), "No Jobs match your criteria!");
-
+            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            checkNotStatus(UA2ColoHelper, UA1Bundle, Job.Status.RUNNING);
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
+            checkNotStatus(UA1ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -409,28 +305,12 @@ public class PrismFeedSnSTest {
             submitAndScheduleFeed(UA1Bundle);
             Util.assertSucceeded(prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, UA1Bundle.getDataSets().get(0)));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "KILLED",
-                            UA1ColoHelper).get(0).contains("KILLED"));
-
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
             submitAndScheduleFeed(UA2Bundle);
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0).contains("RUNNING"));
-            Assert.assertEquals(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0), "No Jobs match your criteria!");
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "KILLED",
-                            UA1ColoHelper).get(0).contains("KILLED"));
-            Assert.assertEquals(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA1ColoHelper).get(0), "No Jobs match your criteria!");
+            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            checkNotStatus(UA2ColoHelper, UA1Bundle, Job.Status.RUNNING);
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
+            checkNotStatus(UA1ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -452,26 +332,13 @@ public class PrismFeedSnSTest {
         APIResult result = Util.parseResponse((UA1ColoHelper.getFeedHelper()
                 .submitEntity(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0))));
         Assert.assertEquals(result.getStatusCode(), 404);
-        Assert.assertEquals(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0), "No Jobs match your criteria!");
-
-
+        checkNotStatus(UA1ColoHelper, UA1Bundle, Job.Status.RUNNING);
         submitFeed(UA2Bundle);
         result = Util.parseResponse(UA2ColoHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getDataSets().get(0)));
         Assert.assertEquals(result.getStatusCode(), 404);
-        //now check if they have been scheduled correctly or not
 
-
-        //check if there is no criss cross
-
-        Assert.assertEquals(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0), "No Jobs match your criteria!");
-
+        checkNotStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
     }
 
 
@@ -493,21 +360,12 @@ public class PrismFeedSnSTest {
 
         Util.assertSucceeded(UA1ColoHelper.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "SUSPENDED",
-                        UA1ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
         //now check if they have been scheduled correctly or not
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "SUSPENDED",
-                        UA1ColoHelper).get(0).contains("SUSPENDED"));
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
         Util.assertSucceeded(UA1ColoHelper.getFeedHelper()
                 .resume(URLS.RESUME_URL, UA1Bundle.getDataSets().get(0)));
 
@@ -515,15 +373,8 @@ public class PrismFeedSnSTest {
                 .suspend(URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "SUSPENDED",
-                        UA2ColoHelper).get(0).contains("SUSPENDED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA1ColoHelper).get(0).contains("RUNNING"));
-
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.SUSPENDED);
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.RUNNING);
     }
 
 
@@ -541,26 +392,13 @@ public class PrismFeedSnSTest {
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .delete(URLS.DELETE_URL, UA1Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "KILLED",
-                        UA1ColoHelper).get(0).contains("KILLED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "RUNNING",
-                        UA2ColoHelper).get(0).contains("RUNNING"));
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
 
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .delete(URLS.DELETE_URL, UA2Bundle.getDataSets().get(0)));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                        "KILLED",
-                        UA2ColoHelper).get(0).contains("KILLED"));
-        Assert.assertTrue(
-                Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                        "KILLED",
-                        UA1ColoHelper).get(0).contains("KILLED"));
-
+        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.KILLED);
+        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
         Util.assertSucceeded(prismHelper.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getDataSets().get(0)));
         Util.assertSucceeded(prismHelper.getFeedHelper()
@@ -614,28 +452,17 @@ public class PrismFeedSnSTest {
             Util.assertSucceeded(prismHelper.getFeedHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL,
                             UA2Bundle.getDataSets().get(0)));
-            //submitAndScheduleFeedUsingColoHelper(UA2ColoHelper,UA2Bundle);
 
             //now check if they have been scheduled correctly or not
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0).contains("RUNNING"));
-
+            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
             //check if there is no criss cross
-
-            Assert.assertEquals(
-                    Util.getOozieJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0), "No Jobs match your criteria!");
+            Assert.assertNotEquals(Util.getOozieJobStatus(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-
             Util.restartService(UA1ColoHelper.getFeedHelper());
-
         }
 
     }
@@ -693,7 +520,6 @@ public class PrismFeedSnSTest {
             ServiceResponse response =
                     prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
             Util.assertPartialSucceeded(response);
-            //Util.assertSucceeded(response);
             response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             Util.assertPartialSucceeded(response);
 
@@ -723,29 +549,14 @@ public class PrismFeedSnSTest {
             submitAndScheduleFeed(UA1Bundle);
             Util.assertSucceeded(UA1Bundle.getFeedHelper()
                     .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "SUSPENDED",
-                            UA1ColoHelper).get(0).contains("SUSPENDED"));
-
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
             submitAndScheduleFeed(UA2Bundle);
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0).contains("RUNNING"));
-            Assert.assertEquals(
-                    Util.getOozieJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0), "No Jobs match your criteria!");
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "SUSPENDED",
-                            UA1ColoHelper).get(0).contains("SUSPENDED"));
-            Assert.assertEquals(
-                    Util.getOozieJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA1ColoHelper).get(0), "No Jobs match your criteria!");
-
+            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            Assert.assertNotEquals(Util.getOozieJobStatus(UA2ColoHelper.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
+            Assert.assertNotEquals(Util.getOozieJobStatus(UA1ColoHelper.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -767,34 +578,27 @@ public class PrismFeedSnSTest {
             submitAndScheduleFeed(UA1Bundle);
             Util.assertSucceeded(prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, UA1Bundle.getDataSets().get(0)));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "KILLED",
-                            UA1ColoHelper).get(0).contains("KILLED"));
-
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
             submitAndScheduleFeed(UA2Bundle);
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0).contains("RUNNING"));
-            Assert.assertEquals(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA2ColoHelper).get(0), "No Jobs match your criteria!");
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA1Bundle.getDataSets().get(0)),
-                            "KILLED",
-                            UA1ColoHelper).get(0).contains("KILLED"));
-            Assert.assertEquals(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(UA2Bundle.getDataSets().get(0)),
-                            "RUNNING",
-                            UA1ColoHelper).get(0), "No Jobs match your criteria!");
-
+            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            checkNotStatus(UA2ColoHelper, UA1Bundle, Job.Status.RUNNING);
+            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
+            checkNotStatus(UA1ColoHelper, UA2Bundle, Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         }
 
+    }
+
+    private void checkStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
+        Assert.assertTrue(Util.verifyOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, expectedStatus));
+    }
+
+    private void checkNotStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
+        Assert.assertNotEquals(Util.getOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED), expectedStatus);
     }
 
     private void submitFeed(Bundle bundle) throws Exception {
@@ -819,20 +623,8 @@ public class PrismFeedSnSTest {
                 .submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0)));
     }
 
-    private void submitAndScheduleFeedUsingColoHelper(ColoHelper coloHelper, Bundle bundle)
-    throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prismHelper.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        Util.assertSucceeded(coloHelper.getFeedHelper()
-                .submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0)));
-    }
-
-
     @DataProvider(name = "DP")
     public Object[][] getData() throws Exception {
-        //return Util.readBundles("src/test/resources/LateDataBundles");
         return Util.readELBundles();
     }
 

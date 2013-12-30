@@ -27,8 +27,10 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.oozie.client.Job;
 import org.testng.Assert;
 import org.testng.TestNGException;
 import org.testng.annotations.BeforeMethod;
@@ -65,7 +67,6 @@ public class FeedSuspendTest {
             bundle.generateUniqueBundle();
             bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
             submitCluster(bundle);
-
             String feed = Util.getInputFeedFromBundle(bundle);
 
             ServiceResponse response =
@@ -74,18 +75,13 @@ public class FeedSuspendTest {
             Util.assertSucceeded(response);
 
             response = prismHelper.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-
             Util.assertSucceeded(response);
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1)
-                            .get(0)
-                            .contains("SUSPENDED"));
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-
             prismHelper.getFeedHelper()
                     .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         }
@@ -107,21 +103,13 @@ public class FeedSuspendTest {
 
             response = prismHelper.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
             Util.assertSucceeded(response);
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1)
-                            .get(0)
-                            .contains("SUSPENDED"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
             response = prismHelper.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
 
             Util.assertSucceeded(response);
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1)
-                            .get(0)
-                            .contains("SUSPENDED"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -164,15 +152,13 @@ public class FeedSuspendTest {
     @Test(groups = {"singleCluster"}, dataProvider = "DP")
     public void suspendNonExistentFeed(Bundle bundle) throws Exception {
         bundle.generateUniqueBundle();
+        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
         submitCluster(bundle);
 
         String feed = Util.getInputFeedFromBundle(bundle);
-
         ServiceResponse response = prismHelper.getFeedHelper().suspend(URLS.SCHEDULE_URL, feed);
-
         Util.assertFailed(response);
-
-    }
+                                                                    }
 
     @Test(groups = {"singleCluster"}, dataProvider = "DP")
     public void suspendSubmittedFeed(Bundle bundle) throws Exception {

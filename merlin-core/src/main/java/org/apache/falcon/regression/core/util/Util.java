@@ -23,12 +23,14 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
+import org.apache.falcon.regression.core.generated.feed.Property;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Output;
 import org.apache.falcon.regression.core.generated.process.Process;
@@ -53,11 +55,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.oozie.client.BundleJob;
-import org.apache.oozie.client.CoordinatorAction;
-import org.apache.oozie.client.CoordinatorJob;
-import org.apache.oozie.client.WorkflowJob;
-import org.apache.oozie.client.XOozieClient;
+import org.apache.oozie.client.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -71,17 +69,9 @@ import org.xml.sax.InputSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -92,59 +82,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class Util {
 
 
-    //This section is for properties that are read from the config.properties file and then used
-    // throughout
-/*    final static Properties properties = getPropertiesObj
-            ("src/main/resources/" + "invalid.properties");
-    final static String HOST_NAME = properties.getProperty("qa_host");
-    final static String USER_NAME = properties.getProperty("username");
-    final static String PASSWORD = properties.getProperty("password");
-    final static String HADOOP_LOCATION = properties.getProperty("hadoop_location");
-    final static String HADOOP_URL = properties.getProperty("hadoop_url");
-    final static String OOZIE_URL = properties.getProperty("oozie_url");
-    final static String OOZIE_LOCATION = properties.getProperty("oozie_location");
-    //final static String HOSTNAME = properties.getProperty("ivory_hostname");
-    //final static String ACTIVEMQ = properties.getProperty("activemq_url");
-    final static String IDENTITY_FILE = properties.getProperty("identityFile",
-            System.getProperty("user.home") + "/.ssh/id_rsa");      */
+
     static Logger logger = Logger.getLogger(Util.class);
-    //config file property section ends here
 
-
-    //final static String HOST_NAME="10.14.110.46";
-    //final static String HOST_NAME="10.14.111.146";
-    //final static String USER_NAME="rishu";
-    //final static String PASSWORD="Rishu@123";
-    //final static String PROCESS_STORE_COMMAND = "ls /var/lib/tomcat6/target/store/PROCESS";
-    //final static String ARCHIVE_STORE_COMMAND = "ls " +
-    // "/var/lib/tomcat6/target/store/archive/PROCESS";
-
-    //final static String PROCESS_STORE_COMMAND="ls
-    // /var/lib/jenkins/jobs/Ivory/workspace/target/store/PROCESS";
-    //final static String ARCHIVE_STORE_COMMAND="ls
-    // /var/lib/jenkins/jobs/Ivory/workspace/target/store/archive/PROCESS";
-    //final static String DATA_STORE_COMMAND="ls
-    // /var/lib/jenkins/jobs/Ivory/workspace/target/store/DATASET";
-    //final static String DATA_ARCHIVE_STORE_COMMAND="ls
-    // /var/lib/jenkins/jobs/Ivory/workspace/target/store/archive/DATASET";
-
-    /*final static String DATA_STORE_COMMAND = "ls /var/lib/tomcat6/target/store/FEED";
-    final static String DATA_ARCHIVE_STORE_COMMAND =
-            "ls /var/lib/tomcat6/target/store/archive/FEED";
-    final static String CLUSTER_STORE_COMMAND = "ls /var/lib/tomcat6/target/store/CLUSTER";
-    final static String CLUSTER_ARCHIVE_STORE_COMMAND =
-            "ls /var/lib/tomcat6/target/store/archive/CLUSTER";*/
     static PrismHelper prismHelper = new PrismHelper("prism.properties");
 
     public static ServiceResponse sendRequest(String url) throws Exception {
         HttpClient client = new DefaultHttpClient();
-
         HttpRequestBase request;
-
         if ((Thread.currentThread().getStackTrace()[2].getMethodName().contains("delete"))) {
             request = new HttpDelete();
         } else if (
@@ -158,15 +108,10 @@ public class Util {
             request = new HttpGet();
         }
 
-
         request.setHeader("Remote-User", System.getProperty("user.name"));
-
         logger.info("hitting the url: " + url);
-
         request.setURI(new URI(url));
-
         HttpResponse response = client.execute(request);
-        //logger.info("http response: "+ response);
 
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
@@ -184,22 +129,17 @@ public class Util {
                 "The web service response status is " + response.getStatusLine().getStatusCode());
         logger.info("The web service response is: " + string_response.toString() + "\n");
         System.out.println("The web service response is: " + string_response.toString() + "\n");
-        //return string_response.toString();
         return new ServiceResponse(string_response.toString(),
                 response.getStatusLine().getStatusCode());
     }
 
     public static ServiceResponse sendRequest(String url, String data) throws Exception {
 
-
         HttpClient client = new DefaultHttpClient();
-
         HttpPost post = new HttpPost(url);
-
         post.setHeader("Content-Type", "text/xml");
         post.setHeader("Remote-User", System.getProperty("user.name"));
         post.setEntity(new StringEntity(data));
-
         System.out.println("hitting the URL: " + url);
 
         long start_time = System.currentTimeMillis();
@@ -214,15 +154,12 @@ public class Util {
                 new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
         String line;
-
         String string_response = "";
-
         while ((line = reader.readLine()) != null) {
             string_response = string_response + line;
         }
 
         System.out.println("The web service response is " + string_response + "\n");
-
 
         return new ServiceResponse(string_response, response.getStatusLine().getStatusCode());
     }
@@ -230,82 +167,9 @@ public class Util {
     public static String getExpectedErrorMessage(String filename) throws Exception {
 
         Properties properties = new Properties();
-
         properties.load(Util.class.getResourceAsStream("/" + "errorMapping.properties"));
-
-
         return properties.getProperty(filename);
     }
-
-
-    /*public static Object[][] getDataFromFolder(String folderPath, String methodName)
-    throws Exception {
-
-        File[] files = Util.getFiles(folderPath);
-
-        List<Object[]> testList = new ArrayList<Object[]>();
-        Object[][] testData = new Object[files.length][3];
-
-
-        for (int i = 0; i < files.length; i++) {
-
-            if (files[i].getName().contains("svn") || files[i].getName().contains(".DS") ||
-                    files[i].getName() == null) {
-                continue;
-            }
-
-            testData[i][0] = fileToString(files[i]);
-
-            if (methodName.contains("Invalid") || (methodName.contains("InValid"))) {
-                testData[i][1] = APIResult.Status.FAILED;
-            } else {
-                testData[i][1] = APIResult.Status.SUCCEEDED;
-            }
-
-            testData[i][2] = files[i].getName();
-            testList.add(testData[i]);
-        }
-        return testList.toArray(new Object[testList.size()][3]);
-
-    }*/
-
-    /*public static Object[][] getDataFromFolder(String folderPath, String methodName,
-                                               int numberOfFiles)
-    throws Exception {
-
-
-        File[] files = Util.getFiles(folderPath);
-
-        List<Object[]> testList = new ArrayList<Object[]>();
-        Object[][] testData = new Object[files.length][3];
-
-
-        for (int i = 0; i < numberOfFiles; i++) {
-
-            if (files[i].getName().contains("svn") || files[i].getName().contains(".DS") ||
-                    files[i].getName() == null) {
-                numberOfFiles++;
-                continue;
-            }
-
-
-            testData[i][0] = fileToString(files[i]);
-
-            if (methodName.contains("Invalid") || (methodName.contains("inValid"))) {
-                testData[i][1] = APIResult.Status.FAILED;
-            } else {
-                testData[i][1] = APIResult.Status.SUCCEEDED;
-            }
-
-            testData[i][2] = files[i].getName();
-
-            testList.add(testData[i]);
-        }
-
-        return testList.toArray(new Object[testList.size()][3]);
-
-
-    }*/
 
     public static File[] getFiles(String directoryPath) throws Exception {
         if (directoryPath.contains("/test-classes"))
@@ -336,13 +200,9 @@ public class Util {
     }
 
     public static String getProcessName(String data) throws Exception {
-        JAXBContext jc = JAXBContext
-                .newInstance(org.apache.falcon.regression.core.generated.process.Process.class);
-
+        JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
-
         Process processElement = (Process) u.unmarshal((new StringReader(data)));
-
         return processElement.getName();
     }
 
@@ -353,33 +213,23 @@ public class Util {
     private static boolean isXML(String data) throws Exception {
 
         if (data != null && data.trim().length() > 0) {
-
             if (data.trim().startsWith("<")) {
                 return true; //find a better way of validation
             }
-
         }
 
         return false;
-
     }
 
     public static APIResult parseResponse(ServiceResponse response) throws Exception {
 
-
         if (!isXML(response.getMessage())) {
-
-
             return new APIResult(APIResult.Status.FAILED, response.getMessage(), "somerandomstring",
                     response.getCode());
-
         }
 
-
         JAXBContext jc = JAXBContext.newInstance(APIResult.class);
-
         Unmarshaller u = jc.createUnmarshaller();
-
         APIResult temp;
         if (response.getMessage().contains("requestId")) {
             temp = (APIResult) u
@@ -397,10 +247,7 @@ public class Util {
             }
         }
 
-
         return temp;
-
-
     }
 
     public static ArrayList<String> getProcessStoreInfo(IEntityManagerHelper helper)
@@ -497,9 +344,7 @@ public class Util {
         while (true) {
 
             while ((line = r.readLine()) != null) {
-                //logger.info(line);
                 data.add(line);
-
             }
             if (channel.isClosed()) {
 
@@ -530,13 +375,10 @@ public class Util {
     }
 
     public static String readClusterName(String data) throws Exception {
-        JAXBContext jc = JAXBContext
-                .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
 
-        org.apache.falcon.regression.core.generated.cluster.Cluster clusterElement =
-                (org.apache.falcon.regression.core.generated.cluster.Cluster) u
-                        .unmarshal(new StringReader(data));
+        Cluster clusterElement = (Cluster) u.unmarshal(new StringReader(data));
 
         return clusterElement.getName();
     }
@@ -552,88 +394,52 @@ public class Util {
     }
 
     public static String generateUniqueProcessEntity(String data) throws Exception {
+
         JAXBContext jc = JAXBContext.newInstance(Process.class);
-
         Unmarshaller u = jc.createUnmarshaller();
-
         Process processElement = (Process) u.unmarshal((new StringReader(data)));
-
         processElement.setName(processElement.getName() + "-" + UUID.randomUUID());
-
-        //lets marshall it back and return 
         java.io.StringWriter sw = new StringWriter();
-
         Marshaller marshaller = jc.createMarshaller();
-        //marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         marshaller.marshal(processElement, sw);
 
         return sw.toString();
 
     }
 
-    /*public static String setProcessName(String data, String name) throws Exception {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
 
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
-
-        processElement.setName(name);
-
-        //lets marshall it back and return 
-        java.io.StringWriter sw = new StringWriter();
-
-        Marshaller marshaller = jc.createMarshaller();
-        //marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-
-        return sw.toString();
-
-    }*/
 
     public static String generateUniqueClusterEntity(String data) throws Exception {
-        JAXBContext jc = JAXBContext
-                .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
 
+        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
-
-        org.apache.falcon.regression.core.generated.cluster.Cluster clusterElement =
-                (org.apache.falcon.regression.core.generated.cluster.Cluster) u
-                        .unmarshal((new StringReader(data)));
-
+        Cluster clusterElement = (Cluster) u.unmarshal((new StringReader(data)));
         clusterElement.setName(clusterElement.getName() + "-" + UUID.randomUUID());
 
         //lets marshall it back and return 
         java.io.StringWriter sw = new StringWriter();
-
         Marshaller marshaller = jc.createMarshaller();
-        //marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         marshaller.marshal(clusterElement, sw);
 
         return sw.toString();
     }
 
     public static String generateUniqueDataEntity(String data) throws Exception {
+
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
-
         Unmarshaller u = jc.createUnmarshaller();
-
         Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
-
         dataElement.setName(dataElement.getName() + "-" + UUID.randomUUID());
 
         return InstanceUtil.feedElementToString(dataElement);
     }
 
     public static Object[][] readBundles() throws Exception {
+
         final String FILEPATH = "bundles";
-
         List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
-
         Object[][] testData = new Object[bundleSet.size()][1];
-
         for (int i = 0; i < bundleSet.size(); i++) {
-            //bundleSet.get(i).setClusterData(getEnvClusterXML(bundleSet.get(i).getClusterData()));
             testData[i][0] = bundleSet.get(i);
         }
 
@@ -641,7 +447,7 @@ public class Util {
     }
 
     public static String getEnvClusterXML(String filename, String cluster) throws Exception {
-        org.apache.falcon.regression.core.generated.cluster.Cluster clusterObject =
+        Cluster clusterObject =
                 getClusterObject(cluster);
 
         //now read and set relevant values
@@ -657,16 +463,11 @@ public class Util {
             } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
                 iface.setEndpoint(readPropertiesFile(filename, "activemq_url"));
             }
-
         }
-
 
         //set colo name:
         clusterObject.setColo(readPropertiesFile(filename, "colo"));
-
-        JAXBContext context =
-                JAXBContext.newInstance(
-                        org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+        JAXBContext context = JAXBContext.newInstance(Cluster.class);
         Marshaller m = context.createMarshaller();
         StringWriter writer = new StringWriter();
 
@@ -679,17 +480,14 @@ public class Util {
 
         try {
             logger.info("will read from config file for env: " + System.getProperty("environment"));
-            InputStream conf_stream =
-                    Util.class.getResourceAsStream("/" + System.getProperty("environment"));
+            InputStream conf_stream = Util.class.getResourceAsStream("/" + System.getProperty("environment"));
 
             Properties properties = new Properties();
             properties.load(conf_stream);
-
             desired_property = properties.getProperty(property);
 
             conf_stream.close();
             return desired_property;
-
         } catch (Exception e) {
             logger.info(e.getStackTrace());
         }
@@ -700,18 +498,14 @@ public class Util {
         String desired_property;
 
         try {
-            //logger.info("will read from config file for env: "+System.getProperty("environment"));
-            InputStream conf_stream =
-                    Util.class.getResourceAsStream("/" + filename);
+            InputStream conf_stream = Util.class.getResourceAsStream("/" + filename);
 
             Properties properties = new Properties();
             properties.load(conf_stream);
-
             desired_property = properties.getProperty(property);
-
             conf_stream.close();
-            return desired_property;
 
+            return desired_property;
         } catch (Exception e) {
             logger.info(e.getStackTrace());
         }
@@ -727,7 +521,6 @@ public class Util {
         Object[][] testData = new Object[bundleSet.size()][1];
 
         for (int i = 0; i < bundleSet.size(); i++) {
-            //bundleSet.get(i).setClusterData(getEnvClusterXML(bundleSet.get(i).getClusterData()));
             testData[i][0] = bundleSet.get(i);
         }
 
@@ -742,7 +535,6 @@ public class Util {
         Object[][] testData = new Object[bundleSet.size()][1];
 
         for (int i = 0; i < bundleSet.size(); i++) {
-            //bundleSet.get(i).setClusterData(getEnvClusterXML(bundleSet.get(i).getClusterData()));
             testData[i][0] = bundleSet.get(i);
         }
 
@@ -756,6 +548,7 @@ public class Util {
         return bundleSet.toArray(new Bundle[bundleSet.size()]);
     }
 
+    @Deprecated
     public static ArrayList<String> getOozieJobStatus(PrismHelper coloHelper, String processName)
     throws Exception {
 
@@ -797,41 +590,32 @@ public class Util {
 
     }
 
-/*
-    public static ArrayList<String> getOozieJobStatus(String processName) throws Exception {
-
-        logger.info(OOZIE_LOCATION + "/oozie jobs -oozie " + OOZIE_URL +
-                "  -jobtype bundle -localtime -filter \"status=RUNNING;name=FALCON_PROCESS_" +
-                processName +
-                "\" | tail -2 | head -1");
-
-        String expectedState = "RUNNING";
-        String statusCommand = OOZIE_LOCATION + "/oozie jobs -oozie " + OOZIE_URL +
-                "  -jobtype bundle -localtime -filter \"status=RUNNING;name=FALCON_PROCESS_" +
-                processName +
-                "\" | tail -2 | head -1";
-
-        ArrayList<String> jobList = new ArrayList<String>();
-
+    public static boolean verifyOozieJobStatus(OozieClient client, String processName,
+                                               ENTITY_TYPE entityType, Job.Status expectedStatus)
+            throws OozieClientException, InterruptedException {
         for (int seconds = 0; seconds < 20; seconds++) {
-            jobList = runRemoteScript(HOST_NAME, USER_NAME, PASSWORD, statusCommand, IDENTITY_FILE);
-
-            if (jobList.get(0).contains(expectedState)) {
-                logger.info(jobList.get(0));
-                break;
-            } else {
-                Thread.sleep(1000);
+            Job.Status status = getOozieJobStatus(client, processName, entityType);
+            logger.debug("Current status: " + status);
+            if (status == expectedStatus) {
+                return true;
             }
-
+            TimeUnit.SECONDS.sleep(1);
         }
-
-        logger.info(jobList.get(0));
-        return jobList;
-
-
+        return false;
     }
-*/
 
+    public static Job.Status getOozieJobStatus(OozieClient client, String processName, ENTITY_TYPE entityType)
+            throws OozieClientException, InterruptedException {
+        String filter = String.format("name=FALCON_%s_%s", entityType, processName);
+        List<Job.Status> statuses = OozieUtil.getBundleStatuses(client, filter, 0, 10);
+        if (statuses.isEmpty()) {
+            return null;
+        } else {
+            return statuses.get(0);
+        }
+    }
+
+    @Deprecated
     public static ArrayList<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
                                                       String expectedState)
     throws Exception {
@@ -846,7 +630,6 @@ public class Util {
 
             statusCommand += "status=" + expectedState + ";";
         }
-
 
         statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
         logger.info(statusCommand);
@@ -871,6 +654,7 @@ public class Util {
         return jobList;
     }
 
+    @Deprecated
     public static ArrayList<String> getOozieJobStatus(String processName, String expectedState,
                                                       ColoHelper colohelper)
     throws Exception {
@@ -902,48 +686,13 @@ public class Util {
             } else {
                 Thread.sleep(1000);
             }
-
         }
 
         logger.info(jobList.get(0));
         return jobList;
     }
 
-    /*public static ArrayList<String> getOozieFeedJobStatus(String processName,
-    String expectedState)
-    throws Exception {
-
-        String statusCommand =
-                OOZIE_LOCATION + "/oozie jobs -oozie " + OOZIE_URL +
-                        "  -jobtype bundle -localtime -filter \"";
-
-        if (!expectedState.equals("NONE")) {
-
-            statusCommand += "status=" + expectedState + ";";
-        }
-
-
-        statusCommand += "name=FALCON_FEED_" + processName + "\" | tail -2 | head -1";
-        logger.info(statusCommand);
-
-        ArrayList<String> jobList = new ArrayList<String>();
-
-        for (int seconds = 0; seconds < 20; seconds++) {
-            jobList = runRemoteScript(HOST_NAME, USER_NAME, PASSWORD, statusCommand, IDENTITY_FILE);
-
-            if ((expectedState.equalsIgnoreCase("NONE")) ||
-                    !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
-                break;
-            } else {
-                Thread.sleep(1000);
-            }
-
-        }
-
-        logger.info(jobList.get(0));
-        return jobList;
-    }*/
-
+    @Deprecated
     public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState,
                                                           PrismHelper coloHelper)
     throws Exception {
@@ -985,21 +734,18 @@ public class Util {
         Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        //Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
 
     public static void assertSucceeded(ServiceResponse response, String message) throws Exception {
         Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.SUCCEEDED,
                 message);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200, message);
-        //Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
 
     public static void assertPartialSucceeded(ServiceResponse response) throws Exception {
         Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.PARTIAL);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        //Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
 
     public static void assertFailed(ServiceResponse response) throws Exception {
@@ -1008,7 +754,6 @@ public class Util {
 
         Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-        //Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
 
     public static void assertFailed(ServiceResponse response, String message) throws Exception {
@@ -1033,12 +778,9 @@ public class Util {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
 
         Unmarshaller u = jc.createUnmarshaller();
-
         Feed dataElement = (Feed) u.unmarshal((new StringReader(bundle.dataSets.get(0))));
-
         if (!dataElement.getName().contains("raaw-logs16")) {
             dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
-
         }
 
         return dataElement.getLocations().getLocation().get(0).getPath();
@@ -1119,68 +861,6 @@ public class Util {
 
     }
 
-    /*public static String CreateFeedWithNewPartitions(String feed, String... partitions)
-    throws Exception {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Unmarshaller unmarshaller = feedContext.createUnmarshaller();
-        Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feed));
-
-        Partitions partitionSet = new Partitions();
-
-        if (null != feedObject.getPartitions() &&
-                null != feedObject.getPartitions().getPartition()) {
-            for (Partition partition : feedObject.getPartitions().getPartition()) {
-                partitionSet.addPartition(partition);
-            }
-        }
-
-        for (String partition : partitions) {
-            Partition feedPartition = new Partition();
-            feedPartition.setName(partition);
-            partitionSet.addPartition(feedPartition);
-        }
-
-        //add partition to the feed
-        feedObject.setPartitions(partitionSet);
-
-        //now assign the new feedobject to the existing feed :P
-        Marshaller marshaller = feedContext.createMarshaller();
-        StringWriter feeder = new StringWriter();
-        marshaller.marshal(feedObject, feeder);
-        return feeder.toString();
-    }*/
-
-    /*public static String InsertPartitionInProcess(String process, String feedName,
-                                                  String... partitions)
-    throws Exception {
-        JAXBContext processContext = JAXBContext.newInstance(Process.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(process));
-
-        for (String partition : partitions) {
-
-            for (Input input : processObject.getInputs().getInput()) {
-                if (input.getFeed().equalsIgnoreCase(feedName)) {
-                    //insert the new partition here
-                    if (null != input.getPartition()) {
-                        input.setPartition(input.getPartition() + "," + partition);
-                    } else {
-                        input.setPartition(partition);
-                    }
-                    break;
-                }
-            }
-
-
-        }
-
-        //now assign the new feedobject to the existing feed :P
-        Marshaller marshaller = processContext.createMarshaller();
-        StringWriter feeder = new StringWriter();
-        marshaller.marshal(processObject, feeder);
-        return feeder.toString();
-    }*/
-
     public static ArrayList<String> getHadoopData(PrismHelper prismHelper, String feed)
     throws Exception {
 
@@ -1244,7 +924,6 @@ public class Util {
     throws Exception {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
-
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
         //insert retentionclause
@@ -1257,9 +936,7 @@ public class Util {
         }
 
         StringWriter writer = new StringWriter();
-
         Marshaller m = context.createMarshaller();
-
         m.marshal(feedObject, writer);
 
         return writer.toString();
@@ -1277,22 +954,10 @@ public class Util {
                         "hdfs://" + prismHelper.getClusterHelper().getHadoopURL()
                         + "/retention/testFolders/",
                 prismHelper.getClusterHelper().getIdentityFile());
-        //createHDFSFolders(HOST_NAME, USER_NAME, PASSWORD, folderList);
         createHDFSFolders(prismHelper, folderList);
 
 
     }
-
-    /*public static void replenishData(List<String> folderList) throws Exception {
-
-        //purge data first
-        runRemoteScript(HOST_NAME, USER_NAME, PASSWORD, HADOOP_LOCATION + "  dfs -rmr" +
-                "  hdfs://" + HADOOP_URL + "/retention/testFolders/", IDENTITY_FILE);
-        //createHDFSFolders(HOST_NAME, USER_NAME, PASSWORD, folderList);
-        createHDFSFolders(folderList);
-
-
-    }*/
 
     public static ArrayList<String> convertDatesToFolders(List<String> dateList, int skipInterval)
     throws Exception {
@@ -1362,19 +1027,14 @@ public class Util {
         }
 
         if (locationType.equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}")) {
-            //formatter=DateTimeFormat.forPattern("yyyy-MM");
             appender = "/01/00/01";
         } else if (locationType
                 .equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}/${DAY}")) {
-            //formatter=DateTimeFormat.forPattern("yyyy-MM-dd");
-            //appender="-00-01";
             appender = "/01"; //because we already take care of that!
         } else if (locationType
                 .equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
-            //formatter=DateTimeFormat.forPattern("yyyy-MM-dd-HH");
             appender = "/01";
         } else if (locationType.equalsIgnoreCase("/retention/testFolders/${YEAR}")) {
-            //formatter=DateTimeFormat.forPattern("yyyy");
             appender = "/01/01/00/01";
         }
 
@@ -1393,22 +1053,14 @@ public class Util {
         } else if (interval.equalsIgnoreCase("days")) {
             startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
         } else if (interval.equalsIgnoreCase("months")) {
-            //for(int i=0;i<time;i++)
-            {
-                //startLimit=formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMonths
-                // (time));
-                startLimit = formatter
-                        .print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
-            }
+            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
+
         }
 
 
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                //				if((testDate+appender).compareTo(startLimit)>=0 &&
-                // (testDate+appender).compareTo
-                // (endLimit)<=0)
                 if ((testDate + appender).compareTo(startLimit) >= 0) {
                     finalData.add(testDate);
                 }
@@ -1423,9 +1075,7 @@ public class Util {
 
     public static List<String> getDailyDatesOnEitherSide(int interval, int skip) throws Exception {
 
-        //get today's date
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-
 
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
@@ -1443,16 +1093,12 @@ public class Util {
             dates.add(formatter.print(today.plusDays(i)));
         }
 
-        //logger.info("size of dates="+dates.size());
-        //logger.info(dates.get(0));
         return dates;
     }
 
     public static List<String> getMonthlyDatesOnEitherSide(int interval, int skip)
     throws Exception {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM");
-        //get today's date
-
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
@@ -1469,8 +1115,6 @@ public class Util {
             dates.add(formatter.print(new LocalDate(today.plusMonths(i))));
         }
 
-        //logger.info("size of dates="+dates.size());
-        //logger.info(dates.get(0));
         return dates;
     }
 
@@ -1478,8 +1122,6 @@ public class Util {
                                                           int minuteSkip)
     throws Exception {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        //get today's date
-
         logger.info("generating data between " + formatter.print(startDate) + " and " +
                 formatter.print(endDate));
 
@@ -1500,12 +1142,9 @@ public class Util {
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip)
     throws Exception {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        //get today's date
-
         if (minuteSkip == 0) {
             minuteSkip = 1;
         }
-
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
@@ -1522,17 +1161,12 @@ public class Util {
             dates.add(formatter.print(today.plusMinutes(i)));
         }
 
-        //logger.info("size of dates="+dates.size());
-        //logger.info(dates.get(0));
         return dates;
     }
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int daySkip, int minuteSkip)
     throws Exception {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
-        //get today's date
-
-
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
@@ -1549,15 +1183,11 @@ public class Util {
             dates.add(formatter.print(today.plusDays(i)));
         }
 
-        //logger.info("size of dates="+dates.size());
-        //logger.info(dates.get(0));
         return addMinutesToCreatedFolders(dates, minuteSkip);
     }
 
     public static List<String> getYearlyDatesOnEitherSide(int interval, int skip) throws Exception {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
-        //get today's date
-
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
@@ -1574,8 +1204,6 @@ public class Util {
             dates.add(formatter.print(new LocalDate(today.plusYears(i))));
         }
 
-        //logger.info("size of dates="+dates.size());
-        //logger.info(dates.get(0));
         return dates;
     }
 
@@ -1602,91 +1230,11 @@ public class Util {
         }
     }
 
-
-    //writing command for creating folders in bulk
-    /*private static void createHDFSFolders(String host_name, String user_name, String password,
-                                          List<String> folderList)
-            throws Exception {
-        JSch jsch = new JSch();
-        Session session = jsch.getSession(user_name, host_name, 22);
-        //logger.info("Done");
-
-        session.setUserInfo(new HardcodedUserInfo(password));
-        Properties config = new Properties();
-        config.setProperty("StrictHostKeyChecking", "no");
-        session.setConfig(config);
-
-        session.connect();
-
-        Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
-
-        folderList.add("somethingRandom");
-
-        for (String folder : folderList) {
-
-            ChannelExec channel = (ChannelExec) session.openChannel("exec");
-
-
-            logger.info("executing the command..." + HADOOP_LOCATION + "  dfs -mkdir  hdfs://" +
-                    HADOOP_URL +
-                    "/retention/testFolders/" + folder);
-            channel.setCommand(
-                    HADOOP_LOCATION + "  dfs -mkdir  hdfs://" + HADOOP_URL +
-                            "/retention/testFolders/" + folder);
-            channel.connect();
-            Assert.assertTrue(channel.isConnected(), "The channel was not connected correctly!");
-
-
-            //Assert.assertTrue("The channel did not connect correctly for setting the path!",
-            // channel.isConnected());
-
-            //logger.info("now reading the line....");
-
-            //now to read output
-            ArrayList<String> data = new ArrayList<String>();
-
-            InputStream in = channel.getInputStream();
-            //InputStream in =channel.getErrStream();
-
-            Assert.assertTrue(channel.isConnected(), "The channel was not connected correctly!");
-
-            BufferedReader r = new BufferedReader(new InputStreamReader(in));
-
-
-            String line;
-            while (true) {
-
-                while ((line = r.readLine()) != null) {
-                    //logger.info(line);
-                    data.add(line);
-
-                }
-                if (channel.isClosed()) {
-
-                    break;
-                }
-            }
-
-            in.close();
-            r.close();
-
-
-            channel.disconnect();
-        }
-
-        session.disconnect();
-
-    }*/
-
     public static String readQueueLocationFromCluster(String cluster) throws Exception {
-        JAXBContext clusterContext =
-                JAXBContext.newInstance(
-                        org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+        JAXBContext clusterContext = JAXBContext.newInstance(Cluster.class);
         Unmarshaller um = clusterContext.createUnmarshaller();
 
-        org.apache.falcon.regression.core.generated.cluster.Cluster clusterObject =
-                (org.apache.falcon.regression.core.generated.cluster.Cluster) um
-                        .unmarshal(new StringReader(cluster));
+        Cluster clusterObject = (Cluster) um.unmarshal(new StringReader(cluster));
 
         for (Interface iface : clusterObject.getInterfaces().getInterface()) {
             if (iface.getType().equals(Interfacetype.MESSAGING)) {
@@ -1697,37 +1245,13 @@ public class Util {
         return "tcp://mk-qa-63:61616?daemon=true";
     }
 
-    /*public static void createHDFSFolders(List<String> folderList) throws Exception {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + HADOOP_URL + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-        folderList.add("somethingRandom");
-
-        for (final String folder : folderList) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws Exception {
-                    logger.info("/retention/testFolders/" + folder);
-                    return fs.mkdirs(new Path("/retention/testFolders/" + folder));
-                }
-            });
-        }
-    }*/
-
     public static String setFeedProperty(String feed, String propertyName, String propertyValue)
     throws Exception {
 
         Feed feedObject = InstanceUtil.getFeedElement(feed);
 
         boolean found = false;
-        for (org.apache.falcon.regression.core.generated.feed.Property prop : feedObject
-                .getProperties()
-                .getProperty()) {
+        for (Property prop : feedObject.getProperties().getProperty()) {
             //check if it is present
             if (prop.getName().equalsIgnoreCase(propertyName)) {
                 prop.setValue(propertyValue);
@@ -1737,8 +1261,7 @@ public class Util {
         }
 
         if (!found) {
-            org.apache.falcon.regression.core.generated.feed.Property property =
-                    new org.apache.falcon.regression.core.generated.feed.Property();
+            Property property = new Property();
             property.setName(propertyName);
             property.setValue(propertyValue);
             feedObject.getProperties().getProperty().add(property);
@@ -1749,62 +1272,25 @@ public class Util {
 
     }
 
-    /*public static String setProcessQueueName(String process, String queueName) throws Exception {
-        JAXBContext context = JAXBContext.newInstance(Process.class);
-
-        Unmarshaller um = context.createUnmarshaller();
-
-        Process processObject = (Process) um.unmarshal(new StringReader(process));
-
-
-        boolean found = false;
-        for (Property prop : processObject.getProperties().getProperty()) {
-            //check if it is present
-            if (prop.getName().equalsIgnoreCase("queueName")) {
-                prop.setValue(queueName);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            Property property = new Property();
-            property.setName("queueName");
-            property.setValue(queueName);
-            processObject.getProperties().getProperty().add(property);
-        }
-
-        return InstanceUtil.processToString(processObject);
-    }*/
-
     public static void validateDataFromFeedQueue(PrismHelper prismHelper, String feedName,
                                                  List<HashMap<String, String>> queueData,
                                                  List<String> expectedOutput,
                                                  List<String> input)
     throws Exception {
 
-        //logger.info("deleted data which has been received from messaging queue:");
-
-        //            for(String data:queueData)
-        //            {
-        //                logger.info(data);
-        //            }
-
-
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
         ArrayList<String> jobIds = getCoordinatorJobs(prismHelper,
-                getCoordID(getOozieFeedJobStatus(feedName, "NONE", prismHelper).get(0)));
+                Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                        feedName, ENTITY_TYPE.FEED).get(0));
 
         //create queuedata folderList:
         ArrayList<String> deletedFolders = new ArrayList<String>();
 
-        //for(String data:queueData)
         for (HashMap<String, String> data : queueData) {
             if (data != null) {
                 Assert.assertEquals(data.get("entityName"), feedName);
-                //Assert.assertEquals(data.split("\\$")[1],feedName);
                 String[] splitData = data.get("feedInstancePaths").split("testFolders/");
                 deletedFolders.add(splitData[splitData.length - 1]);
                 Assert.assertEquals(data.get("operation"), "DELETE");
@@ -1830,47 +1316,13 @@ public class Util {
                         "not same!");
     }
 
-    /*public static String setProcessProperty(String process, String propertyName,
-                                            String propertyValue)
-    throws Exception {
-
-        Process processObject = InstanceUtil.getProcessElement(process);
-
-        boolean found = false;
-        for (Property prop : processObject.getProperties().getProperty()) {
-            //check if it is present
-            if (prop.getName().equalsIgnoreCase(propertyName)) {
-                prop.setValue(propertyValue);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            Property property = new Property();
-            property.setName(propertyName);
-            property.setValue(propertyValue);
-            processObject.getProperties().getProperty().add(property);
-        }
-
-
-        return InstanceUtil.processToString(processObject);
-
-    }*/
-
     @SuppressWarnings("deprecation")
     public static void CommonDataRetentionWorkflow(PrismHelper prismHelper, Bundle bundle, int time,
                                                    String interval)
     throws Exception {
         //get Data created in the cluster
-        List<String> initialData =
-                Util.getHadoopData(prismHelper, Util.getInputFeedFromBundle(bundle));
+        List<String> initialData = Util.getHadoopData(prismHelper, Util.getInputFeedFromBundle(bundle));
 
-
-        //IEntityManagerHelper feedHelper=EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
-        //schedule feed
-        //feedHelper.schedule(bundle.getProcessHelper().getHostname(),
-        // Util.getInputFeedFromBundle(bundle));
         prismHelper.getFeedHelper()
                 .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
         logger.info(prismHelper.getClusterHelper().getActiveMQ());
@@ -1881,14 +1333,9 @@ public class Util {
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
+        String bundleId = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
-        String bundleId = Util.getCoordID(
-                Util.getOozieFeedJobStatus(
-                        Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), "NONE",
-                        prismHelper).get(0));
-
-
-        //ArrayList<String> workflows=Util.getCoordinatorJobs(bundleId);
         ArrayList<String> workflows = getFeedRetentionJobs(prismHelper, bundleId);
         logger.info("got a workflow list of length:" + workflows.size());
         Collections.sort(workflows);
@@ -1907,11 +1354,6 @@ public class Util {
             }
         }
 
-        //getstatus of the workflow
-
-        //Thread.sleep(60000);
-
-        //check the queue:
         consumer.stop();
 
         logger.info("deleted data which has been received from messaging queue:");
@@ -1971,47 +1413,6 @@ public class Util {
 
         return null;
     }
-
-    /*public static ArrayList<String> getOutputFeedsFromBundle(Bundle bundle) throws Exception {
-        ArrayList<String> feedList = new ArrayList<String>();
-
-        String processData = bundle.getProcessData();
-
-        JAXBContext processContext = JAXBContext.newInstance(Process.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
-
-        for (Output output : processObject.getOutputs().getOutput()) {
-            for (String feed : bundle.getDataSets()) {
-                if (Util.readDatasetName(feed).equalsIgnoreCase(output.getFeed())) {
-                    feedList.add(feed);
-                }
-            }
-        }
-        return feedList;
-
-    }*/
-
-    /*public static HashMap<String, String> getOutputFeedMapFromBundle(Bundle bundle)
-    throws Exception {
-        HashMap<String, String> feedMap = new HashMap<String, String>();
-
-        String processData = bundle.getProcessData();
-
-        JAXBContext processContext = JAXBContext.newInstance(Process.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
-
-        for (Output output : processObject.getOutputs().getOutput()) {
-            for (String feed : bundle.getDataSets()) {
-                if (Util.readDatasetName(feed).equalsIgnoreCase(output.getFeed())) {
-                    feedMap.put(output.getName(), getFeedPath(feed));
-                }
-            }
-        }
-        return feedMap;
-
-    }*/
 
     private static BufferedReader getErrorReader(java.lang.Process process) throws Exception {
         return new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -2113,31 +1514,6 @@ public class Util {
         logger.info("created all late data folders.....");
     }
 
-    /*public static void createLateDataFolders(List<String> folderList) throws Exception {
-        logger.info("creating late data folders.....");
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + HADOOP_URL + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-        folderList.add("somethingRandom");
-
-        for (final String folder : folderList) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws Exception {
-                    return fs.mkdirs(new Path("/lateDataTest/testFolders/" + folder));
-
-                }
-            });
-        }
-
-        logger.info("created all late data folders.....");
-    }*/
-
     public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
                                          String directory)
     throws Exception {
@@ -2160,11 +1536,9 @@ public class Util {
 
                         @Override
                         public Boolean run() throws Exception {
-
                             fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
                                     new Path("/lateDataTest/testFolders/" + folder));
                             return true;
-
                         }
                     });
                 }
@@ -2174,43 +1548,7 @@ public class Util {
         logger.info("copied data into latedata folders....");
     }
 
-    /*public static void copyDataToFolders(List<String> folderList, String directory,
-                                         final String prefix)
-    throws Exception {
-        logger.info("copying data into folders....");
-
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + HADOOP_URL);
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-
-        for (final String folder : folderList) {
-            File[] dirFiles = new File(directory).listFiles();
-            assert dirFiles!=null;
-            for (final File file : dirFiles) {
-                if (!file.isDirectory()) {
-                    user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                        @Override
-                        public Boolean run() throws Exception {
-
-                            fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                    new Path(prefix + folder));
-                            return true;
-
-                        }
-                    });
-                }
-            }
-        }
-
-        logger.info("copied data into latedata folders....");
-    }*/
-
-    public static DateTime getSystemDate(PrismHelper prismHelper) throws Exception {
+     public static DateTime getSystemDate(PrismHelper prismHelper) throws Exception {
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
 
@@ -2222,6 +1560,7 @@ public class Util {
 
     }
 
+    @Deprecated
     public static ArrayList<String> getBundles(PrismHelper coloHelper, String entityName,
                                                String entityType)
     throws Exception {
@@ -2247,22 +1586,11 @@ public class Util {
         }
     }
 
-
-    /*public static ArrayList<String> getBundles(String processName) throws Exception {
-        return runRemoteScript(HOST_NAME, USER_NAME, PASSWORD,
-                OOZIE_LOCATION + "/oozie jobs -oozie " + OOZIE_URL + "  -jobtype bundle " +
-                        "-localtime -filter name=FALCON_PROCESS_" + processName + "|grep 000|awk " +
-                        "'{print $1}'", IDENTITY_FILE);
-    }*/
-
-    /*public static ArrayList<String> getBundles(String processName, String entityType)
-    throws Exception {
-
-        return runRemoteScript(HOST_NAME, USER_NAME, PASSWORD,
-                OOZIE_LOCATION + "/oozie jobs -oozie " + OOZIE_URL + "  -jobtype bundle " +
-                        "-localtime -filter name=FALCON_PROCESS_" + processName + "|grep 000|awk " +
-                        "'{print $1}'", IDENTITY_FILE);
-    }*/
+    public static List<String> getBundles(OozieClient client, String entityName, ENTITY_TYPE entityType)
+            throws OozieClientException {
+        String filter = "name=FALCON_" + entityType + "_" + entityName;
+        return OozieUtil.getBundleIds(client, filter, 0, 10);
+    }
 
     public static String setFeedPathValue(String feed, String pathValue) throws Exception {
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
@@ -2293,10 +1621,7 @@ public class Util {
         for (CoordinatorJob job : bundleJob.getCoordinators()) {
 
             if (job.getAppName().contains("DEFAULT")) {
-                //logger.info(job.getAppName());
-
                 jobInfo = oozieClient.getCoordJobInfo(job.getId());
-
                 for (CoordinatorAction action : jobInfo.getActions()) {
                     DateTime temp = new DateTime(action.getCreatedTime(), DateTimeZone.UTC);
                     logger.info(temp);
@@ -2409,49 +1734,6 @@ public class Util {
         return feedObject.getName();
     }
 
-    /*public static void injectMoreData(final String remoteLocation, String localLocation,
-                                      final String baseFolder)
-    throws Exception {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + HADOOP_URL);
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-
-        File[] files = new File(localLocation).listFiles();
-        assert files != null;
-        for (final File file : files) {
-            if (!file.isDirectory()) {
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-                    public Boolean run() throws Exception {
-
-                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                new Path(baseFolder + "/" + remoteLocation + "/"));
-                        return true;
-
-                    }
-                });
-            }
-        }
-
-    }*/
-
-    /*public static void lateDataReplenish(int interval, int minuteSkip,
-                                         String folderPrefix)
-    throws Exception {
-        List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
-        Util.print("folderData: " + folderPaths.toString());
-
-        Util.createLateDataFolders(folderPaths, folderPrefix);
-        Util.copyDataToFolders(folderPrefix, folderPaths,
-                "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS",
-                "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
-    }*/
-
     public static void lateDataReplenish(PrismHelper prismHelper, int interval,
                                          int minuteSkip,
                                          String folderPrefix)
@@ -2480,35 +1762,12 @@ public class Util {
 
                 @Override
                 public Boolean run() throws Exception {
-                    //Util.print("creatingHDFSPath: "+FolderPrefix+folder);
                     return fs.mkdirs(new Path(FolderPrefix + folder));
 
                 }
             });
         }
     }
-
-    /*public static void createLateDataFolders(List<String> folderList, final String FolderPrefix)
-    throws Exception {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + HADOOP_URL + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-        for (final String folder : folderList) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws Exception {
-                    //Util.print("creatingHDFSPath: "+FolderPrefix+folder);
-                    return fs.mkdirs(new Path(FolderPrefix + folder));
-
-                }
-            });
-        }
-    }*/
 
     public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
                                          List<String> folderList,
@@ -2558,33 +1817,6 @@ public class Util {
             }
         }
     }
-
-    /*public static void copyDataToFolders(final String folderPrefix, List<String> folderList,
-                                         String... fileLocations)
-    throws Exception {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + HADOOP_URL);
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-
-        for (final String folder : folderList) {
-            for (final String file : fileLocations) {
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-                    public Boolean run() throws Exception {
-                        //logger.info("copying  "+file+" to "+folderPrefix+folder);
-                        fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
-                        return true;
-
-                    }
-                });
-            }
-        }
-    }*/
 
     public static String getFeedName(String feedData) throws Exception {
         JAXBContext processContext = JAXBContext.newInstance(Feed.class);
@@ -2646,73 +1878,14 @@ public class Util {
                 //keep waiting till eternity. this can be dangerous :|
                 actionInfo = oozieClient.getCoordActionInfo(action.getId());
             }
-            //if(actionInfo.getStatus().equals(CoordinatorAction.Status.SUCCEEDED))
-            {
-
                 jobIds.add(action.getId());
-            }
+
         }
 
 
         return jobIds;
 
     }
-
-
-    /*public static String setProcessOutputFeed(String process,
-                                              String outputFeed) throws Exception {
-        JAXBContext processContext = JAXBContext.newInstance(Process.class);
-        Process processObject =
-                (Process) processContext.createUnmarshaller().unmarshal(new StringReader(process));
-
-        //set the value
-        processObject.getOutputs().getOutput().get(0).setFeed(outputFeed);
-        StringWriter processWriter = new StringWriter();
-        processContext.createMarshaller().marshal(processObject, processWriter);
-        return processWriter.toString();
-    }*/
-
-
-    /*public static boolean allRelevantWorkflowsAreOver(String insertionFolder, String... bundleIds)
-    throws Exception {
-        boolean finished = true;
-
-        XOozieClient oozieClient = new XOozieClient(OOZIE_URL);
-
-        for (String bundleId : bundleIds) {
-
-            BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
-
-            DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-            List<String> actualNominalTimes = new ArrayList<String>();
-
-            for (CoordinatorJob job : bundleJob.getCoordinators()) {
-                if (job.getAppName().contains("DEFAULT")) {
-
-                    CoordinatorJob coordJob = oozieClient.getCoordJobInfo(job.getId());
-
-
-                    for (CoordinatorAction action : coordJob.getActions()) {
-                        CoordinatorAction actionMan =
-                                oozieClient.getCoordActionInfo(action.getId());
-
-                        if (actionMan.getRunConf().contains(insertionFolder)) {
-                            if ((actionMan.getStatus()
-                                    .equals(CoordinatorAction.Status.SUCCEEDED)) ||
-                                    actionMan.getStatus().equals(CoordinatorAction.Status.KILLED) ||
-                                    actionMan.getStatus().equals(CoordinatorAction.Status.FAILED)) {
-                                finished &= true;
-                            } else {
-                                finished &= false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return finished;
-    }*/
 
     public static void verifyFeedDeletion(String feed, PrismHelper... prismHelper)
     throws Exception {
@@ -2736,67 +1909,6 @@ public class Util {
 
     }
 
-    /*public static void verifyBundleDeletion(Bundle bundle, PrismHelper... prismHelper)
-    throws Exception {
-
-        for (PrismHelper helper : prismHelper) {
-            ArrayList<String> processList = runRemoteScript(helper.getFeedHelper()
-                    .getQaHost(), helper.getFeedHelper().getUsername(),
-                    helper.getFeedHelper().getPassword(), helper.getFeedHelper()
-                    .getHadoopLocation() + "  fs -ls hdfs://" + helper.getFeedHelper()
-                    .getHadoopURL() + "/projects/ivory/staging/ivory/workflows/process | " +
-                    "awk '{print $8}'", helper.getFeedHelper().getIdentityFile());
-
-            //make sure process bundle is not there
-            Assert.assertFalse(processList.contains(
-                    "/projects/ivory/staging/ivory/workflows/process/" +
-                            Util.readEntityName(bundle.getProcessData())),
-                    "Process " + Util.readEntityName(bundle.getProcessData()) +
-                            " did not have its bundle removed!!!!");
-
-            //make sure feed bundle is not there
-            ArrayList<String> feedList =
-                    runRemoteScript(helper.getFeedHelper().getQaHost(),
-                            helper.getFeedHelper().getUsername(),
-                            helper.getFeedHelper().getPassword(),
-                            helper.getFeedHelper().getHadoopLocation() + "  fs -ls hdfs://" +
-                                    helper.getFeedHelper().getHadoopURL() +
-                                    "/projects/ivory/staging/ivory/workflows/feed | awk '{print " +
-                                    "$8}'",
-                            helper.getFeedHelper().getIdentityFile());
-
-            for (String data : bundle.getDataSets()) {
-                Assert.assertFalse(
-                        feedList.contains("/projects/ivory/staging/ivory/workflows/feed/" +
-                                Util.readDatasetName(data)),
-                        "Feed " + Util.readDatasetName(data) +
-                                " did not have its bundle removed!!!!");
-            }
-        }
-    }*/
-
-    /*public static void verifyProcessDeletion(String process, PrismHelper... prismHelper)
-    throws Exception {
-        for (PrismHelper helper : prismHelper) {
-            ArrayList<String> processList =
-                    runRemoteScript(helper.getFeedHelper().getQaHost(),
-                            helper.getFeedHelper().getUsername(),
-                            helper.getFeedHelper().getPassword(),
-                            helper.getFeedHelper().getHadoopLocation() + "  fs -ls hdfs://" +
-                                    helper.getFeedHelper().getHadoopURL() +
-                                    "/projects/ivory/staging/ivory/workflows/process | awk " +
-                                    "'{print $8}'",
-                            helper.getFeedHelper().getIdentityFile());
-
-            //make sure process bundle is not there
-            Assert.assertFalse(processList
-                    .contains("/projects/ivory/staging/ivory/workflows/process/" +
-                            Util.readEntityName(process)),
-                    "Process " + Util.readEntityName(process) +
-                            " did not have its bundle removed!!!!");
-        }
-    }*/
-
     public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId)
     throws Exception {
         XOozieClient client = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
@@ -2810,62 +1922,7 @@ public class Util {
         return null;
     }
 
-    /*public static void waitTillCertainPercentageOfProcessIsOver(String bundleId, int percentage,
-                                                                CoordinatorAction.Status s)
-    throws Exception {
-
-        CoordinatorJob defaultCoordinator = getDefaultOozieCoord(bundleId);
-
-        while (defaultCoordinator.getStatus().equals(CoordinatorJob.Status.PREP)) {
-            defaultCoordinator = getDefaultOozieCoord(bundleId);
-        }
-
-        int totalCount = defaultCoordinator.getActions().size();
-
-        int percentageConversion = (percentage * totalCount) / 100;
-
-        while (percentageConversion > 0) {
-            Thread.sleep(30000);
-            int doneBynow = 0;
-            for (CoordinatorAction action : defaultCoordinator.getActions()) {
-                CoordinatorAction actionInfo = getOozieActionInfo(action.getId());
-                if (actionInfo.getStatus().equals(s)) {
-                    doneBynow++;
-                    if (doneBynow == percentageConversion) {
-                        return;
-                    }
-                }
-            }
-        }
-    }*/
-
-
-    /*public static CoordinatorJob getDefaultOozieCoord(String bundleId) throws Exception {
-        XOozieClient client = new XOozieClient(OOZIE_URL);
-        BundleJob bundlejob = client.getBundleJobInfo(bundleId);
-
-        for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-            if (coord.getAppName().contains("DEFAULT")) {
-                return client.getCoordJobInfo(coord.getId());
-            }
-        }
-        return null;
-    }*/
-
-    /*public static CoordinatorJob getDefaultOozieCoord(String bundleId, boolean isFeed)
-    throws Exception {
-        XOozieClient client = new XOozieClient(OOZIE_URL);
-        BundleJob bundlejob = client.getBundleJobInfo(bundleId);
-
-        for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-            if (coord.getAppName().contains("DEFAULT")) {
-                return client.getCoordJobInfo(coord.getId());
-            }
-        }
-        return null;
-    }*/
-
-    public static Object[][] readAvailabilityBUndle() throws Exception {
+     public static Object[][] readAvailabilityBUndle() throws Exception {
         final String FILEPATH = "src/test/resources/AvailabilityBundle";
 
         List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
@@ -2879,20 +1936,12 @@ public class Util {
         return testData;
     }
 
-    /*public static CoordinatorAction getOozieActionInfo(String actionId) throws Exception {
-        XOozieClient client = new XOozieClient(OOZIE_URL);
-        return client.getCoordActionInfo(actionId);
-    }*/
-
-    public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterObject(
+    public static Cluster getClusterObject(
             String clusterXML)
     throws Exception {
-        JAXBContext context =
-                JAXBContext.newInstance(
-                        org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+        JAXBContext context = JAXBContext.newInstance(Cluster.class);
         Unmarshaller um = context.createUnmarshaller();
-        return (org.apache.falcon.regression.core.generated.cluster.Cluster) um
-                .unmarshal(new StringReader(clusterXML));
+        return (Cluster) um.unmarshal(new StringReader(clusterXML));
     }
 
     public static ArrayList<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
@@ -2939,20 +1988,24 @@ public class Util {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
                 helper.getIdentityFile());
-        Thread.sleep(10000);
+        int statusCode = 0;
+        for (int tries = 20; tries > 0; tries--) {
+            try {
+                statusCode = Util.sendRequest(helper.getHostname()).getCode();
+            } catch (IOException e) {
+            } catch (URISyntaxException e) {
+            }
+            if (statusCode == 200) return;
+            TimeUnit.SECONDS.sleep(5);
+        }
+        throw new RuntimeException("Service on" + helper.getHostname() + " did not start!");
     }
 
     public static void restartService(IEntityManagerHelper helper) throws Exception {
         Util.print("restarting service for: " + helper.getQaHost());
 
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
-                helper.getPassword(), helper.getServiceStopCmd(), helper.getServiceUser(),
-                helper.getIdentityFile());
-        Thread.sleep(10000);
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
-                helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
-                helper.getIdentityFile());
-        Thread.sleep(10000);
+        shutDownService(helper);
+        startService(helper);
     }
 
     private static ArrayList<String> runRemoteScriptAsSudo(String hostName,
@@ -3050,18 +2103,7 @@ public class Util {
         return newList;
     }
 
-    /*public static void validateNumberOfWorkflowInstances(PrismHelper prismHelper,
-    int originalCount,
-                                                         String oldBundleId,
-                                                         String updatedBundleId)
-    throws Exception {
-        //first make sure sum of all parts is same
-        Assert.assertEquals(getNumberOfWorkflowInstances(prismHelper, oldBundleId) +
-                getNumberOfWorkflowInstances(prismHelper, updatedBundleId), originalCount,
-                "The total number of workflow instances dont match post update! Please check.");
-
-    }*/
-
+    @Deprecated
     public static ArrayList<String> getBundles(String entityName, String entityType,
                                                IEntityManagerHelper helper)
     throws Exception {
@@ -3117,31 +2159,6 @@ public class Util {
                         response.getStatus().toString().equals("SUCCEEDED"));
     }
 
-    /*public static int getRunIdOfSpecifiedInstance(int index, String bundleId,
-    ColoHelper coloHelper)
-    throws Exception {
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
-
-        for (CoordinatorJob job : bundleJob.getCoordinators()) {
-            if (job.getAppName().contains("DEFAULT")) {
-
-                CoordinatorJob coordJob = oozieClient.getCoordJobInfo(job.getId());
-
-                for (int i = 1; i <= coordJob.getActions().size(); i++) {
-                    if (i == index) {
-                        WorkflowJob actionInfo =
-                                oozieClient.getJobInfo(coordJob.getActions().get(i - 1).getId());
-
-                        return actionInfo.getRun();
-                    }
-                }
-            }
-        }
-
-        return -1;
-    }*/
-
     public static void assertFailed(ProcessInstancesResult response) {
         Assert.assertNotNull(response.getMessage());
         Assert.assertTrue(response.getMessage().contains("FAILED") ||
@@ -3164,13 +2181,6 @@ public class Util {
         Thread.sleep(20000);
         return false;
     }
-
-    /*public static void assertPartial(ProcessInstancesResult response) {
-        Assert.assertNotNull(response.getMessage());
-        Assert.assertTrue(
-                response.getMessage().contains("PARTIAL") ||
-                        response.getStatus().toString().equals("PARTIAL"));
-    }*/
 
     public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
@@ -3220,7 +2230,6 @@ public class Util {
         Object[][] testData = new Object[bundleSet.size()][1];
 
         for (int i = 0; i < bundleSet.size(); i++) {
-            //bundleSet.get(i).setClusterData(getEnvClusterXML(bundleSet.get(i).getClusterData()));
             testData[i][0] = bundleSet.get(i);
         }
 
@@ -3253,6 +2262,7 @@ public class Util {
         return testData;
     }
 
+    @Deprecated
     public static ArrayList<String> getBundles(PrismHelper coloHelper,
                                                String entityName, ENTITY_TYPE entityType)
     throws Exception {
@@ -3298,7 +2308,6 @@ public class Util {
 
             System.out.println("filename: " + filename);
             InputStream conf_stream =
-                    //new FileInputStream(new File("src/main/resources/" + filename));
                     Util.class.getResourceAsStream("/" + filename);
             properties.load(conf_stream);
             conf_stream.close();
@@ -3364,7 +2373,6 @@ public class Util {
 
     public enum URLS {
 
-        //HOSTNAME("http://10.14.111.146:15000"),
         SUBMIT_URL("/api/entities/submit"),
         GET_ENTITY_DEFINITION("/api/entities/definition"),
         DELETE_URL("/api/entities/delete"),
