@@ -26,9 +26,11 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.oozie.client.Job;
 import org.testng.Assert;
 import org.testng.TestNGException;
 import org.testng.annotations.BeforeMethod;
@@ -65,12 +67,8 @@ public class FeedScheduleTest {
 
             response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             Util.assertSucceeded(response);
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
-                            .get(0)
-                            .contains("RUNNING"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
             //now try re-scheduling again
             response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             AssertUtil.assertSucceeded(response);
@@ -106,11 +104,8 @@ public class FeedScheduleTest {
             //now schedule the thing
             response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
             Util.assertSucceeded(response);
-
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "RUNNING", ivoryqa1)
-                            .get(0)
-                            .contains("RUNNING"));
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -135,18 +130,12 @@ public class FeedScheduleTest {
 
             //now suspend
             Util.assertSucceeded(prismHelper.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1)
-                            .get(0)
-                            .contains("SUSPENDED"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
             //now schedule this!
             Util.assertSucceeded(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "SUSPENDED", ivoryqa1)
-                            .get(0)
-                            .contains("SUSPENDED"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
@@ -169,11 +158,8 @@ public class FeedScheduleTest {
 
             //now suspend
             Util.assertSucceeded(prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed));
-            Assert.assertTrue(
-                    Util.getOozieFeedJobStatus(Util.readDatasetName(feed), "KILLED", ivoryqa1)
-                            .get(0)
-                            .contains("KILLED"));
-
+            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
+                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.KILLED));
             //now schedule this!
             Util.assertFailed(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
 
@@ -189,6 +175,7 @@ public class FeedScheduleTest {
     @Test(groups = {"singleCluster"}, dataProvider = "DP", dataProviderClass = FeedSubmitTest.class)
     public void scheduleNonExistentFeed(Bundle bundle) throws Exception {
         bundle.generateUniqueBundle();
+        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
         Bundle.submitCluster(bundle);
         String feed = Util.getInputFeedFromBundle(bundle);
         Util.assertFailed(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));

@@ -21,6 +21,7 @@ package org.apache.falcon.regression.core.util;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.testng.Assert;
 import org.testng.TestNGException;
 import org.testng.log4testng.Logger;
@@ -156,9 +157,8 @@ public class ELUtil {
     public static void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle)
             throws Exception {
         try {
-            String coordID = Util.getCoordID(
-                    Util.getOozieJobStatus(prismHelper,
-                            Util.getProcessName(bundle.getProcessData()), "NONE").get(0));
+            String coordID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                    Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             Util.print("coord id: " + coordID);
             Thread.sleep(30000);
             List<String> missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
