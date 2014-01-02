@@ -39,12 +39,13 @@ public class BaseSingleClusterTests {
     public String baseHDFSDir = "/tmp/falcon-regression";
 
     public BaseSingleClusterTests() {
-        server1FS = server1.getClusterHelper().getHadoopFS();
         server1OC = server1.getClusterHelper().getOozieClient();
         try {
+            server1FS = server1.getClusterHelper().getHadoopFS();
             HadoopUtil.createDir(baseHDFSDir, server1FS);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }

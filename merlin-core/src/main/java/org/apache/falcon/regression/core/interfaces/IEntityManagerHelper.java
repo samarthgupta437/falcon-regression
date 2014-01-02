@@ -113,15 +113,8 @@ public abstract class IEntityManagerHelper {
 
     protected OozieClient oozieClient;
 
-    public FileSystem getHadoopFS() {
-        if (null == this.hadoopFS) {
-            try {
-                this.hadoopFS = HadoopUtil.getFileSystem(this.hadoopURL);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-        }
+    public FileSystem getHadoopFS() throws IOException{
+        if (null == this.hadoopFS) this.hadoopFS = HadoopUtil.getFileSystem(this.hadoopURL);
         return this.hadoopFS;
     }
 

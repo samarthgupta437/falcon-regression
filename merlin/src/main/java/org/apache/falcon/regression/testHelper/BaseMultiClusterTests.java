@@ -17,14 +17,15 @@ public class BaseMultiClusterTests extends  BaseSingleClusterTests{
 
     public BaseMultiClusterTests() {
         super();
-        server2FS = server2.getClusterHelper().getHadoopFS();
-        server2OC = server2.getClusterHelper().getOozieClient();
-        server3FS = server3.getClusterHelper().getHadoopFS();
-        server3OC = server3.getClusterHelper().getOozieClient();
         try {
+            server2FS = server2.getClusterHelper().getHadoopFS();
+            server2OC = server2.getClusterHelper().getOozieClient();
+            server3FS = server3.getClusterHelper().getHadoopFS();
+            server3OC = server3.getClusterHelper().getOozieClient();
             HadoopUtil.createDir(baseHDFSDir, server2FS, server3FS);
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }
