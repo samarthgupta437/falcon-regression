@@ -653,6 +653,7 @@
                         <exclude>**/maven-eclipse.xml</exclude>
                         <exclude>**/.externalToolBuilders/**</exclude>
                         <exclude>**/part-*</exclude>
+                        <exclude>**/resources/**</exclude>
                     </excludes>
                     <!--<argLine>-Dfalcon.log.dir=target/logs -Dfalcon.embeddedmq.data=target/data</argLine>-->
                 </configuration>
