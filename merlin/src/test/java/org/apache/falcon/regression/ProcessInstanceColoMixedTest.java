@@ -28,7 +28,8 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.TestClassHelper;
+import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -43,7 +44,7 @@ import java.lang.reflect.Method;
  * Process instance mixed colo tests.
  */
 @SuppressWarnings("deprecation")
-public class ProcessInstanceColoMixedTest extends TestClassHelper {
+public class ProcessInstanceColoMixedTest extends BaseMultiClusterTests {
 
     private final String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceColoMixedTest";
     private final String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
