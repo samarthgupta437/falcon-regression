@@ -193,7 +193,7 @@ public class RetentionTest {
         System.out.println("***********************************************");
     }
 
-    private void replenishData(PrismHelper prismHelper, String dataType, boolean gap)
+    private void replenishData(ColoHelper helper, String dataType, boolean gap)
     throws Exception {
         int skip = 0;
 
@@ -203,12 +203,12 @@ public class RetentionTest {
         }
 
         if (dataType.equalsIgnoreCase("daily")) {
-            Util.replenishData(prismHelper,
+            Util.replenishData(helper,
                     Util.convertDatesToFolders(Util.getDailyDatesOnEitherSide(36, skip), skip));
         } else if (dataType.equalsIgnoreCase("yearly")) {
-            Util.replenishData(prismHelper, Util.getYearlyDatesOnEitherSide(10, skip));
+            Util.replenishData(helper, Util.getYearlyDatesOnEitherSide(10, skip));
         } else if (dataType.equalsIgnoreCase("monthly")) {
-            Util.replenishData(prismHelper, Util.getMonthlyDatesOnEitherSide(30, skip));
+            Util.replenishData(helper, Util.getMonthlyDatesOnEitherSide(30, skip));
         }
     }
 
