@@ -884,25 +884,32 @@ public class Util {
         return finalResult;
     }
 
-    public static ArrayList<String> getHadoopData(ColoHelper helper, String feed)
-            throws Exception {
+    public static ArrayList<String> getHadoopData(ColoHelper helper, String feed) throws Exception {
+        return getHadoopDataFromDir(helper, feed, "/retention/testFolders/");
+    }
 
+    public static ArrayList<String> getHadoopLateData(ColoHelper helper, String feed) throws Exception {
+        return getHadoopDataFromDir(helper, feed, "/lateDataTest/testFolders/");
+    }
+
+    private static ArrayList<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir) throws Exception {
         ArrayList<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
-        int depth = feedPath.split("/retention/testFolders/")[1].split("/").length - 1;
-        ArrayList<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path ("/retention/testFolders"), depth);
+        int depth = feedPath.split(dir)[1].split("/").length - 1;
+        ArrayList<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path(dir), depth);
 
         for (Path result : results) {
-            int pathDepth = result.toString().split("/retention/testFolders/")[1].split("/").length - 1;
+            int pathDepth = result.toString().split(dir)[1].split("/").length - 1;
             if (pathDepth == depth) {
-                finalResult.add(result.toString().split("testFolders/")[1]);
+                finalResult.add(result.toString().split(dir)[1]);
             }
         }
 
         return finalResult;
     }
 
+    @Deprecated
     public static ArrayList<String> getHadoopLateData(PrismHelper prismHelper, String feed)
     throws Exception {
 
