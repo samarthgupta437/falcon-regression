@@ -60,8 +60,7 @@ public class HadoopUtil {
         final FileSystem fs = FileSystem.get(conf);
 
         if (location.toString().contains("*"))
-            location = Util.stringToPath(
-                    location.toString().substring(0, location.toString().indexOf("*") - 1));
+            location = new Path(location.toString().substring(0, location.toString().indexOf("*") - 1));
 
         FileStatus[] stats = fs.listStatus(location);
 
@@ -78,6 +77,38 @@ public class HadoopUtil {
 
         return returnList;
     }
+
+    public static ArrayList<Path> getAllDirsRecursivelyHDFS(
+            ColoHelper colcoHelper, Path location, int depth) throws Exception {
+
+        setSystemPropertyHDFS();
+        Configuration conf = HadoopUtil.getHadoopConfiguration(colcoHelper);
+        final FileSystem fs = FileSystem.get(conf);
+
+        return getAllDirsRecursivelyHDFS(fs, location, depth);
+    }
+
+
+    private static ArrayList<Path> getAllDirsRecursivelyHDFS(
+            FileSystem fs, Path location, int depth) throws Exception {
+
+        ArrayList<Path> returnList = new ArrayList<Path>();
+
+        FileStatus[] stats = fs.listStatus(location);
+
+        for (FileStatus stat : stats) {
+            if (stat.isDir()) {
+                returnList.add(stat.getPath());
+                if (depth > 0) {
+                    returnList.addAll(getAllDirsRecursivelyHDFS(fs, stat.getPath(), depth - 1));
+                }
+            }
+
+        }
+
+        return returnList;
+    }
+
 
     public static ArrayList<Path> getAllFilesRecursivelyHDFS(
             ColoHelper coloHelper, Path location, String... ignoreFolders) throws Exception {
@@ -229,7 +260,7 @@ public class HadoopUtil {
 
         ArrayList<String> returnList = new ArrayList<String>();
 
-        FileStatus[] stats = fs.listStatus(Util.stringToPath(baseDir));
+        FileStatus[] stats = fs.listStatus(new Path(baseDir));
 
 
         for (FileStatus stat : stats) {
@@ -271,7 +302,7 @@ public class HadoopUtil {
         ArrayList<String> returnList = new ArrayList<String>();
 
         logger.info("getting file from folder: " + hdfsPath);
-        FileStatus[] stats = fs.listStatus(Util.stringToPath(hdfsPath));
+        FileStatus[] stats = fs.listStatus(new Path(hdfsPath));
 
         for (FileStatus stat : stats) {
             String currentPath = stat.getPath().toUri().getPath(); // gives directory name

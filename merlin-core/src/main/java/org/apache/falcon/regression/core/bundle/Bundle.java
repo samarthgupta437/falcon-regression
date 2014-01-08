@@ -87,7 +87,6 @@ public class Bundle {
     String processData;
     String clusterData;
 
-    //List<String> feedFilePaths;
     String processFilePath;
     String envFileName;
     List<String> clusters;
@@ -99,7 +98,6 @@ public class Bundle {
     }
 
     List<String> oldClusters;
-    //List<String> clusterFilePaths;
 
     IEntityManagerHelper clusterHelper;
     IEntityManagerHelper processHelper;
@@ -124,31 +122,9 @@ public class Bundle {
         return envFileName;
     }
 
-    /*public void addClusterFilePath(String clusterFilePath) {
-
-        if (null == this.clusterFilePaths) {
-            this.clusterFilePaths = new ArrayList<String>();
-        }
-        this.clusterFilePaths.add(clusterFilePath);
-    }*/
-
-/*
-    public void addFeedFilePaths(String feedFilePath) {
-
-        if (null == this.feedFilePaths) {
-            this.feedFilePaths = new ArrayList<String>();
-        }
-        this.feedFilePaths.add(feedFilePath);
-    }
-
-*/
     public String getProcessFilePath() {
         return processFilePath;
     }
-
-    /*public void setProcessFilePath(String processFilePath) {
-        this.processFilePath = processFilePath;
-    }*/
 
     public Bundle(Bundle bundle) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
@@ -274,20 +250,10 @@ public class Bundle {
 
     public void generateUniqueBundle() throws Exception {
 
-        //String newCluster=Util.generateUniqueClusterEntity(clusterData);
-        //this.oldCluster=this.clusterData;
-        //this.clusterData=newCluster;
-
         this.oldClusters = new ArrayList<String>(this.clusters);
         this.clusters = Util.generateUniqueClusterEntity(clusters);
 
         List<String> newDataSet = new ArrayList<String>();
-        //
-        //                for(int i=0;i<clusters.size();i++)
-        //                {
-        //                    String oldCluster=oldClusters.get(i);
-        //                    String uniqueCluster=clusters.get(i);
-
         for (String dataset : getDataSets()) {
             String uniqueEntityName = Util.generateUniqueDataEntity(dataset);
             for (int i = 0; i < clusters.size(); i++) {
@@ -295,8 +261,6 @@ public class Bundle {
                 String uniqueCluster = clusters.get(i);
 
 
-                //processData.replace(Util.readDatasetName(dataset),
-                // Util.readDatasetName(uniqueEntityName));
                 uniqueEntityName =
                         injectNewDataIntoFeed(uniqueEntityName, Util.readClusterName(uniqueCluster),
                                 Util.readClusterName(oldCluster));
@@ -308,7 +272,6 @@ public class Bundle {
             }
             newDataSet.add(uniqueEntityName);
         }
-        //}
 
         if (getDataSets().size() == 0) {
 
@@ -333,7 +296,6 @@ public class Bundle {
 
     private String injectLateDataBasedOnInputs(String processData) throws Exception {
 
-       // Util.print("process before late input set: " + processData);
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -354,12 +316,10 @@ public class Bundle {
 
             processElement.getLateProcess().setLateInput(lateInput);
 
-            //	processElement.setLateProcess(value);
 
             java.io.StringWriter sw = new StringWriter();
 
             Marshaller marshaller = jc.createMarshaller();
-            //marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             marshaller.marshal(processElement, sw);
 
             Util.print("process after late input set: " + sw.toString());
@@ -384,14 +344,12 @@ public class Bundle {
                 .getCluster()) {
             if (cluster.getName().equalsIgnoreCase(oldCluster)) {
                 cluster.setName(uniqueCluster);
-                //break;
             }
         }
 
         java.io.StringWriter sw = new StringWriter();
 
         Marshaller marshaller = jc.createMarshaller();
-        //marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         marshaller.marshal(feedElement, sw);
 
         return sw.toString();
@@ -417,15 +375,6 @@ public class Bundle {
                     input.setFeed(newDataName);
                 }
 
-                //also set process' late data
-                //                        LateInput temp=new LateInput();
-                //                        temp.setFeed(newDataName);
-                //                        temp.setWorkflowPath(processElement.getWorkflow()
-                // .getPath());
-                //                        if(!isPresent(temp, lateInputList))
-                //                        {
-                //                            lateInputList.add(temp);
-                //                        }
             }
 
         if (processElement.getOutputs() != null)
@@ -433,38 +382,14 @@ public class Bundle {
                 if (output.getFeed().equalsIgnoreCase(oldDataName)) {
                     output.setFeed(newDataName);
                 }
-                //                        LateInput temp=new LateInput();
-                //                        temp.setFeed(newDataName);
-                //                        temp.setWorkflowPath(processElement.getWorkflow()
-                // .getPath());
-                //                        if(!isPresent(temp, lateInputList))
-                //                        {
-                //                            lateInputList.add(temp);
-                //                        }
             }
 
-        //		for(com.inmobi.qa.ivory.generated.Cluster cluster:processElement.getClusters()
-        // .getCluster())
-        //		{
-        //			if(cluster.getName().equalsIgnoreCase(oldCluster))
-        //			{
-        //				cluster.setName(uniqueCluster);
-        //			}
-        //		}
 
         for (Cluster cluster : processElement.getClusters().getCluster()) {
             if (cluster.getName().equalsIgnoreCase(oldCluster)) {
                 cluster.setName(uniqueCluster);
             }
         }
-
-        //		if(processElement.getCluster().getName().equalsIgnoreCase(oldCluster))
-        //		{
-        //			processElement.getCluster().setName(uniqueCluster);
-        //		}
-
-        //processElement.getLateProcess().setLateInput((lateInputList));
-
 
         //now just wrap the process back!
         java.io.StringWriter sw = new StringWriter();
@@ -503,10 +428,7 @@ public class Bundle {
 
         //lets submit all data first
         for (String dataset : getDataSets()) {
-
          feedHelper.submitEntity(URLS.SUBMIT_URL, dataset);
-
-
         }
 
         return processHelper.submitEntity(URLS.SUBMIT_URL, getProcessData());
@@ -526,22 +448,13 @@ public class Bundle {
         //lets schedule the damn thing now :)
         ServiceResponse scheduleResult =
                 processHelper.schedule(URLS.SCHEDULE_URL, getProcessData());
-        logger.info("process schedule result=" + scheduleResult);
+        logger.info("process schedule result=" + scheduleResult.getMessage());
 
         Assert.assertEquals(Util.parseResponse(scheduleResult).getStatus(),
                 APIResult.Status.SUCCEEDED);
         Assert.assertEquals(Util.parseResponse(scheduleResult).getStatusCode(), 200);
 
         Thread.sleep(7000);
-        //also fetch the coordinator info
-        //return Util.getOozieCoordinator(Util.readEntityName(processData));
-       /* List<String> coordinatorStatus = Util.getOozieJobStatus(Util.readEntityName
-        // (processData));
-
-        if (!coordinatorStatus.isEmpty()) {
-            //validate that the coordinator is up and RUNNING in state after submission
-            return coordinatorStatus.get(0);
-        } else return null;*/
         return null;
     }
 
@@ -560,25 +473,11 @@ public class Bundle {
         }
 
         // If File is present in hdfs check for contents and replace if found different
-
-
         if (HadoopUtil.isFilePresentHDFS(colohelper, wf.getPath(), "workflow.xml")) {
 
             HadoopUtil.deleteFile(colohelper, new Path(wf.getPath() + "/workflow.xml"));
-            /*	File tmpWorkflow = HadoopUtil.getFileFromHDFSFolder(colohelper,
-            wf.getPath()+"/workflow.xml",
-            "target/tmpWorkflow.xml");
-				byte[] wfFileBytes = org.apache.commons.io.FileUtils.readFileToByteArray(wfFile);
-				byte[] tmpWorkflowBytes = org.apache.commons.io.FileUtils.readFileToByteArray
-				(tmpWorkflow);
-
-				if(!Arrays.equals(wfFileBytes,tmpWorkflowBytes)) {
-					HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getPath()+"/workflow.xml"),
-					sBundleLocation+"/workflow/workflow.xml");
-				}*/
         }
         // If there is no file in hdfs , replace it anyways
-
         HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getPath() + "/workflow.xml"),
                 wfFile.getAbsolutePath());
     }
@@ -596,63 +495,16 @@ public class Bundle {
         //lets schedule the damn thing now :)
         ServiceResponse scheduleResult =
                 prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, getProcessData());
-        logger.info("process schedule result=" + scheduleResult);
+        logger.info("process schedule result=" + scheduleResult.getMessage());
         Assert.assertEquals(Util.parseResponse(scheduleResult).getStatus(),
                 APIResult.Status.SUCCEEDED);
         Assert.assertEquals(Util.parseResponse(scheduleResult).getStatusCode(), 200);
 
         Thread.sleep(7000);
-        //also fetch the coordinator info
-        //return Util.getOozieCoordinator(Util.readEntityName(processData));
-        /*	ArrayList<String> coordinatorStatus=Util.getOozieJobStatus(this.getFeedHelper(),
-        Util.readEntityName(processData));
-
-		if(!coordinatorStatus.isEmpty())
-		{
-			//validate that the coordinator is up and RUNNING in state after submission
-			return coordinatorStatus.get(0);
-		}
-		else return null;*/
 
         return scheduleResult.getMessage();
     }
 
-    /*public String submitAndScheduleBundleWithFeedScheduled(PrismHelper prismHelper)
-    throws Exception {
-        ServiceResponse submitResponse = submitBundle(prismHelper);
-        if (submitResponse.getCode() == 400)
-            return submitResponse.getMessage();
-
-        //schedule the feeds also
-
-        for (String feed : getDataSets()) {
-            ServiceResponse scheduleResult = feedHelper.schedule(URLS.SCHEDULE_URL, feed);
-            Assert.assertEquals(Util.parseResponse(scheduleResult).getStatus(),
-                    APIResult.Status.SUCCEEDED);
-            Assert.assertEquals(Util.parseResponse(scheduleResult).getStatusCode(), 200,
-                    "could not schedule feed:" + Util.readDatasetName(feed));
-        }
-
-        //lets schedule the damn thing now :)
-        ServiceResponse scheduleResult =
-                processHelper.schedule(URLS.SCHEDULE_URL, getProcessData());
-        logger.info("process schedule result=" + scheduleResult);
-
-        Assert.assertEquals(Util.parseResponse(scheduleResult).getStatus(),
-                APIResult.Status.SUCCEEDED);
-        Assert.assertEquals(Util.parseResponse(scheduleResult).getStatusCode(), 200);
-
-        Thread.sleep(7000);
-        //also fetch the coordinator info
-        //return Util.getOozieCoordinator(Util.readEntityName(processData));
-        List<String> coordinatorStatus = Util.getOozieJobStatus(Util.readEntityName(processData));
-
-        if (!coordinatorStatus.isEmpty()) {
-            //validate that the coordinator is up and RUNNING in state after submission
-            return coordinatorStatus.get(0);
-        } else return null;
-
-    }*/
 
     public Bundle() {
     }
@@ -670,7 +522,6 @@ public class Bundle {
     }
 
     public void setInvalidData() throws Exception {
-        //File f = new File("src/test/resources/ELbundle/valid/bundle1/feed-template1.xml");
 
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
 
@@ -683,7 +534,6 @@ public class Bundle {
             index = 1;
         }
 
-        //Util.print("dataFeed: "+dataSets.get(0));
 
         String oldLocation = dataElement.getLocations().getLocation().get(0).getPath();
         Util.print("oldlocation: " + oldLocation);
@@ -717,31 +567,6 @@ public class Bundle {
 
     }
 
-
-    /*public Date getInitialDatasetTime() throws Exception {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Feed dataElement = (Feed) u.unmarshal((new StringReader(dataSets.get(0))));
-        if (!dataElement.getName().contains("raaw-logs16")) {
-            dataElement = (Feed) u.unmarshal(new StringReader(dataSets.get(1)));
-
-        }
-
-        //2010-01-01T00:00Z new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'");
-
-        DateFormat formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        formatter.setCalendar(cal);
-
-        //	Date dt = formatter.parse(dataElement.getClusters().getCluster().get(0).getValidity()
-        // .getStart());
-        Date dt = dataElement.getClusters().getCluster().get(0).getValidity().getStart();
-        return dt;
-    }*/
-
-
     public int getInitialDatasetFrequency() throws Exception {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
 
@@ -752,8 +577,6 @@ public class Bundle {
             dataElement = (Feed) u.unmarshal(new StringReader(dataSets.get(1)));
 
         }
-        //Util.print("cluster start time: " +dataElement.getClusters().getCluster().get(0)
-        // .getValidity().getStart());
         if (dataElement.getFrequency().getTimeUnit().equals(TimeUnit.hours))
             return (dataElement.getFrequency().getFrequency()) * 60;
         else return (dataElement.getFrequency().getFrequency());
@@ -866,27 +689,6 @@ public class Bundle {
         return (Process) um.unmarshal(new StringReader(getProcessData()));
     }
 
-    /*public org.apache.falcon.regression.core.generated.cluster.Cluster getClusterObject()
-    throws Exception {
-        JAXBContext context =
-                JAXBContext.newInstance(
-                        org.apache.falcon.regression.core.generated.cluster.Cluster.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (org.apache.falcon.regression.core.generated.cluster.Cluster) um
-                .unmarshal(new StringReader(getClusterData()));
-    }*/
-
-    /*public Feed getFeedObject(String name) throws Exception {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        for (String feed : getDataSets()) {
-            if (Util.readDatasetName(feed).equalsIgnoreCase(name)) {
-                return (Feed) um.unmarshal(new StringReader(feed));
-            }
-        }
-
-        return null;
-    }*/
 
     public String getFeed(String feedName) throws Exception {
         for (String feed : getDataSets()) {
@@ -898,39 +700,6 @@ public class Bundle {
         return null;
     }
 
-    /*public void writeBundleToFiles() throws Exception {
-        for (String cluster : this.clusters) {
-            addClusterFilePath(clusterHelper.writeEntityToFile(cluster));
-        }
-
-        for (String dataset : dataSets) {
-            addFeedFilePaths(feedHelper.writeEntityToFile(dataset));
-        }
-
-        setProcessFilePath(processHelper.writeEntityToFile(processData));
-    }*/
-
-    //	public void submitBundleViaCLI() throws Exception
-    //	{
-    //		//submit cluster
-    //
-    //                for(String clusterPath:clusterFilePaths)
-    //                {
-    //                    Assert.assertTrue(clusterHelper.submitEntityViaCLI(URLS.SUBMIT_URL,
-    // clusterPath).contains("Submit successful"));
-    //                }
-    //		//submit feed
-    //		for(String dataset:getFeedFilePaths())
-    //		{
-    //			Assert.assertTrue(feedHelper.submitEntityViaCLI(URLS.SUBMIT_URL,
-    // dataset).contains("Submit successful"));
-    //		}
-    //		//submit process
-    //		Assert.assertTrue(processHelper.submitEntityViaCLI(URLS.SUBMIT_URL,
-    // getProcessFilePath()).contains("Submit
-    // successful"));
-    //	}
-
     public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) throws Exception {
         String feedName = Util.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
@@ -939,20 +708,6 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
 
     }
-
-    /*public String readFeedNameFromFile(String feedFilePath) throws Exception {
-
-        BufferedReader br = new BufferedReader(
-                new InputStreamReader(new FileInputStream(new File(feedFilePath))));
-        String feed = "";
-        String line;
-        while ((line = br.readLine()) != null) {
-            feed += line;
-        }
-
-        return Util.readDatasetName(feed);
-
-    }*/
 
     public void setInputFeedValidity(String startInstance, String endInstance) throws Exception {
         String feedName = Util.getInputFeedNameFromBundle(this);
@@ -965,17 +720,6 @@ public class Bundle {
         feedElement.getLocations().getLocation().get(0).setPath(path);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
-
-    /*public void setInputFeedRetentionLimit(int frquency, TimeUnit timeUnit) throws Exception {
-        String feedName = Util.getInputFeedNameFromBundle(this);
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
-        Retention retention = feedElement.getClusters().getCluster().get(0).getRetention();
-        retention.setLimit(new Frequency(frquency, timeUnit));
-        feedElement.getClusters().getCluster().get(0).setRetention(retention);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
-
-
-    }*/
 
     public String getFeedDataPathPrefix() throws Exception {
         Feed feedElement = InstanceUtil.getFeedElement(this, Util.getInputFeedNameFromBundle(this));
@@ -1083,84 +827,6 @@ public class Bundle {
         processData = sw.toString();
     }
 
-    /*public void setProcessLatePolicy(PolicyType policyType, String delay) throws Exception {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
-
-
-        LateProcess lateProcess = processElement.getLateProcess();
-        lateProcess.setDelay(new Frequency(delay));
-        lateProcess.setPolicy(policyType);
-
-		*//*<LateInput> lateList=new ArrayList<LateInput>();
-
-		for(Input input:processElement.getInputs().getInput())
-		{
-			LateInput late=new LateInput();
-			late.setInput(input.getName());
-			late.setWorkflowPath(processElement.getWorkflow().getPath());
-			lateList.add(late);
-		}
-
-		//	lateProcess.setLateInput(lateList);*//*
-
-        processElement.setLateProcess(lateProcess);
-
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-        processData = sw.toString();
-    }*/
-
-    /*public String getFeedFilePath(String feedName) throws Exception {
-        for (String feedPath : this.feedFilePaths) {
-            BufferedReader reader = new BufferedReader(new FileReader(new File(feedPath)));
-            String data = "";
-            String feed = "";
-            while ((data = reader.readLine()) != null) {
-                feed += data;
-            }
-            if (feed.contains(feedName)) {
-                return feedPath;
-            }
-        }
-        return null;
-
-    }*/
-
-    /*public String getClusterFilePath(String clusterName) throws Exception {
-        for (String clusterPath : this.clusterFilePaths) {
-            BufferedReader reader = new BufferedReader(new FileReader(new File(clusterPath)));
-            String data = "";
-            String feed = "";
-            while ((data = reader.readLine()) != null) {
-                feed += data;
-            }
-            if (feed.contains(clusterName)) {
-                return clusterPath;
-            }
-        }
-        return null;
-
-    }*/
-
-
-    /*public void listBundle() throws Exception {
-        Assert.assertTrue(processHelper.list().contains(Util.readEntityName(processData)),
-                "Process was not listed post submission!");
-        Assert.assertTrue(clusterHelper.list().contains(Util.readClusterName(clusterData)),
-                "CLuster was not listed post submission!");
-
-        String dataList = feedHelper.list();
-
-        for (String data : dataSets) {
-            Assert.assertTrue(dataList.contains(Util.readDatasetName(data)),
-                    "Feed " + Util.readDatasetName(data) + " was not listed post submission!");
-        }
-    }*/
 
     public void verifyDependencyListing() throws Exception {
         //display dependencies of process:
@@ -1183,19 +849,6 @@ public class Bundle {
 
     }
 
-/*
-    public void verifyFeedDependencyListing() throws Exception {
-        for (String feed : getDataSets()) {
-            for (String cluster : clusters) {
-                Assert.assertTrue(feedHelper.getDependencies(Util.readDatasetName(feed))
-                        .contains("(cluster) " + Util.readClusterName(cluster)));
-            }
-            Assert.assertFalse(feedHelper.getDependencies(Util.readDatasetName(feed))
-                    .contains("(process)" + Util.readEntityName(getProcessData())));
-        }
-    }
-*/
-
     public void addProcessInput(String feed, String feedName) throws Exception {
         Process processElement = InstanceUtil.getProcessElement(this);
         Input in1 = processElement.getInputs().getInput().get(0);
@@ -1216,18 +869,6 @@ public class Bundle {
 
     }
 
-    /*public void setProcessExecution(ExecutionType exeType) throws Exception {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        processElement.setOrder(exeType);
-        InstanceUtil.writeProcessElement(this, processElement);
-    }*/
-
-    /*public void setOutputDataInstance(String instance) throws Exception {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        processElement.getOutputs().getOutput().get(0).setInstance(instance);
-        InstanceUtil.writeProcessElement(this, processElement);
-    }*/
-
     public void setRetry(Retry retry) throws Exception {
         logger.info("old process: " + processData);
         Process processObject = getProcessObject();
@@ -1247,19 +888,6 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
-/*
-    public void setProcessLatePolicy(PolicyType policy, int delay, TimeUnit periodicity,
-                                     Frequency delayUnit)
-    throws Exception {
-        Process process = getProcessObject();
-
-        process.getLateProcess().setDelay(new Frequency(delay, periodicity));
-        process.getLateProcess().setPolicy(policy);
-        InstanceUtil.writeProcessElement(this, process);
-
-    }
-*/
-
     public Cluster getClusterObjectFromProcess(String clusterName) throws Exception {
         for (Cluster cluster : getProcessObject().getClusters().getCluster()) {
             if (cluster.getName().equalsIgnoreCase(clusterName)) {
@@ -1269,15 +897,6 @@ public class Bundle {
         return null;
     }
 
-    /*public Cluster getClusterObjectFromProcess(Process processObject, String clusterName)
-    throws Exception {
-        for (Cluster cluster : processObject.getClusters().getCluster()) {
-            if (cluster.getName().equalsIgnoreCase(clusterName)) {
-                return cluster;
-            }
-        }
-        return null;
-    }*/
 
     public void setCLusterColo(String colo) throws Exception {
         org.apache.falcon.regression.core.generated.cluster.Cluster c =
@@ -1333,7 +952,6 @@ public class Bundle {
 
             dataSets.remove(i);
             dataSets.add(i, this.feedHelper.toString(feedObject));
-            //feed=this.feedHelper.toString(feedObject);
 
         }
 
@@ -1389,19 +1007,6 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
 
     }
-
-    /*public void addProcessProperty(String propertyName, String propertyValue) throws Exception {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        Property p = new Property();
-        p.setName(propertyName);
-        p.setValue(propertyValue);
-        Properties propList = processElement.getProperties();
-        propList.addProperty(p);
-
-        processElement.setProperties(propList);
-        InstanceUtil.writeProcessElement(this, processElement);
-
-    }*/
 
     public void setProcessPriority(String priority) throws Exception {
         Process processElement = InstanceUtil.getProcessElement(this);
@@ -1460,18 +1065,6 @@ public class Bundle {
 
     }
 
-    /*public void addFeedPartition(String feedName, String partition) throws Exception {
-
-        Feed feedElement = InstanceUtil.getFeedElement( this, feedName);
-        Partitions p = feedElement.getPartitions();
-        Partition newPartiton = new Partition();
-        newPartiton.setName(partition);
-        p.addPartition(newPartiton);
-        feedElement.setPartitions(p);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
-
-    }*/
-
     public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
                                     String inputBasePaths, int numberOfOutputs, String startTime,
@@ -1529,71 +1122,10 @@ public class Bundle {
         return b;
     }
 
-
-    /*public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
-                                    int numberOfOptionalInput,
-                                    String inputBasePaths, int numberOfOutputs, String startTime,
-                                    String endTime,
-                                    String... propFiles)
-    throws Exception {
-
-
-        //generate clusters And setCluster
-        List<String> newClusters = new ArrayList<String>();
-        List<String> newDataSets = new ArrayList<String>();
-
-
-        for (int i = 0; i < numberOfClusters; i++) {
-            Bundle temp = (Bundle) Util.readELBundles()[0][0];
-            ColoHelper coloHelper = new ColoHelper(propFiles[i]);
-            temp = new Bundle(temp, coloHelper.getEnvFileName());
-            org.apache.falcon.regression.core.generated.cluster.Cluster c = InstanceUtil
-                    .getClusterElement(Util.generateUniqueClusterEntity(temp.getClusters().get(0)));
-            String clusterName = c.getName() + i;
-            c.setName(clusterName);
-            newClusters.add(i, InstanceUtil.ClusterElementToString(c));
-        }
-        b.setClusterData(newClusters);
-
-        //generate and set newDataSets
-        for (int i = 0; i < numberOfInputs; i++) {
-            String referenceFeed = Util.generateUniqueDataEntity(b.getDataSets().get(0));
-            referenceFeed =
-                    b.setFeedClusters(referenceFeed, newClusters, inputBasePaths + "/input" + i,
-                            startTime, endTime);
-            newDataSets.add(referenceFeed);
-        }
-
-
-        for (int i = 0; i < numberOfOutputs; i++) {
-            String referenceFeed = Util.generateUniqueDataEntity(b.getDataSets().get(0));
-            referenceFeed =
-                    b.setFeedClusters(referenceFeed, newClusters, inputBasePaths + "/output" + i,
-                            startTime, endTime);
-            newDataSets.add(referenceFeed);
-
-        }
-
-        b.setDataSets(newDataSets);
-
-
-        //add clusters and feed to process
-        String process = b.getProcessData();
-        process = Util.generateUniqueProcessEntity(process);
-        process = b.setProcessClusters(process, newClusters, startTime, endTime);
-        process = b.setProcessFeeds(process, newDataSets, numberOfInputs, numberOfOptionalInput,
-                numberOfOutputs);
-        b.setProcessData(process);
-
-
-        return b;
-    }*/
-
     public String setProcessFeeds(String process, List<String> newDataSets,
                                   int numberOfInputs, int numberOfOptionalInput,
                                   int numberOfOutputs) throws Exception {
 
-        //	process = Util.generateUniqueProcessEntity(process);
         Process p = InstanceUtil.getProcessElement(process);
         int numberOfOptionalSet = 0;
         boolean isFirst = true;
@@ -1642,16 +1174,6 @@ public class Bundle {
         p.setOutputs(os);
 
         p.setLateProcess(null);
-
-		/*	LateProcess lp = p.getLateProcess();
-		for(int i = 0 ; i < lp.getLateInput().size();i++){
-
-			LateInput li = lp.getLateInput().get(i);
-			li.setInput("impression");
-			lp.getLateInput().set(i, li);
-
-		}
-		 */
 
         return InstanceUtil.processToString(p);
     }
@@ -1806,7 +1328,3 @@ public class Bundle {
         return InstanceUtil.processToString(p);
     }
 }
-
-
-
-

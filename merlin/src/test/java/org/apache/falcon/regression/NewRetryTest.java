@@ -251,12 +251,13 @@ public class NewRetryTest {
                         Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
                 String status = Util.getBundleStatus(UA3ColoHelper, bundleId);
 
-                //waitTillCertainPercentageOfProcessHasStarted(bundleId,25);
-
-                while (!validateFailureRetries(UA3ColoHelper,
-                        getDefaultOozieCoord(UA3ColoHelper, bundleId), 1)) {
-                    //wait
+                boolean validation = false;
+                int attempt = 0;
+                while (!validation && attempt++ < 100) {
+                    validateFailureRetries(UA3ColoHelper,
+                            getDefaultOozieCoord(UA3ColoHelper, bundleId), 1);
                 }
+                Assert.assertTrue(validation, "Failure Retry validation failed");
 
                 org.apache.falcon.regression.core.generated.process.Process oldProcessObject =
                         bundle.getProcessObject();
@@ -1597,7 +1598,7 @@ public class NewRetryTest {
         while (true) {
             result = ensureAllFailedInstancesHaveRetried(coloHelper, bundleId, maxNumberOfRetries);
 
-            if (result || attempt > 3600) {
+            if (result || attempt > 60) {
                 break;
             } else {
                 Thread.sleep(1000);

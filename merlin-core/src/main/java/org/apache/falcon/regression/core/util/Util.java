@@ -74,14 +74,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class Util {
@@ -861,6 +854,7 @@ public class Util {
 
     }
 
+    @Deprecated
     public static ArrayList<String> getHadoopData(PrismHelper prismHelper, String feed)
     throws Exception {
 
@@ -890,6 +884,32 @@ public class Util {
         return finalResult;
     }
 
+    public static ArrayList<String> getHadoopData(ColoHelper helper, String feed) throws Exception {
+        return getHadoopDataFromDir(helper, feed, "/retention/testFolders/");
+    }
+
+    public static ArrayList<String> getHadoopLateData(ColoHelper helper, String feed) throws Exception {
+        return getHadoopDataFromDir(helper, feed, "/lateDataTest/testFolders/");
+    }
+
+    private static ArrayList<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir) throws Exception {
+        ArrayList<String> finalResult = new ArrayList<String>();
+
+        String feedPath = getFeedPath(feed);
+        int depth = feedPath.split(dir)[1].split("/").length - 1;
+        ArrayList<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path(dir), depth);
+
+        for (Path result : results) {
+            int pathDepth = result.toString().split(dir)[1].split("/").length - 1;
+            if (pathDepth == depth) {
+                finalResult.add(result.toString().split(dir)[1]);
+            }
+        }
+
+        return finalResult;
+    }
+
+    @Deprecated
     public static ArrayList<String> getHadoopLateData(PrismHelper prismHelper, String feed)
     throws Exception {
 
@@ -943,6 +963,7 @@ public class Util {
 
     }
 
+    @Deprecated
     public static void replenishData(PrismHelper prismHelper, List<String> folderList)
     throws Exception {
 
@@ -957,6 +978,15 @@ public class Util {
         createHDFSFolders(prismHelper, folderList);
 
 
+    }
+
+    public static void replenishData(ColoHelper helper, List<String> folderList)
+            throws Exception {
+        //purge data first
+        FileSystem fs = HadoopUtil.getFileSystem(helper.getFeedHelper().getHadoopURL());
+        HadoopUtil.deleteDirIfExists("/retention/testFolders/", fs);
+
+        createHDFSFolders(helper, folderList);
     }
 
     public static ArrayList<String> convertDatesToFolders(List<String> dateList, int skipInterval)
@@ -1317,26 +1347,26 @@ public class Util {
     }
 
     @SuppressWarnings("deprecation")
-    public static void CommonDataRetentionWorkflow(PrismHelper prismHelper, Bundle bundle, int time,
+    public static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
                                                    String interval)
     throws Exception {
         //get Data created in the cluster
-        List<String> initialData = Util.getHadoopData(prismHelper, Util.getInputFeedFromBundle(bundle));
+        List<String> initialData = Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
 
-        prismHelper.getFeedHelper()
+        helper.getFeedHelper()
                 .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
-        logger.info(prismHelper.getClusterHelper().getActiveMQ());
+        logger.info(helper.getClusterHelper().getActiveMQ());
         logger.info(Util.readDatasetName(Util.getInputFeedFromBundle(bundle)));
         Consumer consumer =
                 new Consumer("FALCON." + Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
-                        prismHelper.getClusterHelper().getActiveMQ());
+                        helper.getClusterHelper().getActiveMQ());
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+        String bundleId = Util.getBundles(helper.getFeedHelper().getOozieClient(),
                 Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
-        ArrayList<String> workflows = getFeedRetentionJobs(prismHelper, bundleId);
+        ArrayList<String> workflows = getFeedRetentionJobs(helper, bundleId);
         logger.info("got a workflow list of length:" + workflows.size());
         Collections.sort(workflows);
 
@@ -1346,11 +1376,11 @@ public class Util {
 
         if (!workflows.isEmpty()) {
             String workflowId = workflows.get(0);
-            String status = getWorkflowInfo(prismHelper, workflowId);
+            String status = getWorkflowInfo(helper, workflowId);
             while (!(status.equalsIgnoreCase("KILLED") || status.equalsIgnoreCase("FAILED") ||
                     status.equalsIgnoreCase("SUCCEEDED"))) {
                 Thread.sleep(1000);
-                status = getWorkflowInfo(prismHelper, workflowId);
+                status = getWorkflowInfo(helper, workflowId);
             }
         }
 
@@ -1367,7 +1397,7 @@ public class Util {
 
         //now look for cluster data
         ArrayList<String> finalData =
-                Util.getHadoopData(prismHelper, Util.getInputFeedFromBundle(bundle));
+                Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
 
         //now see if retention value was matched to as expected
         ArrayList<String> expectedOutput =
@@ -1389,7 +1419,7 @@ public class Util {
             logger.info(line);
         }
 
-        Util.validateDataFromFeedQueue(prismHelper,
+        Util.validateDataFromFeedQueue(helper,
                 Util.readDatasetName(getInputFeedFromBundle(bundle)),
                 consumer.getMessageData(), expectedOutput, initialData);
 
@@ -1887,6 +1917,7 @@ public class Util {
 
     }
 
+    @Deprecated
     public static void verifyFeedDeletion(String feed, PrismHelper... prismHelper)
     throws Exception {
         for (PrismHelper helper : prismHelper) {
@@ -1904,6 +1935,18 @@ public class Util {
             Assert.assertFalse(
                     feedList.contains("/projects/ivory/staging/ivory/workflows/feed/" +
                             Util.readDatasetName(feed)),
+                    "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
+        }
+
+    }
+
+    public static void verifyFeedDeletion(String feed, ColoHelper... helpers) throws Exception {
+        for (ColoHelper helper : helpers) {
+            String directory = "/projects/ivory/staging/"+ helper.getFeedHelper().getServiceUser()
+                    + "/workflows/feed/" + Util.readDatasetName(feed);
+            final FileSystem fs = helper.getProcessHelper().getHadoopFS();
+            //make sure feed bundle is not there
+            Assert.assertFalse(fs.isDirectory(new Path(directory)),
                     "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
         }
 
