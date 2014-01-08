@@ -40,8 +40,9 @@ import java.util.List;
 
 public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
 
-    String feedInputPath = "/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
+    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
     private Bundle b = new Bundle();
 

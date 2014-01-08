@@ -38,8 +38,10 @@ import java.util.List;
 
 public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
 
-    String feedInputPath = "/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";//baseTestHDFSDir + datePattern;
-    String feedOutputPath = "/examples/samarth/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String baseTestDir = baseHDFSDir + "/ProcessInstanceRerunTest";
+    String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath = baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedInputTimedOutPath = baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
     Bundle b = new Bundle();
 
@@ -307,7 +309,7 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_timedOut() throws Exception {
-        b.setInputFeedDataPath("/samarthData/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(feedInputTimedOutPath);
         b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
         b.setProcessPeriodicity(5, TimeUnit.minutes);
         b.setProcessTimeOut(2, TimeUnit.minutes);
@@ -315,8 +317,8 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
         b.setOutputFeedLocationData(feedOutputPath);
         b.setProcessConcurrency(3);
         b.submitAndScheduleBundle(prism);
-        org.apache.oozie.client.CoordinatorAction.Status s = null;
-        while (!org.apache.oozie.client.CoordinatorAction.Status.TIMEDOUT.equals(s)) {
+        CoordinatorAction.Status s = null;
+        while (!CoordinatorAction.Status.TIMEDOUT.equals(s)) {
             s = InstanceUtil
                     .getInstanceStatus(server1, Util.readEntityName(b.getProcessData()), 0, 0);
             Thread.sleep(15000);
@@ -327,7 +329,7 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
         Thread.sleep(15000);
         s = InstanceUtil
                 .getInstanceStatus(server1, Util.readEntityName(b.getProcessData()), 0, 0);
-        Assert.assertTrue(org.apache.oozie.client.CoordinatorAction.Status.WAITING.equals(s),
+        Assert.assertTrue(CoordinatorAction.Status.WAITING.equals(s),
                 "instance should have been in WAITING state");
     }
 
