@@ -20,7 +20,6 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -28,13 +27,13 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.oozie.client.CoordinatorAction.Status;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,10 +44,11 @@ import java.util.List;
  */
 public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
 
-    String feedInputPath = "/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-            "{HOUR}/${MINUTE}";
-
+    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
+    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedInputTimedOutPath = baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputTimedOutPath = baseTestHDFSDir + "/output-data/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     Bundle b = new Bundle();
 
     public ProcessInstanceStatusTest() throws IOException {
@@ -62,7 +62,6 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
 
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
-
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
@@ -342,16 +341,17 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_timedOut() throws Exception {
         //submit
+        b.setInputFeedDataPath(feedInputTimedOutPath);
         b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
         b.setProcessPeriodicity(5, TimeUnit.minutes);
         b.setProcessTimeOut(2, TimeUnit.minutes);
         b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData("/examples/samarth/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setOutputFeedLocationData(feedOutputTimedOutPath);
         b.setProcessConcurrency(3);
         b.submitAndScheduleBundle(prism);
-        org.apache.oozie.client.CoordinatorAction.Status s = null;
-        while (!org.apache.oozie.client.CoordinatorAction.Status.TIMEDOUT.equals(s)) {
-            s = InstanceUtil
+        Status status = null;
+        while (status != Status.TIMEDOUT) {
+            status = InstanceUtil
                     .getInstanceStatus(server1, Util.readEntityName(b.getProcessData()), 0, 0);
             Thread.sleep(15000);
         }

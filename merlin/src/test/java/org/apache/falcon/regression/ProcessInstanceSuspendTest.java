@@ -42,8 +42,9 @@ import java.util.List;
  */
 public class ProcessInstanceSuspendTest extends BaseSingleClusterTests {
 
-    private String feedInputPath = "/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private String feedOutputPath = "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";
+    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private Bundle b = new Bundle();
 
     public ProcessInstanceSuspendTest() throws IOException {
@@ -81,8 +82,6 @@ public class ProcessInstanceSuspendTest extends BaseSingleClusterTests {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Util.restartService(server1.getClusterHelper());
-        //System.out.println("Waiting 20 seconds...");
-        //Thread.sleep(20000);
         b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, server1.getEnvFileName());
         b.setInputFeedDataPath(feedInputPath);
