@@ -245,43 +245,42 @@ public class Util {
 
     public static ArrayList<String> getProcessStoreInfo(IEntityManagerHelper helper)
     throws Exception {
-        return runRemoteScript(helper.getQaHost(), helper.getUsername(),
-                helper.getPassword(), "ls " + helper.getStoreLocation() + "/store/PROCESS",
-                helper.getIdentityFile());
+        return getStoreInfo(helper, "/PROCESS");
     }
 
     public static ArrayList<String> getDataSetStoreInfo(IEntityManagerHelper helper)
     throws Exception {
-        return runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),
-                "ls " + helper.getStoreLocation() + "/store/FEED", helper.getIdentityFile());
+        return getStoreInfo(helper, "/FEED");
     }
 
     public static ArrayList<String> getDataSetArchiveInfo(IEntityManagerHelper helper)
     throws Exception {
-        return runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),
-                "ls " + helper.getStoreLocation() + "/store/archive/FEED",
-                helper.getIdentityFile());
+        return getStoreInfo(helper, "/archive/FEED");
     }
 
     public static ArrayList<String> getArchiveStoreInfo(IEntityManagerHelper helper)
     throws Exception {
-        return runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),
-                "ls " + helper.getStoreLocation() + "/store/archive/PROCESS",
-                helper.getIdentityFile());
+        return getStoreInfo(helper, "/archive/PROCESS");
     }
 
     public static ArrayList<String> getClusterStoreInfo(IEntityManagerHelper helper)
     throws Exception {
-        Util.print("getting Storeinfo from box: " + helper.getQaHost());
-        return runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),
-                "ls " + helper.getStoreLocation() + "/store/CLUSTER", helper.getIdentityFile());
+        return getStoreInfo(helper, "/CLUSTER");
     }
 
     public static ArrayList<String> getClusterArchiveInfo(IEntityManagerHelper helper)
     throws Exception {
-        return runRemoteScript(helper.getQaHost(), helper.getUsername(), helper.getPassword(),
-                "ls " + helper.getStoreLocation() + "/store/archive/CLUSTER",
+        return getStoreInfo(helper, "/archive/CLUSTER");
+    }
+
+    private static ArrayList<String> getStoreInfo(IEntityManagerHelper helper, String subPath) throws Exception {
+        if (helper.getStoreLocation().startsWith("hdfs:")) {
+            return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(), helper.getStoreLocation() + subPath);
+        } else {
+        return runRemoteScript(helper.getQaHost(), helper.getUsername(),
+                helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
                 helper.getIdentityFile());
+        }
     }
 
     public static ArrayList<String> runRemoteScript(String hostName,
