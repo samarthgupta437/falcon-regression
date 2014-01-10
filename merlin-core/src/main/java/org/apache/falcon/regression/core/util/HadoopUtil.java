@@ -78,6 +78,30 @@ public class HadoopUtil {
         return returnList;
     }
 
+    public static ArrayList<String> getAllFilesHDFS(String hadoopURL, String location) throws Exception {
+        setSystemPropertyHDFS();
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", hadoopURL);
+        final FileSystem fs = FileSystem.get(conf);
+
+        return getAllFilesHDFS(fs, new Path(location));
+
+        }
+
+    public static ArrayList<String> getAllFilesHDFS(FileSystem fs, Path location) throws Exception {
+
+        ArrayList<String> files = new ArrayList<String>();
+
+        FileStatus[] stats = fs.listStatus(location);
+
+        for (FileStatus stat : stats) {
+            if (!stat.isDir()) {
+                files.add(stat.getPath().toString());
+            }
+        }
+        return files;
+    }
+
     public static ArrayList<Path> getAllDirsRecursivelyHDFS(
             ColoHelper colcoHelper, Path location, int depth) throws Exception {
 

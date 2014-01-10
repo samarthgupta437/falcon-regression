@@ -727,7 +727,7 @@ public class NewPrismProcessUpdateTest {
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper()
                     .resume(URLS.RESUME_URL, UA2Bundle.getProcessData()));
             Assert.assertTrue(Util.verifyOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
-                    UA2Bundle.getProcessData(), ENTITY_TYPE.PROCESS, Job.Status.RUNNING));
+                    Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS, Job.Status.RUNNING));
 
             Job.Status status = Util.getOozieJobStatus(UA3ColoHelper.getFeedHelper().getOozieClient(),
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
