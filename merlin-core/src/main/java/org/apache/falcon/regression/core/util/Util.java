@@ -426,18 +426,6 @@ public class Util {
         return InstanceUtil.feedElementToString(dataElement);
     }
 
-    public static Object[][] readBundles() throws Exception {
-
-        final String FILEPATH = "bundles";
-        List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
-        Object[][] testData = new Object[bundleSet.size()][1];
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-
-        return testData;
-    }
-
     public static String getEnvClusterXML(String filename, String cluster) throws Exception {
         Cluster clusterObject =
                 getClusterObject(cluster);
@@ -504,13 +492,11 @@ public class Util {
         return null;
     }
 
-    public static Object[][] readBundles(String path) throws Exception {
-        @SuppressWarnings("RedundantStringConstructorCall")
-        final String FILEPATH = new String(path);
+    public static Bundle[][] readBundles(String path) throws Exception {
 
-        List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
+        List<Bundle> bundleSet = Util.getDataFromFolder(path);
 
-        Object[][] testData = new Object[bundleSet.size()][1];
+        Bundle[][] testData = new Bundle[bundleSet.size()][1];
 
         for (int i = 0; i < bundleSet.size(); i++) {
             testData[i][0] = bundleSet.get(i);
@@ -519,23 +505,30 @@ public class Util {
         return testData;
     }
 
-    public static Object[][] readELBundles() throws Exception {
-        final String FILEPATH = "ELbundle";
-
-        List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
-
-        Object[][] testData = new Object[bundleSet.size()][1];
-
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-
-        return testData;
+    public static Bundle[][] readBundles() throws Exception {
+        return readBundles("bundles");
     }
+
+    public static Bundle[][] readNoOutputBundles() throws Exception {
+        return readBundles("ProcessWithNoOutput");
+    }
+
+    public static Bundle[][] readELBundles() throws Exception {
+        return readBundles("ELbundle");
+    }
+
+    public static Bundle[][] readAvailabilityBUndle() throws Exception {
+        return readBundles("AvailabilityBundle");
+    }
+
+    public static Bundle[][] readBundle(GetBundle bundlePath) throws Exception {
+        return readBundles(bundlePath.getValue());
+    }
+
 
     public static Bundle[] getBundleData(String path) throws Exception {
 
-        List<Bundle> bundleSet = (new Util()).getDataFromFolder(path);
+        List<Bundle> bundleSet = Util.getDataFromFolder(path);
 
         return bundleSet.toArray(new Bundle[bundleSet.size()]);
     }
@@ -1964,20 +1957,6 @@ public class Util {
         return null;
     }
 
-     public static Object[][] readAvailabilityBUndle() throws Exception {
-        final String FILEPATH = "src/test/resources/AvailabilityBundle";
-
-        List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
-
-        Object[][] testData = new Object[bundleSet.size()][1];
-
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-
-        return testData;
-    }
-
     public static Cluster getClusterObject(
             String clusterXML)
     throws Exception {
@@ -2263,21 +2242,6 @@ public class Util {
 
     }
 
-    public static Object[][] readNoOutputBundles() throws Exception {
-
-        final String FILEPATH = "src/test/resources/ProcessWithNoOutput";
-
-        List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
-
-        Object[][] testData = new Object[bundleSet.size()][1];
-
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-
-        return testData;
-    }
-
     public static void submitAllClusters(Bundle... b) throws Exception {
 
         for (Bundle aB : b) {
@@ -2287,21 +2251,6 @@ public class Util {
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         }
-    }
-
-    public static Object[][] readBundle(
-            GetBundle bundlePath) throws Exception {
-        final String FILEPATH = bundlePath.getValue();
-
-        List<Bundle> bundleSet = (new Util()).getDataFromFolder(FILEPATH);
-
-        Object[][] testData = new Object[bundleSet.size()][1];
-
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-
-        return testData;
     }
 
     @Deprecated
@@ -2361,7 +2310,7 @@ public class Util {
         return null;
     }
 
-    public List<Bundle> getDataFromFolder(String folderPath) throws Exception {
+    public static List<Bundle> getDataFromFolder(String folderPath) throws Exception {
 
         File[] files = Util.getFiles(folderPath);
 
