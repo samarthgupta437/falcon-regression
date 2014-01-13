@@ -16,23 +16,18 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.Job;
 import org.testng.Assert;
-import org.testng.TestNGException;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -41,143 +36,84 @@ import java.lang.reflect.Method;
 /**
  * Feed schedule tests.
  */
-public class FeedScheduleTest {
-    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
-    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+public class FeedScheduleTest extends BaseSingleClusterTests {
 
+    private Bundle bundle;
+    private String feed;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName());
+        Bundle.submitCluster(bundle);
+        feed = Util.getInputFeedFromBundle(bundle);
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
     }
 
 
+
     @Test(groups = {"singleCluster"})
-    public void scheduleAlreadyScheduledFeed() {
-        Bundle bundle = new Bundle();
-        try {
+    public void scheduleAlreadyScheduledFeed() throws Exception {
+        ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
 
-            bundle = (Bundle) Util.readELBundles()[0][0];
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            Bundle.submitCluster(bundle);
-            String feed = Util.getInputFeedFromBundle(bundle);
-
-            ServiceResponse response = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
-
-            response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-            Util.assertSucceeded(response);
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-            //now try re-scheduling again
-            response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-            AssertUtil.assertSucceeded(response);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-
-            try {
-
-                prismHelper.getFeedHelper()
-                        .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-            } catch (Exception e) {
-            }
-        }
+        response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        Util.assertSucceeded(response);
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        //now try re-scheduling again
+        response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(response);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void scheduleValidFeed() throws Exception {
-        Bundle bundle = new Bundle();
-        try {
+        //submit feed
+        ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
 
-            bundle = (Bundle) Util.readELBundles()[0][0];
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            Bundle.submitCluster(bundle);
-            String feed = Util.getInputFeedFromBundle(bundle);
-            //submit feed
-            ServiceResponse response = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
-
-            //now schedule the thing
-            response = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-            Util.assertSucceeded(response);
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
+        //now schedule the thing
+        response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        Util.assertSucceeded(response);
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
     }
 
 
     @Test(groups = {"singleCluster"})
     public void scheduleSuspendedFeed() throws Exception {
-        Bundle bundle = new Bundle();
-        try {
+        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-            bundle = (Bundle) Util.readELBundles()[0][0];
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            Bundle.submitCluster(bundle);
-            String feed = Util.getInputFeedFromBundle(bundle);
-            Util.assertSucceeded(prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
-            //now suspend
-            Util.assertSucceeded(prismHelper.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
-            //now schedule this!
-            Util.assertSucceeded(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-            prismHelper.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
+        //now suspend
+        Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+        //now schedule this!
+        Util.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
     }
 
     @Test(groups = {"singleCluster"})
     public void scheduleKilledFeed() throws Exception {
-        Bundle bundle = new Bundle();
-        try {
+        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-            bundle = (Bundle) Util.readELBundles()[0][0];
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            Bundle.submitCluster(bundle);
-            String feed = Util.getInputFeedFromBundle(bundle);
-            Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(
-                    URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
-            //now suspend
-            Util.assertSucceeded(prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed));
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.KILLED));
-            //now schedule this!
-            Util.assertFailed(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
+        //now suspend
+        Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, feed));
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.KILLED));
+        //now schedule this!
+        Util.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
     }
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP", dataProviderClass = FeedSubmitTest.class)
-    public void scheduleNonExistentFeed(Bundle bundle) throws Exception {
-        bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-        Bundle.submitCluster(bundle);
-        String feed = Util.getInputFeedFromBundle(bundle);
-        Util.assertFailed(prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
+    @Test(groups = {"singleCluster"})
+    public void scheduleNonExistentFeed() throws Exception {
+        Util.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
     }
 }
