@@ -21,218 +21,166 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
-import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
+import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
-public class FeedRetentionTest {
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper gs1001 = new ColoHelper("gs1001.config.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+public class FeedRetentionTest extends BaseMultiClusterTests {
 
+    private Bundle bundle1, bundle2;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        //getImpressionRC bundle
+        bundle1 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
+        bundle1.generateUniqueBundle();
+        bundle1 = new Bundle(bundle1, server1.getEnvFileName());
+
+        bundle2 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
+        bundle2.generateUniqueBundle();
+        bundle2 = new Bundle(bundle2, server2.getEnvFileName());
     }
 
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle1.getProcessData());
+        prism.getFeedHelper().delete(URLS.DELETE_URL, bundle1.getDataSets().get(0));
+        prism.getFeedHelper().delete(URLS.DELETE_URL, bundle1.getDataSets().get(1));
+        Bundle.deleteCluster(bundle1, bundle2);
+    }
+
+    /** submit 2 clusters
+     *  submit and schedule feed on above 2 clusters, both having different locations
+     *  submit and schedule process having the above feed as output feed and running on 2
+     *  clusters */
     @Test(enabled = true)
-    public void testRetentionClickRC_2Colo() throws Throwable {
+    public void testRetentionClickRC_2Colo() throws Exception {
+        String inputPath = baseHDFSDir + "/testInput/";
+        String inputData = inputPath + "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+        String outputPathTemplate = baseHDFSDir + "/testOutput/op%d/ivoryRetention0%d/%s/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
-        //submit 2 clusters
-        // submit and schedule feed on above 2 clusters, both having different locations
-        // submit and schedule process having the above feed as output feed and running on 2
-        // clusters
+        InstanceUtil.putFileInFolders(server1,
+                InstanceUtil.createEmptyDirWithinDatesAndPrefix(server1,
+                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
+                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
+                        inputPath, 1), "thriftRRMar0602.gz");
+        InstanceUtil.putFileInFolders(server2,
+                InstanceUtil.createEmptyDirWithinDatesAndPrefix(server2,
+                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
+                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
+                        inputPath, 1), "thriftRRMar0602.gz");
 
+        prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
+        prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
 
-        //getImpressionRC bundle
-        Bundle b1 = new Bundle();
-        Bundle b2 = new Bundle();
+        String feedOutput01 = bundle1.getFeed("FETL-RequestRC");
 
-        try {
-            b1 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
-            b1.generateUniqueBundle();
-            b1 = new Bundle(b1, gs1001.getEnvFileName());
+        feedOutput01 = InstanceUtil.setFeedCluster(feedOutput01,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null, null);
 
-            b2 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
-            b2.generateUniqueBundle();
-            b2 = new Bundle(b2, ivoryqa1.getEnvFileName());
+        feedOutput01 = InstanceUtil.setFeedCluster(feedOutput01,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
+                XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
+                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.SOURCE,
+                "${cluster.colo}",
+                String.format(outputPathTemplate, 1, 1, "data"),
+                String.format(outputPathTemplate, 1, 1, "stats"),
+                String.format(outputPathTemplate, 1, 1, "meta"),
+                String.format(outputPathTemplate, 1, 1, "tmp"));
 
+        feedOutput01 = InstanceUtil.setFeedCluster(feedOutput01,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
+                XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
+                Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                "${cluster.colo}",
+                String.format(outputPathTemplate, 1, 2, "data"),
+                String.format(outputPathTemplate, 1, 2, "stats"),
+                String.format(outputPathTemplate, 1, 2, "meta"),
+                String.format(outputPathTemplate, 1, 2, "tmp"));
 
-            InstanceUtil.putFileInFolders(gs1001,
-                    InstanceUtil.createEmptyDirWithinDatesAndPrefix(gs1001,
-                            InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
-                            InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
-                            "/testInput/ivoryRetention01/data/", 1), "thriftRRMar0602.gz");
-            InstanceUtil.putFileInFolders(ivoryqa1,
-                    InstanceUtil.createEmptyDirWithinDatesAndPrefix(ivoryqa1,
-                            InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
-                            InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
-                            "/testInput/ivoryRetention01/data/", 1), "thriftRRMar0602.gz");
+        //submit the new output feed
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOutput01));
+        TimeUnit.SECONDS.sleep(10);
 
-//			Bundle.submitCluster(b1,b2);
-            prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, b1.getClusters().get(0));
-            prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, b2.getClusters().get(0));
+        String feedOutput02 = bundle1.getFeed("FETL-ImpressionRC");
+        feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null, null);
 
-            String feedOutput01 = b1.getFeed("FETL-RequestRC");
-            feedOutput01 = InstanceUtil
-                    .setFeedCluster(feedOutput01,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                            ClusterType.SOURCE, null,
-                            null);
-            feedOutput01 = InstanceUtil
-                    .setFeedCluster(feedOutput01,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
-                            XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE,
-                            "${cluster.colo}",
-                            "/testOutput/op1/ivoryRetention01/data/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op1/ivoryRetention01/stats/${YEAR}/${MONTH}/${DAY}/$" +
-                                    "{HOUR}/${MINUTE}",
-                            "/testOutput/op1/ivoryRetention01/meta/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op1/ivoryRetention01/tmp/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}");
-            feedOutput01 = InstanceUtil
-                    .setFeedCluster(feedOutput01,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
-                            XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "${cluster.colo}",
-                            "/testOutput/op1/ivoryRetention02/data/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op1/ivoryRetention02/stats/${YEAR}/${MONTH}/${DAY}/$" +
-                                    "{HOUR}/${MINUTE}",
-                            "/testOutput/op1/ivoryRetention02/meta/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op1/ivoryRetention02/tmp/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}");
+        feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
+                XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
+                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.SOURCE,
+                "${cluster.colo}",
+                String.format(outputPathTemplate, 2, 1, "data"),
+                String.format(outputPathTemplate, 2, 1, "stats"),
+                String.format(outputPathTemplate, 2, 1, "meta"),
+                String.format(outputPathTemplate, 2, 1, "tmp"));
 
-            //submit the new output feed
-            ServiceResponse r =
-                    prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOutput01);
-            Thread.sleep(10000);
-            AssertUtil.assertSucceeded(r);
+        feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
+                XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
+                Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                "${cluster.colo}",
+                String.format(outputPathTemplate, 2, 2, "data"),
+                String.format(outputPathTemplate, 2, 2, "stats"),
+                String.format(outputPathTemplate, 2, 2, "meta"),
+                String.format(outputPathTemplate, 2, 2, "tmp"));
 
+        //submit the new output feed
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOutput02));
+        TimeUnit.SECONDS.sleep(10);
 
-            String feedOutput02 = b1.getFeed("FETL-ImpressionRC");
-            feedOutput02 = InstanceUtil
-                    .setFeedCluster(feedOutput02,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                            ClusterType.SOURCE, null,
-                            null);
-            feedOutput02 = InstanceUtil
-                    .setFeedCluster(feedOutput02,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
-                            XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE,
-                            "${cluster.colo}",
-                            "/testOutput/op2/ivoryRetention01/data/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op2/ivoryRetention01/stats/${YEAR}/${MONTH}/${DAY}/$" +
-                                    "{HOUR}/${MINUTE}",
-                            "/testOutput/op2/ivoryRetention01/meta/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op2/ivoryRetention01/tmp/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}");
-            feedOutput02 = InstanceUtil
-                    .setFeedCluster(feedOutput02,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
-                            XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "${cluster.colo}",
-                            "/testOutput/op2/ivoryRetention02/data/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op2/ivoryRetention02/stats/${YEAR}/${MONTH}/${DAY}/$" +
-                                    "{HOUR}/${MINUTE}",
-                            "/testOutput/op2/ivoryRetention02/meta/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}",
-                            "/testOutput/op2/ivoryRetention02/tmp/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                                    "}/${MINUTE}");
+        String feedInput = bundle1.getFeed("FETL2-RRLog");
+        feedInput = InstanceUtil
+                .setFeedCluster(feedInput,
+                        XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                        ClusterType.SOURCE, null, null);
 
-            //submit the new output feed
-            r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOutput02);
-            Thread.sleep(10000);
-            AssertUtil.assertSucceeded(r);
+        feedInput = InstanceUtil.setFeedCluster(feedInput,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
+                XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
+                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.SOURCE,
+                "${cluster.colo}", inputData);
 
+        feedInput = InstanceUtil.setFeedCluster(feedInput,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
+                XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
+                Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                "${cluster.colo}", inputData);
 
-            String feedInput = b1.getFeed("FETL2-RRLog");
-            feedInput = InstanceUtil
-                    .setFeedCluster(feedInput,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                            ClusterType.SOURCE, null,
-                            null);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedInput));
+        TimeUnit.SECONDS.sleep(10);
 
-            feedInput = InstanceUtil
-                    .setFeedCluster(feedInput,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
-                            XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE,
-                            "${cluster.colo}",
-                            "/testInput/ivoryRetention01/data/${YEAR}/${MONTH}/${DAY}/${HOUR}/$" +
-                                    "{MINUTE}");
-            feedInput = InstanceUtil
-                    .setFeedCluster(feedInput,
-                            XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
-                            XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "${cluster.colo}",
-                            "/testInput/ivoryRetention01/data/${YEAR}/${MONTH}/${DAY}/${HOUR}/$" +
-                                    "{MINUTE}");
+        String process = bundle1.getProcessData();
+        process = InstanceUtil.setProcessCluster(process, null,
+                XmlUtil.createProcessValidity("2012-10-01T12:00Z", "2012-10-01T12:10Z"));
 
-            r = prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedInput);
+        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundle1.getClusters().get(0)),
+                XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2), InstanceUtil.getTimeWrtSystemTime(5)));
+        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundle2.getClusters().get(0)),
+                XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2), InstanceUtil.getTimeWrtSystemTime(5)));
 
-            Thread.sleep(10000);
-            AssertUtil.assertSucceeded(r);
+        Util.print("process: " + process);
 
+        AssertUtil.assertSucceeded(prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process));
 
-            String process = b1.getProcessData();
-            process = InstanceUtil.setProcessCluster(process, null,
-                    XmlUtil.createProcessValidity("2012-10-01T12:00Z", "2012-10-01T12:10Z"));
-
-            process = InstanceUtil
-                    .setProcessCluster(process, Util.readClusterName(b1.getClusters().get(0)),
-                            XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2),
-                                    InstanceUtil.getTimeWrtSystemTime(5)));
-            process = InstanceUtil
-                    .setProcessCluster(process, Util.readClusterName(b2.getClusters().get(0)),
-                            XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2),
-                                    InstanceUtil.getTimeWrtSystemTime(5)));
-
-            Util.print("process: " + process);
-
-
-            r = prismHelper.getProcessHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
-            //	Thread.sleep(10000);
-            AssertUtil.assertSucceeded(r);
-
-
-            r = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOutput01);
-            r = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOutput02);
-
-        } finally {
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b1.getProcessData());
-            prismHelper.getFeedHelper().delete(URLS.DELETE_URL, b1.getDataSets().get(0));
-            prismHelper.getFeedHelper().delete(URLS.DELETE_URL, b1.getDataSets().get(1));
-            Bundle.deleteCluster(b1, b2);
-        }
-
-
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOutput01));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOutput02));
     }
 
 }
