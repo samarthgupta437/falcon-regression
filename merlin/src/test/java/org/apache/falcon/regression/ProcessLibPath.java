@@ -20,12 +20,13 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -37,11 +38,9 @@ import java.util.List;
 /**
  * Process lib path tests.
  */
-public class ProcessLibPath {
+public class ProcessLibPath extends BaseSingleClusterTests {
 
-
-    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
-    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private Bundle bundle;
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -52,16 +51,16 @@ public class ProcessLibPath {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
 
         String startDate = "2010-01-01T22:00Z";
         String endDate = "2010-01-02T03:00Z";
 
-        b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -77,71 +76,44 @@ public class ProcessLibPath {
             dataFolder.add(dataDate);
         }
 
-        InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
+        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
+        bundle.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setProcessConcurrency(1);
+        bundle.setProcessLibPath("/examples/apps/testLib/");
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle.deleteBundle(prism);
     }
 
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithNoLibFolderInWorkflowfLocaltion() throws Exception {
 
-        Bundle b = new Bundle();
-        try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-            b.setProcessConcurrency(1);
-            b.setProcessLibPath("/examples/apps/testLib/");
-            b.setProcessWorkflow("/examples/apps/aggregatorLib/");
-            Util.print("processData: " + b.getProcessData());
-            b.submitAndScheduleBundle(prismHelper);
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
-
-
-        } finally {
-            b.deleteBundle(prismHelper);
-
-        }
+        bundle.setProcessWorkflow("/examples/apps/aggregatorLib/");
+        Util.print("processData: " + bundle.getProcessData());
+        bundle.submitAndScheduleBundle(prism);
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
     }
 
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
 
-        Bundle b = null;
-        try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-            b.setProcessConcurrency(1);
-            b.setProcessLibPath("/examples/apps/testLib/");
-            b.setProcessWorkflow("/examples/apps/aggregatorLib02/");
-            Util.print("processData: " + b.getProcessData());
-            b.submitAndScheduleBundle(prismHelper);
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
-        } finally {
-            if (b != null) {
-                b.deleteBundle(prismHelper);
-            }
-        }
+        bundle.setProcessWorkflow("/examples/apps/aggregatorLib02/");
+        Util.print("processData: " + bundle.getProcessData());
+        bundle.submitAndScheduleBundle(prism);
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
     }
 }

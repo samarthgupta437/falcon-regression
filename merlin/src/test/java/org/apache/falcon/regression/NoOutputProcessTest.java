@@ -20,14 +20,16 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -40,10 +42,9 @@ import java.util.List;
 /**
  * Null output process tests.
  */
-public class NoOutputProcessTest {
+public class NoOutputProcessTest extends BaseSingleClusterTests {
 
-    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
-    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private Bundle bundle;
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -54,16 +55,16 @@ public class NoOutputProcessTest {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
 
         String startDate = "2010-01-03T00:00Z";
         String endDate = "2010-01-03T03:00Z";
 
-        b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -79,95 +80,86 @@ public class NoOutputProcessTest {
             dataFolder.add(dataDate);
         }
 
-        InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle.deleteBundle(prism);
     }
 
 
     @Test(enabled = true, groups = {"singleCluster"})
     public void checkForJMSMsgWhenNoOutput() throws Exception {
 
-        Bundle b = new Bundle();
-        try {
-            b = (Bundle) Util.readNoOutputBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.submitAndScheduleBundle(prismHelper);
+        bundle = Util.readNoOutputBundles()[0][0];
+        setBundleProperties();
 
+        Util.print("attaching consumer to:   " + "FALCON.ENTITY.TOPIC");
+        Consumer consumer =
+                new Consumer("FALCON.ENTITY.TOPIC", server1.getClusterHelper().getActiveMQ());
+        consumer.start();
+        Thread.sleep(15000);
 
-            Util.print("attaching consumer to:   " + "FALCON.ENTITY.TOPIC");
-            Consumer consumer =
-                    new Consumer("FALCON.ENTITY.TOPIC", ivoryqa1.getClusterHelper().getActiveMQ());
-            consumer.start();
-            Thread.sleep(15000);
+        //wait for all the instances to complete
+        InstanceUtil.waitTillInstanceReachState(server1, bundle.getProcessName(), 3,
+                CoordinatorAction.Status.SUCCEEDED,
+                20);
 
-            //wait for all the instances to complete
-            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                    CoordinatorAction.Status.SUCCEEDED,
-                    20);
+        Assert.assertEquals(consumer.getMessageData().size(), 3,
+                " Message for all the 3 instance not found");
 
-            Assert.assertEquals(consumer.getMessageData().size(), 3,
-                    " Message for all the 3 instance not found");
+        consumer.stop();
 
-            consumer.stop();
+        Util.dumpConsumerData(consumer);
 
-            Util.dumpConsumerData(consumer);
-        } finally {
-            b.deleteBundle(prismHelper);
-
-        }
     }
 
 
     @Test(enabled = true, groups = {"singleCluster"})
     public void rm() throws Exception {
 
-        Bundle b = new Bundle();
-        try {
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.submitAndScheduleBundle(prismHelper);
+        bundle = Util.readELBundles()[0][0];
+        setBundleProperties();
 
-            Consumer consumerInternalMsg =
-                    new Consumer("FALCON.ENTITY.TOPIC", ivoryqa1.getClusterHelper().getActiveMQ());
-            Consumer consumerProcess =
-                    new Consumer("FALCON." + b.getProcessName(),
-                            ivoryqa1.getClusterHelper().getActiveMQ());
+        Consumer consumerInternalMsg =
+                new Consumer("FALCON.ENTITY.TOPIC", server1.getClusterHelper().getActiveMQ());
+        Consumer consumerProcess =
+                new Consumer("FALCON." + bundle.getProcessName(), server1.getClusterHelper().getActiveMQ());
 
+        consumerInternalMsg.start();
+        consumerProcess.start();
 
-            consumerInternalMsg.start();
-            consumerProcess.start();
+        Thread.sleep(15000);
 
-            Thread.sleep(15000);
+        //wait for all the instances to complete
 
-            //wait for all the instances to complete
-            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                    CoordinatorAction.Status.SUCCEEDED,
-                    20);
+        InstanceUtil.waitTillInstanceReachState(server1.getFeedHelper().getOozieClient(), bundle.getProcessName(), 3,
+                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
-            Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
-                    " Message for all the 3 instance not found");
-            Assert.assertEquals(consumerProcess.getMessageData().size(), 3,
-                    " Message for all the 3 instance not found");
+        Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
+                " Message for all the 3 instance not found");
+        Assert.assertEquals(consumerProcess.getMessageData().size(), 3,
+                " Message for all the 3 instance not found");
 
-            consumerInternalMsg.stop();
-            consumerProcess.stop();
+        consumerInternalMsg.stop();
+        consumerProcess.stop();
 
-            Util.dumpConsumerData(consumerInternalMsg);
-            Util.dumpConsumerData(consumerProcess);
+        Util.dumpConsumerData(consumerInternalMsg);
+        Util.dumpConsumerData(consumerProcess);
+    }
 
-        } finally {
-            b.deleteBundle(prismHelper);
-        }
+    private void setBundleProperties() throws Exception {
+        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
+        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
+        bundle.submitAndScheduleBundle(prism);
     }
 }
