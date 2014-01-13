@@ -21,150 +21,88 @@ package org.apache.falcon.regression;
 
 import junit.framework.Assert;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.Job;
-import org.testng.TestNGException;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-
 import java.lang.reflect.Method;
 
 /**
  * Feed resume tests.
  */
-public class FeedResumeTest {
+public class FeedResumeTest extends BaseSingleClusterTests {
 
-    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
-    private final IEntityManagerHelper feedHelper = prismHelper.getFeedHelper();
-
-    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private final IEntityManagerHelper feedHelper = prism.getFeedHelper();
+    private Bundle bundle = new Bundle();
+    private String feed;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        bundle = (Bundle) Util.readELBundles()[0][0];
+        bundle.generateUniqueBundle();
+        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle.submitClusters(prism);
+        feed = Util.getInputFeedFromBundle(bundle);
     }
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void resumeSuspendedFeed(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        feedHelper.delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
+    }
 
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            Bundle.submitCluster(bundle);
+    @Test(groups = {"singleCluster"})
+    public void resumeSuspendedFeed() throws Exception {
+        Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+        Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
-            String feed = Util.getInputFeedFromBundle(bundle);
+        ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
 
-            Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-            Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
-            Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
-
-            ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
-
-            String colo = feedHelper.getColo();
-            Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-            feedHelper
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
+        String colo = feedHelper.getColo();
+        Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
     }
 
 
-    public void submitCluster(Bundle bundle) throws Exception {
-        ServiceResponse response = prismHelper.getClusterHelper().submitEntity(
-                URLS.SUBMIT_URL, bundle.getClusters().get(0));
-
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+    @Test(groups = {"singleCluster"})
+    public void resumeNonExistentFeed() throws Exception {
+        Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void resumeNonExistentFeed(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            submitCluster(bundle);
-            String feed = Util.getInputFeedFromBundle(bundle);
+    @Test(groups = {"singleCluster"})
+    public void resumeDeletedFeed() throws Exception {
+        Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-            Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
+        Util.assertSucceeded(feedHelper.delete(URLS.DELETE_URL, feed));
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        }
+        Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void resumeDeletedFeed(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            submitCluster(bundle);
-            String feed = Util.getInputFeedFromBundle(bundle);
+    @Test(groups = {"singleCluster"})
+    public void resumeScheduledFeed() throws Exception {
+        Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-            Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
-            Util.assertSucceeded(feedHelper.delete(URLS.DELETE_URL, feed));
-
-            Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-
-            feedHelper
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
-    }
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void resumeScheduledFeed(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            submitCluster(bundle);
-            String feed = Util.getInputFeedFromBundle(bundle);
-
-            Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-            Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
-
-
-            ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
-            String colo = feedHelper.getColo();
-            Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-            Assert.assertTrue(Util.verifyOozieJobStatus(ivoryqa1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-            feedHelper.delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
-    }
-
-
-    @DataProvider(name = "DP")
-    public Object[][] getData(Method m) throws Exception {
-        return Util.readELBundles();
+        ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
+        String colo = feedHelper.getColo();
+        Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
     }
 }
