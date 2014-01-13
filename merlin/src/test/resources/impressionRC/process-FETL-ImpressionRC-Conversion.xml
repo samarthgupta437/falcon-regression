@@ -17,7 +17,7 @@
   limitations under the License.
   -->
 
-<process name="FETL-ImpressionRC-Conversion" xmlns="uri:ivory:process:0.1">
+<process name="FETL-ImpressionRC-Conversion" xmlns="uri:falcon:process:0.1">
     <clusters>
         <cluster name="ua2-staging">
             <validity start="2013-02-07T12:00Z" end="2019-02-07T12:10Z"/>
