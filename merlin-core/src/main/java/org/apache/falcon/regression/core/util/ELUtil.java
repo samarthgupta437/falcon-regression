@@ -35,25 +35,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-@SuppressWarnings({"deprecation", "MagicConstant"})
 public class ELUtil {
 
     static Logger logger = Logger.getLogger(ELUtil.class);
 
-    static PrismHelper prismHelper = new PrismHelper("prism.properties");
-    static ColoHelper ivoryqa1 = new ColoHelper("gs1001.config.properties");
 
 
-    public static String testWith(String feedStart, String feedEnd, String processStart,
+    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String feedStart, String feedEnd, String processStart,
                                   String processend,
                                   String startInstance, String endInstance, boolean isMatch)
     throws Exception {
-        Bundle bundle = (Bundle) Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
+        Bundle bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName());
 
         bundle.setFeedValidity(feedStart, feedEnd, Util.getInputFeedNameFromBundle(bundle));
         bundle.setProcessValidity(processStart, processend);
-        //System.out.println("processData is: "+ bundle.getProcessData());
         try {
 
             bundle.setInvalidData();
@@ -62,7 +58,7 @@ public class ELUtil {
             logger.info("processData in try is: " + bundle.getProcessData());
             Thread.sleep(45000);
             if (isMatch)
-                getAndMatchDependencies(ivoryqa1, bundle);
+                getAndMatchDependencies(server1, bundle);
 
             return submitResponse;
         } catch (Exception e) {
@@ -75,50 +71,20 @@ public class ELUtil {
 
     }
 
-    /*public static String testWith(String processStart, String processend, String startInstance,
-                                  String endInstance,
-                                  boolean isMatch)
-    throws Exception {
-        Bundle bundle = (Bundle) Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
 
-        bundle.setProcessValidity(processStart, processend);
-        //System.out.println("processData is: "+ bundle.getProcessData());
+    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance, String endInstance, boolean isMatch)
+    throws Exception {
+        Bundle bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName());
+
         try {
 
             bundle.setInvalidData();
             bundle.setDatasetInstances(startInstance, endInstance);
             String submitResponse = bundle.submitAndScheduleBundle(prismHelper);
             Thread.sleep(45000);
-            logger.info("processData in try is: " + bundle.getProcessData());
             if (isMatch)
-                getAndMatchDependencies(ivoryqa1, bundle);
-
-            return submitResponse;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-            logger.info("deleting entity:");
-            bundle.deleteBundle(prismHelper);
-        }
-
-    }*/
-
-    public static String testWith(String startInstance, String endInstance, boolean isMatch)
-    throws Exception {
-        Bundle bundle = (Bundle) Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-
-        try {
-            //start="2010-01-02T01:00Z"
-
-            bundle.setInvalidData();
-            bundle.setDatasetInstances(startInstance, endInstance);
-            String submitResponse = bundle.submitAndScheduleBundle(prismHelper);
-            Thread.sleep(45000);
-            if (isMatch)
-                getAndMatchDependencies(ivoryqa1, bundle);
+                getAndMatchDependencies(server1, bundle);
 
             return submitResponse;
         } catch (Exception e) {
@@ -130,30 +96,7 @@ public class ELUtil {
         }
     }
 
-    /*public static String testWith(String startInstance, String endInstance) throws Exception
-    {
-        Bundle bundle = (Bundle)Util.readELBundles()[0][0];
-        try{
-            //start="2010-01-02T01:00Z"
 
-            bundle.setInvalidData();
-            bundle.setDatasetInstances(startInstance,endInstance);
-            String submitResponse=bundle.submitAndScheduleBundle();
-
-            getAndMatchDependencies(bundle);
-            return submitResponse ;
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        }
-        finally
-        {
-            System.out.println("deleting entity:");
-            bundle.deleteBundle();
-        }
-    }*/
     public static void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle)
             throws Exception {
         try {
@@ -168,7 +111,6 @@ public class ELUtil {
             Date jobNominalTime = Util.getNominalTime(prismHelper, coordID);
 
             Calendar time = Calendar.getInstance();
-            //time.setTimeZone(TimeZone.getTimeZone("GMT"));
             time.setTime(jobNominalTime);
             Util.print("nominalTime:" + jobNominalTime);
             Util.print("nominalTime in GNT string: " + jobNominalTime.toGMTString());
@@ -220,14 +162,12 @@ public class ELUtil {
                                                        Date endRef, int frequency,
                                                        Bundle bundle)
     throws Exception {
-        //nominalTime.add(Calendar.MINUTE,-330);
 
         Util.print("start ref:" + startRef);
         Util.print("end ref:" + endRef);
 
         Calendar initialTime = Calendar.getInstance();
         initialTime.setTime(startRef);
-        //initialTime.
         Calendar finalTime = Calendar.getInstance();
 
 
@@ -267,42 +207,27 @@ public class ELUtil {
     }
 
     public static String getPath(String path, Calendar time) {
-        //Util.print("function: getpath start");
-        //Util.print("pathTime: "+time.getTime());
         if (path.contains("${YEAR}")) {
-            //path.replace("${YEAR}",Integer.toString(initialTime.get(Calendar.YEAR));
             path = path.replaceAll("\\$\\{YEAR\\}", Integer.toString(time.get(Calendar.YEAR)));
         }
 
         if (path.contains("${MONTH}")) {
             path = path.replaceAll("\\$\\{MONTH\\}", intToString(time.get(Calendar.MONTH) + 1, 2));
-            //path = path.replaceAll("\\$\\{MONTH\\}",Integer.toString(initialTime.get(Calendar
-            // .MONTH)+1));
         }
 
 
         if (path.contains("${DAY}")) {
             path = path.replaceAll("\\$\\{DAY\\}", intToString(time.get(Calendar.DAY_OF_MONTH), 2));
-            //path = path.replaceAll("\\$\\{DAY\\}",Integer.toString(initialTime.get(Calendar
-            // .DAY_OF_MONTH)));
         }
 
         if (path.contains("${HOUR}")) {
             path = path.replaceAll("\\$\\{HOUR\\}", intToString(time.get(Calendar.HOUR_OF_DAY), 2));
-            //path = path.replaceAll("\\$\\{HOUR\\}",Integer.toString(initialTime.get(Calendar
-            // .HOUR_OF_DAY)));
         }
 
         if (path.contains("${MINUTE}")) {
-            //Util.print("minutes before replacing path: "+intToString(time.get(Calendar.MINUTE),
-            // 2));
             path = path.replaceAll("\\$\\{MINUTE\\}", intToString(time.get(Calendar.MINUTE), 2));
-            //path = path.replaceAll("\\$\\{MINUTE\\}",Integer.toString(initialTime.get(Calendar
-            // .MINUTE)));
         }
 
-        //Util.print("new path: "+path);
-        //Util.print("function: getpath end");
         return path;
     }
 
@@ -315,70 +240,50 @@ public class ELUtil {
 
         Calendar cal = Calendar.getInstance();
         cal.setTime(time.getTime());
-        //cal.add(Calendar.MINUTE,-330);
         if (expression.contains("now")) {
-            hr = Integer.parseInt(
-                    expression.substring(expression.indexOf('(') + 1, expression.indexOf(',')));
-            mins = Integer.parseInt(
-                    expression.substring(expression.indexOf(',') + 1, expression.indexOf(')')));
+            hr = getInt(expression, 0);
+            mins = getInt(expression, 1);
             cal.add(Calendar.HOUR, hr);
             cal.add(Calendar.MINUTE, mins);
         } else if (expression.contains("today")) {
-            hr = Integer.parseInt(
-                    expression.substring(expression.indexOf('(') + 1, expression.indexOf(',')));
-            mins = Integer.parseInt(
-                    expression.substring(expression.indexOf(',') + 1, expression.indexOf(')')));
+            hr = getInt(expression, 0);
+            mins = getInt(expression, 1);
             cal.add(Calendar.HOUR, hr - (cal.get(Calendar.HOUR_OF_DAY)));
             cal.add(Calendar.MINUTE, mins);
         } else if (expression.contains("yesterday")) {
-            hr = Integer.parseInt(
-                    expression.substring(expression.indexOf('(') + 1, expression.indexOf(',')));
-            mins = Integer.parseInt(
-                    expression.substring(expression.indexOf(',') + 1, expression.indexOf(')')));
-            //cal.add(Calendar.HOUR,-24);
+            hr = getInt(expression, 0);
+            mins = getInt(expression, 1);
             cal.add(Calendar.HOUR, hr - (cal.get(Calendar.HOUR_OF_DAY)) - 24);
             cal.add(Calendar.MINUTE, mins);
         } else if (expression.contains("currentMonth")) {
-            expression = expression.substring(expression.indexOf("(") + 1, expression.indexOf(")"));
-            ArrayList<String> afterSplit =
-                    new ArrayList<String>(Arrays.asList(expression.split(",")));
-            day = Integer.parseInt(afterSplit.get(0));
-            hr = Integer.parseInt(afterSplit.get(1));
-            mins = Integer.parseInt(afterSplit.get(2));
+            day = getInt(expression, 0);
+            hr = getInt(expression, 1);
+            mins = getInt(expression, 2);
             cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), 1, 0, 0);
             cal.add(Calendar.HOUR, 24 * day + hr);
             cal.add(Calendar.MINUTE, mins);
 
         } else if (expression.contains("lastMonth")) {
-            expression = expression.substring(expression.indexOf("(") + 1, expression.indexOf(")"));
-            ArrayList<String> afterSplit =
-                    new ArrayList<String>(Arrays.asList(expression.split(",")));
-            day = Integer.parseInt(afterSplit.get(0));
-            hr = Integer.parseInt(afterSplit.get(1));
-            mins = Integer.parseInt(afterSplit.get(2));
+            day = getInt(expression, 0);
+            hr = getInt(expression, 1);
+            mins = getInt(expression, 2);
             cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) - 1, 1, 0, 0);
             cal.add(Calendar.HOUR, 24 * day + hr);
             cal.add(Calendar.MINUTE, mins);
         } else if (expression.contains("currentYear")) {
-            expression = expression.substring(expression.indexOf("(") + 1, expression.indexOf(")"));
-            ArrayList<String> afterSplit =
-                    new ArrayList<String>(Arrays.asList(expression.split(",")));
-            month = Integer.parseInt(afterSplit.get(0));
-            day = Integer.parseInt(afterSplit.get(1));
-            hr = Integer.parseInt(afterSplit.get(2));
-            mins = Integer.parseInt(afterSplit.get(3));
+            month = getInt(expression, 0);
+            day = getInt(expression, 1);
+            hr = getInt(expression, 2);
+            mins = getInt(expression, 3);
             cal.set(cal.get(Calendar.YEAR), 1, 1, 0, 0);
             cal.add(Calendar.MONTH, month - 1);
             cal.add(Calendar.HOUR, 24 * day + hr);
             cal.add(Calendar.MINUTE, mins);
         } else if (expression.contains("lastYear")) {
-            expression = expression.substring(expression.indexOf("(") + 1, expression.indexOf(")"));
-            ArrayList<String> afterSplit =
-                    new ArrayList<String>(Arrays.asList(expression.split(",")));
-            month = Integer.parseInt(afterSplit.get(0));
-            day = Integer.parseInt(afterSplit.get(1));
-            hr = Integer.parseInt(afterSplit.get(2));
-            mins = Integer.parseInt(afterSplit.get(3));
+            month = getInt(expression, 0);
+            day = getInt(expression, 1);
+            hr = getInt(expression, 2);
+            mins = getInt(expression, 3);
             cal.set(cal.get(Calendar.YEAR) - 1, 1, 1, 0, 0);
             cal.add(Calendar.MONTH, month - 1);
             cal.add(Calendar.HOUR, 24 * day + hr);
@@ -386,6 +291,11 @@ public class ELUtil {
         }
         return cal.getTime();
 
+    }
+
+    private static int getInt(String expression, int position) {
+        String numbers = expression.substring(expression.indexOf("(") + 1, expression.indexOf(")"));
+        return Integer.parseInt(numbers.split(",")[position]);
     }
 }
 

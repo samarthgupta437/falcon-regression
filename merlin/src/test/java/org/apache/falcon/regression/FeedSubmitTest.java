@@ -16,23 +16,17 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression;
 
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.testng.Assert;
-import org.testng.TestNGException;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
@@ -40,132 +34,70 @@ import java.lang.reflect.Method;
 /**
  * Feed submission tests.
  */
-public class FeedSubmitTest {
-    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
-    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+public class FeedSubmitTest extends BaseSingleClusterTests {
+
+    private Bundle bundle;
+    private String feed;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-    }
+        bundle = Util.readELBundles()[0][0];
+        bundle.generateUniqueBundle();
+        bundle = new Bundle(bundle, server1.getEnvFileName());
 
-    public void submitCluster(Bundle bundle) throws Exception {
         //submit the cluster
-        ServiceResponse response = prismHelper.getClusterHelper().submitEntity(
-                URLS.SUBMIT_URL, bundle.getClusters().get(0));
-
+        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
+
+        feed = Util.getInputFeedFromBundle(bundle);
+    }
+    
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
     }
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void submitValidFeed(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            submitCluster(bundle);
-            //now submit an input dataset
-            String feed = Util.getInputFeedFromBundle(bundle);
+    @Test(groups = {"singleCluster"})
+    public void submitValidFeed() throws Exception {
 
-            ServiceResponse response =
-                    prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
-
+        ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
     }
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void submitValidFeedPostDeletion(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            submitCluster(bundle);
-            //now submit an input dataset
-            String feed = Util.getInputFeedFromBundle(bundle);
+    @Test(groups = {"singleCluster"})
+    public void submitValidFeedPostDeletion() throws Exception {
 
-            ServiceResponse response =
-                    prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
+        ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
 
-            response = prismHelper.getFeedHelper().delete(URLS.DELETE_URL, feed);
-            Util.assertSucceeded(response);
+        response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
+        Util.assertSucceeded(response);
 
-            prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
+        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
     }
 
+    @Test(groups = {"singleCluster"})
+    public void submitValidFeedPostGet() throws Exception {
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void submitValidFeedPostGet(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            submitCluster(bundle);
-            //now submit an input dataset
-            String feed = Util.getInputFeedFromBundle(bundle);
+        ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
 
-            ServiceResponse response =
-                    prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
+        response = prism.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feed);
+        Util.assertSucceeded(response);
 
-            response = prismHelper.getFeedHelper()
-                    .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feed);
-            Util.assertSucceeded(response);
-
-            response = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
+        response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
     }
 
-    @Test(groups = {"singleCluster"}, dataProvider = "DP")
-    public void submitValidFeedTwice(Bundle bundle) throws Exception {
-        try {
-            bundle.generateUniqueBundle();
-            bundle = new Bundle(bundle, ivoryqa1.getEnvFileName());
-            submitCluster(bundle);
-            //now submit an input dataset
-            String feed = Util.getInputFeedFromBundle(bundle);
+    @Test(groups = {"singleCluster"})
+    public void submitValidFeedTwice() throws Exception {
 
-            ServiceResponse response =
-                    prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
+        ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
 
-            response = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Util.assertSucceeded(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        } finally {
-
-            prismHelper.getFeedHelper()
-                    .delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        }
-    }
-
-
-    @DataProvider(name = "DP")
-    public static Object[][] getData(Method m) throws Exception {
-        return Util.readELBundles();
+        response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Util.assertSucceeded(response);
     }
 }

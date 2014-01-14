@@ -17,7 +17,7 @@
   limitations under the License.
   -->
 
-<cluster colo="gs" description="" name="ua2-staging" xmlns="uri:ivory:cluster:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<cluster colo="gs" description="" name="ua2-staging" xmlns="uri:falcon:cluster:0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<interfaces>
 		<interface type="readonly" endpoint="hftp://gs1001.grid.corp.inmobi.com:50070"
 			version="0.20.2" />
