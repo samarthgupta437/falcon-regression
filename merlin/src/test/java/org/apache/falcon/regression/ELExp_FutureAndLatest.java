@@ -20,16 +20,14 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,10 +36,10 @@ import java.util.List;
 /**
  * EL Expression test.
  */
-public class ELExp_FutureAndLatest {
-
-    private final PrismHelper prismHelper = new PrismHelper("prism.properties");
-    private final ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
+    
+    private Bundle bundle;
+    private String prefix;
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -50,16 +48,16 @@ public class ELExp_FutureAndLatest {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName());
 
         String startDate = InstanceUtil.getTimeWrtSystemTime(-150);
         String endDate = InstanceUtil.getTimeWrtSystemTime(100);
 
-        b.setInputFeedDataPath("/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
+        b.setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        prefix = b.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -69,103 +67,53 @@ public class ELExp_FutureAndLatest {
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
-        ArrayList<String> dataFolder = new ArrayList<String>();
+        List<String> dataFolder = new ArrayList<String>();
 
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
         }
-
-        InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle.setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setInputFeedPeriodicity(5, TimeUnit.minutes);
+        bundle.setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
+        String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
+        String processEnd = InstanceUtil.getTimeWrtSystemTime(8);
+        Util.print("processStart: " + processStart + " processEnd: " + processEnd);
+        bundle.setProcessValidity(processStart, processEnd);
+        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
     }
 
-    @Test(groups = {"singleCluster"}, dataProvider = "EL-DP", dataProviderClass = Bundle.class)
-    public void latestTest(Bundle b) throws Exception {
-        try {
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-
-
-            b.setInputFeedDataPath(
-                    "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setInputFeedPeriodicity(5, TimeUnit.minutes);
-
-            final String startInstance = "2010-04-01T00:00Z";
-            String endInstance = "2013-04-01T00:00Z";
-            b.setInputFeedValidity(startInstance, endInstance);
-            b.setDatasetInstances("latest(-3)", "latest(0)");
-            //b.setDatasetInstances("now(0,-40)", "now(0,0)");
-
-            String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
-            String processEnd = InstanceUtil.getTimeWrtSystemTime(8);
-            Util.print("processStart: " + processStart + " processEnd: " + processEnd);
-            b.setProcessValidity(processStart, processEnd);
-
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-
-            b.submitAndScheduleBundle(prismHelper);
-
-            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                    CoordinatorAction.Status.SUCCEEDED, 20);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception(e.getMessage());
-        } finally {
-            b.deleteBundle(prismHelper);
-        }
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle.deleteBundle(prism);
     }
 
-    @Test(groups = {"singleCluster"}, dataProvider = "EL-DP", dataProviderClass = Bundle.class)
-    public void futureTest(Bundle b) throws Exception {
-        try {
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
+    @Test(groups = {"singleCluster"})
+    public void latestTest() throws Exception {
+        bundle.setDatasetInstances("latest(-3)", "latest(0)");
+        bundle.submitAndScheduleBundle(prism);
+        InstanceUtil.waitTillInstanceReachState(server1.getProcessHelper().getOozieClient(), bundle.getProcessName(), 3,
+                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+    }
 
-            b.setInputFeedDataPath(
-                    "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setInputFeedPeriodicity(5, TimeUnit.minutes);
-
-            final String startInstance = "2010-04-01T00:00Z";
-            String endInstance = "2013-04-01T00:00Z";
-            b.setInputFeedValidity(startInstance, endInstance);
-            b.setDatasetInstances("future(0,10)", "future(3,10)");
-            //b.setDatasetInstances("now(0,-40)", "now(0,0)");
-
-            String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
-            String processEnd = InstanceUtil.getTimeWrtSystemTime(8);
-            Util.print("processStart: " + processStart + " processEnd: " + processEnd);
-            b.setProcessValidity(processStart, processEnd);
-
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-
-            b.submitAndScheduleBundle(prismHelper);
-
-            InstanceUtil.waitTillInstanceReachState(ivoryqa1, b.getProcessName(), 3,
-                    CoordinatorAction.Status.SUCCEEDED, 20);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new Exception(e.getMessage());
-        } finally {
-            b.deleteBundle(prismHelper);
-        }
+    @Test(groups = {"singleCluster"})
+    public void futureTest() throws Exception {
+        bundle.setDatasetInstances("future(0,10)", "future(3,10)");
+        bundle.submitAndScheduleBundle(prism);
+        InstanceUtil.waitTillInstanceReachState(server1.getProcessHelper().getOozieClient(), bundle.getProcessName(), 3,
+                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
-
-        b.setInputFeedDataPath("/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
     }
 }

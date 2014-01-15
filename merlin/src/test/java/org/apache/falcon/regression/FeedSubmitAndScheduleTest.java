@@ -42,7 +42,7 @@ public class FeedSubmitAndScheduleTest extends BaseSingleClusterTests {
     private Bundle bundle;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws Exception {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, server1.getEnvFileName());
