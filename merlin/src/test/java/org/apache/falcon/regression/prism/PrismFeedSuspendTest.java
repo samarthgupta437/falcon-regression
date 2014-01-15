@@ -20,331 +20,280 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.oozie.client.Job;
 import org.testng.Assert;
 import org.testng.TestNGException;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class PrismFeedSuspendTest {
+public class PrismFeedSuspendTest extends BaseMultiClusterTests {
 
+    Bundle bundle1 = new Bundle();
+    Bundle bundle2 = new Bundle();
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        Bundle bundle = (Bundle) Util.readELBundles()[0][0];
+        bundle1 = new Bundle(bundle, server1.getEnvFileName());
+        bundle2 = new Bundle(bundle, server2.getEnvFileName());
+
+        bundle1.generateUniqueBundle();
+        bundle2.generateUniqueBundle();
     }
 
+    @Test(groups = {"prism", "0.2"})
+    public void testSuspendDeletedFeedOnBothColos() throws Exception {
+        submitAndScheduleFeed(bundle1);
+        submitAndScheduleFeed(bundle2);
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper UA1ColoHelper = new ColoHelper("mk-qa.config.properties");
-    ColoHelper UA2ColoHelper = new ColoHelper("ivoryqa-1.config.properties");
-
-
-    @Test(dataProvider = "DP", groups = {"prism", "0.2"})
-    public void testSuspendDeletedFeedOnBothColos(Bundle bundle) throws Exception {
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
-
-        UA1Bundle.generateUniqueBundle();
-        UA2Bundle.generateUniqueBundle();
-
-        submitAndScheduleFeed(UA1Bundle);
-        submitAndScheduleFeed(UA2Bundle);
-
-        //delete using prismHelper
-        Util.assertSucceeded(prismHelper.getFeedHelper()
-                .delete(Util.URLS.DELETE_URL, UA1Bundle.getDataSets().get(0)));
-
-
-        //suspend using prismHelper
-        Util.assertFailed(prismHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+        //delete using prism
+        Util.assertSucceeded(prism.getFeedHelper()
+                .delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
+        //suspend using prism
+        Util.assertFailed(prism.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
         //verify
-        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
-        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+        checkStatus(server1, bundle1, Job.Status.KILLED);
+        checkStatus(server2, bundle2, Job.Status.RUNNING);
 
-        Util.assertSucceeded(prismHelper.getFeedHelper()
-                .delete(Util.URLS.DELETE_URL, UA2Bundle.getDataSets().get(0)));
+        Util.assertSucceeded(prism.getFeedHelper()
+                .delete(Util.URLS.DELETE_URL, bundle2.getDataSets().get(0)));
         //suspend on the other one
-        Util.assertFailed(prismHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-        checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
-        checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.KILLED);
+        Util.assertFailed(prism.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
+        checkStatus(server1, bundle1, Job.Status.KILLED);
+        checkStatus(server2, bundle2, Job.Status.KILLED);
     }
 
-    @Test(dataProvider = "DP", groups = {"prism", "0.2"})
-    public void testSuspendSuspendedFeedOnBothColos(Bundle bundle) throws Exception {
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
-
-        UA1Bundle.generateUniqueBundle();
-        UA2Bundle.generateUniqueBundle();
-
+    @Test(groups = {"prism", "0.2"})
+    public void testSuspendSuspendedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
-        submitAndScheduleFeedUsingColoHelper(UA1ColoHelper, UA1Bundle);
-        submitAndScheduleFeedUsingColoHelper(UA2ColoHelper, UA2Bundle);
-
+        submitAndScheduleFeedUsingColoHelper(server1, bundle1);
+        submitAndScheduleFeedUsingColoHelper(server2, bundle2);
 
         for (int i = 0; i < 2; i++) {
-            //suspend using prismHelper
+            //suspend using prism
             Util.assertSucceeded(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
+            );
             //verify
-            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
+            checkStatus(server2, bundle2, Job.Status.RUNNING);
         }
-
 
         for (int i = 0; i < 2; i++) {
             //suspend on the other one
             Util.assertSucceeded(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.SUSPENDED);
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0))
+            );
+            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
+            checkStatus(server2, bundle2, Job.Status.SUSPENDED);
         }
     }
 
 
-    @Test(dataProvider = "DP")
-    public void testSuspendNonExistentFeedOnBothColos(Bundle bundle) throws Exception {
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
+    @Test()
+    public void testSuspendNonExistentFeedOnBothColos() throws Exception {
+        Util.assertFailed(prism.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
+        Util.assertFailed(prism.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
 
-        UA1Bundle.generateUniqueBundle();
-        UA2Bundle.generateUniqueBundle();
-
-        Util.assertFailed(prismHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-        Util.assertFailed(prismHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-
-        Util.assertFailed(UA1ColoHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-        Util.assertFailed(UA2ColoHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+        Util.assertFailed(server1.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
+        Util.assertFailed(server2.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
     }
 
-    @Test(dataProvider = "DP")
-    public void testSuspendSubmittedFeedOnBothColos(Bundle bundle) throws Exception {
-        Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-        Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
+    @Test()
+    public void testSuspendSubmittedFeedOnBothColos() throws Exception {
+        submitFeed(bundle1);
+        submitFeed(bundle2);
 
-        UA1Bundle.generateUniqueBundle();
-        UA2Bundle.generateUniqueBundle();
+        Util.assertFailed(prism.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
+        Util.assertFailed(prism.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
 
-        submitFeed(UA1Bundle);
-        submitFeed(UA2Bundle);
-
-        Util.assertFailed(prismHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-        Util.assertFailed(prismHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-
-        Util.assertFailed(UA1ColoHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-        Util.assertFailed(UA2ColoHelper.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
+        Util.assertFailed(server1.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
+        Util.assertFailed(server2.getFeedHelper()
+                .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
 
 
     }
 
-    @Test(dataProvider = "DP", groups = {"prism", "0.2"})
-    public void testSuspendScheduledFeedOnBothColosWhen1ColoIsDown(Bundle bundle) throws Exception {
+    @Test(groups = {"prism", "0.2"})
+    public void testSuspendScheduledFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
-            Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
-
-            UA1Bundle.generateUniqueBundle();
-            UA2Bundle.generateUniqueBundle();
-
             //schedule using colohelpers
-            submitAndScheduleFeedUsingColoHelper(UA1ColoHelper, UA1Bundle);
-            submitAndScheduleFeedUsingColoHelper(UA2ColoHelper, UA2Bundle);
+            submitAndScheduleFeedUsingColoHelper(server1, bundle1);
+            submitAndScheduleFeedUsingColoHelper(server2, bundle2);
 
+            Util.shutDownService(server1.getFeedHelper());
 
-            Util.shutDownService(UA1ColoHelper.getFeedHelper());
-
-            //suspend using prismHelper
+            //suspend using prism
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
+            );
             //verify
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            checkStatus(server2, bundle2, Job.Status.RUNNING);
 
             //suspend on the other one
             Util.assertSucceeded(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.SUSPENDED);;
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
+            checkStatus(server2, bundle2, Job.Status.SUSPENDED);;
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
         } finally {
-
-            Util.restartService(UA1ColoHelper.getFeedHelper());
+            Util.restartService(server1.getFeedHelper());
         }
-
     }
 
-    @Test(dataProvider = "DP", groups = {"prism", "0.2"})
-    public void testSuspendDeletedFeedOnBothColosWhen1ColoIsDown(Bundle bundle) throws Exception {
+    @Test(groups = {"prism", "0.2"})
+    public void testSuspendDeletedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
-            Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
-
-            UA1Bundle.generateUniqueBundle();
-            UA2Bundle.generateUniqueBundle();
-
             //schedule using colohelpers
-            submitAndScheduleFeedUsingColoHelper(UA1ColoHelper, UA1Bundle);
-            submitAndScheduleFeedUsingColoHelper(UA2ColoHelper, UA2Bundle);
+            submitAndScheduleFeedUsingColoHelper(server1, bundle1);
+            submitAndScheduleFeedUsingColoHelper(server2, bundle2);
 
             //delete using coloHelpers
             Util.assertSucceeded(
-                    prismHelper.getFeedHelper()
-                            .delete(Util.URLS.DELETE_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0))
+            );
 
-            Util.shutDownService(UA1ColoHelper.getFeedHelper());
+            Util.shutDownService(server1.getFeedHelper());
 
-            //suspend using prismHelper
+            //suspend using prism
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
             //verify
-            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
-
+            checkStatus(server1, bundle1, Job.Status.KILLED);
+            checkStatus(server2, bundle2, Job.Status.RUNNING);
 
             Util.assertSucceeded(
-                    prismHelper.getFeedHelper()
-                            .delete(Util.URLS.DELETE_URL, UA2Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .delete(Util.URLS.DELETE_URL, bundle2.getDataSets().get(0))
+            );
             //suspend on the other one
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.KILLED);
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.KILLED);
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0))
+            );
+            checkStatus(server1, bundle1, Job.Status.KILLED);
+            checkStatus(server2, bundle2, Job.Status.KILLED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
         } finally {
-            Util.restartService(UA1ColoHelper.getFeedHelper());
+            Util.restartService(server1.getFeedHelper());
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"prism", "0.2"})
-    public void testSuspendSuspendedFeedOnBothColosWhen1ColoIsDown(Bundle bundle) throws Exception {
+    @Test(groups = {"prism", "0.2"})
+    public void testSuspendSuspendedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
-            Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
-
-            UA1Bundle.generateUniqueBundle();
-            UA2Bundle.generateUniqueBundle();
-
             //schedule using colohelpers
-            submitAndScheduleFeedUsingColoHelper(UA1ColoHelper, UA1Bundle);
-            submitAndScheduleFeedUsingColoHelper(UA2ColoHelper, UA2Bundle);
+            submitAndScheduleFeedUsingColoHelper(server1, bundle1);
+            submitAndScheduleFeedUsingColoHelper(server2, bundle2);
 
 
-            //suspend using prismHelper
+            //suspend using prism
             Util.assertSucceeded(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
+            );
             //verify
-            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.RUNNING);
+            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
+            checkStatus(server2, bundle2, Job.Status.RUNNING);
 
-            Util.shutDownService(UA1ColoHelper.getFeedHelper());
+            Util.shutDownService(server1.getFeedHelper());
 
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
+            );
 
             //suspend on the other one
             Util.assertSucceeded(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
-            checkStatus(UA1ColoHelper, UA1Bundle, Job.Status.SUSPENDED);
-            checkStatus(UA2ColoHelper, UA2Bundle, Job.Status.SUSPENDED);
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
+            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
+            checkStatus(server2, bundle2, Job.Status.SUSPENDED);
 
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
         } finally {
-            Util.restartService(UA1ColoHelper.getProcessHelper());
+            Util.restartService(server1.getProcessHelper());
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"prism", "0.2"})
-    public void testSuspendNonExistentFeedOnBothColosWhen1ColoIsDown(Bundle bundle)
+    @Test(groups = {"prism", "0.2"})
+    public void testSuspendNonExistentFeedOnBothColosWhen1ColoIsDown()
     throws Exception {
         try {
-            Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
-
-            UA1Bundle.generateUniqueBundle();
-            UA2Bundle.generateUniqueBundle();
-
-            Util.shutDownService(UA1ColoHelper.getFeedHelper());
+            Util.shutDownService(server1.getFeedHelper());
 
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0))
+            );
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
 
             Util.assertFailed(
-                    UA2ColoHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    server2.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
         } finally {
-            Util.restartService(UA1ColoHelper.getProcessHelper());
+            Util.restartService(server1.getProcessHelper());
         }
     }
 
-    @Test(dataProvider = "DP", groups = {"prism", "0.2"})
-    public void testSuspendSubmittedFeedOnBothColosWhen1ColoIsDown(Bundle bundle) throws Exception {
+    @Test(groups = {"prism", "0.2"})
+    public void testSuspendSubmittedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
-            Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
+            submitFeed(bundle1);
+            submitFeed(bundle2);
 
-            UA1Bundle.generateUniqueBundle();
-            UA2Bundle.generateUniqueBundle();
-
-            submitFeed(UA1Bundle);
-            submitFeed(UA2Bundle);
-
-            Util.shutDownService(UA1ColoHelper.getFeedHelper());
+            Util.shutDownService(server1.getFeedHelper());
 
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
+            );
             Util.assertFailed(
-                    prismHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
+                    prism.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
 
 
             Util.assertFailed(
-                    UA2ColoHelper.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, UA2Bundle.getDataSets().get(0)));
+                    server2.getFeedHelper()
+                            .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
         } finally {
-            Util.restartService(UA1ColoHelper.getProcessHelper());
+            Util.restartService(server1.getProcessHelper());
         }
-
     }
 
     private void checkStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
@@ -357,10 +306,10 @@ public class PrismFeedSuspendTest {
 
         for (String cluster : bundle.getClusters()) {
             Util.assertSucceeded(
-                    prismHelper.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
+                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
         }
         Util.assertSucceeded(
-                prismHelper.getFeedHelper()
+                prism.getFeedHelper()
                         .submitEntity(Util.URLS.SUBMIT_URL, bundle.getDataSets().get(0)));
     }
 
@@ -375,14 +324,10 @@ public class PrismFeedSuspendTest {
     private void submitAndScheduleFeed(Bundle bundle) throws Exception {
         for (String cluster : bundle.getClusters()) {
             Util.assertSucceeded(
-                    prismHelper.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
+                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
         }
-        Util.assertSucceeded(prismHelper.getFeedHelper()
+        Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0)));
     }
 
-    @DataProvider(name = "DP")
-    public Object[][] getData() throws Exception {
-        return Util.readELBundles();
-    }
 }
