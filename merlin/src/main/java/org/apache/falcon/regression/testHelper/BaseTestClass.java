@@ -85,7 +85,7 @@ public class BaseTestClass {
         for (int i = 0; i < serverNames.size(); i++)
             serverNames.set(i, serverNames.get(i).trim() + ".properties");
 
-        serverNames.add("prism");
+        serverNames.add(PRISM_PROPERTIES);
         for (String server : serverNames) {
             Properties serverPorp = new Properties();
             serverPorp.setProperty("oozie_url", merlinProp.getProperty(server + ".oozie_url"));
@@ -117,25 +117,6 @@ public class BaseTestClass {
 
         }
 
-    }
-
-    public boolean restartServices() {
-        //restart server as precaution
-        try {
-
-            for (ColoHelper server : servers) {
-                Util.restartService(server.getClusterHelper());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File
-            // Templates.
-        }
-        return true;
-    }
-
-    public String getFeed() {
-        return Util.getBundle(servers.get(0)).getDataSets().get(0);
     }
 
     private List<ColoHelper> getServers() {
