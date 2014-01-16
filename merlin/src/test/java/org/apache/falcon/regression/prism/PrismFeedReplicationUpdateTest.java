@@ -21,385 +21,258 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
-import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
+import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class PrismFeedReplicationUpdateTest {
+public class PrismFeedReplicationUpdateTest extends BaseMultiClusterTests {
+
+    private final String inputPath = baseHDFSDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String alternativeInputPath = baseHDFSDir + "/newFeedPath/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private Bundle bundle1, bundle2, bundle3;
+
+    private String server1Colo = server1.getClusterHelper().getColo().split("=")[1];
+    private String server2Colo = server2.getClusterHelper().getColo().split("=")[1];
+    private String server3Colo = server3.getClusterHelper().getColo().split("=")[1];
+
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws Exception {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        //restart server as precaution
-        //	Util.restartService(ua1.getClusterHelper());
-        //	Util.restartService(ua2.getClusterHelper());
-        //	Util.restartService(ua3.getClusterHelper());
+        Bundle bundle = Util.readELBundles()[0][0];
 
+        bundle1 = new Bundle(bundle, server1.getEnvFileName());
+        bundle2 = new Bundle(bundle, server2.getEnvFileName());
+        bundle3 = new Bundle(bundle, server3.getEnvFileName());
 
+        bundle1.generateUniqueBundle();
+        bundle2.generateUniqueBundle();
+        bundle3.generateUniqueBundle();
     }
 
-    public PrismFeedReplicationUpdateTest() throws Exception {
-
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle1.deleteBundle(prism);
+        bundle2.deleteBundle(prism);
+        bundle3.deleteBundle(prism);
     }
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-
-    ColoHelper ua1 = new ColoHelper("mk-qa.config.properties");
-
-    ColoHelper ua2 = new ColoHelper("ivoryqa-1.config.properties");
-
-    ColoHelper ua3 = new ColoHelper("gs1001.config.properties");
-
-    @SuppressWarnings("deprecation")
     @Test(enabled = true, timeOut = 1200000)
     public void multipleSourceOneTarget() throws Exception {
 
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        Bundle b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        Bundle b3 = (Bundle) Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
+        bundle1.setInputFeedDataPath(inputPath);
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
-        try {
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            b2 = new Bundle(b2, ua2.getEnvFileName());
-            b3 = new Bundle(b3, ua3.getEnvFileName());
+        String feed = bundle1.getDataSets().get(0);
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null, null);
 
-
-            b1.setInputFeedDataPath(
-                    "/samarthRetention/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-
-            Bundle.submitCluster(b1, b2, b3);
-
-            String feed = b1.getDataSets().get(0);
-            feed = InstanceUtil.setFeedCluster(feed,
-                    XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                    ClusterType.SOURCE, null);
-
-            String postFix = "/US/ua2";
-            String prefix = b1.getFeedDataPathPrefix();
-            Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 80, 1, prefix, postFix);
+        String postFix = "/US/ua2";
+        String prefix = bundle1.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
+        Util.lateDataReplenish(server2, 5, 80, prefix, postFix);
 
 
-            postFix = "/UK/ua3";
-            prefix = b1.getFeedDataPathPrefix();
-            Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 80, 1, prefix, postFix);
+        postFix = "/UK/ua3";
+        prefix = bundle1.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
+        Util.lateDataReplenish(server3, 5, 80, prefix, postFix);
 
-            String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
-
-
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                            InstanceUtil.addMinsToTime(startTime, 85)),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "US/${cluster.colo}");
-            feed = InstanceUtil.setFeedCluster(feed,
-                    XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                            InstanceUtil.addMinsToTime(startTime, 105)),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                    Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET, null);
-            feed = InstanceUtil.setFeedCluster(feed,
-                    XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                            InstanceUtil.addMinsToTime(startTime, 130)),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                    Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
-                    "UK/${cluster.colo}");
+        String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
 
 
-            Util.print("feed: " + feed);
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                        InstanceUtil.addMinsToTime(startTime, 85)),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                        "US/${cluster.colo}", null);
 
-            ServiceResponse r = prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-            Thread.sleep(10000);
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
+                        InstanceUtil.addMinsToTime(startTime, 105)),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET, null, null);
 
-            r = prismHelper.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-            Thread.sleep(30000);
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
+                        InstanceUtil.addMinsToTime(startTime, 130)),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                "UK/${cluster.colo}", null);
 
-            //change feed location path
-            feed = InstanceUtil.setFeedFilePath(feed,
-                    "/newFeedPath/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                            "}/${MINUTE}");
+        Util.print("feed: " + feed);
 
-            Util.print("updated feed: " + feed);
+        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        Thread.sleep(10000);
 
+        prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        Thread.sleep(30000);
 
-            //update feed
-            prismHelper.getFeedHelper().update(feed, feed);
-            Thread.sleep(30000);
+        //change feed location path
+        feed = InstanceUtil.setFeedFilePath(feed, alternativeInputPath);
 
+        Util.print("updated feed: " + feed);
 
-            Assert.assertEquals(
-                    InstanceUtil
-                            .checkIfFeedCoordExist(ua2.getFeedHelper(), Util.readDatasetName(feed),
-                                    "REPLICATION" +
-                                            ""), 0);
-            Assert.assertEquals(
-                    InstanceUtil
-                            .checkIfFeedCoordExist(ua2.getFeedHelper(), Util.readDatasetName(feed),
-                                    "RETENTION"),
-                    2);
-            Assert.assertEquals(
-                    InstanceUtil
-                            .checkIfFeedCoordExist(ua3.getFeedHelper(), Util.readDatasetName(feed),
-                                    "REPLICATION"),
-                    0);
-            Assert.assertEquals(
-                    InstanceUtil
-                            .checkIfFeedCoordExist(ua3.getFeedHelper(), Util.readDatasetName(feed),
-                                    "RETENTION"),
-                    2);
-            Assert.assertEquals(
-                    InstanceUtil
-                            .checkIfFeedCoordExist(ua1.getFeedHelper(), Util.readDatasetName(feed),
-                                    "REPLICATION"),
-                    4);
-            Assert.assertEquals(
-                    InstanceUtil
-                            .checkIfFeedCoordExist(ua1.getFeedHelper(), Util.readDatasetName(feed),
-                                    "RETENTION"),
-                    2);
+        //update feed
+        prism.getFeedHelper().update(feed, feed);
+        Thread.sleep(30000);
 
-            //instanceUtil.getInputFoldersForInstanceForReplication(ua1,
-            // instanceUtil.getReplicationCoordID
-            // (instanceUtil.getLatestBundleID(ua1, Util.readDatasetName(feed), "FEED"),
-            // ua1.getFeedHelper()).get(0),
-            // 0);
-
-        } finally {
-
-            b1.deleteBundle(prismHelper);
-            b2.deleteBundle(prismHelper);
-            b3.deleteBundle(prismHelper);
-        }
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed),
+                                "REPLICATION"), 0);
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed),
+                                "RETENTION"), 2);
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server3.getFeedHelper(), Util.readDatasetName(feed),
+                                "REPLICATION"), 0);
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server3.getFeedHelper(), Util.readDatasetName(feed),
+                                "RETENTION"), 2);
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server1.getFeedHelper(), Util.readDatasetName(feed),
+                                "REPLICATION"), 4);
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server1.getFeedHelper(), Util.readDatasetName(feed),
+                                "RETENTION"), 2);
     }
 
     @Test(enabled = true, timeOut = 1200000)
     public void updateFeed_dependentProcessTest() throws Exception {
-        //ua1 and ua3 are source. feed01 on ua1 target ua3, feed02 on ua3 target ua1
+        //set cluster colos
+        bundle1.setCLusterColo(server1Colo);
+        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
+        bundle2.setCLusterColo(server2Colo);
+        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
+        bundle3.setCLusterColo(server3Colo);
+        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
 
-        //get 3 unique bundles
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        Bundle b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        Bundle b3 = (Bundle) Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
+        //submit 3 clusters
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
-        try {
-            //generate bundles according to config files
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            b2 = new Bundle(b2, ua2.getEnvFileName());
-            b3 = new Bundle(b3, ua3.getEnvFileName());
+        //get 2 unique feeds
+        String feed01 = Util.getInputFeedFromBundle(bundle1);
+        String feed02 = Util.getInputFeedFromBundle(bundle2);
+        String outputFeed = Util.getOutputFeedFromBundle(bundle1);
 
-            //set cluster colos
-            b1.setCLusterColo("ua1");
-            Util.print("cluster b1: " + b1.getClusters().get(0));
-            b2.setCLusterColo("ua2");
-            Util.print("cluster b2: " + b2.getClusters().get(0));
-            b3.setCLusterColo("ua3");
-            Util.print("cluster b3: " + b3.getClusters().get(0));
+        //set clusters to null;
+        feed01 = InstanceUtil.setFeedCluster(feed01,
+                        XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                        ClusterType.SOURCE, null, null);
 
+        feed02 = InstanceUtil.setFeedCluster(feed02,
+                        XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                        ClusterType.SOURCE, null, null);
 
-            //submit 3 clusters
-            Bundle.submitCluster(b1, b2, b3);
+        outputFeed = InstanceUtil.setFeedCluster(outputFeed,
+                        XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                        ClusterType.SOURCE, null, null);
 
-            //get 2 unique feeds
-            String feed01 = Util.getInputFeedFromBundle(b1);
-            String feed02 = Util.getInputFeedFromBundle(b2);
-            String outputFeed = Util.getOutputFeedFromBundle(b1);
+        //set new feed input data
+        feed01 = Util.setFeedPathValue(feed01, baseHDFSDir + "/feed01/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
+        feed02 = Util.setFeedPathValue(feed02, baseHDFSDir + "/feed02/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
 
-            //set source and target for the 2 feeds
+        //generate data in both the colos ua1 and ua3
+        String prefix = InstanceUtil.getFeedPrefix(feed01);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        Util.lateDataReplenish(server1, 70, 1, prefix);
 
-            //set clusters to null;
-            feed01 = InstanceUtil
-                    .setFeedCluster(feed01,
-                            XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                            ClusterType.SOURCE, null);
-            feed02 = InstanceUtil
-                    .setFeedCluster(feed02,
-                            XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                            ClusterType.SOURCE, null);
-            outputFeed = InstanceUtil
-                    .setFeedCluster(outputFeed,
-                            XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                            ClusterType.SOURCE, null);
+        prefix = InstanceUtil.getFeedPrefix(feed02);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
+        Util.lateDataReplenish(server3, 70, 1, prefix);
 
+        String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
 
-            //set new feed input data
-            feed01 = Util.setFeedPathValue(feed01,
-                    "/samarthRetention/feed01/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
-            feed02 = Util.setFeedPathValue(feed02,
-                    "/samarthRetention/feed02/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
+        //set clusters for feed01
+        feed01 = InstanceUtil.setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.SOURCE,
+                        null, null);
 
+        feed01 = InstanceUtil.setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.TARGET,
+                        null, null);
 
-            //generate data in both the colos ua1 and ua3
-            String prefix = InstanceUtil.getFeedPrefix(feed01);
-            Util.HDFSCleanup(ua1, prefix.substring(1));
-            Util.lateDataReplenish(ua1, 70, 1, prefix);
+        //set clusters for feed02
+        feed02 = InstanceUtil.setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                        null, null);
 
+        feed02 = InstanceUtil.setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                        null, null);
 
-            prefix = InstanceUtil.getFeedPrefix(feed02);
-            Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 70, 1, prefix);
+        //set clusters for output feed
+        outputFeed = InstanceUtil.setFeedCluster(outputFeed,
+                XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.SOURCE, null, null);
 
-
-            String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
-
-            //set clusters for feed01
-            feed01 = InstanceUtil
-                    .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE,
-                            null);
-            feed01 = InstanceUtil
-                    .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b3.getClusters().get(0)), ClusterType.TARGET,
-                            null);
+        outputFeed = InstanceUtil.setFeedCluster(outputFeed,
+                XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.TARGET, null, null);
 
 
-            //set clusters for feed02
-            feed02 = InstanceUtil
-                    .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET,
-                            null);
-            feed02 = InstanceUtil
-                    .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
-                            null);
+        //submit and schedule feeds
+        Util.print("feed01: " + feed01);
+        Util.print("feed02: " + feed02);
+        Util.print("outputFeed: " + outputFeed);
 
-            //set clusters for output feed
-            outputFeed = InstanceUtil.setFeedCluster(outputFeed,
-                    XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                    Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE, null);
-            outputFeed = InstanceUtil.setFeedCluster(outputFeed,
-                    XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                    Util.readClusterName(b3.getClusters().get(0)), ClusterType.TARGET, null);
+        prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
+        prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
+        prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, outputFeed);
 
 
-            //submit and schedule feeds
-            Util.print("feed01: " + feed01);
-            Util.print("feed02: " + feed02);
-            Util.print("outputFeed: " + outputFeed);
+        //create a process with 2 clusters
 
-            ServiceResponse r = prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
-            r = prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
-            r = prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, outputFeed);
+        //get a process
+        String process = bundle1.getProcessData();
 
+        //add clusters to process
+        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
+        String processEndTime = InstanceUtil.getTimeWrtSystemTime(70);
 
-            //create a process with 2 clusters
+        process = InstanceUtil.setProcessCluster(process, null,
+                XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
 
-            //get a process
-            String process = b1.getProcessData();
+        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundle1.getClusters().get(0)),
+                XmlUtil.createProcessValidity(processStartTime, processEndTime));
 
-            //add clusters to process
+        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundle3.getClusters().get(0)),
+                XmlUtil.createProcessValidity(processStartTime, processEndTime));
+        process = InstanceUtil.addProcessInputFeed(process, Util.readDatasetName(feed02), Util.readDatasetName(feed02));
 
-            String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-            String processEndTime = InstanceUtil.getTimeWrtSystemTime(70);
+        //submit and schedule process
+        Util.print("process: " + process);
 
+        prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
-            process = InstanceUtil
-                    .setProcessCluster(process, null,
-                            XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
-            process = InstanceUtil
-                    .setProcessCluster(process, Util.readClusterName(b1.getClusters().get(0)),
-                            XmlUtil.createProcessValidity(processStartTime, processEndTime));
-            process = InstanceUtil
-                    .setProcessCluster(process, Util.readClusterName(b3.getClusters().get(0)),
-                            XmlUtil.createProcessValidity(processStartTime, processEndTime));
-            process = InstanceUtil
-                    .addProcessInputFeed(process, Util.readDatasetName(feed02),
-                            Util.readDatasetName(feed02));
+        Util.print("Wait till process goes into running ");
 
-
-            //submit and schedule process
-            Util.print("process: " + process);
-
-            r = prismHelper.getProcessHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
-
-            Util.print("Wait till process goes into running ");
-
-            for (int i = 0; i < 30; i++) {
-                Status sUa1 =
-                        InstanceUtil.getInstanceStatus(ua1, Util.getProcessName(process), 0, 0);
-                Status sUa2 =
-                        InstanceUtil.getInstanceStatus(ua3, Util.getProcessName(process), 0, 0);
-                if ((sUa1.toString().equals("RUNNING") || (sUa1.toString().equals("SUCCEEDED "))) &&
-                        (sUa2.toString().equals("RUNNING") || sUa2.toString().equals("SUCCEEDED")))
-                    break;
-                Thread.sleep(20000);
-
+        for (int i = 0; i < 30; i++) {
+            Status status1 = InstanceUtil.getInstanceStatus(server1, Util.getProcessName(process), 0, 0);
+            Status status2 = InstanceUtil.getInstanceStatus(server3, Util.getProcessName(process), 0, 0);
+            if ((status1 == Status.RUNNING || status1 == Status.SUCCEEDED)
+                    && (status2 == Status.RUNNING || status2 == Status.SUCCEEDED)) {
+                break;
             }
-
-            //update feed01
-            //change feed location path
-            feed01 = InstanceUtil.setFeedFilePath(feed01,
-                    "/newFeedPath/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/${HOUR" +
-                            "}/${MINUTE}");
-
-            Util.print("updated feed: " + feed01);
-
-
-            //	Util.shutDownService(ua3.getClusterHelper());
-
-
-            //update feed first time
-            prismHelper.getFeedHelper().update(feed01, feed01);
-
-            //status of feed instance
-            //	ProcessInstancesResult responseInstance  =  prismHelper.getFeedHelper().getProcessInstanceStatus(Util
-            // .readDatasetName(feed01),"?start="+startTime+"&end="+instanceUtil.addMinsToTime(startTime,200));
-
-            //status of process instance
-
-            //	responseInstance  =  prismHelper.getProcessHelper().getProcessInstanceStatus(Util.readEntityName(b1
-            // .getProcessData()),"?start="+processStartTime+"&end="+processEndTime);
-
-
-            //	Util.startService(ua3.getClusterHelper());
-
-            //re update for the second time : check update roll forward
-            prismHelper.getFeedHelper().update(feed01, feed01);
-
-
-            //status of feed instance
-            //	responseInstance  =  prismHelper.getFeedHelper().getProcessInstanceStatus(Util.readDatasetName(feed01)
-            // ,"?start="+startTime+"&end="+instanceUtil.addMinsToTime(startTime,200));
-
-            //status of process instance
-
-            //	responseInstance  =  prismHelper.getProcessHelper().getProcessInstanceStatus(Util.readEntityName(b1
-            // .getProcessData()),"?start="+processStartTime+"&end="+processEndTime);
-
-
-        } finally {
-            b1.deleteBundle(prismHelper);
-            b2.deleteBundle(prismHelper);
-            b3.deleteBundle(prismHelper);
-
+            Thread.sleep(20000);
         }
+
+        feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
+        Util.print("updated feed: " + feed01);
+        prism.getFeedHelper().update(feed01, feed01);
     }
 }
