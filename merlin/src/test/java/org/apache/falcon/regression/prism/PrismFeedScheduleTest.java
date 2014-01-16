@@ -19,11 +19,10 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.oozie.client.Job;
 import org.testng.Assert;
 import org.testng.TestNGException;
@@ -33,26 +32,19 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class PrismFeedScheduleTest {
-
+public class PrismFeedScheduleTest extends BaseMultiClusterTests{
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
         Util.print("test name: " + method.getName());
     }
 
-
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper UA1ColoHelper = new ColoHelper("mk-qa.config.properties");
-    ColoHelper UA2ColoHelper = new ColoHelper("ivoryqa-1.config.properties");
-
-
     @Test(dataProvider = "DP", groups = {"prism", "0.2"})
     public void testFeedScheduleOn1ColoWhileAnotherColoHasSuspendedFeed(Bundle bundle)
     throws Exception {
         try {
-            Bundle UA1Bundle = new Bundle(bundle, UA1ColoHelper.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, UA2ColoHelper.getEnvFileName());
+            Bundle UA1Bundle = new Bundle(bundle, server1.getEnvFileName());
+            Bundle UA2Bundle = new Bundle(bundle, server1.getEnvFileName());
 
             UA1Bundle.generateUniqueBundle();
             UA2Bundle.generateUniqueBundle();
@@ -61,18 +53,18 @@ public class PrismFeedScheduleTest {
             System.out.println("feed: " + UA1Bundle.getDataSets().get(0));
 
             submitAndScheduleFeed(UA1Bundle);
-            Util.assertSucceeded(prismHelper.getFeedHelper()
+            Util.assertSucceeded(prism.getFeedHelper()
                     .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-            Assert.assertTrue(Util.verifyOozieJobStatus(UA1ColoHelper.getFeedHelper().getOozieClient(),
+            Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
             submitAndScheduleFeed(UA2Bundle);
-            Assert.assertTrue(Util.verifyOozieJobStatus(UA2ColoHelper.getFeedHelper().getOozieClient(),
+            Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-            Assert.assertTrue(Util.getOozieJobStatus(UA2ColoHelper.getFeedHelper().getOozieClient(),
+            Assert.assertTrue(Util.getOozieJobStatus(server1.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS) != Job.Status.RUNNING);
-            Assert.assertTrue(Util.verifyOozieJobStatus(UA1ColoHelper.getFeedHelper().getOozieClient(),
+            Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
-            Assert.assertTrue(Util.getOozieJobStatus(UA1ColoHelper.getFeedHelper().getOozieClient(),
+            Assert.assertTrue(Util.getOozieJobStatus(server1.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS) != Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,17 +76,17 @@ public class PrismFeedScheduleTest {
     private void submitFeed(Bundle bundle) throws Exception {
         for (String cluster : bundle.getClusters()) {
             Util.assertSucceeded(
-                    prismHelper.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
+                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
         }
         Util.assertSucceeded(
-                prismHelper.getFeedHelper()
+                prism.getFeedHelper()
                         .submitEntity(Util.URLS.SUBMIT_URL, bundle.getDataSets().get(0)));
     }
 
 
     private void submitAndScheduleFeed(Bundle bundle) throws Exception {
         submitFeed(bundle);
-        Util.assertSucceeded(prismHelper.getFeedHelper()
+        Util.assertSucceeded(prism.getFeedHelper()
                 .schedule(Util.URLS.SCHEDULE_URL, bundle.getDataSets().get(0)));
     }
 
