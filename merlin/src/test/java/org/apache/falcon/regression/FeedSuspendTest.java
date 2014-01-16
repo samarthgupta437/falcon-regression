@@ -67,7 +67,7 @@ public class FeedSuspendTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
     }
 
@@ -78,12 +78,12 @@ public class FeedSuspendTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
 
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
 
     }

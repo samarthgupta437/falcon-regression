@@ -64,7 +64,7 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
         //now try re-scheduling again
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
@@ -81,7 +81,7 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
         //now schedule the thing
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
     }
 
@@ -92,11 +92,11 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
 
         //now suspend
         Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         //now schedule this!
         Util.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
     }
 
@@ -106,7 +106,7 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
 
         //now suspend
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.KILLED));
         //now schedule this!
         Util.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));

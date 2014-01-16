@@ -99,7 +99,7 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
     public void latestTest() throws Exception {
         bundle.setDatasetInstances("latest(-3)", "latest(0)");
         bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstanceReachState(server1.getProcessHelper().getOozieClient(), bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(server1OC, bundle.getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -107,7 +107,7 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
     public void futureTest() throws Exception {
         bundle.setDatasetInstances("future(0,10)", "future(3,10)");
         bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstanceReachState(server1.getProcessHelper().getOozieClient(), bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(server1OC, bundle.getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 

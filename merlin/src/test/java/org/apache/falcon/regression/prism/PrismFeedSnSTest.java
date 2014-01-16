@@ -69,7 +69,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         //schedule both bundles
         submitAndScheduleFeed(bundle1);
         checkStatus(server1, bundle1, Job.Status.RUNNING);
-        Assert.assertNotEquals(Util.getOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertNotEquals(Util.getOozieJobStatus(server1OC,
                 Util.readDatasetName(bundle2.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
         submitAndScheduleFeed(bundle2);
 
@@ -77,7 +77,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         checkStatus(server2, bundle2, Job.Status.RUNNING);
 
         //check if there is no criss cross
-        Assert.assertNotEquals(Util.getOozieJobStatus(server2.getFeedHelper().getOozieClient(),
+        Assert.assertNotEquals(Util.getOozieJobStatus(server2OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
     }
 
@@ -99,11 +99,11 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
         //ensure only one bundle is there
-        Assert.assertEquals(Util.getBundles(server1.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(Util.getBundles(server1OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
-        Assert.assertEquals(Util.getBundles(server2.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(Util.getBundles(server2OC,
                 Util.readDatasetName(bundle2.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         //now check if they have been scheduled correctly or not
         checkStatus(server1, bundle1, Job.Status.RUNNING);
@@ -125,7 +125,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
         checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-        Assert.assertEquals(Util.getBundles(server1.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(Util.getBundles(server1OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
 
         Util.assertSucceeded(server1.getFeedHelper()
@@ -140,7 +140,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
         checkStatus(server2, bundle2, Job.Status.SUSPENDED);
-        Assert.assertEquals(Util.getBundles(server2.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(Util.getBundles(server2OC,
                 Util.readDatasetName(bundle2.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         Util.assertSucceeded(server2.getFeedHelper()
                 .resume(URLS.RESUME_URL, bundle2.getDataSets().get(0)));
@@ -192,7 +192,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         //now check if they have been scheduled correctly or not
         checkStatus(server2, bundle2, Job.Status.RUNNING);
         //check if there is no criss cross
-        Assert.assertNotEquals(Util.getOozieJobStatus(server2.getFeedHelper().getOozieClient(),
+        Assert.assertNotEquals(Util.getOozieJobStatus(server2OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
     }
 
@@ -206,7 +206,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
 
         Util.assertFailed(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
-        Assert.assertNotEquals(Util.getOozieJobStatus(server2.getFeedHelper().getOozieClient(),
+        Assert.assertNotEquals(Util.getOozieJobStatus(server2OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
     }
 
@@ -336,7 +336,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         //now check if they have been scheduled correctly or not
         checkStatus(server2, bundle2, Job.Status.RUNNING);
         //check if there is no criss cross
-        Assert.assertNotEquals(Util.getOozieJobStatus(server2.getFeedHelper().getOozieClient(),
+        Assert.assertNotEquals(Util.getOozieJobStatus(server2OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
     }
 
@@ -399,10 +399,10 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
 
         submitAndScheduleFeed(bundle2);
         checkStatus(server2, bundle2, Job.Status.RUNNING);
-        Assert.assertNotEquals(Util.getOozieJobStatus(server2.getFeedHelper().getOozieClient(),
+        Assert.assertNotEquals(Util.getOozieJobStatus(server2OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
         checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-        Assert.assertNotEquals(Util.getOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertNotEquals(Util.getOozieJobStatus(server1OC,
                 Util.readDatasetName(bundle2.getDataSets().get(0)), ENTITY_TYPE.PROCESS), Job.Status.RUNNING);
     }
 

@@ -82,7 +82,7 @@ public class ProcessPartitionExpVariableTest extends BaseSingleClusterTests {
         bundle.submitAndScheduleBundle(bundle, prism, false);
         TimeUnit.SECONDS.sleep(20);
 
-        InstanceUtil.waitTillInstanceReachState(server1.getProcessHelper().getOozieClient(),
+        InstanceUtil.waitTillInstanceReachState(server1OC,
                 Util.getProcessName(bundle.getProcessData()), 2,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }

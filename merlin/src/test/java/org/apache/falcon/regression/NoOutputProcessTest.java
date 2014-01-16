@@ -140,7 +140,7 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
 
         //wait for all the instances to complete
 
-        InstanceUtil.waitTillInstanceReachState(server1.getFeedHelper().getOozieClient(), bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(server1OC, bundle.getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
         Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
