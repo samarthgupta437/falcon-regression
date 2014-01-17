@@ -91,7 +91,9 @@ public class HadoopUtil {
     public static ArrayList<String> getAllFilesHDFS(FileSystem fs, Path location) throws Exception {
 
         ArrayList<String> files = new ArrayList<String>();
-
+        if (!fs.exists(location)) {
+            return files;
+        }
         FileStatus[] stats = fs.listStatus(location);
 
         for (FileStatus stat : stats) {
