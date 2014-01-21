@@ -44,7 +44,7 @@ public class PrismFeedScheduleTest extends BaseMultiClusterTests{
     throws Exception {
         try {
             Bundle UA1Bundle = new Bundle(bundle, server1.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, server1.getEnvFileName());
+            Bundle UA2Bundle = new Bundle(bundle, server2.getEnvFileName());
 
             UA1Bundle.generateUniqueBundle();
             UA2Bundle.generateUniqueBundle();
@@ -58,9 +58,9 @@ public class PrismFeedScheduleTest extends BaseMultiClusterTests{
             Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
             submitAndScheduleFeed(UA2Bundle);
-            Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+            Assert.assertTrue(Util.verifyOozieJobStatus(server2.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-            Assert.assertTrue(Util.getOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+            Assert.assertTrue(Util.getOozieJobStatus(server2.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS) != Job.Status.RUNNING);
             Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
                     Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
