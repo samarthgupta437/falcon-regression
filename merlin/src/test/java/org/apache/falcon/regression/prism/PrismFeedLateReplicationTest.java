@@ -21,8 +21,6 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -30,741 +28,557 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
+import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.oozie.client.WorkflowJob;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.List;
 
-public class PrismFeedLateReplicationTest {
+public class PrismFeedLateReplicationTest extends BaseMultiClusterTests {
+
+    private String normalInputPath = "src/test/resources/OozieExampleInputData/normalInput";
+    private Bundle bundle1, bundle2, bundle3;
+    
+    private String server1Colo = server1.getClusterHelper().getColo().split("=")[1];
+    private String server2Colo = server2.getClusterHelper().getColo().split("=")[1];
+    private String server3Colo = server3.getClusterHelper().getColo().split("=")[1];
+    
+    private String inputPath = baseHDFSDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
 
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws Exception {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        //restart server as precaution
-        //	Util.restartService(ua1.getClusterHelper());
-        //	Util.restartService(ua2.getClusterHelper());
-        //	Util.restartService(ua3.getClusterHelper());
+        Bundle bundle = Util.readELBundles()[0][0];
 
+        bundle1 = new Bundle(bundle, server1.getEnvFileName());
+        bundle2 = new Bundle(bundle, server2.getEnvFileName());
+        bundle3 = new Bundle(bundle, server3.getEnvFileName());
 
+        bundle1.generateUniqueBundle();
+        bundle2.generateUniqueBundle();
+        bundle3.generateUniqueBundle();
     }
 
-    public PrismFeedLateReplicationTest() throws Exception {
-
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle1.deleteBundle(prism);
+        bundle2.deleteBundle(prism);
+        bundle3.deleteBundle(prism);
     }
-
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-
-    ColoHelper ua1 = new ColoHelper("gs1001.config.properties");
-
-    ColoHelper ua2 = new ColoHelper("ivoryqa-1.config.properties");
-
-    ColoHelper ua3 = new ColoHelper("mk-qa.config.properties");
 
     @SuppressWarnings("deprecation")
     @Test(groups = {"multiCluster"})
     public void multipleSourceOneTarget_pastData() throws Exception {
 
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        Bundle b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        Bundle b3 = (Bundle) Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
+        bundle1.setInputFeedDataPath(inputPath);
 
-        try {
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            b2 = new Bundle(b2, ua2.getEnvFileName());
-            b3 = new Bundle(b3, ua3.getEnvFileName());
+        bundle1.setCLusterColo(server1Colo);
+        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
+        Util.assertSucceeded(r);
 
-            b1.setInputFeedDataPath(
-                    "/samarthRetention/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}/");
+        bundle2.setCLusterColo(server2Colo);
+        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
+        Util.assertSucceeded(r);
 
-            b1.setCLusterColo("ua1");
-            Util.print("cluster b1: " + b1.getClusters().get(0));
+        bundle3.setCLusterColo(server3Colo);
+        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle3.getClusters().get(0));
+        Util.assertSucceeded(r);
 
-            ServiceResponse r = prismHelper.getClusterHelper()
-                    .submitEntity(URLS.SUBMIT_URL, b1.getClusters().get(0));
-            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        String feed = bundle1.getDataSets().get(0);
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null);
 
-
-            b2.setCLusterColo("ua2");
-            Util.print("cluster b2: " + b2.getClusters().get(0));
-            r = prismHelper.getClusterHelper()
-                    .submitEntity(URLS.SUBMIT_URL, b2.getClusters().get(0));
-            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        String postFix = "/US/ua2";
+        String prefix = bundle1.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
+        Util.lateDataReplenish(server2, 90, 1, prefix, postFix);
 
 
-            b3.setCLusterColo("ua3");
-            Util.print("cluster b3: " + b3.getClusters().get(0));
-            r = prismHelper.getClusterHelper()
-                    .submitEntity(URLS.SUBMIT_URL, b3.getClusters().get(0));
-            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        postFix = "/UK/ua3";
+        prefix = bundle1.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
+        Util.lateDataReplenish(server3, 90, 1, prefix, postFix);
+
+        String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
+
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                        "US/${cluster.colo}");
+
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                        null);
+
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                        "UK/${cluster.colo}");
 
 
-            String feed = b1.getDataSets().get(0);
-            feed = InstanceUtil.setFeedCluster(feed,
-                    XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                    ClusterType.SOURCE, null);
+        Util.print("feed: " + feed);
 
-            String postFix = "/US/ua2";
-            String prefix = b1.getFeedDataPathPrefix();
-            Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 90, 1, prefix, postFix);
+        prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        Thread.sleep(10000);
 
+        String bundleId = InstanceUtil.getLatestBundleID(server1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
 
-            postFix = "/UK/ua3";
-            prefix = b1.getFeedDataPathPrefix();
-            Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
+        //wait till 1st instance of replication coord is SUCCEEDED
+        ArrayList<String> replicationCoordIDTarget = InstanceUtil
+                .getReplicationCoordID(bundleId, server1.getFeedHelper());
 
-            String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
-
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "US/${cluster.colo}");
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET,
-                            null);
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
-                            "UK/${cluster.colo}");
-
-
-            Util.print("feed: " + feed);
-
-            r = prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-            Thread.sleep(10000);
-
-            String TargetBundleID = InstanceUtil
-                    .getLatestBundleID(ua1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
-
-            //wait till 1st instance of replication coord is SUCCEEDED
-            ArrayList<String> replicationCoordIDTarget = InstanceUtil
-                    .getReplicationCoordID(TargetBundleID, ua1.getFeedHelper());
-
-            for (int i = 0; i < 30; i++) {
-                if (InstanceUtil.getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(0), 0)
-                        .toString()
-                        .equals("SUCCEEDED") && InstanceUtil
-                        .getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(1), 0)
-                        .toString()
-                        .equals("SUCCEEDED"))
-                    break;
-                Thread.sleep(20000);
+        for (int i = 0; i < 30; i++) {
+            if (InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(0), 0)
+                    == WorkflowJob.Status.SUCCEEDED
+                    && InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(1), 0)
+                    == WorkflowJob.Status.SUCCEEDED) {
+                break;
             }
-
-            Thread.sleep(15000);
-
-            ArrayList<String> inputFolderListForColo1 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(0),
-                            0);
-            ArrayList<String> inputFolderListForColo2 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(1),
-                            0);
-
-            Util.print("folder list 1: " + inputFolderListForColo1.toString());
-            Util.print("folder list 2: " + inputFolderListForColo2.toString());
-
-            InstanceUtil.putDataInFolders(ua2, inputFolderListForColo1);
-            InstanceUtil.putDataInFolders(ua3, inputFolderListForColo2);
-
-
-            Util.print("test");
-
-
-        } finally {
-            b1.deleteBundle(prismHelper);
-            b2.deleteBundle(prismHelper);
-            b3.deleteBundle(prismHelper);
+            Thread.sleep(20000);
         }
+
+        Thread.sleep(15000);
+
+        ArrayList<String> inputFolderListForColo1 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(0),
+                        0);
+        ArrayList<String> inputFolderListForColo2 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(1),
+                        0);
+
+        Util.print("folder list 1: " + inputFolderListForColo1.toString());
+        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+
+        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath, inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath, inputFolderListForColo2);
+
+        Util.print("test");
     }
 
     @Test(groups = {"multiCluster"})
     public void multipleSourceOneTarget_futureData() throws Exception {
 
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        Bundle b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        Bundle b3 = (Bundle) Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
+        bundle1.setInputFeedDataPath(inputPath);
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
-        try {
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            b2 = new Bundle(b2, ua2.getEnvFileName());
-            b3 = new Bundle(b3, ua3.getEnvFileName());
+        String feed = bundle1.getDataSets().get(0);
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null, null);
 
 
-            b1.setInputFeedDataPath(
-                    "/samarthRetention/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR" +
-                            "}/${MINUTE}/");
-            Bundle.submitCluster(b1, b2, b3);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(3);
 
-            String feed = b1.getDataSets().get(0);
-            feed = InstanceUtil.setFeedCluster(feed,
-                    XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                    ClusterType.SOURCE, null);
-
-
-            String startTime = InstanceUtil.getTimeWrtSystemTime(3);
-
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "US/${cluster.colo}");
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET,
-                            null);
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
-                            "UK/${cluster.colo}");
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                        "US/${cluster.colo}", null);
+        
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                        null, null);
+        
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                        Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                        "UK/${cluster.colo}", null);
 
 
-            Util.print("feed: " + feed);
+        Util.print("feed: " + feed);
 
-            ServiceResponse r = prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-            Thread.sleep(10000);
+        prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        Thread.sleep(10000);
 
+        String postFix = "/US/ua2";
+        String prefix = bundle1.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
+        Util.lateDataReplenish(server2, 90, 1, prefix, postFix);
 
-            String postFix = "/US/ua2";
-            String prefix = b1.getFeedDataPathPrefix();
-            Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenish(ua2, 90, 1, prefix, postFix);
+        postFix = "/UK/ua3";
+        prefix = bundle1.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
+        Util.lateDataReplenish(server3, 90, 1, prefix, postFix);
 
+        Thread.sleep(60000);
 
-            postFix = "/UK/ua3";
-            prefix = b1.getFeedDataPathPrefix();
-            Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
+        //wait till 1st instance of replication coord is SUCCEEDED
+        String bundleId = InstanceUtil
+                .getLatestBundleID(server1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
 
-            Thread.sleep(60000);
+        List<String> replicationCoordIDTarget = InstanceUtil.getReplicationCoordID(bundleId, server1.getFeedHelper());
 
-            //wait till 1st instance of replication coord is SUCCEEDED
-            String TargetBundleID = InstanceUtil
-                    .getLatestBundleID(ua1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
-
-            ArrayList<String> replicationCoordIDTarget = InstanceUtil
-                    .getReplicationCoordID(TargetBundleID, ua1.getFeedHelper());
-
-            for (int i = 0; i < 30; i++) {
-                if (InstanceUtil.getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(0), 0)
-                        .toString()
-                        .equals("SUCCEEDED") && InstanceUtil
-                        .getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(1), 0)
-                        .toString()
-                        .equals("SUCCEEDED"))
-                    break;
-
-                Util.print("still in for loop");
-                Thread.sleep(20000);
+        for (int i = 0; i < 30; i++) {
+            if (InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(0), 0)
+                    == WorkflowJob.Status.SUCCEEDED
+                    && InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(1), 0)
+                    == WorkflowJob.Status.SUCCEEDED) {
+                break;
             }
-
-            Thread.sleep(15000);
-
-            ArrayList<String> inputFolderListForColo1 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(0),
-                            1);
-            ArrayList<String> inputFolderListForColo2 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(1),
-                            1);
-
-            Util.print("folder list 1: " + inputFolderListForColo1.toString());
-            Util.print("folder list 2: " + inputFolderListForColo2.toString());
-
-            InstanceUtil.putDataInFolders(ua2, inputFolderListForColo1);
-            InstanceUtil.putDataInFolders(ua3, inputFolderListForColo2);
-
-            //sleep till late starts
-            InstanceUtil.sleepTill(ua1, InstanceUtil.addMinsToTime(startTime, 4));
-
-            //check for run id to  be 1
-            if (!(InstanceUtil.getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(0), 0) ==
-                    1 && InstanceUtil
-                    .getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(1), 0) == 1))
-                Assert.assertTrue(false);
-
-
-            //wait for lates run to complete
-            for (int i = 0; i < 30; i++) {
-                if (InstanceUtil.getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(0), 0)
-                        .toString()
-                        .equals("SUCCEEDED") && InstanceUtil
-                        .getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(1), 0)
-                        .toString()
-                        .equals("SUCCEEDED"))
-                    break;
-
-                Util.print("still in for loop");
-                Thread.sleep(20000);
-            }
-
-
-            Thread.sleep(30000);
-
-            //put data for the second time
-            InstanceUtil.putLateDataInFolders(ua2, inputFolderListForColo1, 2);
-            InstanceUtil.putLateDataInFolders(ua3, inputFolderListForColo2, 2);
-
-            //sleep till late 2 starts
-            InstanceUtil.sleepTill(ua1, InstanceUtil.addMinsToTime(startTime, 9));
-
-            //check for run id to be 2
-            if (!(InstanceUtil.getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(0), 0) ==
-                    2 && InstanceUtil
-                    .getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(1), 0) == 2))
-                Assert.assertTrue(false);
-
-        } finally {
-            b1.deleteBundle(prismHelper);
-            b2.deleteBundle(prismHelper);
-            b3.deleteBundle(prismHelper);
+            Util.print("still in for loop");
+            Thread.sleep(20000);
         }
+
+        Thread.sleep(15000);
+
+        ArrayList<String> inputFolderListForColo1 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(0), 1);
+        ArrayList<String> inputFolderListForColo2 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(1), 1);
+
+        Util.print("folder list 1: " + inputFolderListForColo1.toString());
+        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+
+        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath, inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath, inputFolderListForColo2);
+
+        //sleep till late starts
+        InstanceUtil.sleepTill(server1, InstanceUtil.addMinsToTime(startTime, 4));
+
+        //check for run id to  be 1
+        Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0) == 1
+                && InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0) == 1 , 
+                "id have to be equal 1");
+
+
+        //wait for lates run to complete
+        for (int i = 0; i < 30; i++) {
+            if (InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(0), 0)
+                    == WorkflowJob.Status.SUCCEEDED
+                    && InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(1), 0)
+                    == WorkflowJob.Status.SUCCEEDED) {
+                break;
+            }
+            Util.print("still in for loop");
+            Thread.sleep(20000);
+        }
+
+
+        Thread.sleep(30000);
+
+        //put data for the second time
+        InstanceUtil.putLateDataInFolders(server2, inputFolderListForColo1, 2);
+        InstanceUtil.putLateDataInFolders(server3, inputFolderListForColo2, 2);
+
+        //sleep till late 2 starts
+        InstanceUtil.sleepTill(server1, InstanceUtil.addMinsToTime(startTime, 9));
+
+        //check for run id to be 2
+        Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0) == 2
+                && InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0) == 2, 
+                "id have to be equal 2");
     }
 
+    /** this test case does the following
+     *  two source ua2 and ua3
+     *  ua3 has following part data
+     *  ua1/ua2
+     *  ua1/ua2
+     *  ua1/ua2
+     *
+     *  ua2 has following part data
+     *  ua1/ua3
+     *  ua1/ua3
+     *  ua1/ua3
+     *
+     *  ua1 is the target, which in the end should have all ua1 data
+     *
+     *  after first instance succeed data in put into relevant source and late should rerun
+     *
+     *  after first late succeed data is put into other source and late should not  */
 
     @Test(groups = {"multiCluster"})
     public void mixedTest01() throws Exception {
-        //		this test case does the following
-        //		two source ua2 and ua3
-        //		ua3 has following part data
-        //		ua1/ua2
-        //		ua1/ua2
-        //		ua1/ua2
-        //
-        //		ua2 has following part data
-        //		ua1/ua3
-        //		ua1/ua3
-        //		ua1/ua3
-        //
-        //		ua1 is the target, which in the end should have all ua1 data
-        //
-        //		after first instance succeed data in put into relevant source and late should rerun
-        //
-        //		after first late succeed data is put into other source and late should not rerun
-        //
 
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        Bundle b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        Bundle b3 = (Bundle) Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
-
-        try {
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            b2 = new Bundle(b2, ua2.getEnvFileName());
-            b3 = new Bundle(b3, ua3.getEnvFileName());
+        bundle1.setInputFeedDataPath(inputPath);
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
 
-            b1.setInputFeedDataPath(
-                    "/samarthRetention/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR" +
-                            "}/${MINUTE}/");
-            Bundle.submitCluster(b1, b2, b3);
+        String feed = bundle1.getDataSets().get(0);
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null, null);
 
 
-            String feed = b1.getDataSets().get(0);
-            feed = InstanceUtil.setFeedCluster(feed,
-                    XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                    ClusterType.SOURCE, null);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(3);
 
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                "ua1/${cluster.colo}", null);
 
-            String startTime = InstanceUtil.getTimeWrtSystemTime(3);
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                null, null);
 
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "ua1/${cluster.colo}");
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET,
-                            null);
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
-                            "ua1/${cluster.colo}");
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                "ua1/${cluster.colo}", null);
 
-            Util.print("feed: " + feed);
+        Util.print("feed: " + feed);
+        Thread.sleep(15000);
 
-            //create data in colos
-/*
-            String postFix = "/ua1/ua2" ;
-			String prefix = b1.getFeedDataPathPrefix();
-			Util.HDFSCleanup(ua2,prefix.substring(1));
-			Util.lateDataReplenishWithout_Success(ua2,90,0,1,prefix,postFix);
+        //submit and schedule feed
+        Util.print("feed: " + feed);
 
-			postFix = "/ua2/ua2" ;
-			Util.lateDataReplenishWithout_Success(ua2,90,0,1,prefix,postFix);
+        prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        Thread.sleep(10000);
 
-			postFix = "/ua3/ua2" ;
-			Util.lateDataReplenishWithout_Success(ua2,90,0,1,prefix,postFix);
+        //wait till 1st instance of replication coord is SUCCEEDED
+        String bundleId = InstanceUtil.getLatestBundleID(server1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
 
-			//put _SUCCESS in parent folder UA2
-			Util.putFileInFolderHDFS(ua2,90,0,1,prefix,"_SUCCESS");
+        List<String> replicationCoordIDTarget = InstanceUtil.getReplicationCoordID(bundleId, server1.getFeedHelper());
 
-			postFix = "/ua1/ua3" ;
-			Util.HDFSCleanup(ua3,prefix.substring(1));
-			Util.lateDataReplenish(ua3,90,0,1,prefix,postFix);
-
-			postFix = "/ua2/ua3" ;
-			Util.lateDataReplenish(ua3,90,0,1,prefix,postFix);
-
-			postFix = "/ua3/ua3" ;
-			Util.lateDataReplenish(ua3,90,0,1,prefix,postFix);
-
-			//put _SUCCESS in parent folder of UA3
-			Util.putFileInFolderHDFS(ua3,90,0,1,prefix,"_SUCCESS");			
-*/
-            Thread.sleep(15000);
-
-            //submit and schedule feed
-            Util.print("feed: " + feed);
-
-            ServiceResponse r = prismHelper.getFeedHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-            Thread.sleep(10000);
-
-            //wait till 1st instance of replication coord is SUCCEEDED
-            String TargetBundleID = InstanceUtil
-                    .getLatestBundleID(ua1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
-
-            ArrayList<String> replicationCoordIDTarget = InstanceUtil
-                    .getReplicationCoordID(TargetBundleID, ua1.getFeedHelper());
-
-            for (int i = 0; i < 30; i++) {
-                if (InstanceUtil.getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(0), 0)
-                        .toString()
-                        .equals("SUCCEEDED") && InstanceUtil
-                        .getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(1), 0)
-                        .toString()
-                        .equals("SUCCEEDED"))
-                    break;
-
-                Util.print("still in for loop");
-                Thread.sleep(20000);
+        for (int i = 0; i < 30; i++) {
+            if (InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(0), 0)
+                    == WorkflowJob.Status.SUCCEEDED
+                    && InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(1), 0)
+                    == WorkflowJob.Status.SUCCEEDED) {
+                break;
             }
-
-            Thread.sleep(15000);
-
-            //check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
-            // be present. both of
-            // them should have _success
-
-
-            ArrayList<String> inputFolderListForColo1 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(0),
-                            1);
-            ArrayList<String> inputFolderListForColo2 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(1),
-                            1);
-
-            String outPutLocaltion = InstanceUtil
-                    .getOutputFolderForInstanceForReplication(ua1, replicationCoordIDTarget.get(0),
-                            1);
-            String outPutBaseLocaltion = InstanceUtil
-                    .getOutputFolderBaseForInstanceForReplication(ua1,
-                            replicationCoordIDTarget.get(0), 1);
-
-            ArrayList<String> subfolders =
-                    HadoopUtil.getHDFSSubFoldersName(ua1, outPutBaseLocaltion);
-
-            if (!(subfolders.size() == 1 && subfolders.get(0).equals("ua1")))
-                Assert.assertTrue(false);
-
-            if (HadoopUtil.isFilePresentHDFS(ua1, outPutBaseLocaltion, "_SUCCESS"))
-                Assert.assertTrue(false);
-
-
-            if (!HadoopUtil.isFilePresentHDFS(ua1, outPutLocaltion, "_SUCCESS"))
-                Assert.assertTrue(false);
-
-
-            Util.print("folder list 1: " + inputFolderListForColo1.toString());
-            Util.print("folder list 2: " + inputFolderListForColo2.toString());
-
-            InstanceUtil.putDataInFolders(ua2, inputFolderListForColo1);
-            InstanceUtil.putDataInFolders(ua3, inputFolderListForColo2);
-
-            //sleep till late starts
-            InstanceUtil.sleepTill(ua1, InstanceUtil.addMinsToTime(startTime, 4));
-
-            //check for run id to  be 1
-            if (!(InstanceUtil.getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(0), 0) ==
-                    1 && InstanceUtil
-                    .getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(1), 0) == 1))
-                Assert.assertTrue(false);
-
-
-            //wait for lates run to complete
-            for (int i = 0; i < 30; i++) {
-                if (InstanceUtil.getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(0), 0)
-                        .toString()
-                        .equals("SUCCEEDED") && InstanceUtil
-                        .getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(1), 0)
-                        .toString()
-                        .equals("SUCCEEDED"))
-                    break;
-
-                Util.print("still in for loop");
-                Thread.sleep(20000);
-            }
-
-
-            Thread.sleep(30000);
-
-            //put data for the second time
-            InstanceUtil.putLateDataInFolders(ua2, inputFolderListForColo1, 2);
-            InstanceUtil.putLateDataInFolders(ua3, inputFolderListForColo2, 2);
-
-            //sleep till late 2 starts
-            InstanceUtil.sleepTill(ua1, InstanceUtil.addMinsToTime(startTime, 9));
-
-            //check for run id to be 2
-            if (!(InstanceUtil.getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(0), 0) ==
-                    2 && InstanceUtil
-                    .getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(1), 0) == 2))
-                Assert.assertTrue(false);
-
-        } finally {
-            b1.deleteBundle(prismHelper);
-            b2.deleteBundle(prismHelper);
-            b3.deleteBundle(prismHelper);
+            Util.print("still in for loop");
+            Thread.sleep(20000);
         }
+
+        Thread.sleep(15000);
+
+        //check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
+        // be present. both of them should have _success
+
+
+        ArrayList<String> inputFolderListForColo1 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(0), 1);
+        ArrayList<String> inputFolderListForColo2 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(1), 1);
+
+        String outPutLocation = InstanceUtil
+                .getOutputFolderForInstanceForReplication(server1, replicationCoordIDTarget.get(0), 1);
+        String outPutBaseLocation = InstanceUtil
+                .getOutputFolderBaseForInstanceForReplication(server1, replicationCoordIDTarget.get(0), 1);
+
+        ArrayList<String> subfolders = HadoopUtil.getHDFSSubFoldersName(server1FS, outPutBaseLocation);
+
+        Assert.assertTrue(subfolders.size() == 1 && subfolders.get(0).equals("ua1"));
+
+        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(server1, outPutBaseLocation, "_SUCCESS"));
+
+        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(server1, outPutLocation, "_SUCCESS"));
+
+        Util.print("folder list 1: " + inputFolderListForColo1.toString());
+        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+
+        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath, inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath, inputFolderListForColo2);
+
+        //sleep till late starts
+        InstanceUtil.sleepTill(server1, InstanceUtil.addMinsToTime(startTime, 4));
+
+        //check for run id to  be 1
+        Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0) == 1
+                && InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0) == 1, 
+                "id have to be equal 1");
+
+
+        //wait for lates run to complete
+        for (int i = 0; i < 30; i++) {
+            if (InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(0), 0)
+                    == WorkflowJob.Status.SUCCEEDED
+                    && InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(1), 0)
+                    == WorkflowJob.Status.SUCCEEDED) {
+                break;
+            }
+            Util.print("still in for loop");
+            Thread.sleep(20000);
+        }
+
+
+        Thread.sleep(30000);
+
+        //put data for the second time
+        InstanceUtil.putLateDataInFolders(server2, inputFolderListForColo1, 2);
+        InstanceUtil.putLateDataInFolders(server3, inputFolderListForColo2, 2);
+
+        //sleep till late 2 starts
+        InstanceUtil.sleepTill(server1, InstanceUtil.addMinsToTime(startTime, 9));
+
+        //check for run id to be 2
+        Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0) == 2
+                && InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0) == 2, 
+                "id have to be equal 2");
     }
 
+    /**     only difference between mixed 01 and 02 is of availability flag. feed has _success as
+     availability flag ...so replication should not start till _success is put in ua2
 
+     this test case does the following
+     two source ua2 and ua3
+     ua3 has follwing part data
+     ua1/ua2
+     ua1/ua2
+     ua1/ua2
+
+     ua2 has following part data
+     ua1/ua3
+     ua1/ua3
+     ua1/ua3
+
+     ua1 is the target, which in the end should have all ua1 data
+     after first instance succeed data in put into relevant source and late should rerun
+     after first late succeed data is put into other source and late should not rerun */
     @Test(groups = {"multiCluster"})
     public void mixedTest02() throws Exception {
-        // only difference between mixed 01 and 02 is of availability flag. feed has _success as
-        // availability flag ..
-        // .so replication should not start till _success is put in ua2
+        bundle1.setInputFeedDataPath(inputPath);
 
-        //		this test case does the following
-        //		two source ua2 and ua3
-        //		ua3 has follwing part data
-        //		ua1/ua2
-        //		ua1/ua2
-        //		ua1/ua2
-        //
-        //		ua2 has following part data
-        //		ua1/ua3
-        //		ua1/ua3
-        //		ua1/ua3
-        //
-        //		ua1 is the target, which in the end should have all ua1 data
-        //
-        //		after first instance succeed data in put into relevant source and late should rerun
-        //
-        //		after first late succeed data is put into other source and late should not rerun
-        //
+        bundle1.setCLusterColo(server1Colo);
+        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        Bundle b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        Bundle b3 = (Bundle) Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
+        Util.assertSucceeded(r);
 
-        try {
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            b2 = new Bundle(b2, ua2.getEnvFileName());
-            b3 = new Bundle(b3, ua3.getEnvFileName());
+        bundle2.setCLusterColo(server2Colo);
+        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
+        Util.assertSucceeded(r);
 
 
-            b1.setInputFeedDataPath(
-                    "/samarthRetention/input-data/rawLogs/oozieExample/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}/");
+        bundle3.setCLusterColo(server3Colo);
+        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle3.getClusters().get(0));
+        Util.assertSucceeded(r);
 
+        //set availability flag as _success
+        bundle1.setInputFeedAvailabilityFlag("_SUCCESS");
 
-            b1.setCLusterColo("ua1");
-            Util.print("cluster b1: " + b1.getClusters().get(0));
+        //get feed
+        String feed = bundle1.getDataSets().get(0);
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null, null);
 
-            ServiceResponse r = prismHelper.getClusterHelper()
-                    .submitEntity(URLS.SUBMIT_URL, b1.getClusters().get(0));
-            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        String startTime = InstanceUtil.getTimeWrtSystemTime(3);
 
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                "ua1/${cluster.colo}", null);
+        
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                null, null);
 
-            b2.setCLusterColo("ua2");
-            Util.print("cluster b2: " + b2.getClusters().get(0));
-            r = prismHelper.getClusterHelper()
-                    .submitEntity(URLS.SUBMIT_URL, b2.getClusters().get(0));
-            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                "ua1/${cluster.colo}", null);
 
+        //create data in colos
 
-            b3.setCLusterColo("ua3");
-            Util.print("cluster b3: " + b3.getClusters().get(0));
-            r = prismHelper.getClusterHelper()
-                    .submitEntity(URLS.SUBMIT_URL, b3.getClusters().get(0));
-            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        String postFix = "/ua1/ua2";
+        String prefix = bundle1.getFeedDataPathPrefix();
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
+        Util.lateDataReplenishWithout_Success(server2, 90, 1, prefix, postFix);
 
+        postFix = "/ua2/ua2";
+        Util.lateDataReplenishWithout_Success(server2, 90, 1, prefix, postFix);
 
-            //set availability flag as _success
-            b1.setInputFeedAvailabilityFlag("_SUCCESS");
+        postFix = "/ua3/ua2";
+        Util.lateDataReplenishWithout_Success(server2, 90, 1, prefix, postFix);
 
+        //put _SUCCESS in parent folder UA2
+        Util.putFileInFolderHDFS(server2, 90, 1, prefix, "_SUCCESS");
 
-            //get feed
-            String feed = b1.getDataSets().get(0);
-            feed = InstanceUtil.setFeedCluster(feed,
-                    XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                    XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                    ClusterType.SOURCE, null);
+        postFix = "/ua1/ua3";
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
+        Util.lateDataReplenish(server3, 90, 1, prefix, postFix);
 
+        postFix = "/ua2/ua3";
+        Util.lateDataReplenish(server3, 90, 1, prefix, postFix);
 
-            String startTime = InstanceUtil.getTimeWrtSystemTime(3);
+        postFix = "/ua3/ua3";
+        Util.lateDataReplenish(server3, 90, 1, prefix, postFix);
 
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
-                            "ua1/${cluster.colo}");
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET,
-                            null);
-            feed = InstanceUtil
-                    .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                            Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
-                            "ua1/${cluster.colo}");
+        //put _SUCCESS in parent folder of UA3
+        Util.putFileInFolderHDFS(server3, 90, 1, prefix, "_SUCCESS");
 
+        Thread.sleep(15000);
 
-            //create data in colos
+        //submit and schedule feed
+        Util.print("feed: " + feed);
 
-            String postFix = "/ua1/ua2";
-            String prefix = b1.getFeedDataPathPrefix();
-            Util.HDFSCleanup(ua2, prefix.substring(1));
-            Util.lateDataReplenishWithout_Success(ua2, 90, 1, prefix, postFix);
+        prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        Thread.sleep(10000);
 
-            postFix = "/ua2/ua2";
-            Util.lateDataReplenishWithout_Success(ua2, 90, 1, prefix, postFix);
+        //wait till 1st instance of replication coord is SUCCEEDED
+        String bundleId = InstanceUtil.getLatestBundleID(server1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
 
-            postFix = "/ua3/ua2";
-            Util.lateDataReplenishWithout_Success(ua2, 90, 1, prefix, postFix);
+        List<String> replicationCoordIDTarget = InstanceUtil.getReplicationCoordID(bundleId, server1.getFeedHelper());
 
-            //put _SUCCESS in parent folder UA2
-            Util.putFileInFolderHDFS(ua2, 90, 1, prefix, "_SUCCESS");
-
-            postFix = "/ua1/ua3";
-            Util.HDFSCleanup(ua3, prefix.substring(1));
-            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
-
-            postFix = "/ua2/ua3";
-            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
-
-            postFix = "/ua3/ua3";
-            Util.lateDataReplenish(ua3, 90, 1, prefix, postFix);
-
-            //put _SUCCESS in parent folder of UA3
-            Util.putFileInFolderHDFS(ua3, 90, 1, prefix, "_SUCCESS");
-
-            Thread.sleep(15000);
-
-            //submit and schedule feed
-            Util.print("feed: " + feed);
-
-
-            r = prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-            Thread.sleep(10000);
-
-            //wait till 1st instance of replication coord is SUCCEEDED
-            String TargetBundleID = InstanceUtil
-                    .getLatestBundleID(ua1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
-
-            ArrayList<String> replicationCoordIDTarget = InstanceUtil
-                    .getReplicationCoordID(TargetBundleID, ua1.getFeedHelper());
-
-            for (int i = 0; i < 30; i++) {
-                if (InstanceUtil.getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(0), 0)
-                        .toString()
-                        .equals("SUCCEEDED") && InstanceUtil
-                        .getInstanceStatusFromCoord(ua1, replicationCoordIDTarget.get(1), 0)
-                        .toString()
-                        .equals("SUCCEEDED"))
-                    break;
-
-                Util.print("still in for loop");
-                Thread.sleep(20000);
+        for (int i = 0; i < 30; i++) {
+            if (InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(0), 0)
+                    == WorkflowJob.Status.SUCCEEDED
+                    && InstanceUtil.getInstanceStatusFromCoord(server1, replicationCoordIDTarget.get(1), 0)
+                    == WorkflowJob.Status.SUCCEEDED) {
+                break;
             }
 
-            Thread.sleep(15000);
-
-            //check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
-            // be present. both of
-            // them should have _success
-
-
-            ArrayList<String> inputFolderListForColo1 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(0),
-                            0);
-            ArrayList<String> inputFolderListForColo2 = InstanceUtil
-                    .getInputFoldersForInstanceForReplication(ua1, replicationCoordIDTarget.get(1),
-                            0);
-
-            String outPutLocaltion = InstanceUtil
-                    .getOutputFolderForInstanceForReplication(ua1, replicationCoordIDTarget.get(0),
-                            0);
-            String outPutBaseLocaltion = InstanceUtil
-                    .getOutputFolderBaseForInstanceForReplication(ua1,
-                            replicationCoordIDTarget.get(0), 0);
-
-            ArrayList<String> subfolders =
-                    HadoopUtil.getHDFSSubFoldersName(ua1, outPutBaseLocaltion);
-
-            if (!(subfolders.size() == 1 && subfolders.get(0).equals("ua1")))
-                Assert.assertTrue(false);
-
-            if (HadoopUtil.isFilePresentHDFS(ua1, outPutBaseLocaltion, "_SUCCESS"))
-                Assert.assertTrue(false);
-
-
-            if (!HadoopUtil.isFilePresentHDFS(ua1, outPutLocaltion, "_SUCCESS"))
-                Assert.assertTrue(false);
-
-
-            Util.print("folder list 1: " + inputFolderListForColo1.toString());
-            Util.print("folder list 2: " + inputFolderListForColo2.toString());
-
-            InstanceUtil.putDataInFolders(ua2, inputFolderListForColo1);
-            InstanceUtil.putDataInFolders(ua3, inputFolderListForColo2);
-
-            //sleep till late starts
-            InstanceUtil.sleepTill(ua1, InstanceUtil.addMinsToTime(startTime, 4));
-
-            //check for run id to  be 1
-            if (!(InstanceUtil.getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(0), 0) ==
-                    1 && InstanceUtil
-                    .getInstanceRunIdFromCoord(ua1, replicationCoordIDTarget.get(1), 0) == 1))
-                Assert.assertTrue(false);
-
-        } finally {
-            b1.deleteBundle(prismHelper);
-            b2.deleteBundle(prismHelper);
-            b3.deleteBundle(prismHelper);
+            Util.print("still in for loop");
+            Thread.sleep(20000);
         }
+
+        Thread.sleep(15000);
+
+        /* check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
+           be present. both of
+           them should have _success */
+        ArrayList<String> inputFolderListForColo1 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(0), 0);
+        ArrayList<String> inputFolderListForColo2 = InstanceUtil
+                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(1), 0);
+
+        String outPutLocation = InstanceUtil
+                .getOutputFolderForInstanceForReplication(server1, replicationCoordIDTarget.get(0), 0);
+        String outPutBaseLocation = InstanceUtil
+                .getOutputFolderBaseForInstanceForReplication(server1, replicationCoordIDTarget.get(0), 0);
+
+        ArrayList<String> subfolders = HadoopUtil.getHDFSSubFoldersName(server1FS, outPutBaseLocation);
+
+        Assert.assertTrue(subfolders.size() == 1 && subfolders.get(0).equals("ua1"));
+
+        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(server1, outPutBaseLocation, "_SUCCESS"));
+
+        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(server1, outPutLocation, "_SUCCESS"));
+
+        Util.print("folder list 1: " + inputFolderListForColo1.toString());
+        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+
+        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath, inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath, inputFolderListForColo2);
+
+        //sleep till late starts
+        InstanceUtil.sleepTill(server1, InstanceUtil.addMinsToTime(startTime, 4));
+
+        //check for run id to  be 1
+        Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0) == 1
+                && InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0) == 1, 
+                "id have to be equal 1");
     }
 }
