@@ -23,12 +23,12 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.fs.Path;
 import org.testng.Assert;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class AssertUtil {
 
     public static void failIfStringFoundInPath(
-            ArrayList<Path> paths, String... shouldNotBePresent) {
+            List<Path> paths, String... shouldNotBePresent) {
 
         for (Path path : paths) {
             for (String aShouldNotBePresent : shouldNotBePresent)
@@ -39,8 +39,8 @@ public class AssertUtil {
         }
     }
 
-    public static void checkForPathsSizes(ArrayList<Path> expected,
-                                          ArrayList<Path> actual) {
+    public static void checkForPathsSizes(List<Path> expected,
+                                          List<Path> actual) {
 
         Assert.assertEquals(actual.size(), expected.size(),
                 "array size of the 2 paths array list is not the same");

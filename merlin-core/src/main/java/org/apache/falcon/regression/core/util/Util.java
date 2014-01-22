@@ -243,37 +243,37 @@ public class Util {
         return temp;
     }
 
-    public static ArrayList<String> getProcessStoreInfo(IEntityManagerHelper helper)
+    public static List<String> getProcessStoreInfo(IEntityManagerHelper helper)
     throws Exception {
         return getStoreInfo(helper, "/PROCESS");
     }
 
-    public static ArrayList<String> getDataSetStoreInfo(IEntityManagerHelper helper)
+    public static List<String> getDataSetStoreInfo(IEntityManagerHelper helper)
     throws Exception {
         return getStoreInfo(helper, "/FEED");
     }
 
-    public static ArrayList<String> getDataSetArchiveInfo(IEntityManagerHelper helper)
+    public static List<String> getDataSetArchiveInfo(IEntityManagerHelper helper)
     throws Exception {
         return getStoreInfo(helper, "/archive/FEED");
     }
 
-    public static ArrayList<String> getArchiveStoreInfo(IEntityManagerHelper helper)
+    public static List<String> getArchiveStoreInfo(IEntityManagerHelper helper)
     throws Exception {
         return getStoreInfo(helper, "/archive/PROCESS");
     }
 
-    public static ArrayList<String> getClusterStoreInfo(IEntityManagerHelper helper)
+    public static List<String> getClusterStoreInfo(IEntityManagerHelper helper)
     throws Exception {
         return getStoreInfo(helper, "/CLUSTER");
     }
 
-    public static ArrayList<String> getClusterArchiveInfo(IEntityManagerHelper helper)
+    public static List<String> getClusterArchiveInfo(IEntityManagerHelper helper)
     throws Exception {
         return getStoreInfo(helper, "/archive/CLUSTER");
     }
 
-    private static ArrayList<String> getStoreInfo(IEntityManagerHelper helper, String subPath) throws Exception {
+    private static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath) throws Exception {
         if (helper.getStoreLocation().startsWith("hdfs:")) {
             return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(), helper.getStoreLocation() + subPath);
         } else {
@@ -283,7 +283,7 @@ public class Util {
         }
     }
 
-    public static ArrayList<String> runRemoteScript(String hostName,
+    public static List<String> runRemoteScript(String hostName,
                                                     String userName,
                                                     String password,
                                                     String command,
@@ -324,7 +324,7 @@ public class Util {
         logger.info("now reading the line....");
 
         //now to read output
-        ArrayList<String> data = new ArrayList<String>();
+        List<String> data = new ArrayList<String>();
 
         InputStream in = channel.getInputStream();
 
@@ -534,7 +534,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieJobStatus(PrismHelper coloHelper, String processName)
+    public static List<String> getOozieJobStatus(PrismHelper coloHelper, String processName)
     throws Exception {
 
         logger.info(coloHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
@@ -552,7 +552,7 @@ public class Util {
                         processName +
                         "\" | tail -2 | head -1";
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(coloHelper.getProcessHelper().getQaHost(),
@@ -601,7 +601,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
+    public static List<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
                                                       String expectedState)
     throws Exception {
 
@@ -619,7 +619,7 @@ public class Util {
         statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
         logger.info(statusCommand);
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
@@ -640,7 +640,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieJobStatus(String processName, String expectedState,
+    public static List<String> getOozieJobStatus(String processName, String expectedState,
                                                       ColoHelper colohelper)
     throws Exception {
         String statusCommand =
@@ -657,7 +657,7 @@ public class Util {
         statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
         logger.info(statusCommand);
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(colohelper.getProcessHelper().getQaHost(),
@@ -678,7 +678,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState,
+    public static List<String> getOozieFeedJobStatus(String processName, String expectedState,
                                                           PrismHelper coloHelper)
     throws Exception {
 
@@ -695,7 +695,7 @@ public class Util {
         statusCommand += "name=FALCON_FEED_" + processName + "\" | tail -2 | head -1";
         logger.info(statusCommand);
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
@@ -772,7 +772,7 @@ public class Util {
 
     }
 
-    public static ArrayList<String> getMissingDependencies(PrismHelper helper, String bundleID)
+    public static List<String> getMissingDependencies(PrismHelper helper, String bundleID)
     throws Exception {
         XOozieClient oozieClient =
                 new XOozieClient(readPropertiesFile(helper.getEnvFileName(), "oozie_url"));
@@ -787,9 +787,9 @@ public class Util {
         return new ArrayList<String>(Arrays.asList(missingDependencies));
     }
 
-    public static ArrayList<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
+    public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
     throws Exception {
-        ArrayList<String> jobIds = new ArrayList<String>();
+        List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
@@ -847,19 +847,19 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getHadoopData(PrismHelper prismHelper, String feed)
+    public static List<String> getHadoopData(PrismHelper prismHelper, String feed)
     throws Exception {
 
 
         String command = prismHelper.getClusterHelper().getHadoopLocation() + "  dfs -lsr hdfs://" +
                 prismHelper.getClusterHelper().getHadoopURL() +
                 "/retention/testFolders | awk '{print $8}'";
-        ArrayList<String> result = runRemoteScript(prismHelper.getClusterHelper()
+        List<String> result = runRemoteScript(prismHelper.getClusterHelper()
                 .getQaHost(), prismHelper.getClusterHelper().getUsername(),
                 prismHelper.getClusterHelper().getPassword(), command,
                 prismHelper.getClusterHelper().getIdentityFile());
 
-        ArrayList<String> finalResult = new ArrayList<String>();
+        List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
 
@@ -876,20 +876,20 @@ public class Util {
         return finalResult;
     }
 
-    public static ArrayList<String> getHadoopData(ColoHelper helper, String feed) throws Exception {
+    public static List<String> getHadoopData(ColoHelper helper, String feed) throws Exception {
         return getHadoopDataFromDir(helper, feed, "/retention/testFolders/");
     }
 
-    public static ArrayList<String> getHadoopLateData(ColoHelper helper, String feed) throws Exception {
+    public static List<String> getHadoopLateData(ColoHelper helper, String feed) throws Exception {
         return getHadoopDataFromDir(helper, feed, "/lateDataTest/testFolders/");
     }
 
-    private static ArrayList<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir) throws Exception {
-        ArrayList<String> finalResult = new ArrayList<String>();
+    private static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir) throws Exception {
+        List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
         int depth = feedPath.split(dir)[1].split("/").length - 1;
-        ArrayList<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path(dir), depth);
+        List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path(dir), depth);
 
         for (Path result : results) {
             int pathDepth = result.toString().split(dir)[1].split("/").length - 1;
@@ -902,7 +902,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getHadoopLateData(PrismHelper prismHelper, String feed)
+    public static List<String> getHadoopLateData(PrismHelper prismHelper, String feed)
     throws Exception {
 
         //this command copies hadoop files in a directory....then gets the contents
@@ -910,12 +910,12 @@ public class Util {
                 prismHelper.getClusterHelper().getHadoopURL() +
                 "/lateDataTest/testFolders | awk '{print $8}'";
 
-        ArrayList<String> result = runRemoteScript(prismHelper.getClusterHelper()
+        List<String> result = runRemoteScript(prismHelper.getClusterHelper()
                 .getQaHost(), prismHelper.getClusterHelper().getUsername(),
                 prismHelper.getClusterHelper().getPassword(), command,
                 prismHelper.getClusterHelper().getIdentityFile());
 
-        ArrayList<String> finalResult = new ArrayList<String>();
+        List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
 
@@ -981,10 +981,10 @@ public class Util {
         createHDFSFolders(helper, folderList);
     }
 
-    public static ArrayList<String> convertDatesToFolders(List<String> dateList, int skipInterval)
+    public static List<String> convertDatesToFolders(List<String> dateList, int skipInterval)
     throws Exception {
         logger.info("converting dates to folders....");
-        ArrayList<String> folderList = new ArrayList<String>();
+        List<String> folderList = new ArrayList<String>();
 
         for (String date : dateList) {
             for (int i = 0; i < 24; i += skipInterval + 1) {
@@ -1002,7 +1002,7 @@ public class Util {
     public static List<String> addMinutesToCreatedFolders(List<String> folderList, int skipMinutes)
     throws Exception {
         logger.info("adding minutes to current folders.....");
-        ArrayList<String> finalFolderList = new ArrayList<String>();
+        List<String> finalFolderList = new ArrayList<String>();
 
         if (skipMinutes == 0) {
             skipMinutes = 1;
@@ -1021,7 +1021,7 @@ public class Util {
         return finalFolderList;
     }
 
-    public static ArrayList<String> filterDataOnRetention(String feed, int time, String interval,
+    public static List<String> filterDataOnRetention(String feed, int time, String interval,
                                                           DateTime endDate,
                                                           List<String> inputData)
     throws Exception {
@@ -1029,7 +1029,7 @@ public class Util {
         String appender = "";
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        ArrayList<String> finalData = new ArrayList<String>();
+        List<String> finalData = new ArrayList<String>();
 
         //determine what kind of data is there in the feed!
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
@@ -1147,7 +1147,7 @@ public class Util {
         logger.info("generating data between " + formatter.print(startDate) + " and " +
                 formatter.print(endDate));
 
-        ArrayList<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<String>();
 
 
         while (!startDate.isAfter(endDate)) {
@@ -1170,7 +1170,7 @@ public class Util {
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
-        ArrayList<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<String>();
         dates.add(formatter.print(today));
 
         //first lets get all dates before today
@@ -1192,7 +1192,7 @@ public class Util {
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
-        ArrayList<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<String>();
         dates.add(formatter.print(today));
 
         //first lets get all dates before today
@@ -1303,12 +1303,12 @@ public class Util {
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
-        ArrayList<String> jobIds = getCoordinatorJobs(prismHelper,
+        List<String> jobIds = getCoordinatorJobs(prismHelper,
                 Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                         feedName, ENTITY_TYPE.FEED).get(0));
 
         //create queuedata folderList:
-        ArrayList<String> deletedFolders = new ArrayList<String>();
+        List<String> deletedFolders = new ArrayList<String>();
 
         for (HashMap<String, String> data : queueData) {
             if (data != null) {
@@ -1358,7 +1358,7 @@ public class Util {
         String bundleId = Util.getBundles(helper.getFeedHelper().getOozieClient(),
                 Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
-        ArrayList<String> workflows = getFeedRetentionJobs(helper, bundleId);
+        List<String> workflows = getFeedRetentionJobs(helper, bundleId);
         logger.info("got a workflow list of length:" + workflows.size());
         Collections.sort(workflows);
 
@@ -1388,11 +1388,11 @@ public class Util {
         }
 
         //now look for cluster data
-        ArrayList<String> finalData =
+        List<String> finalData =
                 Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
 
         //now see if retention value was matched to as expected
-        ArrayList<String> expectedOutput =
+        List<String> expectedOutput =
                 Util.filterDataOnRetention(Util.getInputFeedFromBundle(bundle), time, interval,
                         currentTime, initialData);
 
@@ -1583,7 +1583,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getBundles(PrismHelper coloHelper, String entityName,
+    public static List<String> getBundles(PrismHelper coloHelper, String entityName,
                                                String entityType)
     throws Exception {
 
@@ -1630,10 +1630,10 @@ public class Util {
         return feedWriter.toString();
     }
 
-    public static ArrayList<DateTime> getStartTimeForRunningCoordinators(PrismHelper prismHelper,
+    public static List<DateTime> getStartTimeForRunningCoordinators(PrismHelper prismHelper,
                                                                          String bundleID)
     throws Exception {
-        ArrayList<DateTime> startTimes = new ArrayList<DateTime>();
+        List<DateTime> startTimes = new ArrayList<DateTime>();
 
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
@@ -1876,9 +1876,9 @@ public class Util {
         return feedWriter.toString().trim();
     }
 
-    public static ArrayList<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
+    public static List<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
     throws Exception {
-        ArrayList<String> jobIds = new ArrayList<String>();
+        List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = new XOozieClient(prismHelper.getFeedHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
@@ -1914,7 +1914,7 @@ public class Util {
     throws Exception {
         for (PrismHelper helper : prismHelper) {
             //make sure feed bundle is not there
-            ArrayList<String> feedList =
+            List<String> feedList =
                     runRemoteScript(helper.getFeedHelper().getQaHost(),
                             helper.getFeedHelper().getUsername(),
                             helper.getFeedHelper().getPassword(),
@@ -1965,15 +1965,15 @@ public class Util {
         return (Cluster) um.unmarshal(new StringReader(clusterXML));
     }
 
-    public static ArrayList<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
+    public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
     throws Exception {
-        ArrayList<String> raw = runRemoteScript(coloHelper.getProcessHelper()
+        List<String> raw = runRemoteScript(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
                 coloHelper.getProcessHelper().getPassword(),
                 "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
                         "\"Received\" | awk '{print $2}'",
                 coloHelper.getProcessHelper().getIdentityFile());
-        ArrayList<String> finalList = new ArrayList<String>();
+        List<String> finalList = new ArrayList<String>();
         for (String line : raw) {
             finalList.add(line.split(",")[0]);
 
@@ -1982,15 +1982,15 @@ public class Util {
         return finalList;
     }
 
-    public static ArrayList<String> getInstanceRetryTimes(ColoHelper coloHelper, String workflowId)
+    public static List<String> getInstanceRetryTimes(ColoHelper coloHelper, String workflowId)
     throws Exception {
-        ArrayList<String> raw = runRemoteScript(coloHelper.getProcessHelper()
+        List<String> raw = runRemoteScript(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
                 coloHelper.getProcessHelper().getPassword(),
                 "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
                         "\"Retrying attempt\" | awk '{print $2}'",
                 coloHelper.getProcessHelper().getIdentityFile());
-        ArrayList<String> finalList = new ArrayList<String>();
+        List<String> finalList = new ArrayList<String>();
         for (String line : raw) {
             finalList.add(line.split(",")[0]);
         }
@@ -2029,7 +2029,7 @@ public class Util {
         startService(helper);
     }
 
-    private static ArrayList<String> runRemoteScriptAsSudo(String hostName,
+    private static List<String> runRemoteScriptAsSudo(String hostName,
                                                            String userName,
                                                            String password,
                                                            String command,
@@ -2055,7 +2055,7 @@ public class Util {
         session.connect();
         Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
 
-        ArrayList<String> data = new ArrayList<String>();
+        List<String> data = new ArrayList<String>();
 
         ChannelExec channel = (ChannelExec) session.openChannel("exec");
         channel.setPty(true);
@@ -2089,7 +2089,7 @@ public class Util {
         return data;
     }
 
-    public static void verifyNoJobsFoundInOozie(ArrayList<String> data) throws Exception {
+    public static void verifyNoJobsFoundInOozie(List<String> data) throws Exception {
         Assert.assertTrue(data.get(0).contains("No Jobs match your criteria!"),
                 "Job was found on this oozie when not expected! Please check!");
     }
@@ -2116,7 +2116,7 @@ public class Util {
 
     public static List<String> generateUniqueClusterEntity(List<String> clusterData)
     throws Exception {
-        ArrayList<String> newList = new ArrayList<String>();
+        List<String> newList = new ArrayList<String>();
         for (String cluster : clusterData) {
             newList.add(generateUniqueClusterEntity(cluster));
         }
@@ -2125,7 +2125,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getBundles(String entityName, String entityType,
+    public static List<String> getBundles(String entityName, String entityType,
                                                IEntityManagerHelper helper)
     throws Exception {
         if (entityType.equals("FEED"))
@@ -2254,7 +2254,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getBundles(PrismHelper coloHelper,
+    public static List<String> getBundles(PrismHelper coloHelper,
                                                String entityName, ENTITY_TYPE entityType)
     throws Exception {
 

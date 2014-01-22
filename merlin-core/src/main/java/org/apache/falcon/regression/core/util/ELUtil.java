@@ -158,7 +158,7 @@ public class ELUtil {
     }
 
 
-    public static ArrayList<String> getQADepedencyList(Calendar nominalTime, Date startRef,
+    public static List<String> getQADepedencyList(Calendar nominalTime, Date startRef,
                                                        Date endRef, int frequency,
                                                        Bundle bundle)
     throws Exception {
@@ -181,7 +181,7 @@ public class ELUtil {
 
         Util.print("finalTime: " + finalTime.getTime());
 
-        ArrayList<String> returnList = new ArrayList<String>();
+        List<String> returnList = new ArrayList<String>();
 
         while (!initialTime.getTime().equals(finalTime.getTime())) {
             Util.print("initialTime: " + initialTime.getTime());

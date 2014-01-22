@@ -49,9 +49,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -787,7 +785,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
             String bundleId = Util.getBundles(server1.getFeedHelper().getOozieClient(),
                     Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
-            ArrayList<DateTime> dates = null;
+            List<DateTime> dates = null;
 
             do {
                 dates = Util.getStartTimeForRunningCoordinators(server1, bundleId);
@@ -885,7 +883,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
             String bundleId = Util.getBundles(server1.getFeedHelper().getOozieClient(),
                     Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
-            ArrayList<DateTime> dates = null;
+            List<DateTime> dates = null;
 
             do {
                 dates = Util.getStartTimeForRunningCoordinators(server1, bundleId);
@@ -1284,8 +1282,8 @@ public class NewRetryTest extends BaseSingleClusterTests {
             if (!coordAction.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
                 int expectedDelay = delay;
                 //first get data from logs:
-                ArrayList<String> instanceRetryTimes = Util.getInstanceRetryTimes(coloHelper, action.getExternalId());
-                ArrayList<String> instanceFinishTimes = Util.getInstanceFinishTimes(coloHelper, action.getExternalId());
+                List<String> instanceRetryTimes = Util.getInstanceRetryTimes(coloHelper, action.getExternalId());
+                List<String> instanceFinishTimes = Util.getInstanceFinishTimes(coloHelper, action.getExternalId());
 
                 System.out.println("finish times look like:");
                 for (String line : instanceFinishTimes) {
