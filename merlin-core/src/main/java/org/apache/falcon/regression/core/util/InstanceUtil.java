@@ -307,7 +307,7 @@ public class InstanceUtil {
         Assert.assertEquals(actualKilledInstances, killedInstances);
     }
 
-    public static ArrayList<String> getWorkflows(PrismHelper prismHelper, String processName,
+    public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
                                                  WorkflowAction.Status ws) throws Exception {
 
         String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
@@ -316,7 +316,7 @@ public class InstanceUtil {
 
         List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
-        ArrayList<String> toBeReturned = new ArrayList<String>();
+        List<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
             CoordinatorAction wfJob = oozieClient.getCoordActionInfo(jobID);
             WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getExternalId());
@@ -343,7 +343,7 @@ public class InstanceUtil {
                                            int succeededWorkflows)
     throws Exception {
 
-        ArrayList<WorkflowAction> was = getWorkflowActions(prismHelper, ProcessName);
+        List<WorkflowAction> was = getWorkflowActions(prismHelper, ProcessName);
         if (totalWorkflows != -1)
             Assert.assertEquals(was.size(), totalWorkflows);
         int actualRunningWorkflows = 0;
@@ -412,14 +412,14 @@ public class InstanceUtil {
     }
 
 
-    public static ArrayList<WorkflowAction> getWorkflowActions(PrismHelper prismHelper,
+    public static List<WorkflowAction> getWorkflowActions(PrismHelper prismHelper,
                                                                String processName)
     throws Exception {
         XOozieClient oozieClient = new XOozieClient(prismHelper.getProcessHelper().getOozieURL());
 
         String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
-        ArrayList<WorkflowAction> was = new ArrayList<WorkflowAction>();
+        List<WorkflowAction> was = new ArrayList<WorkflowAction>();
         List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
         for (String jobID : workflows) {
@@ -601,7 +601,7 @@ public class InstanceUtil {
 
     @Deprecated
     public static void putDataInFolders(ColoHelper colo,
-                                        final ArrayList<String> inputFoldersForInstance)
+                                        final List<String> inputFoldersForInstance)
     throws Exception {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
@@ -611,7 +611,7 @@ public class InstanceUtil {
 
     @Deprecated
     public static void putDataInFolders(FileSystem fs,
-                                        final ArrayList<String> inputFoldersForInstance)
+                                        final List<String> inputFoldersForInstance)
     throws Exception {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
@@ -620,7 +620,7 @@ public class InstanceUtil {
     }
 
     public static void putDataInFolders(ColoHelper colo,
-                                        final ArrayList<String> inputFoldersForInstance,
+                                        final List<String> inputFoldersForInstance,
                                         String type) throws Exception {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
@@ -743,7 +743,7 @@ public class InstanceUtil {
         return fmt.parseDateTime(time);
     }
 
-    public static void createHDFSFolders(PrismHelper helper, ArrayList<String> folderList)
+    public static void createHDFSFolders(PrismHelper helper, List<String> folderList)
     throws Exception {
         logger.info("creating folders.....");
 
@@ -772,7 +772,7 @@ public class InstanceUtil {
     }
 
 
-    public static void putFileInFolders(ColoHelper colo, ArrayList<String> folderList,
+    public static void putFileInFolders(ColoHelper colo, List<String> folderList,
                                         final String... fileName) throws Exception {
         Configuration conf = new Configuration();
         conf.set("fs.default.name",
@@ -813,7 +813,7 @@ public class InstanceUtil {
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
-        ArrayList<String> dataFolder = new ArrayList<String>();
+        List<String> dataFolder = new ArrayList<String>();
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
@@ -945,12 +945,12 @@ public class InstanceUtil {
         return sw.toString();
     }
 
-    public static ArrayList<String> getReplicationCoordName(String bundleID,
+    public static List<String> getReplicationCoordName(String bundleID,
                                                             IEntityManagerHelper helper)
     throws Exception {
         List<CoordinatorJob> cords = InstanceUtil.getBundleCoordinators(bundleID, helper);
 
-        ArrayList<String> ReplicationCordName = new ArrayList<String>();
+        List<String> ReplicationCordName = new ArrayList<String>();
         for (CoordinatorJob cord : cords) {
             if (cord.getAppName().contains("FEED_REPLICATION"))
                 ReplicationCordName.add(cord.getAppName());
@@ -971,11 +971,11 @@ public class InstanceUtil {
         return RetentionCoordName;
     }
 
-    public static ArrayList<String> getReplicationCoordID(String bundlID,
+    public static List<String> getReplicationCoordID(String bundlID,
                                                           IEntityManagerHelper helper)
     throws Exception {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-        ArrayList<String> ReplicationCoordID = new ArrayList<String>();
+        List<String> ReplicationCoordID = new ArrayList<String>();
         for (CoordinatorJob coord : coords) {
             if (coord.getAppName().contains("FEED_REPLICATION"))
                 ReplicationCoordID.add(coord.getId());
@@ -997,7 +997,7 @@ public class InstanceUtil {
     }
 
     public static void putDataInFolders(PrismHelper helper,
-                                        final ArrayList<String> inputFoldersForInstance)
+                                        final List<String> inputFoldersForInstance)
     throws Exception {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
@@ -1132,14 +1132,14 @@ public class InstanceUtil {
         //return coordInfo.getActions().get(instanceNumber).getStatus();
     }
 
-    public static ArrayList<String> getInputFoldersForInstanceForReplication(
+    public static List<String> getInputFoldersForInstanceForReplication(
             ColoHelper coloHelper, String coordID, int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorAction x = oozieClient.getCoordActionInfo(coordID + "@" + instanceNumber);
         return InstanceUtil.getReplicationFolderFromInstanceRunConf(x.getRunConf());
     }
 
-    public static ArrayList<String> getReplicationFolderFromInstanceRunConf(
+    public static List<String> getReplicationFolderFromInstanceRunConf(
             String runConf) {
         String conf;
         conf = runConf.substring(runConf.indexOf("ivoryInPaths</name>") + 19);
@@ -1166,7 +1166,7 @@ public class InstanceUtil {
     }
 
     public static void putLateDataInFolders(ColoHelper helper,
-                                            ArrayList<String> inputFolderList,
+                                            List<String> inputFolderList,
                                             int lateDataFolderNumber)
     throws Exception {
 
@@ -1390,7 +1390,7 @@ public class InstanceUtil {
 
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
 
-            ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
+            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
                     .getStatusAllInstanceStatusForProcess(coloHelper, processName);
             int instanceWithStatus = 0;
             for (CoordinatorAction.Status aStatusList : statusList) {
@@ -1420,7 +1420,7 @@ public class InstanceUtil {
 
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
 
-            ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
+            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
                     .getStatusAllInstance(coloHelper, entityName, entityType);
 
             int instanceWithStatus = 0;
@@ -1508,13 +1508,13 @@ public class InstanceUtil {
         Assert.assertTrue(false, "expceted state of instance was never reached");
     }
 
-    private static ArrayList<org.apache.oozie.client.CoordinatorAction.Status>
+    private static List<org.apache.oozie.client.CoordinatorAction.Status>
     getStatusAllInstanceStatusForProcess(
             ColoHelper coloHelper, String processName) throws Exception {
 
         CoordinatorJob coordInfo = InstanceUtil.getCoordJobForProcess(coloHelper, processName);
 
-        ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList =
+        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
                 new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
         for (int count = 0; count < coordInfo.getActions().size(); count++)
             statusList.add(coordInfo.getActions().get(count).getStatus());
@@ -1522,13 +1522,13 @@ public class InstanceUtil {
         return statusList;
     }
 
-    private static ArrayList<org.apache.oozie.client.CoordinatorAction.Status> getStatusAllInstance(
+    private static List<org.apache.oozie.client.CoordinatorAction.Status> getStatusAllInstance(
             ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType) throws Exception {
 
         CoordinatorJob coordInfo =
                 InstanceUtil.getCoordJobForProcess(coloHelper, entityName, entityType);
 
-        ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList =
+        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
                 new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
         for (int count = 0; count < coordInfo.getActions().size(); count++)
             statusList.add(coordInfo.getActions().get(count).getStatus());
@@ -1607,7 +1607,7 @@ public class InstanceUtil {
 
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
 
-            ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
+            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
                     .getStatusAllInstance(coloHelper, entityName, entityType);
 
             if (statusList.get(instanceNumber).equals(expectedStatus))
@@ -1619,7 +1619,7 @@ public class InstanceUtil {
 
     }
 
-    public static ArrayList<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
+    public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
                                                                        DateTime startDateJoda,
                                                                        DateTime endDateJoda,
                                                                        String prefix,
@@ -1631,7 +1631,7 @@ public class InstanceUtil {
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
-        ArrayList<String> dataFolder = new ArrayList<String>();
+        List<String> dataFolder = new ArrayList<String>();
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
