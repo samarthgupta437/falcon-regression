@@ -21,12 +21,11 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.oozie.client.Job;
-import org.testng.Assert;
 import org.testng.TestNGException;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -60,16 +59,16 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
         Util.assertFailed(prism.getFeedHelper()
                 .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
         //verify
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .delete(Util.URLS.DELETE_URL, bundle2.getDataSets().get(0)));
         //suspend on the other one
         Util.assertFailed(prism.getFeedHelper()
                 .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -85,8 +84,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
                             .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
             );
             //verify
-            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-            checkStatus(server2, bundle2, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
         }
 
         for (int i = 0; i < 2; i++) {
@@ -95,8 +94,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
                     prism.getFeedHelper()
                             .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0))
             );
-            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-            checkStatus(server2, bundle2, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
         }
     }
 
@@ -147,13 +146,13 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
                             .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
             );
             //verify
-            checkStatus(server2, bundle2, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
             //suspend on the other one
             Util.assertSucceeded(
                     prism.getFeedHelper()
                             .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
-            checkStatus(server2, bundle2, Job.Status.SUSPENDED);;
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
@@ -182,8 +181,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
                     prism.getFeedHelper()
                             .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
             //verify
-            checkStatus(server1, bundle1, Job.Status.KILLED);
-            checkStatus(server2, bundle2, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
             Util.assertSucceeded(
                     prism.getFeedHelper()
@@ -194,8 +193,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
                     prism.getFeedHelper()
                             .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0))
             );
-            checkStatus(server1, bundle1, Job.Status.KILLED);
-            checkStatus(server2, bundle2, Job.Status.KILLED);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
@@ -218,8 +217,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
                             .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0))
             );
             //verify
-            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-            checkStatus(server2, bundle2, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
             Util.shutDownService(server1.getFeedHelper());
 
@@ -232,8 +231,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
             Util.assertSucceeded(
                     prism.getFeedHelper()
                             .suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
-            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-            checkStatus(server2, bundle2, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -295,12 +294,6 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
             Util.restartService(server1.getProcessHelper());
         }
     }
-
-    private void checkStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
-        Assert.assertTrue(Util.verifyOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, expectedStatus));
-    }
-
 
     private void submitFeed(Bundle bundle) throws Exception {
 
