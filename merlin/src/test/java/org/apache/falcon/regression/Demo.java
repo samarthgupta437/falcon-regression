@@ -70,7 +70,7 @@ public class Demo {
     }
 */
 
-    @Test
+    @Test(enabled = false)
     public void test() throws Exception {
 
 
