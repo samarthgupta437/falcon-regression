@@ -56,6 +56,8 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         if (restartRequired) {
             Util.restartService(server1.getProcessHelper());
         }
+        bundle1.deleteBundle(prism);
+        bundle2.deleteBundle(prism);
     }
 
 
