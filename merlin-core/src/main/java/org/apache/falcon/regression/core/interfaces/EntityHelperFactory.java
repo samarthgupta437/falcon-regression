@@ -46,7 +46,7 @@ public class EntityHelperFactory {
     }
 
     public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName)
-    throws Exception {
+     {
         if (type.equals(ENTITY_TYPE.DATA)) {
             return new DataEntityHelperImpl(envFileName);
         }

@@ -22,6 +22,7 @@
  */
 package org.apache.falcon.regression.core.interfaces;
 
+import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -32,7 +33,9 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.OozieClient;
 
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Properties;
 
@@ -198,110 +201,110 @@ public abstract class IEntityManagerHelper {
         this.oozieClient = null;
     }
 
-    public abstract ServiceResponse submitEntity(String url, String data) throws Exception;
+    public abstract ServiceResponse submitEntity(String url, String data) throws IOException;
 
-    public abstract ServiceResponse submitEntity(Util.URLS url, String data) throws Exception;
+    public abstract ServiceResponse submitEntity(Util.URLS url, String data) throws IOException;
 
-    /*public abstract ServiceResponse validateEntity(String url, String data) throws Exception;*/
+    /*public abstract ServiceResponse validateEntity(String url, String data) ;*/
 
-    public abstract ServiceResponse schedule(String url, String data) throws Exception;
+    public abstract ServiceResponse schedule(String url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse submitAndSchedule(String url, String data) throws Exception;
+    public abstract ServiceResponse submitAndSchedule(String url, String data) throws IOException;
 
-    public abstract ServiceResponse submitAndSchedule(URLS url, String data) throws Exception;
+    public abstract ServiceResponse submitAndSchedule(URLS url, String data) throws IOException;
 
-    public abstract ServiceResponse delete(String url, String data) throws Exception;
+    public abstract ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse suspend(String url, String data) throws Exception;
+    public abstract ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse resume(String url, String data) throws Exception;
+    public abstract ServiceResponse resume(String url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse resume(URLS url, String data) throws Exception;
+    public abstract ServiceResponse resume(URLS url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse getStatus(String url, String data) throws Exception;
+    public abstract ServiceResponse getStatus(String url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse getStatus(URLS url, String data) throws Exception;
+    public abstract ServiceResponse getStatus(URLS url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse getEntityDefinition(String url, String data) throws Exception;
+    public abstract ServiceResponse getEntityDefinition(String url, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse getEntityDefinition(URLS url, String data) throws Exception;
+    public abstract ServiceResponse getEntityDefinition(URLS url, String data) throws JAXBException, IOException, URISyntaxException;
 
 
     public abstract void validateResponse(String response, APIResult.Status expectedResponse,
-                                          String filename)
-    throws Exception;
+                                          String filename) throws JAXBException, IOException
+            ;
 
-    public abstract ServiceResponse schedule(URLS scheduleUrl, String processData) throws Exception;
+    public abstract ServiceResponse schedule(URLS scheduleUrl, String processData) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse delete(URLS deleteUrl, String data) throws Exception;
+    public abstract ServiceResponse delete(URLS deleteUrl, String data) throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse suspend(URLS suspendUrl, String data) throws Exception;
+    public abstract ServiceResponse suspend(URLS suspendUrl, String data) throws JAXBException, IOException, URISyntaxException;
 
     public abstract ProcessInstancesResult getRunningInstance(URLS processRuningInstance,
-                                                              String name) throws Exception;
+                                                              String name) throws IOException, URISyntaxException;
 
 
     /*public abstract ProcessInstancesResult getRunningInstance(String processRuningInstance,
                                                               String name)
-    throws Exception;*/
+    ;*/
 
 
     public abstract ProcessInstancesResult getProcessInstanceStatus(
-            String readEntityName, String params) throws Exception;
+            String readEntityName, String params) throws IOException, URISyntaxException;
 
     public abstract ProcessInstancesResult getProcessInstanceSuspend(
-            String readEntityName, String params) throws Exception;
+            String readEntityName, String params) throws IOException, URISyntaxException;
 
-/*    public abstract String writeEntityToFile(String entity) throws Exception;
+/*    public abstract String writeEntityToFile(String entity) ;
 
-    public abstract String submitEntityViaCLI(String filePath) throws Exception;
+    public abstract String submitEntityViaCLI(String filePath) ;
 
-    public abstract String validateEntityViaCLI(String filePath) throws Exception;
+    public abstract String validateEntityViaCLI(String filePath) ;
 
-    public abstract String submitAndScheduleViaCLI(String filePath) throws Exception;
+    public abstract String submitAndScheduleViaCLI(String filePath) ;
 
-    public abstract String scheduleViaCLI(String filePath) throws Exception;
+    public abstract String scheduleViaCLI(String filePath) ;
 
-    public abstract String resumeViaCLI(String filePath) throws Exception;
+    public abstract String resumeViaCLI(String filePath) ;
 
-    public abstract String getStatusViaCLI(String filePath) throws Exception;
+    public abstract String getStatusViaCLI(String filePath) ;
 
-    public abstract String getEntityDefinitionViaCLI(String filePath) throws Exception;
+    public abstract String getEntityDefinitionViaCLI(String filePath) ;
 
-    public abstract String deleteViaCLI(String filePath) throws Exception;
+    public abstract String deleteViaCLI(String filePath) ;
 
-    public abstract String suspendViaCLI(String filePath) throws Exception;
+    public abstract String suspendViaCLI(String filePath) ;
 
     public abstract String updateViaCLI(String processName, String newProcessFilePath)
-    throws Exception;*/
+    ;*/
 
-    public abstract String list() throws Exception;
+    public abstract String list() throws IOException, InterruptedException;
 
-    public abstract String getDependencies(String entityName) throws Exception;
+    public abstract String getDependencies(String entityName) throws IOException, InterruptedException;
 
-    public abstract List<String> getArchiveInfo() throws Exception;
+    public abstract List<String> getArchiveInfo() throws IOException, JSchException;
 
-    public abstract List<String> getStoreInfo() throws Exception;
+    public abstract List<String> getStoreInfo() throws IOException, JSchException;
 
-    public abstract ServiceResponse update(String oldEntity, String newEntity) throws Exception;
+    public abstract ServiceResponse update(String oldEntity, String newEntity) throws JAXBException, IOException;
 
-    public abstract String toString(Object object) throws Exception;
+    public abstract String toString(Object object) throws JAXBException;
 
 /*
     public abstract ProcessInstancesResult getInstanceRerun(String EntityName, String params)
-    throws Exception;
+    ;
 */
 
     public abstract ProcessInstancesResult getProcessInstanceKill(String readEntityName,
-                                                                  String string) throws Exception;
+                                                                  String string) throws IOException, URISyntaxException;
 
     public abstract ProcessInstancesResult getProcessInstanceRerun(String readEntityName,
-                                                                   String string)
-    throws Exception;
+                                                                   String string) throws IOException, URISyntaxException
+            ;
 
     public abstract ProcessInstancesResult getProcessInstanceResume(String readEntityName,
-                                                                    String string)
-    throws Exception;
+                                                                    String string) throws IOException, URISyntaxException
+            ;
 
     public String getColo() {
         return colo;
@@ -310,6 +313,6 @@ public abstract class IEntityManagerHelper {
 /*
     public abstract String getProcessInstanceStatusViaCli(String EntityName,
                                                           String start, String end, String colos)
-    throws Exception;
+    ;
 */
 }

@@ -30,6 +30,8 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 
+import java.io.IOException;
+
 
 public class PrismHelper {
 
@@ -74,11 +76,11 @@ public class PrismHelper {
 
     }
 
-    public ServiceResponse submitCluster(Bundle bundle) throws Exception {
+    public ServiceResponse submitCluster(Bundle bundle) throws IOException {
         return clusterHelper.submitEntity(Util.URLS.SUBMIT_URL, bundle.getClusterData());
     }
 
-    /*public List<ServiceResponse> submitFeed(Bundle bundle) throws Exception {
+    /*public List<ServiceResponse> submitFeed(Bundle bundle)  {
         List<ServiceResponse> responseList = new ArrayList<ServiceResponse>();
         for (String feed : bundle.getDataSets()) {
             responseList.add(feedHelper.submitEntity(Util.URLS.SUBMIT_URL, feed));
@@ -86,11 +88,11 @@ public class PrismHelper {
         return responseList;
     }*/
 
-    /*public ServiceResponse submitProcess(Bundle bundle) throws Exception {
+    /*public ServiceResponse submitProcess(Bundle bundle)  {
         return processHelper.submitEntity(Util.URLS.SUBMIT_URL, bundle.getProcessData());
     }*/
 
-    /*public ServiceResponse scheduleProcess(Bundle bundle) throws Exception {
+    /*public ServiceResponse scheduleProcess(Bundle bundle)  {
         return processHelper
                 .schedule(Util.URLS.SCHEDULE_URL, Util.readEntityName(bundle.getProcessData()));
     }*/

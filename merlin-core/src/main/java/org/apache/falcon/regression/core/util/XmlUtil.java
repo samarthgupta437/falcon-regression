@@ -22,14 +22,14 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
+import java.text.ParseException;
 
 public class XmlUtil {
 
-    public static Validity createValidity(String start, String end) throws Exception {
+    public static Validity createValidity(String start, String end) throws ParseException {
         Validity v = new Validity();
         v.setStart(InstanceUtil.oozieDateToDate(start).toDate());
         v.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
-        //v.setTimezone(timeZone);
         return v;
     }
 
@@ -40,44 +40,10 @@ public class XmlUtil {
         return r;
     }
 
-    /*	public static String marshalUnmarshalCLuster(String originalXml) throws JAXBException
-        {
-            JAXBContext jc=JAXBContext.newInstance(Cluster.class);
-            Unmarshaller u=jc.createUnmarshaller();
-            Cluster c = (Cluster)u.unmarshal((new StringReader(originalXml)));
 
-
-
-            java.io.StringWriter sw = new StringWriter();
-            Marshaller marshaller = jc.createMarshaller();
-            marshaller.marshal(c,sw);
-
-            c = (Cluster)u.unmarshal((new StringReader(sw.toString())));
-
-
-            com.thoughtworks.xstream.XStream xstream = new com.thoughtworks.xstream.XStream(new
-            com.thoughtworks
-            .xstream.converters.reflection.Sun14ReflectionProvider(
-                       new com.thoughtworks.xstream.converters.reflection.FieldDictionary(new com
-                       .thoughtworks
-                       .xstream.converters.reflection.ImmutableFieldKeySorter())),
-                       new com.thoughtworks.xstream.io.xml.DomDriver("utf-8"));
-
-
-
-                    String thisStr = xstream.toXML(c);
-
-
-            return thisStr;
-
-
-
-
-        }
-    */
     public static org.apache.falcon.regression.core.generated.process.Validity
     createProcessValidity(
-            String startTime, String endTime) throws Exception {
+            String startTime, String endTime) throws ParseException {
 
         org.apache.falcon.regression.core.generated.process.Validity v =
                 new org.apache.falcon.regression.core.generated.process.Validity();
