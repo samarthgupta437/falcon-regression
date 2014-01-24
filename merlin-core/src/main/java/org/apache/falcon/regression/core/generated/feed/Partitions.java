@@ -98,6 +98,7 @@ public class Partitions {
         }
         partition.add(p);
     }
-
-
+    public boolean containsPartition(Partition p){
+        return partition.contains(p);
+    }
 }

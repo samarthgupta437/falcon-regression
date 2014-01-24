@@ -19,8 +19,7 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.generated.feed.*;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -360,6 +359,10 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         String startTimeUA2 = "2012-10-01T12:00Z";
 
         String feed = bundle1.getDataSets().get(0);
+        String feedName = Util.readDatasetName(feed);
+        bundle1.addFeedPartitions(feedName, "cluster");
+        feed = bundle1.getDataSets().get(0);
+
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
@@ -389,7 +392,6 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         prism.getClusterHelper().delete(URLS.DELETE_URL, bundle2.getClusters().get(0));
 
     }
-
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasSuspendedFeedUsingColoHelper() throws Exception {

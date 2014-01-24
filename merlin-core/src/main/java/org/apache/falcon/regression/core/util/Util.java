@@ -533,48 +533,6 @@ public class Util {
         return bundleSet.toArray(new Bundle[bundleSet.size()]);
     }
 
-    @Deprecated
-    public static List<String> getOozieJobStatus(PrismHelper coloHelper, String processName)
-    throws Exception {
-
-        logger.info(coloHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-                coloHelper.getProcessHelper().getOozieURL() +
-                "  -jobtype bundle -localtime -filter \"status=RUNNING;name=FALCON_PROCESS_" +
-                processName +
-                "\" | tail -2 | head -1");
-
-        String expectedState = "RUNNING";
-        String statusCommand =
-                coloHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-                        coloHelper.getProcessHelper().getOozieURL() +
-                        "  -jobtype bundle -localtime -filter \"status=RUNNING;" +
-                        "name=FALCON_PROCESS_" +
-                        processName +
-                        "\" | tail -2 | head -1";
-
-        List<String> jobList = new ArrayList<String>();
-
-        for (int seconds = 0; seconds < 20; seconds++) {
-            jobList = runRemoteScript(coloHelper.getProcessHelper().getQaHost(),
-                    coloHelper.getProcessHelper().getUsername(),
-                    coloHelper.getProcessHelper().getPassword(), statusCommand,
-                    coloHelper.getProcessHelper().getIdentityFile());
-
-            if (jobList.get(0).contains(expectedState)) {
-                logger.info(jobList.get(0));
-                break;
-            } else {
-                Thread.sleep(1000);
-            }
-
-        }
-
-        logger.info(jobList.get(0));
-        return jobList;
-
-
-    }
-
     public static boolean verifyOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType, Job.Status expectedStatus)
             throws OozieClientException, InterruptedException {
@@ -598,121 +556,6 @@ public class Util {
         } else {
             return statuses.get(0);
         }
-    }
-
-    @Deprecated
-    public static List<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
-                                                      String expectedState)
-    throws Exception {
-
-
-        String statusCommand =
-                prismHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-                        prismHelper.getProcessHelper().getOozieURL() +
-                        "  -jobtype bundle -localtime -filter \"";
-
-        if (!expectedState.equals("NONE")) {
-
-            statusCommand += "status=" + expectedState + ";";
-        }
-
-        statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
-        logger.info(statusCommand);
-
-        List<String> jobList = new ArrayList<String>();
-
-        for (int seconds = 0; seconds < 20; seconds++) {
-            jobList = runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
-                    prismHelper.getProcessHelper().getUsername(),
-                    prismHelper.getProcessHelper().getPassword(), statusCommand,
-                    prismHelper.getProcessHelper().getIdentityFile());
-
-            if ((expectedState.equalsIgnoreCase("NONE")) ||
-                    !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
-                break;
-            } else {
-                Thread.sleep(1000);
-            }
-        }
-
-        logger.info(jobList.get(0));
-        return jobList;
-    }
-
-    @Deprecated
-    public static List<String> getOozieJobStatus(String processName, String expectedState,
-                                                      ColoHelper colohelper)
-    throws Exception {
-        String statusCommand =
-                colohelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-                        colohelper.getProcessHelper().getOozieURL() +
-                        "  -jobtype bundle -localtime -filter \"";
-
-        if (!expectedState.equals("NONE")) {
-
-            statusCommand += "status=" + expectedState + ";";
-        }
-
-
-        statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
-        logger.info(statusCommand);
-
-        List<String> jobList = new ArrayList<String>();
-
-        for (int seconds = 0; seconds < 20; seconds++) {
-            jobList = runRemoteScript(colohelper.getProcessHelper().getQaHost(),
-                    colohelper.getProcessHelper().getUsername(),
-                    colohelper.getProcessHelper().getPassword(), statusCommand,
-                    colohelper.getProcessHelper().getIdentityFile());
-
-            if ((expectedState.equalsIgnoreCase("NONE")) ||
-                    !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
-                break;
-            } else {
-                Thread.sleep(1000);
-            }
-        }
-
-        logger.info(jobList.get(0));
-        return jobList;
-    }
-
-    @Deprecated
-    public static List<String> getOozieFeedJobStatus(String processName, String expectedState,
-                                                          PrismHelper coloHelper)
-    throws Exception {
-
-        String statusCommand =
-                coloHelper.getFeedHelper().getOozieLocation() + "/oozie jobs -oozie " +
-                        coloHelper.getFeedHelper().getOozieURL() +
-                        "  -jobtype bundle -localtime -filter \"";
-
-        if (!expectedState.equals("NONE")) {
-            statusCommand += "status=" + expectedState + ";";
-        }
-
-
-        statusCommand += "name=FALCON_FEED_" + processName + "\" | tail -2 | head -1";
-        logger.info(statusCommand);
-
-        List<String> jobList = new ArrayList<String>();
-
-        for (int seconds = 0; seconds < 20; seconds++) {
-            jobList = runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
-                    coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper()
-                    .getPassword(), statusCommand, coloHelper.getProcessHelper().getIdentityFile());
-
-            if ((expectedState.equalsIgnoreCase("NONE")) ||
-                    !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
-                break;
-            } else {
-                Thread.sleep(1000);
-            }
-
-        }
-
-        logger.info(jobList.get(0));
-        return jobList;
     }
 
     public static void assertSucceeded(ServiceResponse response) throws Exception {
@@ -846,36 +689,6 @@ public class Util {
 
     }
 
-    @Deprecated
-    public static List<String> getHadoopData(PrismHelper prismHelper, String feed)
-    throws Exception {
-
-
-        String command = prismHelper.getClusterHelper().getHadoopLocation() + "  dfs -lsr hdfs://" +
-                prismHelper.getClusterHelper().getHadoopURL() +
-                "/retention/testFolders | awk '{print $8}'";
-        List<String> result = runRemoteScript(prismHelper.getClusterHelper()
-                .getQaHost(), prismHelper.getClusterHelper().getUsername(),
-                prismHelper.getClusterHelper().getPassword(), command,
-                prismHelper.getClusterHelper().getIdentityFile());
-
-        List<String> finalResult = new ArrayList<String>();
-
-        String feedPath = getFeedPath(feed);
-
-        for (String single : result) {
-            if (!single.equalsIgnoreCase("")) {
-                if (feedPath.split("/").length == single.split("/").length) {
-
-                    String[] splittered = single.split("testFolders/");
-                    finalResult.add(splittered[splittered.length - 1]);
-                }
-            }
-        }
-
-        return finalResult;
-    }
-
     public static List<String> getHadoopData(ColoHelper helper, String feed) throws Exception {
         return getHadoopDataFromDir(helper, feed, "/retention/testFolders/");
     }
@@ -895,37 +708,6 @@ public class Util {
             int pathDepth = result.toString().split(dir)[1].split("/").length - 1;
             if (pathDepth == depth) {
                 finalResult.add(result.toString().split(dir)[1]);
-            }
-        }
-
-        return finalResult;
-    }
-
-    @Deprecated
-    public static List<String> getHadoopLateData(PrismHelper prismHelper, String feed)
-    throws Exception {
-
-        //this command copies hadoop files in a directory....then gets the contents
-        String command = prismHelper.getClusterHelper().getHadoopLocation() + "  dfs -lsr hdfs://" +
-                prismHelper.getClusterHelper().getHadoopURL() +
-                "/lateDataTest/testFolders | awk '{print $8}'";
-
-        List<String> result = runRemoteScript(prismHelper.getClusterHelper()
-                .getQaHost(), prismHelper.getClusterHelper().getUsername(),
-                prismHelper.getClusterHelper().getPassword(), command,
-                prismHelper.getClusterHelper().getIdentityFile());
-
-        List<String> finalResult = new ArrayList<String>();
-
-        String feedPath = getFeedPath(feed);
-
-        for (String single : result) {
-            if (!single.equalsIgnoreCase("")) {
-                if (feedPath.split("/").length == single.split("/").length) {
-
-                    String[] splittered = single.split("testFolders/");
-                    finalResult.add(splittered[splittered.length - 1]);
-                }
             }
         }
 
@@ -952,23 +734,6 @@ public class Util {
         m.marshal(feedObject, writer);
 
         return writer.toString();
-
-    }
-
-    @Deprecated
-    public static void replenishData(PrismHelper prismHelper, List<String> folderList)
-    throws Exception {
-
-        //purge data first
-        runRemoteScript(prismHelper.getClusterHelper().getQaHost(),
-                prismHelper.getClusterHelper().getUsername(),
-                prismHelper.getClusterHelper().getPassword(),
-                prismHelper.getClusterHelper().getHadoopLocation() + "  dfs -rmr  " +
-                        "hdfs://" + prismHelper.getClusterHelper().getHadoopURL()
-                        + "/retention/testFolders/",
-                prismHelper.getClusterHelper().getIdentityFile());
-        createHDFSFolders(prismHelper, folderList);
-
 
     }
 
@@ -1338,7 +1103,6 @@ public class Util {
                         "not same!");
     }
 
-    @SuppressWarnings("deprecation")
     public static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
                                                    String interval)
     throws Exception {
@@ -1580,32 +1344,6 @@ public class Util {
                 prismHelper.getClusterHelper().getPassword(), "date '+%Y-%m-%dT%H:%MZ'",
                 prismHelper.getClusterHelper().getIdentityFile()).get(0));
 
-    }
-
-    @Deprecated
-    public static List<String> getBundles(PrismHelper coloHelper, String entityName,
-                                               String entityType)
-    throws Exception {
-
-        if (entityType.equalsIgnoreCase("feed")) {
-            return runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
-                    coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper()
-                    .getPassword(), coloHelper.getFeedHelper().getOozieLocation() + "/oozie " +
-                    "jobs -oozie " + coloHelper.getFeedHelper().getOozieURL() + "  -jobtype " +
-                    "bundle -localtime -filter name=FALCON_FEED_" + entityName + "|grep " +
-                    "000|awk '{print $1}'", coloHelper.getFeedHelper().getIdentityFile());
-
-        } else {
-            return runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
-                    coloHelper.getFeedHelper().getUsername(),
-                    coloHelper.getFeedHelper().getPassword(),
-                    coloHelper.getFeedHelper().getOozieLocation() + "/oozie jobs -oozie " +
-                            coloHelper.getFeedHelper().getOozieURL() +
-                            "  -jobtype bundle -localtime -filter name=FALCON_PROCESS_" +
-                            entityName +
-                            "|grep 000|awk '{print $1}'",
-                    coloHelper.getFeedHelper().getIdentityFile());
-        }
     }
 
     public static List<String> getBundles(OozieClient client, String entityName, ENTITY_TYPE entityType)
@@ -1909,29 +1647,6 @@ public class Util {
 
     }
 
-    @Deprecated
-    public static void verifyFeedDeletion(String feed, PrismHelper... prismHelper)
-    throws Exception {
-        for (PrismHelper helper : prismHelper) {
-            //make sure feed bundle is not there
-            List<String> feedList =
-                    runRemoteScript(helper.getFeedHelper().getQaHost(),
-                            helper.getFeedHelper().getUsername(),
-                            helper.getFeedHelper().getPassword(),
-                            helper.getFeedHelper().getHadoopLocation() + "  fs -ls hdfs://" +
-                                    helper.getFeedHelper().getHadoopURL() +
-                                    "/projects/ivory/staging/ivory/workflows/feed | awk '{print " +
-                                    "$8}'",
-                            helper.getFeedHelper().getIdentityFile());
-
-            Assert.assertFalse(
-                    feedList.contains("/projects/ivory/staging/ivory/workflows/feed/" +
-                            Util.readDatasetName(feed)),
-                    "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
-        }
-
-    }
-
     public static void verifyFeedDeletion(String feed, ColoHelper... helpers) throws Exception {
         for (ColoHelper helper : helpers) {
             String directory = "/projects/ivory/staging/"+ helper.getFeedHelper().getServiceUser()
@@ -2124,25 +1839,6 @@ public class Util {
         return newList;
     }
 
-    @Deprecated
-    public static List<String> getBundles(String entityName, String entityType,
-                                               IEntityManagerHelper helper)
-    throws Exception {
-        if (entityType.equals("FEED"))
-            return runRemoteScript(helper.getQaHost(), helper.getUsername(),
-                    helper.getPassword(), helper.getOozieLocation() + "/oozie jobs -oozie " +
-                    "" + helper.getOozieURL() + "  -jobtype bundle -localtime -filter " +
-                    "name=FALCON_FEED_" + entityName + "|grep 000|awk '{print $1}'",
-                    helper.getIdentityFile());
-        else
-            return runRemoteScript(helper.getQaHost(), helper.getUsername(),
-                    helper.getPassword(), helper.getOozieLocation() + "/oozie jobs -oozie " +
-                    "" + helper.getOozieURL() + "  -jobtype bundle -localtime -filter " +
-                    "name=FALCON_PROCESS_" + entityName + "|grep 000|awk '{print $1}'",
-                    helper.getIdentityFile());
-
-    }
-
     public static void dumpConsumerData(Consumer consumer) throws Exception {
         logger.info("dumping all queue data:");
 
@@ -2250,36 +1946,6 @@ public class Util {
                     .submitEntity(URLS.SUBMIT_URL, aB.getClusters().get(0));
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        }
-    }
-
-    @Deprecated
-    public static List<String> getBundles(PrismHelper coloHelper,
-                                               String entityName, ENTITY_TYPE entityType)
-    throws Exception {
-
-        if (entityType.equals(ENTITY_TYPE.FEED)) {
-            return runRemoteScript(
-                    coloHelper.getFeedHelper().getQaHost(),
-                    coloHelper.getFeedHelper().getUsername(),
-                    coloHelper.getFeedHelper().getPassword(),
-                    coloHelper.getFeedHelper().getOozieLocation()
-                            + "/oozie jobs -oozie "
-                            + coloHelper.getFeedHelper().getOozieURL()
-                            + "  -jobtype bundle -localtime -filter name=FALCON_FEED_"
-                            + entityName + "|grep 000|awk '{print $1}'",
-                    coloHelper.getFeedHelper().getIdentityFile());
-        } else {
-            return runRemoteScript(
-                    coloHelper.getFeedHelper().getQaHost(),
-                    coloHelper.getFeedHelper().getUsername(),
-                    coloHelper.getFeedHelper().getPassword(),
-                    coloHelper.getFeedHelper().getOozieLocation()
-                            + "/oozie jobs -oozie "
-                            + coloHelper.getFeedHelper().getOozieURL()
-                            + "  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"
-                            + entityName + "|grep 000|awk '{print $1}'",
-                    coloHelper.getFeedHelper().getIdentityFile());
         }
     }
 
