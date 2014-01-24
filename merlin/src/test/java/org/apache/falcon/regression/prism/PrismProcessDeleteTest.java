@@ -363,8 +363,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 
             String clusterName = Util.readEntityName(bundle.getProcessData());
             //prism:
-            compareDataStoresForEquality(initialPrismStore, finalPrismStore);
-            compareDataStoresForEquality(initialPrismArchiveStore, finalPrismArchiveStore);
+            compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
+            compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, clusterName);
 
             //UA2:
             compareDataStoresForEquality(initialUA2Store, finalUA2Store);
@@ -372,7 +372,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 
             //UA1:
             compareDataStoreStates(initialUA1Store, finalUA1Store, clusterName);
-            compareDataStoreStates(initialUA1ArchiveStore, finalUA1ArchiveStore, clusterName);
+            compareDataStoreStates(finalUA1ArchiveStore, initialUA1ArchiveStore, clusterName);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
