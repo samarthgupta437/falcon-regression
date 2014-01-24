@@ -20,28 +20,14 @@ package org.apache.falcon.regression.core.bundle;
 
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.generated.feed.*;
 import org.apache.falcon.regression.core.generated.feed.Clusters;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.Location;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
-import org.apache.falcon.regression.core.generated.feed.Locations;
-import org.apache.falcon.regression.core.generated.feed.Retention;
-import org.apache.falcon.regression.core.generated.feed.RetentionType;
 import org.apache.falcon.regression.core.generated.feed.Validity;
 import org.apache.falcon.regression.core.generated.process.Cluster;
-import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Inputs;
-import org.apache.falcon.regression.core.generated.process.LateInput;
-import org.apache.falcon.regression.core.generated.process.LateProcess;
-import org.apache.falcon.regression.core.generated.process.Output;
-import org.apache.falcon.regression.core.generated.process.Outputs;
+import org.apache.falcon.regression.core.generated.process.*;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
-import org.apache.falcon.regression.core.generated.process.Retry;
-import org.apache.falcon.regression.core.generated.process.Workflow;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
@@ -49,11 +35,7 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
-import org.apache.falcon.regression.core.util.AssertUtil;
-import org.apache.falcon.regression.core.util.ELUtil;
-import org.apache.falcon.regression.core.util.HadoopUtil;
-import org.apache.falcon.regression.core.util.InstanceUtil;
-import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.*;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.Path;
 import org.joda.time.DateTime;
@@ -565,6 +547,27 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
 
 
+    }
+
+    public void addFeedPartitions(String feedName, String...partitionNames) throws Exception {
+        if(partitionNames != null){
+            Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+            Partitions partitions = feedElement.getPartitions();
+            if(partitions == null) {
+                partitions = new Partitions();
+                partitions.getPartition();
+            }
+            for(String partitionName : partitionNames){
+                if(partitionName.isEmpty()){ continue;}
+                Partition partition = new Partition();
+                partition.setName(partitionName);
+                if(!partitions.containsPartition(partition)){
+                    partitions.addPartition(partition);
+                }
+            }
+            feedElement.setPartitions(partitions);
+            InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        }
     }
 
     public int getInitialDatasetFrequency() throws Exception {

@@ -76,4 +76,21 @@ public class Partition {
         this.name = value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (o instanceof Partition) {
+            return name.equals(((Partition) o).getName());
+        } else {
+            return false;
+        }
+
+    }
+
+    @Override
+    public int hashCode(){
+        return name.hashCode();
+    }
+
+
 }
