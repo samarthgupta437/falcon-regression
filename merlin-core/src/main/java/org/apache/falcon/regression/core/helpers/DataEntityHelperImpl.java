@@ -48,8 +48,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     public DataEntityHelperImpl() {
     }
 
-    public DataEntityHelperImpl(String envFileName)  {
-        super(envFileName);
+    public DataEntityHelperImpl(String envFileName, String prefix)  {
+        super(envFileName, prefix);
     }
 
     public ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException {

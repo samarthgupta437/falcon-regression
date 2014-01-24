@@ -48,8 +48,8 @@ public class FeedDelayParallelTimeoutTest extends BaseMultiClusterTests {
         b1.generateUniqueBundle();
         b2 = (Bundle) Util.readELBundles()[0][0];
         b2.generateUniqueBundle();
-        b1 = new Bundle(b1, server3.getEnvFileName());
-        b2 = new Bundle(b2, server2.getEnvFileName());
+        b1 = new Bundle(b1, server3.getEnvFileName(), server3.getPrefix());
+        b2 = new Bundle(b2, server2.getEnvFileName(), server2.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)

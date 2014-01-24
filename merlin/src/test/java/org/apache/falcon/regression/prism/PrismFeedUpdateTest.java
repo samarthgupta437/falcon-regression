@@ -55,8 +55,8 @@ public class PrismFeedUpdateTest extends BaseMultiClusterTests {
         b3.generateUniqueBundle();
 
         //generate bundles according to config files
-        b1 = new Bundle(b1, server2.getEnvFileName());
-        b3 = new Bundle(b3, server3.getEnvFileName());
+        b1 = new Bundle(b1, server2.getEnvFileName(), server2.getPrefix());
+        b3 = new Bundle(b3, server3.getEnvFileName(), server3.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)

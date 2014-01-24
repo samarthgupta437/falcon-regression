@@ -50,8 +50,8 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
         Util.print("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle1 = new Bundle(bundle, server1.getEnvFileName());
-        bundle2 = new Bundle(bundle, server2.getEnvFileName());
+        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
         bundle1.generateUniqueBundle();
         bundle2.generateUniqueBundle();
     }

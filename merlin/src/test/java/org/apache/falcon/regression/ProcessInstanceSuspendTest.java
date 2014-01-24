@@ -58,7 +58,7 @@ public class ProcessInstanceSuspendTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
         bundle.setInputFeedDataPath(feedInputPath);
@@ -83,7 +83,7 @@ public class ProcessInstanceSuspendTest extends BaseSingleClusterTests {
         Util.print("test name: " + method.getName());
         Util.restartService(server1.getClusterHelper());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -268,7 +268,7 @@ public class ProcessInstanceSuspendTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);

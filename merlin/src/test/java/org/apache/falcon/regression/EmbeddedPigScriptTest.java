@@ -60,7 +60,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
         Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -88,7 +88,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setProcessWorkflow("/examples/apps/pig/id.pig");

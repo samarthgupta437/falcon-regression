@@ -45,7 +45,7 @@ public class RescheduleKilledProcessTest extends BaseSingleClusterTests {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)

@@ -44,7 +44,7 @@ public class OptionalInputTest extends BaseSingleClusterTests {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)

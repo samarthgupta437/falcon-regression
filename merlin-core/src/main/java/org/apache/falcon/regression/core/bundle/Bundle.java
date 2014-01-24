@@ -84,7 +84,7 @@ import java.util.List;
  */
 public class Bundle {
 
-    static PrismHelper prismHelper = new PrismHelper("prism.properties");
+    static PrismHelper prismHelper = new PrismHelper("prism.properties", "");
 
     public List<String> dataSets;
     String processData;
@@ -139,18 +139,20 @@ public class Bundle {
         this.envFileName = bundle.getEnvFileName();
     }
 
-    public Bundle(List<String> dataSets, String processData, String clusterData, String envFileName) throws JAXBException {
+    public Bundle(List<String> dataSets, String processData, String clusterData,
+                  String envFileName, String prefix) throws JAXBException {
         this.dataSets = dataSets;
         this.processData = processData;
         this.envFileName = envFileName;
         this.clusters = new ArrayList<String>();
         this.clusters.add(Util.getEnvClusterXML(envFileName, clusterData));
-        this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, envFileName);
-        this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName);
+        this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS,
+                envFileName, prefix);
+        this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName, prefix);
     }
 
     public Bundle(List<String> dataSets, String processData, List<String> clusterData,
-                  String envFileName) throws JAXBException {
+                  String envFileName, String prefix) throws JAXBException {
         this.dataSets = dataSets;
         this.processData = processData;
         this.clusters = new ArrayList<String>();
@@ -158,9 +160,11 @@ public class Bundle {
             this.clusters.add(Util.getEnvClusterXML(envFileName, cluster));
         }
         this.envFileName = envFileName;
-        this.clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, envFileName);
-        this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, envFileName);
-        this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName);
+        this.clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER,
+                envFileName, prefix);
+        this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS,
+                envFileName, prefix);
+        this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName, prefix);
     }
 
     public Bundle(List<String> dataSets, String processData, String clusterData)  {
@@ -170,31 +174,31 @@ public class Bundle {
         this.clusters.add(clusterData);
     }
 
-    public Bundle(Bundle bundle, String envFileName) throws JAXBException {
+    public Bundle(Bundle bundle, String envFileName, String prefix) throws JAXBException {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
-        colohelper = new ColoHelper(envFileName);
+        colohelper = new ColoHelper(envFileName, prefix);
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(envFileName, cluster));
         }
 
         if (null == bundle.getClusterHelper()) {
             this.clusterHelper =
-                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, envFileName);
+                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, envFileName, prefix);
         } else {
             this.clusterHelper = bundle.getClusterHelper();
         }
 
         if (null == bundle.getProcessHelper()) {
             this.processHelper =
-                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, envFileName);
+                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, envFileName, prefix);
         } else {
             this.processHelper = bundle.getProcessHelper();
         }
 
         if (null == bundle.getFeedHelper()) {
-            this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName);
+            this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName, prefix);
         } else {
             this.feedHelper = bundle.getFeedHelper();
         }

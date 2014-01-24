@@ -53,7 +53,7 @@ public class QueueName extends BaseSingleClusterTests {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = "2010-01-01T22:00Z";
         String endDate = "2010-01-02T03:00Z";
@@ -84,7 +84,7 @@ public class QueueName extends BaseSingleClusterTests {
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)

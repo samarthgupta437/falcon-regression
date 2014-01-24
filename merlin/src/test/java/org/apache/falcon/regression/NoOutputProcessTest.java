@@ -57,7 +57,7 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = "2010-01-03T00:00Z";
         String endDate = "2010-01-03T03:00Z";
@@ -156,7 +156,7 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
     }
 
     private void setBundleProperties() throws Exception {
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
         bundle.setProcessPeriodicity(5, TimeUnit.minutes);

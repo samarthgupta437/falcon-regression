@@ -42,7 +42,7 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         Util.print("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
-        bundle1 = new Bundle(bundle, server1.getEnvFileName());
+        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle1.generateUniqueBundle();
     }
 

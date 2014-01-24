@@ -81,7 +81,7 @@ public class Util {
 
     static Logger logger = Logger.getLogger(Util.class);
 
-    static PrismHelper prismHelper = new PrismHelper("prism.properties");
+    static PrismHelper prismHelper = new PrismHelper("prism.properties", "");
 
     public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
         HttpClient client = new DefaultHttpClient();
@@ -2422,7 +2422,7 @@ public class Util {
             }
 
             b.generateUniqueBundle();
-            return new Bundle(b, cluster.getEnvFileName());
+            return new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         } catch (Exception e) {
             System.out.println(Arrays.toString(e.getStackTrace()));
         }

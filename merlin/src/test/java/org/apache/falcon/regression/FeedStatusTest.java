@@ -46,7 +46,7 @@ public class FeedStatusTest extends BaseSingleClusterTests {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         //submit the cluster
         ServiceResponse response = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));

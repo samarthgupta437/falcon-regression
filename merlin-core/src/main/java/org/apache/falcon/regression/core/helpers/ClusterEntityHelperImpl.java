@@ -45,8 +45,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public ClusterEntityHelperImpl(String envFileName)  {
-        super(envFileName);
+    public ClusterEntityHelperImpl(String envFileName, String prefix)  {
+        super(envFileName, prefix);
     }
 
     public ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException {

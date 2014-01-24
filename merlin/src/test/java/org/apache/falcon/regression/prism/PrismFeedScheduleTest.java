@@ -43,8 +43,8 @@ public class PrismFeedScheduleTest extends BaseMultiClusterTests{
     public void testFeedScheduleOn1ColoWhileAnotherColoHasSuspendedFeed(Bundle bundle)
     throws Exception {
         try {
-            Bundle UA1Bundle = new Bundle(bundle, server1.getEnvFileName());
-            Bundle UA2Bundle = new Bundle(bundle, server2.getEnvFileName());
+            Bundle UA1Bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+            Bundle UA2Bundle = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
 
             UA1Bundle.generateUniqueBundle();
             UA2Bundle.generateUniqueBundle();

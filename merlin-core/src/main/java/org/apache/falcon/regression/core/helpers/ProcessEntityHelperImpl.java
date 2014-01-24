@@ -50,8 +50,8 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public ProcessEntityHelperImpl(String envFileName)  {
-        super(envFileName);
+    public ProcessEntityHelperImpl(String envFileName, String prefix)  {
+        super(envFileName, prefix);
     }
 
     public ServiceResponse delete(String url, String data) throws IOException, URISyntaxException, JAXBException {
