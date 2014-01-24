@@ -80,9 +80,9 @@ public class ProcessInstanceColoMixedTest extends BaseMultiClusterTests {
         b3.generateUniqueBundle();
 
         //generate bundles according to config files
-        b1 = new Bundle(b1, server1.getEnvFileName());
-        b2 = new Bundle(b2, server2.getEnvFileName());
-        b3 = new Bundle(b3, server3.getEnvFileName());
+        b1 = new Bundle(b1, server1.getEnvFileName(), server1.getPrefix());
+        b2 = new Bundle(b2, server2.getEnvFileName(), server2.getPrefix());
+        b3 = new Bundle(b3, server3.getEnvFileName(), server3.getPrefix());
 
         //set cluster colos
         b1.setCLusterColo("ua1");

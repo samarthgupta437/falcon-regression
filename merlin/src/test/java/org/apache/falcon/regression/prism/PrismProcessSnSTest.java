@@ -47,8 +47,8 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
-        UA1Bundle = new Bundle(bundle, server2.getEnvFileName());
-        UA2Bundle = new Bundle(bundle, server1.getEnvFileName());
+        UA1Bundle = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
+        UA2Bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         UA1Bundle.generateUniqueBundle();
         UA2Bundle.generateUniqueBundle();
     }

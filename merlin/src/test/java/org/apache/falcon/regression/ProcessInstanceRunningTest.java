@@ -58,7 +58,7 @@ public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -86,7 +86,7 @@ public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -134,7 +134,7 @@ public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
 
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setCLusterColo("ua2");
         b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
         b.setProcessPeriodicity(5, TimeUnit.minutes);
@@ -198,7 +198,7 @@ public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);

@@ -56,18 +56,26 @@ public class PrismHelper {
 
     protected String envFileName;
 
+    public String getPrefix() {
+        return prefix;
+    }
+
+    protected String prefix;
+
     public String getEnvFileName() {
         return envFileName;
     }
 
-    public PrismHelper(String envFileName) {
+    public PrismHelper(String envFileName, String prefix) {
         try {
             this.envFileName = envFileName;
+            this.prefix = prefix;
             clusterHelper =
-                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName);
+                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
+                            prefix);
             processHelper =
-                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName);
-            feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName);
+                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
+            feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
             instanceUtil = new InstanceUtil(this.envFileName);
 
         } catch (Exception e) {

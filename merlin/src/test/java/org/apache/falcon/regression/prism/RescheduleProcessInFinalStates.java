@@ -54,7 +54,7 @@ public class RescheduleProcessInFinalStates extends BaseSingleClusterTests {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -84,7 +84,7 @@ public class RescheduleProcessInFinalStates extends BaseSingleClusterTests {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
         bundle.setProcessPeriodicity(5, TimeUnit.minutes);

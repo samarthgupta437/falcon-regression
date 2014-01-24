@@ -47,7 +47,7 @@ public class FeedResumeTest extends BaseSingleClusterTests {
         Util.print("test name: " + method.getName());
         bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.submitClusters(prism);
         feed = Util.getInputFeedFromBundle(bundle);
     }

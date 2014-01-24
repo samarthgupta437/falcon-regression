@@ -41,7 +41,7 @@ public class PrismSubmitTest extends BaseMultiClusterTests {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.generateUniqueBundle();
     }
 
@@ -285,7 +285,7 @@ public class PrismSubmitTest extends BaseMultiClusterTests {
 
     @Test(groups = {"prism", "0.2"})
     public void submitCluster_resubmitAlreadyPARTIAL() throws Exception {
-        Bundle bundle2 = new Bundle(bundle, server2.getEnvFileName());
+        Bundle bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
         bundle2.generateUniqueBundle();
 
         List<String> beforeCluster1 = server1.getClusterHelper().getStoreInfo();

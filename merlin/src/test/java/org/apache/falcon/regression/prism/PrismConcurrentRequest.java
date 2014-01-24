@@ -46,7 +46,7 @@ public class PrismConcurrentRequest extends BaseMultiClusterTests {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         brotherGrimm = new ThreadGroup("mixed");
         brothers = new Brother[10];
         failedResponse = 0;

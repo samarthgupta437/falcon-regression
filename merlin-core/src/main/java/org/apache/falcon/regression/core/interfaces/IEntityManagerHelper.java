@@ -41,8 +41,6 @@ import java.util.Properties;
 
 public abstract class IEntityManagerHelper {
 
-    // final String CLIENT_LOCATION="src/test/resources/IvoryClient/ivory-client-3.jar";
-    //final String CLIENT_LOCATION="src/test/resources/IvoryClient/ivory-client.jar";
     protected String CLIENT_LOCATION = "src/test/resources/IvoryClient/IvoryCLI.jar";
     protected String BASE_COMMAND = "java -jar " + CLIENT_LOCATION;
 
@@ -165,38 +163,43 @@ public abstract class IEntityManagerHelper {
 
     }
 
-    public IEntityManagerHelper(String envFileName) {
+    public IEntityManagerHelper(String envFileName, String prefix) {
+        if ((null == prefix) || prefix.isEmpty()) {
+            prefix = "";
+        }  else {
+            prefix += ".";
+        }
         System.out.println("envFileName: " + envFileName);
         Properties prop = Util.getPropertiesObj(envFileName);
-        this.qaHost = prop.getProperty("qa_host");
-        this.hostname = prop.getProperty("ivory_hostname");
-        this.username = prop.getProperty("username", System.getProperty("user.name"));
-        this.password = prop.getProperty("password", "");
-        this.hadoopLocation = prop.getProperty("hadoop_location");
-        this.hadoopURL = prop.getProperty("hadoop_url");
-        this.oozieURL = prop.getProperty("oozie_url");
-        this.oozieLocation = prop.getProperty("oozie_location");
-        this.activeMQ = prop.getProperty("activemq_url");
-        this.storeLocation = prop.getProperty("storeLocation");
+        this.qaHost = prop.getProperty(prefix + "qa_host");
+        this.hostname = prop.getProperty(prefix + "ivory_hostname");
+        this.username = prop.getProperty(prefix + "username", System.getProperty("user.name"));
+        this.password = prop.getProperty(prefix + "password", "");
+        this.hadoopLocation = prop.getProperty(prefix + "hadoop_location");
+        this.hadoopURL = prop.getProperty(prefix + "hadoop_url");
+        this.oozieURL = prop.getProperty(prefix + "oozie_url");
+        this.oozieLocation = prop.getProperty(prefix + "oozie_location");
+        this.activeMQ = prop.getProperty(prefix + "activemq_url");
+        this.storeLocation = prop.getProperty(prefix + "storeLocation");
         this.hadoopGetCommand =
                 hadoopLocation + "  fs -cat hdfs://" + hadoopURL +
                         "/projects/ivory/staging/ivory/workflows/process";
         this.envFileName = envFileName;
-        this.allColo = "?colo=" + prop.getProperty("colo", "*");
-        this.colo = (!prop.getProperty("colo", "").isEmpty()) ? "?colo=" + prop
-                .getProperty("colo") : "";
-        this.serviceStartCmd = prop.getProperty("service_start_cmd", "/etc/init.d/tomcat6 start");
-        this.serviceStopCmd = prop.getProperty("service_stop_cmd",
+        this.allColo = "?colo=" + prop.getProperty(prefix + "colo", "*");
+        this.colo = (!prop.getProperty(prefix + "colo", "").isEmpty()) ? "?colo=" + prop
+                .getProperty(prefix + "colo") : "";
+        this.serviceStartCmd = prop.getProperty(prefix + "service_start_cmd", "/etc/init.d/tomcat6 start");
+        this.serviceStopCmd = prop.getProperty(prefix + "service_stop_cmd",
                 "/etc/init.d/tomcat6 stop");
-        this.serviceRestartCmd = prop.getProperty("service_restart_cmd",
+        this.serviceRestartCmd = prop.getProperty(prefix + "service_restart_cmd",
                 "/etc/init.d/tomcat6 restart");
-        this.serviceUser = prop.getProperty("service_user", null);
-        this.serviceStatusMsg = prop.getProperty("service_status_msg",
+        this.serviceUser = prop.getProperty(prefix + "service_user", null);
+        this.serviceStatusMsg = prop.getProperty(prefix + "service_status_msg",
                 "Tomcat servlet engine is running with pid");
         this.serviceStatusCmd =
-                prop.getProperty("service_status_cmd", "/etc/init.d/tomcat6 status");
-        this.identityFile = prop.getProperty("identityFile",
-                System.getProperty("user.home") + "/.ssh/id_rsa");
+                prop.getProperty(prefix + "service_status_cmd", "/etc/init.d/tomcat6 status");
+        this.identityFile = prop.getProperty(prefix + "identityFile",
+                System.getProperty(prefix + "user.home") + "/.ssh/id_rsa");
         this.hadoopFS = null;
         this.oozieClient = null;
     }

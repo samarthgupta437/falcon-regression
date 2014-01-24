@@ -50,7 +50,7 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = InstanceUtil.getTimeWrtSystemTime(-150);
         String endDate = InstanceUtil.getTimeWrtSystemTime(100);
@@ -79,7 +79,7 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setInputFeedPeriodicity(5, TimeUnit.minutes);
         bundle.setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");

@@ -164,9 +164,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         Util.print("test name: " + method.getName());
         Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
 
-        bundle1 = new Bundle(bundle, server1.getEnvFileName());
-        bundle2 = new Bundle(bundle, server2.getEnvFileName());
-        bundle3 = new Bundle(bundle, server3.getEnvFileName());
+        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
+        bundle3 = new Bundle(bundle, server3.getEnvFileName(), server3.getPrefix());
 
         bundle1.generateUniqueBundle();
         bundle2.generateUniqueBundle();

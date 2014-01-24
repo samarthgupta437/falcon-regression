@@ -49,7 +49,7 @@ public class ELUtil {
                                   String processend,
                                   String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, ParseException, URISyntaxException {
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         bundle.setFeedValidity(feedStart, feedEnd, Util.getInputFeedNameFromBundle(bundle));
         bundle.setProcessValidity(processStart, processend);
@@ -77,7 +77,7 @@ public class ELUtil {
 
     public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, URISyntaxException {
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         try {
 

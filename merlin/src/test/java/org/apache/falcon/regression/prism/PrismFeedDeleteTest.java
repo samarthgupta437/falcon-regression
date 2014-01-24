@@ -55,10 +55,10 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         Util.print("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle1 = new Bundle(bundle, server1.getEnvFileName());
+        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle1.generateUniqueBundle();
 
-        bundle2 = new Bundle(bundle, server2.getEnvFileName());
+        bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
         bundle2.generateUniqueBundle();
     }
     
@@ -353,8 +353,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"multiCluster"})
     public void testServer1FeedDeleteNonExistentWhen1ColoIsDownDuringDelete() throws Exception {
         restartRequired = true;
-        bundle1 = new Bundle(bundle1, server1.getEnvFileName());
-        bundle2 = new Bundle(bundle2, server2.getEnvFileName());
+        bundle1 = new Bundle(bundle1, server1.getEnvFileName(), server1.getPrefix());
+        bundle2 = new Bundle(bundle2, server2.getEnvFileName(), server2.getPrefix());
 
         this.bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
