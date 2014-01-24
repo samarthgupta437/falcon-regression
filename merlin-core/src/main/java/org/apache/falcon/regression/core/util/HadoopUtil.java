@@ -28,6 +28,7 @@ import org.testng.log4testng.Logger;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -43,14 +44,14 @@ public class HadoopUtil {
 
     }
 
-    public static Configuration getHadoopConfiguration(ColoHelper prismHelper) throws Exception {
+    public static Configuration getHadoopConfiguration(ColoHelper prismHelper)  {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
         return conf;
     }
 
     public static List<Path> getAllFilesRecursivelyHDFS(
-            ColoHelper colcoHelper, Path location) throws Exception {
+            ColoHelper colcoHelper, Path location) throws IOException {
 
         setSystemPropertyHDFS();
         List<Path> returnList = new ArrayList<Path>();
@@ -78,7 +79,7 @@ public class HadoopUtil {
         return returnList;
     }
 
-    public static List<String> getAllFilesHDFS(String hadoopURL, String location) throws Exception {
+    public static List<String> getAllFilesHDFS(String hadoopURL, String location) throws IOException {
         setSystemPropertyHDFS();
         Configuration conf = new Configuration();
         conf.set("fs.default.name", hadoopURL);
@@ -88,7 +89,7 @@ public class HadoopUtil {
 
         }
 
-    public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws Exception {
+    public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 
         List<String> files = new ArrayList<String>();
         if (!fs.exists(location)) {
@@ -105,7 +106,7 @@ public class HadoopUtil {
     }
 
     public static List<Path> getAllDirsRecursivelyHDFS(
-            ColoHelper colcoHelper, Path location, int depth) throws Exception {
+            ColoHelper colcoHelper, Path location, int depth) throws IOException {
 
         setSystemPropertyHDFS();
         Configuration conf = HadoopUtil.getHadoopConfiguration(colcoHelper);
@@ -116,7 +117,7 @@ public class HadoopUtil {
 
 
     private static List<Path> getAllDirsRecursivelyHDFS(
-            FileSystem fs, Path location, int depth) throws Exception {
+            FileSystem fs, Path location, int depth) throws IOException {
 
         List<Path> returnList = new ArrayList<Path>();
 
@@ -137,7 +138,7 @@ public class HadoopUtil {
 
 
     public static List<Path> getAllFilesRecursivelyHDFS(
-            ColoHelper coloHelper, Path location, String... ignoreFolders) throws Exception {
+            ColoHelper coloHelper, Path location, String... ignoreFolders) throws IOException {
 
         setSystemPropertyHDFS();
         List<Path> returnList = new ArrayList<Path>();
@@ -178,7 +179,7 @@ public class HadoopUtil {
 
 
     public static List<Path> getAllFilesRecursivelyHDFS(
-            Configuration conf, Path location, String... ignoreFolders) throws Exception {
+            Configuration conf, Path location, String... ignoreFolders) throws IOException {
 
         setSystemPropertyHDFS();
         List<Path> returnList = new ArrayList<Path>();
@@ -229,7 +230,7 @@ public class HadoopUtil {
         return false;
     }
 
-    public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion) throws Exception {
+    public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion) throws IOException {
         setSystemPropertyHDFS();
         Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
 
@@ -240,8 +241,7 @@ public class HadoopUtil {
     }
 
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
-                                        final String fileLocation)
-    throws Exception {
+                                        final String fileLocation) throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://"
                 + coloHelper.getProcessHelper().getHadoopURL());
@@ -254,7 +254,7 @@ public class HadoopUtil {
         user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
             @Override
-            public Boolean run() throws Exception {
+            public Boolean run() throws IOException {
                 //	logger.info("copying  "+file+" to "+folderPrefix+folder);
                 fs.copyFromLocalFile(new Path(fileLocation), folder);
                 return true;
@@ -391,8 +391,7 @@ public class HadoopUtil {
     }
 
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
-                                       List<String> remoteLocations)
-    throws Exception {
+                                       List<String> remoteLocations) throws IOException {
         File[] files = new File(inputPath).listFiles();
         assert files != null;
         for (final File file : files) {
