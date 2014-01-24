@@ -516,40 +516,6 @@ public class InstanceUtil {
         return max;
     }
 
-    @Deprecated
-    public static String getLatestBundleID(ColoHelper coloHelper, String processName,
-                                           String entityType)
-    throws Exception {
-        List<String> bundleIds = Util.getBundles(coloHelper, processName, entityType);
-
-        String max = "";
-        int maxID = -1;
-        for (String strID : bundleIds) {
-            if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
-                maxID = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-                max = strID;
-            }
-        }
-        return max;
-    }
-
-    @Deprecated
-    public static String getLatestBundleID(String processName, String entityType,
-                                           IEntityManagerHelper helper)
-    throws Exception {
-        List<String> bundleIds = Util.getBundles(processName, entityType, helper);
-
-        String max = "";
-        int maxID = -1;
-        for (String strID : bundleIds) {
-            if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
-                maxID = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
-                max = strID;
-            }
-        }
-        return max;
-    }
-
     public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber)
     throws Exception {
@@ -606,16 +572,6 @@ public class InstanceUtil {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(colo, anInputFoldersForInstance);
-
-    }
-
-    @Deprecated
-    public static void putDataInFolders(FileSystem fs,
-                                        final List<String> inputFoldersForInstance)
-    throws Exception {
-
-        for (String anInputFoldersForInstance : inputFoldersForInstance)
-            putDataInFolder(fs, anInputFoldersForInstance, null);
 
     }
 
@@ -1406,39 +1362,6 @@ public class InstanceUtil {
             Thread.sleep(20000);
 
         }
-    }
-
-    @Deprecated
-    public static void waitTillInstanceReachState(ColoHelper coloHelper,
-                                                  String entityName, int numberOfInstance,
-                                                  org.apache.oozie.client.CoordinatorAction
-                                                          .Status expectedStatus,
-                                                  int totalMinutesToWait, ENTITY_TYPE entityType)
-    throws Exception {
-
-        int sleep = totalMinutesToWait * 60 / 20;
-
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
-                    .getStatusAllInstance(coloHelper, entityName, entityType);
-
-            int instanceWithStatus = 0;
-            for (CoordinatorAction.Status aStatusList : statusList) {
-
-                if (aStatusList.equals(expectedStatus))
-                    instanceWithStatus++;
-
-            }
-
-            if (instanceWithStatus >= numberOfInstance)
-                return;
-
-            Thread.sleep(20000);
-
-        }
-
-        Assert.assertTrue(false, "expceted state of instance was never reached");
     }
 
     public static void waitTillInstanceReachState(OozieClient client, String entityName,

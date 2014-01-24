@@ -265,21 +265,6 @@ public class HadoopUtil {
 
     }
 
-    @Deprecated
-    public static List<String> getHDFSSubFoldersName(ColoHelper prismHelper,
-                                                          String baseDir) throws IOException {
-        setSystemPropertyHDFS();
-
-        List<String> returnList = new ArrayList<String>();
-
-        logger.info("getHDFSSubFoldersName: " + baseDir);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-        return getHDFSSubFoldersName(fs, baseDir);
-    }
-
     public static List<String> getHDFSSubFoldersName(FileSystem fs,
                                                           String baseDir) throws IOException {
         setSystemPropertyHDFS();
