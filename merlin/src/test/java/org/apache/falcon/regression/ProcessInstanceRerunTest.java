@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProcessInstanceRerunTest extends BaseTestClass {
+public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
 
     String baseTestDir = baseHDFSDir + "/ProcessInstanceRerunTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -52,8 +52,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
     public ProcessInstanceRerunTest() throws IOException {
         super();
-        cluster = servers.get(0);
-        clusterFS = cluster.getClusterHelper().getHadoopFS();
+       // cluster = servers.get(0);
+       // clusterFS = cluster.getClusterHelper().getHadoopFS();
 
     }
 
@@ -67,8 +67,10 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName());
-        b = new Bundle(b, cluster.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+//        b = new Bundle(b, cluster.getEnvFileName());
+ //       b = new Bundle(b, cluster.getEnvFileName());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -99,8 +101,9 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName());
-        b.setInputFeedDataPath(feedInputPath);
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+     //   b = new Bundle(b, cluster.getEnvFileName());
+      //  b.setInputFeedDataPath(feedInputPath);
     }
 
 
@@ -349,7 +352,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+    //    b = new Bundle(b, cluster.getEnvFileName());
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
