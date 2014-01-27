@@ -20,15 +20,16 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -38,11 +39,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class RescheduleProcessInFinalStates {
+public class RescheduleProcessInFinalStates extends BaseSingleClusterTests {
 
-
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private Bundle bundle;
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -53,17 +52,16 @@ public class RescheduleProcessInFinalStates {
         System.setProperty("java.security.krb5.kdc", "");
 
 
-        Bundle b = new Bundle();
-        b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, ivoryqa1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
-        b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(baseHDFSDir +"/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(ivoryqa1, prefix.substring(1));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -78,225 +76,128 @@ public class RescheduleProcessInFinalStates {
         for (int i = 0; i < dataDates.size(); i++)
             dataFolder.add(dataDates.get(i));
 
-        InstanceUtil.putDataInFolders(ivoryqa1, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
+        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
+        bundle.setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setProcessConcurrency(6);
+        bundle.submitAndScheduleBundle(prism);
+
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle.deleteBundle(prism);
     }
 
 
     // DWE mean Done With Error In Oozie
     @Test(enabled = false)
     public void rescheduleSucceeded() throws Exception {
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        Thread.sleep(20000);
 
-        Bundle b = new Bundle();
-        try {
+        //delete the process
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
 
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+        //check ... get definition should return process not found
+        ServiceResponse r = prism.getProcessHelper()
+                .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+        Assert.assertTrue(r.getMessage().contains("(process) not found"));
+        Util.assertFailed(r);
 
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
-
-            Thread.sleep(20000);
-
-            //delete the process
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
-
-            //check ... get definition should return process not found
-            ServiceResponse r =
-                    prismHelper.getProcessHelper()
-                            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, b.getProcessData());
-            Assert.assertTrue(r.getMessage().contains("(process) not found"));
-            Util.assertFailed(r);
-
-            //submit and schedule process again
-            r = prismHelper.getProcessHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, b.getProcessData());
-            Util.assertSucceeded(r);
-            Thread.sleep(20000);
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
-
-        } finally {
-            b.deleteBundle(prismHelper);
-        }
+        //submit and schedule process again
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        Util.assertSucceeded(r);
+        Thread.sleep(20000);
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
 
     }
 
     @Test(enabled = false)
     public void rescheduleFailed() throws Exception {
-        Bundle b = new Bundle();
-        try {
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        Thread.sleep(20000);
 
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
+        //delete the process
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
 
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
+        //check ... get definition should return process not found
+        ServiceResponse r = prism.getProcessHelper()
+                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+        Assert.assertTrue(r.getMessage().contains("(process) not found"));
+        Util.assertFailed(r);
 
-            Thread.sleep(20000);
-
-            //delete the process
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
-
-            //check ... get definition should return process not found
-            ServiceResponse r =
-                    prismHelper.getProcessHelper()
-                            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, b.getProcessData());
-            Assert.assertTrue(r.getMessage().contains("(process) not found"));
-            Util.assertFailed(r);
-
-            //submit and schedule process again
-            r = prismHelper.getProcessHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, b.getProcessData());
-            Util.assertSucceeded(r);
-            Thread.sleep(20000);
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
-
-        } finally {
-            b.deleteBundle(prismHelper);
-        }
-
+        //submit and schedule process again
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        Util.assertSucceeded(r);
+        Thread.sleep(20000);
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
     }
 
     @Test(enabled = false)
     public void rescheduleDWE() throws Exception {
-        Bundle b = new Bundle();
-        try {
+        Thread.sleep(20000);
 
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
-            Thread.sleep(20000);
+        prism.getProcessHelper()
+                .getProcessInstanceKill(Util.readEntityName(bundle.getProcessData()), "?start=2010-01-02T01:05Z");
 
-            prismHelper.getProcessHelper()
-                    .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:05Z");
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.DONEWITHERROR, 20);
 
+        Thread.sleep(20000);
 
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.DONEWITHERROR,
-                            20);
+        //delete the process
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
 
-            Thread.sleep(20000);
+        //check ... get definition should return process not found
+        ServiceResponse r = prism.getProcessHelper()
+                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+        Assert.assertTrue(r.getMessage().contains("(process) not found"));
+        Util.assertFailed(r);
 
-            //delete the process
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
-
-            //check ... get definition should return process not found
-            ServiceResponse r =
-                    prismHelper.getProcessHelper()
-                            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, b.getProcessData());
-            Assert.assertTrue(r.getMessage().contains("(process) not found"));
-            Util.assertFailed(r);
-
-            //submit and schedule process again
-            r = prismHelper.getProcessHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, b.getProcessData());
-            Util.assertSucceeded(r);
-            Thread.sleep(20000);
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
-
-        } finally {
-            b.deleteBundle(prismHelper);
-        }
+        //submit and schedule process again
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        Util.assertSucceeded(r);
+        Thread.sleep(20000);
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
 
     }
 
-    @Test(enabled = false)
-    public void rescheduleSucceededAndDWEOnSomeColo() throws Exception {
-
-    }
-
-
-    @Test(enabled = false)
-    public void rescheduleOnlyOnOneAndSucceeded() throws Exception {
-
-    }
-
-    @Test(enabled = false)
-    public void rescheduleOnlyOnOneAndKilled() throws Exception {
-
-    }
-
+    //TODO: rescheduleSucceededAndDWEOnSomeColo()
+    //TODO: rescheduleOnlyOnOneAndSucceeded()
+    //TODO: rescheduleOnlyOnOneAndKilled()
 
     @Test(enabled = false)
     public void rescheduleKilled() throws Exception {
+        Thread.sleep(15000);
 
-        Bundle b = new Bundle();
-        try {
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-            b.setInputFeedDataPath("/samarthData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(
-                    "/examples/output-data/aggregator/aggregatedLogs/${YEAR}/${MONTH}/${DAY}/$" +
-                            "{HOUR}/${MINUTE}");
-            b.setProcessConcurrency(6);
-            b.submitAndScheduleBundle(prismHelper);
-            Thread.sleep(15000);
-
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
 
 
-            InstanceUtil.waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.KILLED, 20);
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.KILLED, 20);
 
-            Thread.sleep(20000);
+        Thread.sleep(20000);
 
-            //check ... get definition should return process not found
-            ServiceResponse r =
-                    prismHelper.getProcessHelper()
-                            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, b.getProcessData());
-            Assert.assertTrue(r.getMessage().contains("(process) not found"));
-            Util.assertFailed(r);
+        //check ... get definition should return process not found
+        ServiceResponse r = prism.getProcessHelper()
+                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+        Assert.assertTrue(r.getMessage().contains("(process) not found"));
+        Util.assertFailed(r);
 
-            //submit and schedule process again
-            r = prismHelper.getProcessHelper()
-                    .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, b.getProcessData());
-            Util.assertSucceeded(r);
-            Thread.sleep(20000);
-            InstanceUtil
-                    .waitForBundleToReachState(ivoryqa1, b.getProcessName(), Status.SUCCEEDED, 20);
-
-        } finally {
-            b.deleteBundle(prismHelper);
-        }
+        //submit and schedule process again
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        Util.assertSucceeded(r);
+        Thread.sleep(20000);
+        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
     }
-
-
 }

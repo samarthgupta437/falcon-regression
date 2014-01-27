@@ -26,8 +26,10 @@ import org.apache.falcon.regression.core.generated.feed.Validity;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ public class PrismUtil {
     public static void verifyClusterSubmission(ServiceResponse r, String clusterData, String env,
                                                String expectedStatus,
                                                List<String> beforeSubmit, List<String> afterSubmit)
-    throws Exception {
+     {
 
         if (expectedStatus.equals("SUCCEEDED")) {
             Assert.assertEquals(r.getMessage().contains("SUCCEEDED"), true,
@@ -55,7 +57,7 @@ public class PrismUtil {
 
     /*public static void compareDataStoreStates(List<String> initialState, List<String> finalState,
                                               String filename)
-    throws Exception {
+     {
         finalState.removeAll(initialState);
 
         Assert.assertEquals(finalState.size(), 1);
@@ -101,7 +103,7 @@ public class PrismUtil {
     }
 
     private org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
-            Bundle bundle) throws Exception {
+            Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext
                 .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -112,9 +114,8 @@ public class PrismUtil {
 
     public Bundle setFeedCluster(Validity v1, Retention r1, String n1, ClusterType t1, Validity v2,
                                  Retention r2,
-                                 String n2, ClusterType t2)
-    throws Exception {
-        Bundle bundle = (Bundle) Util.readELBundles()[0][0];
+                                 String n2, ClusterType t2) throws IOException, JAXBException {
+        Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         org.apache.falcon.regression.core.generated.feed.Cluster c1 =
                 new org.apache.falcon.regression.core.generated.feed.Cluster();
@@ -157,8 +158,7 @@ public class PrismUtil {
 
     private void writeClusterElement(Bundle bundle,
                                      org.apache.falcon.regression.core.generated.cluster.Cluster
-                                             clusterElement)
-    throws Exception {
+                                             clusterElement) throws JAXBException {
         JAXBContext jc = JAXBContext
                 .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
         java.io.StringWriter sw = new StringWriter();
@@ -168,13 +168,13 @@ public class PrismUtil {
         bundle.setClusterData(sw.toString());
     }
 
-    public Feed getFeedElement(Bundle bundle) throws Exception {
+    public Feed getFeedElement(Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         return (Feed) u.unmarshal((new StringReader(bundle.getDataSets().get(0))));
     }
 
-    public void writeFeedElement(Bundle bundle, Feed feedElement) throws Exception {
+    public void writeFeedElement(Bundle bundle, Feed feedElement) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();

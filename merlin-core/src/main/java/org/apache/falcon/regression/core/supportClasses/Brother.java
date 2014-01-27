@@ -72,7 +72,7 @@ public class Brother extends Thread {
         } else if (entityType.equals(ENTITY_TYPE.CLUSTER)) {
 
             this.entityManagerHelper = p.getClusterHelper();
-            this.data = b.getClusterData();
+            this.data = b.getClusters().get(0);
         } else {
             this.entityManagerHelper = p.getFeedHelper();
             this.data = b.getDataSets().get(0);

@@ -25,8 +25,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.OozieClient;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,10 +51,12 @@ public class BaseTestClass {
     public String baseHDFSDir = "/tmp/falcon-regression";
     public static final String PRISM_PROPERTIES = "prism.properties";
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
+    public static final String PRISM_PREFIX = "prism";
+
 
     public BaseTestClass() {
 
-        prism = new PrismHelper(PRISM_PROPERTIES);
+        prism = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
         servers = getServers();
         serverFS = new ArrayList<FileSystem>();
         serverOC = new ArrayList<OozieClient>();
@@ -83,6 +83,11 @@ public class BaseTestClass {
         serverNames = new ArrayList<String>(Arrays.asList(merlinProp.getProperty("servers").split
                 (",")));
         for (int i = 0; i < serverNames.size(); i++)
+            serverNames.set(i, serverNames.get(i).trim());
+
+        serverNames.add(PRISM_PREFIX);
+
+/*        for (int i = 0; i < serverNames.size(); i++)
             serverNames.set(i, serverNames.get(i).trim() + ".properties");
 
         serverNames.add(PRISM_PROPERTIES);
@@ -115,14 +120,14 @@ public class BaseTestClass {
             serverPorp.store(new FileOutputStream(new File("merlin/src/main/resources/" + server)),
                     null);
 
-        }
+        }    */
 
     }
 
     private List<ColoHelper> getServers() {
         ArrayList<ColoHelper> returnList = new ArrayList<ColoHelper>();
         for (int i = 0; i < serverNames.size() - 1; i++)
-            returnList.add(new ColoHelper(serverNames.get(i)));
+            returnList.add(new ColoHelper(MERLIN_PROPERTIES, serverNames.get(i)));
 
         return returnList;
     }

@@ -39,16 +39,16 @@ public class FeedRetentionTest extends BaseMultiClusterTests {
     private Bundle bundle1, bundle2;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws Exception {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         //getImpressionRC bundle
         bundle1 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundle1.generateUniqueBundle();
-        bundle1 = new Bundle(bundle1, server1.getEnvFileName());
+        bundle1 = new Bundle(bundle1, server1.getEnvFileName(), server1.getPrefix());
 
         bundle2 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundle2.generateUniqueBundle();
-        bundle2 = new Bundle(bundle2, server2.getEnvFileName());
+        bundle2 = new Bundle(bundle2, server2.getEnvFileName(), server2.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)

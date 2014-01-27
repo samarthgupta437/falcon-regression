@@ -32,8 +32,8 @@ import java.util.Arrays;
 
 public class BaseSingleClusterTests {
 
-    public PrismHelper prism = new PrismHelper("prism.properties");
-    public ColoHelper server1 = new ColoHelper("ivoryqa-1.config.properties");
+    public PrismHelper prism = new PrismHelper("prism.properties", "");
+    public ColoHelper server1 = new ColoHelper("ivoryqa-1.config.properties", "");
     public FileSystem server1FS = null;
     public OozieClient server1OC = null;
     public String baseHDFSDir = "/tmp/falcon-regression";

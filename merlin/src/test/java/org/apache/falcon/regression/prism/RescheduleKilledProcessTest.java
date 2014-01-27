@@ -19,69 +19,64 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class RescheduleKilledProcessTest {
+public class RescheduleKilledProcessTest extends BaseSingleClusterTests {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
+    private Bundle bundle;
 
-    ColoHelper ua1 = new ColoHelper("gs1001.config.properties");
+    @BeforeMethod(alwaysRun = true)
+    public void setUp(Method method) throws Exception {
+        Util.print("test name: " + method.getName());
+        bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle.deleteBundle(prism);
+    }
 
     @Test(enabled = false, timeOut = 1200000)
     public void recheduleKilledProcess() throws Exception {
         // submit and schedule a process with error in workflow .
         //it will get killed
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        try {
-            //generate bundles according to config files
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-            String processEndTime = InstanceUtil.getTimeWrtSystemTime(06);
+        //generate bundles according to config files
+        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
+        String processEndTime = InstanceUtil.getTimeWrtSystemTime(06);
+        String process = bundle.getProcessData();
+        process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
+        List<String> feed = new ArrayList<String>();
+        feed.add(Util.getOutputFeedFromBundle(bundle));
+        process = bundle.setProcessFeeds(process, feed, 0, 0, 1);
 
+        process = InstanceUtil.setProcessCluster(process, null,
+                XmlUtil.createProcessValidity(processStartTime, "2099-01-01T00:00Z"));
+        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundle.getClusters().get(0)),
+                XmlUtil.createProcessValidity(processStartTime, processEndTime));
+        bundle.setProcessData(process);
 
-            String process = b1.getProcessData();
-            process = InstanceUtil
-                    .setProcessName(process, "zeroInputProcess" + new Random().nextInt());
-            List<String> feed = new ArrayList<String>();
-            feed.add(Util.getOutputFeedFromBundle(b1));
-            process = b1.setProcessFeeds(process, feed, 0, 0, 1);
+        bundle.submitAndScheduleBundle(prism);
 
-            process = InstanceUtil.setProcessCluster(process, null,
-                    XmlUtil.createProcessValidity(processStartTime, "2099-01-01T00:00Z"));
-            process = InstanceUtil
-                    .setProcessCluster(process, Util.readClusterName(b1.getClusters().get(0)),
-                            XmlUtil.createProcessValidity(processStartTime, processEndTime));
-            b1.setProcessData(process);
-
-            b1.submitAndScheduleBundle(prismHelper);
-
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b1.getProcessData());
-
-            //		prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
-            // b1.getProcessData());
-
-            //		prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b1.getProcessData());
-
-            prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, b1.getProcessData());
-
-            prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, b1.getProcessData());
-
-
-        } finally {
-            b1.deleteBundle(prismHelper);
-        }
-
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData());
 
     }
 
@@ -90,37 +85,25 @@ public class RescheduleKilledProcessTest {
     public void recheduleKilledProcess02() throws Exception {
         // submit and schedule a process with error in workflow .
         //it will get killed
-        Bundle b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        try {
-            //generate bundles according to config files
-            b1 = new Bundle(b1, ua1.getEnvFileName());
-            String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-            String processEndTime = InstanceUtil.getTimeWrtSystemTime(06);
-            b1.setProcessValidity(processStartTime, processEndTime);
-            b1.setInputFeedDataPath(
-                    "/samarth/input-data/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-11),
+                InstanceUtil.getTimeWrtSystemTime(06));
 
-            String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(b1));
-            Util.HDFSCleanup(ua1, prefix.substring(1));
-            Util.lateDataReplenish(ua1, 40, 1, prefix);
+        bundle.setInputFeedDataPath(baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
-            System.out.println("process: " + b1.getProcessData());
+        String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(bundle));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        Util.lateDataReplenish(server1, 40, 1, prefix);
 
-            b1.submitAndScheduleBundle(prismHelper);
+        System.out.println("process: " + bundle.getProcessData());
 
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b1.getProcessData());
+        bundle.submitAndScheduleBundle(prism);
 
-            prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, b1.getProcessData());
-            prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, b1.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData());
 
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, b1.getProcessData());
-
-            prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, b1.getProcessData());
-            prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, b1.getProcessData());
-
-        } finally {
-            b1.deleteBundle(prismHelper);
-        }
     }
 }

@@ -22,6 +22,7 @@
  */
 package org.apache.falcon.regression.core.helpers;
 
+import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
@@ -34,10 +35,13 @@ import org.testng.Assert;
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class ProcessEntityHelperImpl extends IEntityManagerHelper {
@@ -46,11 +50,11 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public ProcessEntityHelperImpl(String envFileName) throws Exception {
-        super(envFileName);
+    public ProcessEntityHelperImpl(String envFileName, String prefix)  {
+        super(envFileName, prefix);
     }
 
-    public ServiceResponse delete(String url, String data) throws Exception {
+    public ServiceResponse delete(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
         //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
         //        {
@@ -64,12 +68,12 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.sendRequest(url);
     }
 
-//	public ServiceResponse delete(URLS url, String data) throws Exception {
+//	public ServiceResponse delete(URLS url, String data)  {
 //		// TODO Auto-generated method stub
 //		return delete(url.getValue(), data);
 //	}
 
-    public ServiceResponse getEntityDefinition(String url, String data) throws Exception {
+    public ServiceResponse getEntityDefinition(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
         //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
         //        {
@@ -82,41 +86,41 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public ServiceResponse getStatus(String url, String data) throws Exception {
+    public ServiceResponse getStatus(String url, String data) throws IOException, URISyntaxException, JAXBException {
         //throw new UnsupportedOperationException("Not supported yet.");
         url += "/process/" + readEntityName(data) + colo;
         return Util.sendRequest(url);
     }
 
-//	public ServiceResponse getStatus(URLS url, String data) throws Exception {
+//	public ServiceResponse getStatus(URLS url, String data)  {
 //		//throw new UnsupportedOperationException("Not supported yet.");
 //		return getStatus(url.getValue(), data);
 //	}
 
-    public ServiceResponse schedule(String url, String data) throws Exception {
+    public ServiceResponse schedule(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
         url += "/process/" + readEntityName(data) + colo;
         return Util.sendRequest(url);
     }
 
-//	public ServiceResponse schedule(Util.URLS url, String data) throws Exception {
+//	public ServiceResponse schedule(Util.URLS url, String data)  {
 //		return schedule(url.getValue(), data);
 //	}
 
-    public ServiceResponse submitAndSchedule(String url, String data) throws Exception {
+    public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
 
         url += "/process";
         return Util.sendRequest(url, data);
 
     }
 
-//	public ServiceResponse submitAndSchedule(URLS url, String data) throws Exception {
+//	public ServiceResponse submitAndSchedule(URLS url, String data)  {
 //
 //		ServiceResponse response = submitAndSchedule(url.getValue(), data);
 //		return response;
 //	}
 
-    public ServiceResponse submitEntity(String url, String data) throws Exception {
+    public ServiceResponse submitEntity(String url, String data) throws IOException {
 
         //    	 if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
         //         {
@@ -130,29 +134,29 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-//	public ServiceResponse submitEntity(Util.URLS url, String data) throws Exception {
+//	public ServiceResponse submitEntity(Util.URLS url, String data)  {
 //
 //		return submitEntity(url.getValue(), data);
 //	}
 
-    public ServiceResponse suspend(String url, String data) throws Exception {
+    public ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException {
 
         return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
     }
 
-//	public ServiceResponse suspend(URLS url, String data) throws Exception {
+//	public ServiceResponse suspend(URLS url, String data)  {
 //		return suspend(url.getValue(), data);
 //	}
 
-    public ServiceResponse resume(String url, String data) throws Exception {
+    public ServiceResponse resume(String url, String data) throws JAXBException, IOException, URISyntaxException {
         return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
     }
 
-//	public ServiceResponse resume(Util.URLS url, String data) throws Exception {
+//	public ServiceResponse resume(Util.URLS url, String data)  {
 //		return resume(url.getValue(), data);
 //	}
 
-    /*public ServiceResponse validateEntity(String url, String data) throws Exception {
+    /*public ServiceResponse validateEntity(String url, String data)  {
 
         //System.out.println(Thread.currentThread().getStackTrace()[2].getMethodName());
         if (!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong"))) {
@@ -164,7 +168,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
     public void validateResponse(String response, APIResult.Status expectedResponse,
-                                 String filename) throws Exception {
+                                 String filename) throws JAXBException, IOException {
 
         JAXBContext jc = JAXBContext.newInstance(APIResult.class);
 
@@ -202,7 +206,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public String readEntityName(String data) throws Exception {
+    public String readEntityName(String data) throws JAXBException {
 
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
@@ -218,7 +222,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     /*@Override
     public ProcessInstancesResult getRunningInstance(
-            String processRuningInstance, String name) throws Exception {
+            String processRuningInstance, String name)  {
 
         String url = this.hostname + processRuningInstance + "/" + name + allColo;
 
@@ -227,7 +231,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ProcessInstancesResult getRunningInstance(
-            URLS processRuningInstance, String name) throws Exception {
+            URLS processRuningInstance, String name) throws IOException, URISyntaxException {
 
         String url =
                 this.hostname + URLS.INSTANCE_RUNNING.getValue() + "/" + "process/" + name + "/";
@@ -236,8 +240,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ProcessInstancesResult getProcessInstanceStatus(String EntityName, String params)
-    throws Exception {
+    public ProcessInstancesResult getProcessInstanceStatus(String EntityName, String params) throws IOException, URISyntaxException {
 
 
         String url =
@@ -251,7 +254,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     /*@Override
     public String getProcessInstanceStatusViaCli(
             String EntityName, String start, String end, String colos)
-    throws Exception {
+     {
         String command = "";
         if (end != null)
             command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
@@ -269,7 +272,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ProcessInstancesResult getProcessInstanceSuspend(
-            String EntityName, String params) throws Exception {
+            String EntityName, String params) throws IOException, URISyntaxException {
         String url =
                 this.hostname + URLS.INSTANCE_SUSPEND.getValue() + "/" + "process/" + EntityName +
                         "/";
@@ -279,8 +282,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
-    throws Exception {
+    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params) throws IOException, URISyntaxException {
         String url =
                 this.hostname + URLS.INSTANCE_RESUME.getValue() + "/" + "process/" + EntityName +
                         "/";
@@ -288,21 +290,20 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }
 
-    public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params)
-    throws Exception {
+    public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
         String url =
                 this.hostname + URLS.INSTANCE_KILL.getValue() + "/" + "process/" + EntityName + "/";
         return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
     }
 
-    /*public ServiceResponse updateProcess(String processName, String newProcess) throws Exception {
+    /*public ServiceResponse updateProcess(String processName, String newProcess)  {
 
         String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" + processName;
         return Util.sendRequest(url + colo, newProcess);
     }
 
-    public String updateViaCLI(String processName, String newProcessFilePath) throws Exception {
+    public String updateViaCLI(String processName, String newProcessFilePath)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -update -url " + this.hostname + " -type process -name " +
@@ -311,7 +312,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String validateEntityViaCLI(String entityName) throws Exception {
+    public String validateEntityViaCLI(String entityName)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -validate -url " + this.hostname + " -type process -name " +
@@ -319,7 +320,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String submitAndScheduleViaCLI(String filePath) throws Exception {
+    public String submitAndScheduleViaCLI(String filePath)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -submitAndSchedule -url " + this.hostname +
@@ -327,7 +328,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String scheduleViaCLI(String entityName) throws Exception {
+    public String scheduleViaCLI(String entityName)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -schedule -url " + this.hostname + " -type process -name " +
@@ -335,7 +336,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String resumeViaCLI(String entityName) throws Exception {
+    public String resumeViaCLI(String entityName)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -resume -url " + this.hostname + " -type process -name " +
@@ -343,7 +344,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String getStatusViaCLI(String entityName) throws Exception {
+    public String getStatusViaCLI(String entityName)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -status -url " + this.hostname + " -type process -name " +
@@ -351,7 +352,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String getEntityDefinitionViaCLI(String entityName) throws Exception {
+    public String getEntityDefinitionViaCLI(String entityName)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -definition -url " + this.hostname +
@@ -359,7 +360,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String deleteViaCLI(String entityName) throws Exception {
+    public String deleteViaCLI(String entityName)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -delete -url " + this.hostname + " -type process -name " +
@@ -367,15 +368,14 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String suspendViaCLI(String entityName) throws Exception {
+    public String suspendViaCLI(String entityName)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -suspend -url " + this.hostname + " -type process -name " +
                         entityName);
     }  */
 
-    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
-    throws Exception {
+    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params) throws IOException, URISyntaxException {
         String url =
                 this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
                         "/";
@@ -385,7 +385,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     /*@Override
     public ProcessInstancesResult getInstanceRerun(String EntityName, String params)
-    throws Exception {
+     {
         String url =
                 this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
                         "/";
@@ -395,14 +395,14 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
 
     @Override
-    public String submitEntityViaCLI(String filePath) throws Exception {
+    public String submitEntityViaCLI(String filePath)  {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -submit -url " + this.hostname + " -type process -file " +
                         filePath);
     }
 
-    public String writeEntityToFile(String entity) throws Exception {
+    public String writeEntityToFile(String entity)  {
         File file = new File("/tmp/" + Util.readEntityName(entity) + ".xml");
         BufferedWriter bf = new BufferedWriter(new FileWriter(file));
         bf.write(entity);
@@ -411,7 +411,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     } */
 
     /*public String getProcessInstanceStatusCLI(
-            String processName, String start, String end) throws Exception {
+            String processName, String start, String end)  {
         String command = "";
         if (end != null)
             command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
@@ -426,11 +426,11 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }*/
 
-    /*public String CLIHelp() throws Exception {
+    /*public String CLIHelp()  {
         return Util.executeCommand(BASE_COMMAND + " help");
     }*/
 
-    /*public String getProcessInstanceRunningCLI(String processName) throws Exception {
+    /*public String getProcessInstanceRunningCLI(String processName)  {
         String command =
                 BASE_COMMAND + " instance -running -url " + this.hostname + " -processName " +
                         processName;
@@ -438,7 +438,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
     /*public String getProcessInstanceSuspendCLI(String processName,
-                                               String start, String end) throws Exception {
+                                               String start, String end)  {
         String command = "";
         if (end != null)
             command = BASE_COMMAND + " instance -suspend -url " + this.hostname + " -processName " +
@@ -453,7 +453,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
     /*public String processInstanceRerunCLI(String processName,
-                                          String start, String end) throws Exception {
+                                          String start, String end)  {
         String command = "";
         if (end != null)
             command = BASE_COMMAND + " instance -rerun -url " + this.hostname + " -processName " +
@@ -468,7 +468,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
     /*public String processInstanceResumeCLI(String processName,
-                                           String start, String end) throws Exception {
+                                           String start, String end)  {
         String command = "";
         if (end != null)
             command = BASE_COMMAND + " instance -resume -url " + this.hostname + " -processName " +
@@ -483,7 +483,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
     /*public String processInstanceKillCLI(String processName, String start,
-                                         String end) throws Exception {
+                                         String end)  {
         String command = "";
         if (end != null)
             command = BASE_COMMAND + " instance -kill -url " + this.hostname + " -processName " +
@@ -498,7 +498,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
     /*public String processInstanceSuspendCLI(String processName,
-                                            String start, String end) throws Exception {
+                                            String start, String end)  {
         String command = "";
         if (end != null)
             command = BASE_COMMAND + " instance -suspend -url " + this.hostname + " -processName " +
@@ -512,13 +512,13 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.executeCommand(command);
     }*/
 
-    public String list() throws Exception {
+    public String list() throws IOException, InterruptedException {
         return Util.executeCommand(
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
     }
 
     @Override
-    public String getDependencies(String entityName) throws Exception {
+    public String getDependencies(String entityName) throws IOException, InterruptedException {
 
         return Util.executeCommand(
                 BASE_COMMAND + " entity -dependency -url " + this.hostname +
@@ -527,7 +527,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     /*public String getProcessInstanceStatusCLI(String processName,
                                               String start, String end, int runid, String type)
-    throws Exception {
+     {
         String command = "";
         if (end != null && runid >= 0 && type != null)
             command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
@@ -568,63 +568,62 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
     @Override
-    public ServiceResponse submitEntity(URLS url, String data) throws Exception {
+    public ServiceResponse submitEntity(URLS url, String data) throws IOException {
 
         return submitEntity(this.hostname + url.getValue(), data);
     }
 
     @Override
-    public ServiceResponse submitAndSchedule(URLS url, String data) throws Exception {
+    public ServiceResponse submitAndSchedule(URLS url, String data) throws IOException {
         return submitAndSchedule(this.hostname + url.getValue(), data);
     }
 
     @Override
-    public ServiceResponse resume(URLS url, String data) throws Exception {
+    public ServiceResponse resume(URLS url, String data) throws JAXBException, IOException, URISyntaxException {
         return resume(this.hostname + url.getValue(), data);
     }
 
     @Override
-    public ServiceResponse getStatus(URLS url, String data) throws Exception {
+    public ServiceResponse getStatus(URLS url, String data) throws IOException, URISyntaxException, JAXBException {
         return getStatus(this.hostname + url.getValue(), data);
     }
 
     @Override
-    public ServiceResponse schedule(URLS scheduleUrl, String processData) throws Exception {
+    public ServiceResponse schedule(URLS scheduleUrl, String processData) throws IOException, URISyntaxException, JAXBException {
         return schedule(this.hostname + scheduleUrl.getValue(), processData);
     }
 
     @Override
-    public ServiceResponse delete(URLS deleteUrl, String data) throws Exception {
+    public ServiceResponse delete(URLS deleteUrl, String data) throws IOException, URISyntaxException, JAXBException {
 
         return delete(this.hostname + deleteUrl.getValue(), data);
     }
 
     @Override
-    public ServiceResponse suspend(URLS suspendUrl, String data) throws Exception {
+    public ServiceResponse suspend(URLS suspendUrl, String data) throws JAXBException, IOException, URISyntaxException {
 
         return suspend(this.hostname + suspendUrl.getValue(), data);
     }
 
     @Override
-    public List<String> getArchiveInfo() throws Exception {
+    public List<String> getArchiveInfo() throws IOException, JSchException {
 
         return Util.getArchiveStoreInfo(this);
     }
 
     @Override
-    public List<String> getStoreInfo() throws Exception {
+    public List<String> getStoreInfo() throws IOException, JSchException {
 
         return Util.getProcessStoreInfo(this);
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(URLS getUrl, String data)
-    throws Exception {
+    public ServiceResponse getEntityDefinition(URLS getUrl, String data) throws IOException, URISyntaxException, JAXBException {
         return getEntityDefinition(this.hostname + getUrl.getValue(), data);
     }
 
     @Override
-    public ServiceResponse update(String oldEntity, String newEntity) throws Exception {
+    public ServiceResponse update(String oldEntity, String newEntity) throws IOException, JAXBException {
 
         String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" +
                 Util.readEntityName(oldEntity);
@@ -632,7 +631,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String toString(Object object) throws Exception {
+    public String toString(Object object) throws JAXBException {
         Process processObject = (Process) object;
 
         JAXBContext context = JAXBContext.newInstance(Process.class);
