@@ -115,7 +115,7 @@ public class PrismConcurrentRequest extends BaseMultiClusterTests {
                 brothers[i - 1] =
                         new Brother("brother" + i, "delete", ENTITY_TYPE.PROCESS, brotherGrimm, b,
                                 prism,
-                                URLS.SUBMIT_URL);
+                                URLS.DELETE_URL);
             }
             for (Brother brother : brothers) {
                 brother.start();
