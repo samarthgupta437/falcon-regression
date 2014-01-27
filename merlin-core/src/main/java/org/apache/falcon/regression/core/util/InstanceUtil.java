@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
+import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
@@ -70,6 +71,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -86,7 +88,7 @@ public class InstanceUtil {
     static String hdfs_url = null;
 
 
-    public InstanceUtil(String envFileName) throws Exception {
+    public InstanceUtil(String envFileName)  {
         oozieClient = new XOozieClient(Util.readPropertiesFile(envFileName, "oozie_url"));
         hdfs_url = "hdfs://" + Util.readPropertiesFile(envFileName, "hadoop_url");
 
@@ -95,7 +97,7 @@ public class InstanceUtil {
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
     public static ProcessInstancesResult sendRequestProcessInstance(String
-                                                                            url) throws Exception {
+                                                                            url) throws IOException, URISyntaxException {
         HttpRequestBase request;
         if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
                 Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
@@ -112,7 +114,7 @@ public class InstanceUtil {
     public static ProcessInstancesResult sendRequestProcessInstance(String
                                                                             url,
                                                                     String user
-    ) throws Exception {
+    ) throws IOException, URISyntaxException {
 
         HttpRequestBase request;
         if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
@@ -127,8 +129,7 @@ public class InstanceUtil {
         return hitUrl(url, request);
     }
 
-    public static ProcessInstancesResult hitUrl(String url, HttpRequestBase request)
-    throws Exception {
+    public static ProcessInstancesResult hitUrl(String url, HttpRequestBase request) throws URISyntaxException, IOException {
         logger.info("hitting the url: " + url);
 
         request.setURI(new URI(url));
@@ -183,8 +184,7 @@ public class InstanceUtil {
 
 
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
-                                       ProcessInstancesResult.WorkflowStatus ws)
-    throws Exception {
+                                       ProcessInstancesResult.WorkflowStatus ws) throws JAXBException {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(b.getProcessConcurrency(), runningInstancesInResult(r, ws));
     }
@@ -220,7 +220,7 @@ public class InstanceUtil {
                 "Parameter start is empty should have the response");
     }
 
-    public static void writeProcessElement(Bundle bundle, Process processElement) throws Exception {
+    public static void writeProcessElement(Bundle bundle, Process processElement) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
@@ -229,14 +229,14 @@ public class InstanceUtil {
         bundle.setProcessData(sw.toString());
     }
 
-    public static Process getProcessElement(Bundle bundle) throws Exception {
+    public static Process getProcessElement(Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
         return (Process) u.unmarshal((new StringReader(bundle.getProcessData())));
 
     }
 
-    public static Feed getFeedElement(Bundle bundle, String feedName) throws Exception {
+    public static Feed getFeedElement(Bundle bundle, String feedName) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         Feed feedElement = (Feed) u.unmarshal((new StringReader(bundle.dataSets.get(0))));
@@ -248,7 +248,7 @@ public class InstanceUtil {
     }
 
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
-                                        String feedName) throws Exception {
+                                        String feedName) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         java.io.StringWriter sw = new StringWriter();
@@ -264,8 +264,7 @@ public class InstanceUtil {
     }
 
     public static void validateSuccessOnlyStart(ProcessInstancesResult r,
-                                                ProcessInstancesResult.WorkflowStatus ws)
-    throws Exception {
+                                                ProcessInstancesResult.WorkflowStatus ws) {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(1, runningInstancesInResult(r, ws));
     }
@@ -307,8 +306,8 @@ public class InstanceUtil {
         Assert.assertEquals(actualKilledInstances, killedInstances);
     }
 
-    public static ArrayList<String> getWorkflows(PrismHelper prismHelper, String processName,
-                                                 WorkflowAction.Status ws) throws Exception {
+    public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
+                                                 WorkflowAction.Status ws) throws OozieClientException {
 
         String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
@@ -316,7 +315,7 @@ public class InstanceUtil {
 
         List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
-        ArrayList<String> toBeReturned = new ArrayList<String>();
+        List<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
             CoordinatorAction wfJob = oozieClient.getCoordActionInfo(jobID);
             WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getExternalId());
@@ -331,7 +330,7 @@ public class InstanceUtil {
     }
 
 
-    public static boolean isWorkflowRunning(String workflowID) throws Exception {
+    public static boolean isWorkflowRunning(String workflowID) throws OozieClientException {
         CoordinatorAction wfJob = oozieClient.getCoordActionInfo(workflowID);
         WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getExternalId());
         return wa.getStatus().toString().equals("RUNNING");
@@ -340,10 +339,9 @@ public class InstanceUtil {
     public static void areWorkflowsRunning(PrismHelper prismHelper, String ProcessName,
                                            int totalWorkflows,
                                            int runningWorkflows, int killedWorkflows,
-                                           int succeededWorkflows)
-    throws Exception {
+                                           int succeededWorkflows) throws OozieClientException {
 
-        ArrayList<WorkflowAction> was = getWorkflowActions(prismHelper, ProcessName);
+        List<WorkflowAction> was = getWorkflowActions(prismHelper, ProcessName);
         if (totalWorkflows != -1)
             Assert.assertEquals(was.size(), totalWorkflows);
         int actualRunningWorkflows = 0;
@@ -373,8 +371,7 @@ public class InstanceUtil {
 
     public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
                                                                  String processName,
-                                                                 ENTITY_TYPE entityType)
-    throws Exception {
+                                                                 ENTITY_TYPE entityType) throws OozieClientException {
 
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
@@ -384,8 +381,7 @@ public class InstanceUtil {
     }
 
     public static String getLatestCoordinatorID(ColoHelper coloHelper, String processName,
-                                                ENTITY_TYPE entityType)
-    throws Exception {
+                                                ENTITY_TYPE entityType) throws OozieClientException {
         return getDefaultCoordIDFromBundle(coloHelper,
                 getLatestBundleID(coloHelper, processName, entityType));
     }
@@ -412,14 +408,13 @@ public class InstanceUtil {
     }
 
 
-    public static ArrayList<WorkflowAction> getWorkflowActions(PrismHelper prismHelper,
-                                                               String processName)
-    throws Exception {
+    public static List<WorkflowAction> getWorkflowActions(PrismHelper prismHelper,
+                                                               String processName) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(prismHelper.getProcessHelper().getOozieURL());
 
         String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
-        ArrayList<WorkflowAction> was = new ArrayList<WorkflowAction>();
+        List<WorkflowAction> was = new ArrayList<WorkflowAction>();
         List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
 
         for (String jobID : workflows) {
@@ -433,8 +428,7 @@ public class InstanceUtil {
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
                                                          status,
-                                                 ENTITY_TYPE entityType)
-    throws Exception {
+                                                 ENTITY_TYPE entityType) throws OozieClientException {
         List<CoordinatorAction> list = getProcessInstanceList(coloHelper, processName, entityType);
         int instanceCount = 0;
         for (CoordinatorAction aList : list) {
@@ -447,7 +441,7 @@ public class InstanceUtil {
     }
 
 
-    public static String getTimeWrtSystemTime(int minutes) throws Exception {
+    public static String getTimeWrtSystemTime(int minutes)  {
 
         DateTime jodaTime = new DateTime(DateTimeZone.UTC);
         if (minutes > 0)
@@ -474,8 +468,7 @@ public class InstanceUtil {
 
 
     public static Status getDefaultCoordinatorStatus(ColoHelper colohelper, String processName,
-                                                     int bundleNumber)
-    throws Exception {
+                                                     int bundleNumber) throws OozieClientException {
 
         XOozieClient oozieClient = new XOozieClient(colohelper.getProcessHelper().getOozieURL());
         String coordId =
@@ -485,7 +478,7 @@ public class InstanceUtil {
 
 
     public static String getDefaultCoordinatorFromProcessName(
-            ColoHelper coloHelper, String processName, int bundleNumber) throws Exception {
+            ColoHelper coloHelper, String processName, int bundleNumber) throws OozieClientException {
         //String bundleId = Util.getCoordID(Util.getOozieJobStatus(processName,"NONE").get(0));
         String bundleID =
                 getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
@@ -493,16 +486,14 @@ public class InstanceUtil {
     }
 
     public static List<CoordinatorJob> getBundleCoordinators(String bundleID,
-                                                             IEntityManagerHelper helper)
-    throws Exception {
+                                                             IEntityManagerHelper helper) throws OozieClientException {
         XOozieClient localOozieClient = new XOozieClient(helper.getOozieURL());
         BundleJob bundleInfo = localOozieClient.getBundleJobInfo(bundleID);
         return bundleInfo.getCoordinators();
     }
 
     public static String getLatestBundleID(ColoHelper coloHelper, String processName,
-                                           ENTITY_TYPE entityType)
-    throws Exception {
+                                           ENTITY_TYPE entityType) throws OozieClientException {
         List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType);
 
         String max = "";
@@ -518,8 +509,7 @@ public class InstanceUtil {
 
     @Deprecated
     public static String getLatestBundleID(ColoHelper coloHelper, String processName,
-                                           String entityType)
-    throws Exception {
+                                           String entityType) throws IOException, JSchException {
         List<String> bundleIds = Util.getBundles(coloHelper, processName, entityType);
 
         String max = "";
@@ -535,8 +525,7 @@ public class InstanceUtil {
 
     @Deprecated
     public static String getLatestBundleID(String processName, String entityType,
-                                           IEntityManagerHelper helper)
-    throws Exception {
+                                           IEntityManagerHelper helper) throws IOException, JSchException {
         List<String> bundleIds = Util.getBundles(processName, entityType, helper);
 
         String max = "";
@@ -551,8 +540,7 @@ public class InstanceUtil {
     }
 
     public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
-                                             ENTITY_TYPE entityType, int bundleNumber)
-    throws Exception {
+                                             ENTITY_TYPE entityType, int bundleNumber) throws OozieClientException {
 
         List<String> bundleIds = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(), entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
@@ -588,8 +576,7 @@ public class InstanceUtil {
 
     public static CoordinatorAction.Status getInstanceStatus(ColoHelper coloHelper,
                                                              String processName,
-                                                             int bundleNumber, int instanceNumber)
-    throws Exception {
+                                                             int bundleNumber, int instanceNumber) throws OozieClientException {
         String bundleID = InstanceUtil
                 .getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
         String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
@@ -601,8 +588,7 @@ public class InstanceUtil {
 
     @Deprecated
     public static void putDataInFolders(ColoHelper colo,
-                                        final ArrayList<String> inputFoldersForInstance)
-    throws Exception {
+                                        final List<String> inputFoldersForInstance) throws IOException, InterruptedException {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(colo, anInputFoldersForInstance);
@@ -611,8 +597,7 @@ public class InstanceUtil {
 
     @Deprecated
     public static void putDataInFolders(FileSystem fs,
-                                        final ArrayList<String> inputFoldersForInstance)
-    throws Exception {
+                                        final List<String> inputFoldersForInstance) throws IOException {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(fs, anInputFoldersForInstance, null);
@@ -620,8 +605,8 @@ public class InstanceUtil {
     }
 
     public static void putDataInFolders(ColoHelper colo,
-                                        final ArrayList<String> inputFoldersForInstance,
-                                        String type) throws Exception {
+                                        final List<String> inputFoldersForInstance,
+                                        String type) throws IOException, InterruptedException {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(colo, anInputFoldersForInstance, type);
@@ -629,8 +614,7 @@ public class InstanceUtil {
     }
 
 
-    public static void putDataInFolder(ColoHelper colo, final String remoteLocation)
-    throws Exception {
+    public static void putDataInFolder(ColoHelper colo, final String remoteLocation) throws IOException, InterruptedException {
 
         Configuration conf = new Configuration();
         conf.set("fs.default.name",
@@ -653,7 +637,7 @@ public class InstanceUtil {
 
                     @Override
 
-                    public Boolean run() throws Exception {
+                    public Boolean run() throws IOException {
 
                         Util.print("putDataInFolder: " + remoteLocation);
                         fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
@@ -668,8 +652,7 @@ public class InstanceUtil {
     }
 
     @Deprecated
-    public static void putDataInFolder(ColoHelper colo, final String remoteLocation, String type)
-    throws Exception {
+    public static void putDataInFolder(ColoHelper colo, final String remoteLocation, String type) throws IOException, InterruptedException {
 
         Configuration conf = new Configuration();
         conf.set("fs.default.name",
@@ -691,7 +674,7 @@ public class InstanceUtil {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                     @Override
-                    public Boolean run() throws Exception {
+                    public Boolean run() throws IOException {
                         Util.print("putDataInFolder: " + remoteLocation);
                         fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
                                 new Path(remoteLocation));
@@ -705,8 +688,7 @@ public class InstanceUtil {
     }
 
 
-    public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type)
-    throws Exception {
+    public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type) throws IOException {
         String inputPath = "src/test/resources/OozieExampleInputData/normalInput";
         if ((null != type) && type.equals("late")) {
             inputPath = "src/test/resources/lateData";
@@ -721,8 +703,7 @@ public class InstanceUtil {
         }
     }
 
-    public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord)
-    throws Exception {
+    public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord) throws ParseException, IOException, JSchException {
 
         DateTime finalDate = new DateTime(InstanceUtil.oozieDateToDate(startTimeOfLateCoord));
 
@@ -732,7 +713,11 @@ public class InstanceUtil {
             if (sysDate.compareTo(finalDate) > 0)
                 break;
 
-            Thread.sleep(15000);
+            try {
+                Thread.sleep(15000);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
         }
 
     }
@@ -743,8 +728,7 @@ public class InstanceUtil {
         return fmt.parseDateTime(time);
     }
 
-    public static void createHDFSFolders(PrismHelper helper, ArrayList<String> folderList)
-    throws Exception {
+    public static void createHDFSFolders(PrismHelper helper, List<String> folderList) throws IOException, InterruptedException {
         logger.info("creating folders.....");
 
 
@@ -760,7 +744,7 @@ public class InstanceUtil {
             user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                 @Override
-                public Boolean run() throws Exception {
+                public Boolean run() throws IOException {
                     return fs.mkdirs(new Path(folder));
 
                 }
@@ -772,8 +756,8 @@ public class InstanceUtil {
     }
 
 
-    public static void putFileInFolders(ColoHelper colo, ArrayList<String> folderList,
-                                        final String... fileName) throws Exception {
+    public static void putFileInFolders(ColoHelper colo, List<String> folderList,
+                                        final String... fileName) throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name",
                 Util.readPropertiesFile(colo.getEnvFileName(), "cluster_write"));
@@ -788,7 +772,7 @@ public class InstanceUtil {
             user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                 @Override
-                public Boolean run() throws Exception {
+                public Boolean run() throws IOException {
                     for (String aFileName : fileName) {
                         logger.info("copying  " + aFileName + " to " + folder);
                         if (aFileName.equals("_SUCCESS"))
@@ -805,15 +789,14 @@ public class InstanceUtil {
 
     public static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
                                                       DateTime endDateJoda, String prefix,
-                                                      int interval)
-            throws Exception {
+                                                      int interval) throws IOException, InterruptedException {
         List<String> dataDates =
                 Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
-        ArrayList<String> dataFolder = new ArrayList<String>();
+        List<String> dataFolder = new ArrayList<String>();
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
@@ -853,8 +836,7 @@ public class InstanceUtil {
     public static String setFeedCluster(String feed,
                                         org.apache.falcon.regression.core.generated.feed.Validity
                                                 v1,
-                                        Retention r1, String n1, ClusterType t1, String partition)
-    throws Exception {
+                                        Retention r1, String n1, ClusterType t1, String partition) throws JAXBException {
 
         org.apache.falcon.regression.core.generated.feed.Cluster c1 =
                 new org.apache.falcon.regression.core.generated.feed.Cluster();
@@ -882,8 +864,7 @@ public class InstanceUtil {
                                         org.apache.falcon.regression.core.generated.feed.Validity
                                                 v1,
                                         Retention r1, String n1, ClusterType t1, String partition,
-                                        String... locations)
-    throws Exception {
+                                        String... locations) throws JAXBException {
 
         org.apache.falcon.regression.core.generated.feed.Cluster c1 =
                 new org.apache.falcon.regression.core.generated.feed.Cluster();
@@ -931,13 +912,13 @@ public class InstanceUtil {
         return feedElementToString(f);
     }
 
-    public static Feed getFeedElement(String feed) throws Exception {
+    public static Feed getFeedElement(String feed) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         return (Feed) u.unmarshal((new StringReader(feed)));
     }
 
-    public static String feedElementToString(Feed feedElement) throws Exception {
+    public static String feedElementToString(Feed feedElement) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
@@ -945,12 +926,11 @@ public class InstanceUtil {
         return sw.toString();
     }
 
-    public static ArrayList<String> getReplicationCoordName(String bundleID,
-                                                            IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getReplicationCoordName(String bundleID,
+                                                            IEntityManagerHelper helper) throws OozieClientException {
         List<CoordinatorJob> cords = InstanceUtil.getBundleCoordinators(bundleID, helper);
 
-        ArrayList<String> ReplicationCordName = new ArrayList<String>();
+        List<String> ReplicationCordName = new ArrayList<String>();
         for (CoordinatorJob cord : cords) {
             if (cord.getAppName().contains("FEED_REPLICATION"))
                 ReplicationCordName.add(cord.getAppName());
@@ -960,7 +940,7 @@ public class InstanceUtil {
     }
 
     public static String getRetentionCoordName(String bundlID,
-                                               IEntityManagerHelper helper) throws Exception {
+                                               IEntityManagerHelper helper) throws OozieClientException {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
         String RetentionCoordName = null;
         for (CoordinatorJob coord : coords) {
@@ -971,11 +951,10 @@ public class InstanceUtil {
         return RetentionCoordName;
     }
 
-    public static ArrayList<String> getReplicationCoordID(String bundlID,
-                                                          IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getReplicationCoordID(String bundlID,
+                                                          IEntityManagerHelper helper) throws OozieClientException {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-        ArrayList<String> ReplicationCoordID = new ArrayList<String>();
+        List<String> ReplicationCoordID = new ArrayList<String>();
         for (CoordinatorJob coord : coords) {
             if (coord.getAppName().contains("FEED_REPLICATION"))
                 ReplicationCoordID.add(coord.getId());
@@ -985,7 +964,7 @@ public class InstanceUtil {
     }
 
     public static String getRetentionCoordID(String bundlID,
-                                             IEntityManagerHelper helper) throws Exception {
+                                             IEntityManagerHelper helper) throws OozieClientException {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
         String RetentionCoordID = null;
         for (CoordinatorJob coord : coords) {
@@ -997,16 +976,14 @@ public class InstanceUtil {
     }
 
     public static void putDataInFolders(PrismHelper helper,
-                                        final ArrayList<String> inputFoldersForInstance)
-    throws Exception {
+                                        final List<String> inputFoldersForInstance) throws IOException, InterruptedException {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(helper, anInputFoldersForInstance);
 
     }
 
-    public static void putDataInFolder(PrismHelper helper, final String remoteLocation)
-    throws Exception {
+    public static void putDataInFolder(PrismHelper helper, final String remoteLocation) throws IOException, InterruptedException {
 
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
@@ -1026,7 +1003,7 @@ public class InstanceUtil {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                     @Override
-                    public Boolean run() throws Exception {
+                    public Boolean run() throws IOException {
                         //Util.print("file.getAbsolutePath(): "+file.getAbsolutePath());
                         //Util.print("remoteLocation: "+remoteLocation);
 
@@ -1043,7 +1020,7 @@ public class InstanceUtil {
     }
 
     public static ProcessInstancesResult createAndsendRequestProcessInstance(
-            String url, String params, String colo) throws Exception {
+            String url, String params, String colo) throws IOException, URISyntaxException {
 
         if (params != null && !colo.equals("")) {
             url = url + params + "&" + colo.substring(1);
@@ -1057,7 +1034,7 @@ public class InstanceUtil {
 
     }
 
-    public static String getFeedPrefix(String feed) throws Exception {
+    public static String getFeedPrefix(String feed) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
         String p = feedElement.getLocations().getLocation().get(0).getPath();
         p = p.substring(0, p.indexOf("$"));
@@ -1067,8 +1044,7 @@ public class InstanceUtil {
     public static String setProcessCluster(String process,
                                            String clusterName,
                                            org.apache.falcon.regression.core.generated.process
-                                                   .Validity validity)
-    throws Exception {
+                                                   .Validity validity) throws JAXBException {
 
 
         org.apache.falcon.regression.core.generated.process.Cluster c =
@@ -1089,7 +1065,7 @@ public class InstanceUtil {
 
     }
 
-    public static String processToString(Process p) throws Exception {
+    public static String processToString(Process p) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
@@ -1106,7 +1082,7 @@ public class InstanceUtil {
     }
 
     public static String addProcessInputFeed(String process, String feed,
-                                             String feedName) throws Exception {
+                                             String feedName) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(process);
         Input in1 = processElement.getInputs().getInput().get(0);
         Input in2 = new Input();
@@ -1122,8 +1098,7 @@ public class InstanceUtil {
     public static org.apache.oozie.client.WorkflowJob.Status getInstanceStatusFromCoord(
             ColoHelper ua1,
             String coordID,
-            int instanceNumber)
-    throws Exception {
+            int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(ua1.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
         WorkflowJob actionInfo =
@@ -1132,14 +1107,14 @@ public class InstanceUtil {
         //return coordInfo.getActions().get(instanceNumber).getStatus();
     }
 
-    public static ArrayList<String> getInputFoldersForInstanceForReplication(
+    public static List<String> getInputFoldersForInstanceForReplication(
             ColoHelper coloHelper, String coordID, int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorAction x = oozieClient.getCoordActionInfo(coordID + "@" + instanceNumber);
         return InstanceUtil.getReplicationFolderFromInstanceRunConf(x.getRunConf());
     }
 
-    public static ArrayList<String> getReplicationFolderFromInstanceRunConf(
+    public static List<String> getReplicationFolderFromInstanceRunConf(
             String runConf) {
         String conf;
         conf = runConf.substring(runConf.indexOf("ivoryInPaths</name>") + 19);
@@ -1155,8 +1130,7 @@ public class InstanceUtil {
     }
 
     public static int getInstanceRunIdFromCoord(ColoHelper colo,
-                                                String coordID, int instanceNumber)
-    throws Exception {
+                                                String coordID, int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(colo.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
 
@@ -1166,9 +1140,8 @@ public class InstanceUtil {
     }
 
     public static void putLateDataInFolders(ColoHelper helper,
-                                            ArrayList<String> inputFolderList,
-                                            int lateDataFolderNumber)
-    throws Exception {
+                                            List<String> inputFolderList,
+                                            int lateDataFolderNumber) throws IOException, InterruptedException {
 
         for (String anInputFolderList : inputFolderList)
             putLateDataInFolder(helper, anInputFolderList, lateDataFolderNumber);
@@ -1198,7 +1171,7 @@ public class InstanceUtil {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                     @Override
-                    public Boolean run() throws Exception {
+                    public Boolean run() throws IOException {
                         //	Util.print("putDataInFolder: "+remoteLocation);
                         fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
                                 new Path(remoteLocation));
@@ -1210,7 +1183,7 @@ public class InstanceUtil {
         }
     }
 
-    public static String setFeedFilePath(String feed, String path) throws Exception {
+    public static String setFeedFilePath(String feed, String path) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
         feedElement.getLocations().getLocation().get(0).setPath(path);
         return InstanceUtil.feedElementToString(feedElement);
@@ -1218,7 +1191,7 @@ public class InstanceUtil {
     }
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
-                                            String feedName, String coordType) throws Exception {
+                                            String feedName, String coordType) throws OozieClientException {
 
         int numberOfCoord = 0;
 
@@ -1243,7 +1216,7 @@ public class InstanceUtil {
 
 
     public static String setProcessFrequency(String process,
-                                             Frequency frequency) throws Exception {
+                                             Frequency frequency) throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
 
         p.setFrequency(frequency);
@@ -1251,7 +1224,7 @@ public class InstanceUtil {
         return InstanceUtil.processToString(p);
     }
 
-    public static String setProcessName(String process, String newName) throws Exception {
+    public static String setProcessName(String process, String newName) throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
 
         p.setName(newName);
@@ -1261,7 +1234,7 @@ public class InstanceUtil {
 
 
     public static String setProcessValidity(String process,
-                                            String startTime, String endTime) throws Exception {
+                                            String startTime, String endTime) throws JAXBException, ParseException {
 
         Process processElement = InstanceUtil.getProcessElement(process);
 
@@ -1277,8 +1250,7 @@ public class InstanceUtil {
     }
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
-            ColoHelper coloHelper, String processName, ENTITY_TYPE entityType)
-    throws Exception {
+            ColoHelper coloHelper, String processName, ENTITY_TYPE entityType) throws OozieClientException {
 
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
 
@@ -1333,7 +1305,7 @@ public class InstanceUtil {
     }
 
     public static String getOutputFolderBaseForInstanceForReplication(
-            ColoHelper coloHelper, String coordID, int instanceNumber) throws Exception {
+            ColoHelper coloHelper, String coordID, int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
 
@@ -1367,8 +1339,7 @@ public class InstanceUtil {
     }
 
     public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
-            String clusterData)
-    throws Exception {
+            String clusterData) throws JAXBException {
         JAXBContext jc = JAXBContext
                 .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -1382,15 +1353,14 @@ public class InstanceUtil {
                                                   String processName, int numberOfInstance,
                                                   org.apache.oozie.client.CoordinatorAction
                                                           .Status expectedStatus,
-                                                  int minutes)
-    throws Exception {
+                                                  int minutes) throws OozieClientException {
 
 
         int sleep = minutes * 60 / 20;
 
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
 
-            ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
+            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
                     .getStatusAllInstanceStatusForProcess(coloHelper, processName);
             int instanceWithStatus = 0;
             for (CoordinatorAction.Status aStatusList : statusList) {
@@ -1403,7 +1373,11 @@ public class InstanceUtil {
             if (instanceWithStatus == numberOfInstance)
                 break;
 
-            Thread.sleep(20000);
+            try {
+                Thread.sleep(20000);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
 
         }
     }
@@ -1413,14 +1387,13 @@ public class InstanceUtil {
                                                   String entityName, int numberOfInstance,
                                                   org.apache.oozie.client.CoordinatorAction
                                                           .Status expectedStatus,
-                                                  int totalMinutesToWait, ENTITY_TYPE entityType)
-    throws Exception {
+                                                  int totalMinutesToWait, ENTITY_TYPE entityType) throws OozieClientException {
 
         int sleep = totalMinutesToWait * 60 / 20;
 
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
 
-            ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
+            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
                     .getStatusAllInstance(coloHelper, entityName, entityType);
 
             int instanceWithStatus = 0;
@@ -1434,7 +1407,11 @@ public class InstanceUtil {
             if (instanceWithStatus >= numberOfInstance)
                 return;
 
-            Thread.sleep(20000);
+            try {
+                Thread.sleep(20000);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
 
         }
 
@@ -1508,13 +1485,13 @@ public class InstanceUtil {
         Assert.assertTrue(false, "expceted state of instance was never reached");
     }
 
-    private static ArrayList<org.apache.oozie.client.CoordinatorAction.Status>
+    private static List<org.apache.oozie.client.CoordinatorAction.Status>
     getStatusAllInstanceStatusForProcess(
-            ColoHelper coloHelper, String processName) throws Exception {
+            ColoHelper coloHelper, String processName) throws OozieClientException {
 
         CoordinatorJob coordInfo = InstanceUtil.getCoordJobForProcess(coloHelper, processName);
 
-        ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList =
+        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
                 new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
         for (int count = 0; count < coordInfo.getActions().size(); count++)
             statusList.add(coordInfo.getActions().get(count).getStatus());
@@ -1522,13 +1499,13 @@ public class InstanceUtil {
         return statusList;
     }
 
-    private static ArrayList<org.apache.oozie.client.CoordinatorAction.Status> getStatusAllInstance(
-            ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType) throws Exception {
+    private static List<org.apache.oozie.client.CoordinatorAction.Status> getStatusAllInstance(
+            ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType) throws OozieClientException {
 
         CoordinatorJob coordInfo =
                 InstanceUtil.getCoordJobForProcess(coloHelper, entityName, entityType);
 
-        ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList =
+        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
                 new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
         for (int count = 0; count < coordInfo.getActions().size(); count++)
             statusList.add(coordInfo.getActions().get(count).getStatus());
@@ -1537,7 +1514,7 @@ public class InstanceUtil {
     }
 
     private static CoordinatorJob getCoordJobForProcess(
-            ColoHelper coloHelper, String processName) throws Exception {
+            ColoHelper coloHelper, String processName) throws OozieClientException {
 
         String bundleID =
                 InstanceUtil.getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, 0);
@@ -1547,7 +1524,7 @@ public class InstanceUtil {
     }
 
     private static CoordinatorJob getCoordJobForProcess(
-            ColoHelper coloHelper, String processName, ENTITY_TYPE entityType) throws Exception {
+            ColoHelper coloHelper, String processName, ENTITY_TYPE entityType) throws OozieClientException {
 
         String bundleID = InstanceUtil.getLatestBundleID(coloHelper, processName, entityType);
         //instanceUtil.getSequenceBundleID(coloHelper,processName,entityType, 0);
@@ -1561,7 +1538,7 @@ public class InstanceUtil {
         return oozieClient.getCoordJobInfo(coordID);
     }
 
-    public static String removeFeedPartitionsTag(String feed) throws Exception {
+    public static String removeFeedPartitionsTag(String feed) throws JAXBException {
         Feed f = getFeedElement(feed);
 
         f.setPartitions(null);
@@ -1574,7 +1551,7 @@ public class InstanceUtil {
             ColoHelper coloHelper,
             String processName,
             org.apache.oozie.client.Job.Status expectedStatus,
-            int totalMinutesToWait) throws Exception {
+            int totalMinutesToWait) throws OozieClientException {
 
         int sleep = totalMinutesToWait * 60 / 20;
 
@@ -1591,7 +1568,11 @@ public class InstanceUtil {
             if (j.getStatus().equals(expectedStatus))
                 break;
 
-            Thread.sleep(20000);
+            try {
+                Thread.sleep(20000);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
         }
     }
 
@@ -1600,38 +1581,40 @@ public class InstanceUtil {
                                                             org.apache.oozie.client.CoordinatorAction.Status
                                                                     expectedStatus,
                                                             int totalMinutesToWait,
-                                                            ENTITY_TYPE entityType)
-    throws Exception {
+                                                            ENTITY_TYPE entityType) throws OozieClientException {
 
         int sleep = totalMinutesToWait * 60 / 20;
 
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
 
-            ArrayList<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
+            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
                     .getStatusAllInstance(coloHelper, entityName, entityType);
 
             if (statusList.get(instanceNumber).equals(expectedStatus))
                 break;
-            Thread.sleep(20000);
+            try {
+                Thread.sleep(20000);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
 
         }
 
 
     }
 
-    public static ArrayList<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
+    public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
                                                                        DateTime startDateJoda,
                                                                        DateTime endDateJoda,
                                                                        String prefix,
-                                                                       int interval)
-    throws Exception {
+                                                                       int interval) throws IOException, InterruptedException {
         List<String> dataDates =
                 Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
-        ArrayList<String> dataFolder = new ArrayList<String>();
+        List<String> dataFolder = new ArrayList<String>();
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 

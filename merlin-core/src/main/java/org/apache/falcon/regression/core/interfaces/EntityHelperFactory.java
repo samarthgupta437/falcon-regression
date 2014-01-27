@@ -45,18 +45,19 @@ public class EntityHelperFactory {
         return null;
     }
 
-    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName)
-    throws Exception {
+    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName,
+                                                       String prefix)
+     {
         if (type.equals(ENTITY_TYPE.DATA)) {
-            return new DataEntityHelperImpl(envFileName);
+            return new DataEntityHelperImpl(envFileName, prefix);
         }
 
         if (type.equals(ENTITY_TYPE.CLUSTER)) {
-            return new ClusterEntityHelperImpl(envFileName);
+            return new ClusterEntityHelperImpl(envFileName, prefix);
         }
 
         if (type.equals(ENTITY_TYPE.PROCESS)) {
-            return new ProcessEntityHelperImpl(envFileName);
+            return new ProcessEntityHelperImpl(envFileName, prefix);
         }
 
         return null;

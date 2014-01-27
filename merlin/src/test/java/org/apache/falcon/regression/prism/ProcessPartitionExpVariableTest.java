@@ -20,108 +20,74 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.process.Property;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.oozie.client.CoordinatorAction;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 
-public class ProcessPartitionExpVariableTest {
+public class ProcessPartitionExpVariableTest extends BaseSingleClusterTests {
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper ivoryqa1 = new ColoHelper("ivoryqa-1.config.properties");
+    private Bundle bundle;
+    private String inputPath = "/samarthData/input";
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
     }
 
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        bundle.deleteBundle(prism);
+        HadoopUtil.deleteDirIfExists(inputPath, server1FS);
+
+    }
 
     @Test(enabled = true)
     public void ProcessPartitionExpVariableTest_OptionalCompulsaryPartition() throws Exception {
-        Bundle b = new Bundle();
+        String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
+        String endTime = InstanceUtil.getTimeWrtSystemTime(30);
 
-        try {
+        bundle = bundle.getRequiredBundle(bundle, 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundle.setProcessData(bundle.setProcessInputNames(bundle.getProcessData(), "inputData0", "inputData"));
+        Property p = new Property();
+        p.setName("var1");
+        p.setValue("hardCoded");
 
-            String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
-            String endTime = InstanceUtil.getTimeWrtSystemTime(30);
+        bundle.setProcessData(bundle.addProcessProperty(bundle.getProcessData(), p));
 
-
-            b = (Bundle) Util.readELBundles()[0][0];
-            b = new Bundle(b, ivoryqa1.getEnvFileName());
-
-            b = b.getRequiredBundle(b, 1, 2, 1, "/samarthData/input", 1, startTime, endTime);
-
-
-            b.setProcessData(b.setProcessInputNames(b.getProcessData(), "inputData0", "inputData"));
-
-            Property p = new Property();
-            p.setName("var1");
-            p.setValue("hardCoded");
-
-            b.setProcessData(b.addProcessProperty(b.getProcessData(), p));
-
-            b.setProcessData(
-                    b.setProcessInputPartition(b.getProcessData(), "${var1}", "${fileTime}"));
+        bundle.setProcessData(bundle.setProcessInputPartition(bundle.getProcessData(), "${var1}", "${fileTime}"));
 
 
-            for (int i = 0; i < b.getClusters().size(); i++)
-                Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundle.getDataSets().size(); i++)
+            Util.print(bundle.getDataSets().get(i));
 
-            for (int i = 0; i < b.getDataSets().size(); i++)
-                Util.print(b.getDataSets().get(i));
+        Util.print(bundle.getProcessData());
 
-            Util.print(b.getProcessData());
+        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
+                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
+                inputPath + "/input1/", 1);
 
-            InstanceUtil.createDataWithinDatesAndPrefix(ivoryqa1,
-                    InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                    InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
-                    "/samarthData/input/input1/",
-                    1);
-            //instanceUtil.createEmptyDirWithinDatesAndPrefix(ivoryqa1,
-            // instanceUtil.oozieDateToDate(instanceUtil
-            // .addMinsToTime(startTime, -25)), instanceUtil.oozieDateToDate(instanceUtil
-            // .addMinsToTime(endTime,
-            // 25)), "/samarthData/input/input0/", 1);
+        bundle.submitAndScheduleBundle(bundle, prism, false);
+        TimeUnit.SECONDS.sleep(20);
 
-
-            b.submitAndScheduleBundle(b, prismHelper, false);
-
-            Thread.sleep(20000);
-
-
-            InstanceUtil
-                    .waitTillInstanceReachState(ivoryqa1, Util.getProcessName(b.getProcessData()),
-                            2,
-                            org.apache.oozie.client.CoordinatorAction.Status.SUCCEEDED, 20,
-                            ENTITY_TYPE.PROCESS);
-
-
-        } finally {
-            b.deleteBundle(prismHelper);
-            Util.HDFSCleanup(ivoryqa1, "/samarthData/input/");
-
-        }
+        InstanceUtil.waitTillInstanceReachState(server1OC,
+                Util.getProcessName(bundle.getProcessData()), 2,
+                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
-    @Test(enabled = false)
-    public void ProcessPartitionExpVariableTest_OptionalPartition() {
-
-    }
-
-    @Test(enabled = false)
-    public void ProcessPartitionExpVariableTest_CompulsaryPartition() {
-
-    }
-
-
-    @Test(enabled = false)
-    public void ProcessPartitionExpVariableTest_moreThanOnceVariable() {
-
-    }
+    //TODO: ProcessPartitionExpVariableTest_OptionalPartition()
+    //TODO: ProcessPartitionExpVariableTest_CompulsaryPartition()
+    //TODO: ProcessPartitionExpVariableTest_moreThanOnceVariable()
 }

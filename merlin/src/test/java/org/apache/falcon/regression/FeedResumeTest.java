@@ -47,7 +47,7 @@ public class FeedResumeTest extends BaseSingleClusterTests {
         Util.print("test name: " + method.getName());
         bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.submitClusters(prism);
         feed = Util.getInputFeedFromBundle(bundle);
     }
@@ -61,7 +61,7 @@ public class FeedResumeTest extends BaseSingleClusterTests {
     public void resumeSuspendedFeed() throws Exception {
         Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
@@ -69,7 +69,7 @@ public class FeedResumeTest extends BaseSingleClusterTests {
 
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
     }
 
@@ -94,7 +94,7 @@ public class FeedResumeTest extends BaseSingleClusterTests {
     public void resumeScheduledFeed() throws Exception {
         Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
         Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
@@ -102,7 +102,7 @@ public class FeedResumeTest extends BaseSingleClusterTests {
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
     }
 }

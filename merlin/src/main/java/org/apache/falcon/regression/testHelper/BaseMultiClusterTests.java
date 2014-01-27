@@ -27,8 +27,8 @@ import java.io.IOException;
 
 public class BaseMultiClusterTests extends  BaseSingleClusterTests{
 
-    public ColoHelper server2 = new ColoHelper("mk-qa.config.properties");
-    public ColoHelper server3 = new ColoHelper("gs1001.config.properties");
+    public ColoHelper server2 = new ColoHelper("mk-qa.config.properties", "");
+    public ColoHelper server3 = new ColoHelper("gs1001.config.properties", "");
     public FileSystem server2FS, server3FS = null;
     public OozieClient server2OC, server3OC = null;
 

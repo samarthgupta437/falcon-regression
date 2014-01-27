@@ -72,6 +72,7 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
 //        b = new Bundle(b, cluster.getEnvFileName());
  //       b = new Bundle(b, cluster.getEnvFileName());
 
+
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
@@ -102,8 +103,10 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+
      //   b = new Bundle(b, cluster.getEnvFileName());
       //  b.setInputFeedDataPath(feedInputPath);
+        b.setInputFeedDataPath(feedInputPath);
     }
 
 
@@ -354,6 +357,7 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
     //    b = new Bundle(b, cluster.getEnvFileName());
+
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);

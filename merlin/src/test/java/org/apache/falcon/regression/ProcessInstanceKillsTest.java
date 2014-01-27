@@ -62,7 +62,7 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -92,7 +92,7 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -291,7 +291,7 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName());
+        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();

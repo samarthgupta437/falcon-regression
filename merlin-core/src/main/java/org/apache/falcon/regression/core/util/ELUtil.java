@@ -26,7 +26,11 @@ import org.testng.Assert;
 import org.testng.TestNGException;
 import org.testng.log4testng.Logger;
 
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -43,10 +47,9 @@ public class ELUtil {
 
     public static String testWith(PrismHelper prismHelper, ColoHelper server1, String feedStart, String feedEnd, String processStart,
                                   String processend,
-                                  String startInstance, String endInstance, boolean isMatch)
-    throws Exception {
+                                  String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, ParseException, URISyntaxException {
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         bundle.setFeedValidity(feedStart, feedEnd, Util.getInputFeedNameFromBundle(bundle));
         bundle.setProcessValidity(processStart, processend);
@@ -72,10 +75,9 @@ public class ELUtil {
     }
 
 
-    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance, String endInstance, boolean isMatch)
-    throws Exception {
+    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, URISyntaxException {
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         try {
 
@@ -98,7 +100,7 @@ public class ELUtil {
 
 
     public static void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle)
-            throws Exception {
+             {
         try {
             String coordID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                     Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
@@ -158,10 +160,9 @@ public class ELUtil {
     }
 
 
-    public static ArrayList<String> getQADepedencyList(Calendar nominalTime, Date startRef,
+    public static List<String> getQADepedencyList(Calendar nominalTime, Date startRef,
                                                        Date endRef, int frequency,
-                                                       Bundle bundle)
-    throws Exception {
+                                                       Bundle bundle) throws JAXBException {
 
         Util.print("start ref:" + startRef);
         Util.print("end ref:" + endRef);
@@ -181,7 +182,7 @@ public class ELUtil {
 
         Util.print("finalTime: " + finalTime.getTime());
 
-        ArrayList<String> returnList = new ArrayList<String>();
+        List<String> returnList = new ArrayList<String>();
 
         while (!initialTime.getTime().equals(finalTime.getTime())) {
             Util.print("initialTime: " + initialTime.getTime());

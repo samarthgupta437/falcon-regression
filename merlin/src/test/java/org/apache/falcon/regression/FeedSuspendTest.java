@@ -41,11 +41,11 @@ public class FeedSuspendTest extends BaseSingleClusterTests {
     private String feed;
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws Exception {
+    public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName());
+        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
 
         //submit the cluster
         ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
@@ -67,7 +67,7 @@ public class FeedSuspendTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
     }
 
@@ -78,12 +78,12 @@ public class FeedSuspendTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
 
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
+        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
                 Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
 
     }

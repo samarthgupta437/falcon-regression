@@ -18,10 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
+import com.jcraft.jsch.*;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
@@ -67,6 +64,7 @@ import org.testng.log4testng.Logger;
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
@@ -83,9 +81,9 @@ public class Util {
 
     static Logger logger = Logger.getLogger(Util.class);
 
-    static PrismHelper prismHelper = new PrismHelper("prism.properties");
+    static PrismHelper prismHelper = new PrismHelper("prism.properties", "");
 
-    public static ServiceResponse sendRequest(String url) throws Exception {
+    public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
         HttpClient client = new DefaultHttpClient();
         HttpRequestBase request;
         if ((Thread.currentThread().getStackTrace()[2].getMethodName().contains("delete"))) {
@@ -126,7 +124,7 @@ public class Util {
                 response.getStatusLine().getStatusCode());
     }
 
-    public static ServiceResponse sendRequest(String url, String data) throws Exception {
+    public static ServiceResponse sendRequest(String url, String data) throws IOException {
 
         HttpClient client = new DefaultHttpClient();
         HttpPost post = new HttpPost(url);
@@ -157,14 +155,14 @@ public class Util {
         return new ServiceResponse(string_response, response.getStatusLine().getStatusCode());
     }
 
-    public static String getExpectedErrorMessage(String filename) throws Exception {
+    public static String getExpectedErrorMessage(String filename) throws IOException {
 
         Properties properties = new Properties();
         properties.load(Util.class.getResourceAsStream("/" + "errorMapping.properties"));
         return properties.getProperty(filename);
     }
 
-    public static File[] getFiles(String directoryPath) throws Exception {
+    public static File[] getFiles(String directoryPath) throws URISyntaxException {
         if (directoryPath.contains("/test-classes"))
             directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
                     + "/test-classes".length() + 1, directoryPath.length());
@@ -175,7 +173,7 @@ public class Util {
         return dir.listFiles();
     }
 
-    public static String fileToString(File file) throws Exception {
+    public static String fileToString(File file) throws IOException {
 
         StringBuilder fileData = new StringBuilder(1000);
         char[] buf = new char[1024];
@@ -192,18 +190,18 @@ public class Util {
         return fileData.toString();
     }
 
-    public static String getProcessName(String data) throws Exception {
+    public static String getProcessName(String data) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
         Process processElement = (Process) u.unmarshal((new StringReader(data)));
         return processElement.getName();
     }
 
-    public static String getProcessName(File file) throws Exception {
+    public static String getProcessName(File file) throws IOException, JAXBException {
         return getProcessName(fileToString(file));
     }
 
-    private static boolean isXML(String data) throws Exception {
+    private static boolean isXML(String data)  {
 
         if (data != null && data.trim().length() > 0) {
             if (data.trim().startsWith("<")) {
@@ -214,7 +212,7 @@ public class Util {
         return false;
     }
 
-    public static APIResult parseResponse(ServiceResponse response) throws Exception {
+    public static APIResult parseResponse(ServiceResponse response) throws JAXBException {
 
         if (!isXML(response.getMessage())) {
             return new APIResult(APIResult.Status.FAILED, response.getMessage(), "somerandomstring",
@@ -243,37 +241,31 @@ public class Util {
         return temp;
     }
 
-    public static ArrayList<String> getProcessStoreInfo(IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getProcessStoreInfo(IEntityManagerHelper helper) throws IOException, JSchException {
         return getStoreInfo(helper, "/PROCESS");
     }
 
-    public static ArrayList<String> getDataSetStoreInfo(IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getDataSetStoreInfo(IEntityManagerHelper helper) throws IOException, JSchException {
         return getStoreInfo(helper, "/FEED");
     }
 
-    public static ArrayList<String> getDataSetArchiveInfo(IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getDataSetArchiveInfo(IEntityManagerHelper helper) throws IOException, JSchException {
         return getStoreInfo(helper, "/archive/FEED");
     }
 
-    public static ArrayList<String> getArchiveStoreInfo(IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getArchiveStoreInfo(IEntityManagerHelper helper) throws IOException, JSchException {
         return getStoreInfo(helper, "/archive/PROCESS");
     }
 
-    public static ArrayList<String> getClusterStoreInfo(IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getClusterStoreInfo(IEntityManagerHelper helper) throws IOException, JSchException {
         return getStoreInfo(helper, "/CLUSTER");
     }
 
-    public static ArrayList<String> getClusterArchiveInfo(IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getClusterArchiveInfo(IEntityManagerHelper helper) throws IOException, JSchException {
         return getStoreInfo(helper, "/archive/CLUSTER");
     }
 
-    private static ArrayList<String> getStoreInfo(IEntityManagerHelper helper, String subPath) throws Exception {
+    private static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath) throws IOException, JSchException {
         if (helper.getStoreLocation().startsWith("hdfs:")) {
             return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(), helper.getStoreLocation() + subPath);
         } else {
@@ -283,12 +275,11 @@ public class Util {
         }
     }
 
-    public static ArrayList<String> runRemoteScript(String hostName,
+    public static List<String> runRemoteScript(String hostName,
                                                     String userName,
                                                     String password,
                                                     String command,
-                                                    String identityFile) throws
-    Exception {
+                                                    String identityFile) throws JSchException, IOException {
         JSch jsch = new JSch();
         Session session = jsch.getSession(userName, hostName, 22);
 
@@ -324,7 +315,7 @@ public class Util {
         logger.info("now reading the line....");
 
         //now to read output
-        ArrayList<String> data = new ArrayList<String>();
+        List<String> data = new ArrayList<String>();
 
         InputStream in = channel.getInputStream();
 
@@ -354,7 +345,7 @@ public class Util {
         return data;
     }
 
-    public static String readEntityName(String data) throws Exception {
+    public static String readEntityName(String data) throws JAXBException {
 
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
@@ -366,7 +357,7 @@ public class Util {
         return processElement.getName();
     }
 
-    public static String readClusterName(String data) throws Exception {
+    public static String readClusterName(String data) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
 
@@ -375,7 +366,7 @@ public class Util {
         return clusterElement.getName();
     }
 
-    public static String readDatasetName(String data) throws Exception {
+    public static String readDatasetName(String data) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
 
@@ -385,7 +376,7 @@ public class Util {
 
     }
 
-    public static String generateUniqueProcessEntity(String data) throws Exception {
+    public static String generateUniqueProcessEntity(String data) throws JAXBException {
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -401,7 +392,7 @@ public class Util {
 
 
 
-    public static String generateUniqueClusterEntity(String data) throws Exception {
+    public static String generateUniqueClusterEntity(String data) throws JAXBException {
 
         JAXBContext jc = JAXBContext.newInstance(Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -416,7 +407,7 @@ public class Util {
         return sw.toString();
     }
 
-    public static String generateUniqueDataEntity(String data) throws Exception {
+    public static String generateUniqueDataEntity(String data) throws JAXBException {
 
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -426,7 +417,7 @@ public class Util {
         return InstanceUtil.feedElementToString(dataElement);
     }
 
-    public static String getEnvClusterXML(String filename, String cluster) throws Exception {
+    public static String getEnvClusterXML(String filename, String cluster) throws JAXBException {
         Cluster clusterObject =
                 getClusterObject(cluster);
 
@@ -492,7 +483,7 @@ public class Util {
         return null;
     }
 
-    public static Bundle[][] readBundles(String path) throws Exception {
+    public static Bundle[][] readBundles(String path) throws IOException {
 
         List<Bundle> bundleSet = Util.getDataFromFolder(path);
 
@@ -505,28 +496,28 @@ public class Util {
         return testData;
     }
 
-    public static Bundle[][] readBundles() throws Exception {
+    public static Bundle[][] readBundles() throws IOException {
         return readBundles("bundles");
     }
 
-    public static Bundle[][] readNoOutputBundles() throws Exception {
+    public static Bundle[][] readNoOutputBundles() throws IOException {
         return readBundles("ProcessWithNoOutput");
     }
 
-    public static Bundle[][] readELBundles() throws Exception {
+    public static Bundle[][] readELBundles() throws IOException {
         return readBundles("ELbundle");
     }
 
-    public static Bundle[][] readAvailabilityBUndle() throws Exception {
+    public static Bundle[][] readAvailabilityBUndle() throws IOException {
         return readBundles("AvailabilityBundle");
     }
 
-    public static Bundle[][] readBundle(GetBundle bundlePath) throws Exception {
+    public static Bundle[][] readBundle(GetBundle bundlePath) throws IOException {
         return readBundles(bundlePath.getValue());
     }
 
 
-    public static Bundle[] getBundleData(String path) throws Exception {
+    public static Bundle[] getBundleData(String path) throws IOException {
 
         List<Bundle> bundleSet = Util.getDataFromFolder(path);
 
@@ -534,8 +525,7 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieJobStatus(PrismHelper coloHelper, String processName)
-    throws Exception {
+    public static List<String> getOozieJobStatus(PrismHelper coloHelper, String processName) throws IOException, JSchException {
 
         logger.info(coloHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
                 coloHelper.getProcessHelper().getOozieURL() +
@@ -552,7 +542,7 @@ public class Util {
                         processName +
                         "\" | tail -2 | head -1";
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(coloHelper.getProcessHelper().getQaHost(),
@@ -564,7 +554,11 @@ public class Util {
                 logger.info(jobList.get(0));
                 break;
             } else {
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
 
         }
@@ -601,9 +595,8 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
-                                                      String expectedState)
-    throws Exception {
+    public static List<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
+                                                      String expectedState) throws IOException, JSchException {
 
 
         String statusCommand =
@@ -619,7 +612,7 @@ public class Util {
         statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
         logger.info(statusCommand);
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
@@ -631,7 +624,11 @@ public class Util {
                     !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
                 break;
             } else {
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
 
@@ -640,9 +637,8 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieJobStatus(String processName, String expectedState,
-                                                      ColoHelper colohelper)
-    throws Exception {
+    public static List<String> getOozieJobStatus(String processName, String expectedState,
+                                                      ColoHelper colohelper) throws IOException, JSchException {
         String statusCommand =
                 colohelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
                         colohelper.getProcessHelper().getOozieURL() +
@@ -657,7 +653,7 @@ public class Util {
         statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
         logger.info(statusCommand);
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(colohelper.getProcessHelper().getQaHost(),
@@ -669,7 +665,11 @@ public class Util {
                     !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
                 break;
             } else {
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
         }
 
@@ -678,9 +678,8 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getOozieFeedJobStatus(String processName, String expectedState,
-                                                          PrismHelper coloHelper)
-    throws Exception {
+    public static List<String> getOozieFeedJobStatus(String processName, String expectedState,
+                                                          PrismHelper coloHelper) throws IOException, JSchException {
 
         String statusCommand =
                 coloHelper.getFeedHelper().getOozieLocation() + "/oozie jobs -oozie " +
@@ -695,7 +694,7 @@ public class Util {
         statusCommand += "name=FALCON_FEED_" + processName + "\" | tail -2 | head -1";
         logger.info(statusCommand);
 
-        ArrayList<String> jobList = new ArrayList<String>();
+        List<String> jobList = new ArrayList<String>();
 
         for (int seconds = 0; seconds < 20; seconds++) {
             jobList = runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
@@ -706,7 +705,11 @@ public class Util {
                     !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
                 break;
             } else {
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
 
         }
@@ -715,25 +718,25 @@ public class Util {
         return jobList;
     }
 
-    public static void assertSucceeded(ServiceResponse response) throws Exception {
+    public static void assertSucceeded(ServiceResponse response) throws JAXBException {
         Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
     }
 
-    public static void assertSucceeded(ServiceResponse response, String message) throws Exception {
+    public static void assertSucceeded(ServiceResponse response, String message) throws JAXBException {
         Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.SUCCEEDED,
                 message);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200, message);
     }
 
-    public static void assertPartialSucceeded(ServiceResponse response) throws Exception {
+    public static void assertPartialSucceeded(ServiceResponse response) throws JAXBException {
         Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.PARTIAL);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
     }
 
-    public static void assertFailed(ServiceResponse response) throws Exception {
+    public static void assertFailed(ServiceResponse response) throws JAXBException {
         if (response.message.equals("null"))
             Assert.assertTrue(false, "response message should not be null");
 
@@ -741,12 +744,11 @@ public class Util {
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
     }
 
-    public static void assertFailed(ServiceResponse response, String message) throws Exception {
+    public static void assertFailed(ServiceResponse response, String message) throws JAXBException {
         if (response.message.equals("null"))
             Assert.assertTrue(false, "response message should not be null");
 
-        Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED,
-                message);
+        Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED, message);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400, message);
         Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
@@ -759,7 +761,7 @@ public class Util {
         return response.substring(0, response.indexOf(" "));
     }
 
-    public static String getDatasetPath(Bundle bundle) throws Exception {
+    public static String getDatasetPath(Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
 
         Unmarshaller u = jc.createUnmarshaller();
@@ -772,13 +774,11 @@ public class Util {
 
     }
 
-    public static ArrayList<String> getMissingDependencies(PrismHelper helper, String bundleID)
-    throws Exception {
+    public static List<String> getMissingDependencies(PrismHelper helper, String bundleID) throws OozieClientException {
         XOozieClient oozieClient =
                 new XOozieClient(readPropertiesFile(helper.getEnvFileName(), "oozie_url"));
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-        CoordinatorJob jobInfo =
-                oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        CoordinatorJob jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
         List<CoordinatorAction> actions = jobInfo.getActions();
 
         Util.print("conf from event: " + actions.get(0).getMissingDependencies());
@@ -787,13 +787,11 @@ public class Util {
         return new ArrayList<String>(Arrays.asList(missingDependencies));
     }
 
-    public static ArrayList<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
-    throws Exception {
-        ArrayList<String> jobIds = new ArrayList<String>();
+    public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID) throws OozieClientException {
+        List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-        CoordinatorJob jobInfo =
-                oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        CoordinatorJob jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
         for (CoordinatorAction action : jobInfo.getActions()) {
             CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getExternalId());
@@ -808,19 +806,17 @@ public class Util {
 
     }
 
-    public static String getWorkflowInfo(PrismHelper prismHelper, String workflowId)
-    throws Exception {
+    public static String getWorkflowInfo(PrismHelper prismHelper, String workflowId) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         logger.info("fetching info for workflow with id: " + workflowId);
         WorkflowJob job = oozieClient.getJobInfo(workflowId);
         return job.getStatus().toString();
     }
 
-    public static Date getNominalTime(PrismHelper prismHelper, String bundleID) throws Exception {
+    public static Date getNominalTime(PrismHelper prismHelper, String bundleID) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-        CoordinatorJob jobInfo =
-                oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        CoordinatorJob jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
         List<CoordinatorAction> actions = jobInfo.getActions();
 
         return actions.get(0).getNominalTime();
@@ -828,7 +824,7 @@ public class Util {
     }
 
     //needs to be rewritten to randomly pick an input feed
-    public static String getInputFeedFromBundle(Bundle bundle) throws Exception {
+    public static String getInputFeedFromBundle(Bundle bundle) throws JAXBException {
         String processData = bundle.getProcessData();
 
         JAXBContext processContext = JAXBContext.newInstance(Process.class);
@@ -847,19 +843,18 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getHadoopData(PrismHelper prismHelper, String feed)
-    throws Exception {
+    public static List<String> getHadoopData(PrismHelper prismHelper, String feed) throws IOException, JSchException, JAXBException {
 
 
         String command = prismHelper.getClusterHelper().getHadoopLocation() + "  dfs -lsr hdfs://" +
                 prismHelper.getClusterHelper().getHadoopURL() +
                 "/retention/testFolders | awk '{print $8}'";
-        ArrayList<String> result = runRemoteScript(prismHelper.getClusterHelper()
+        List<String> result = runRemoteScript(prismHelper.getClusterHelper()
                 .getQaHost(), prismHelper.getClusterHelper().getUsername(),
                 prismHelper.getClusterHelper().getPassword(), command,
                 prismHelper.getClusterHelper().getIdentityFile());
 
-        ArrayList<String> finalResult = new ArrayList<String>();
+        List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
 
@@ -876,20 +871,20 @@ public class Util {
         return finalResult;
     }
 
-    public static ArrayList<String> getHadoopData(ColoHelper helper, String feed) throws Exception {
+    public static List<String> getHadoopData(ColoHelper helper, String feed) throws JAXBException, IOException {
         return getHadoopDataFromDir(helper, feed, "/retention/testFolders/");
     }
 
-    public static ArrayList<String> getHadoopLateData(ColoHelper helper, String feed) throws Exception {
+    public static List<String> getHadoopLateData(ColoHelper helper, String feed) throws JAXBException, IOException {
         return getHadoopDataFromDir(helper, feed, "/lateDataTest/testFolders/");
     }
 
-    private static ArrayList<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir) throws Exception {
-        ArrayList<String> finalResult = new ArrayList<String>();
+    private static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir) throws JAXBException, IOException {
+        List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
         int depth = feedPath.split(dir)[1].split("/").length - 1;
-        ArrayList<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path(dir), depth);
+        List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path(dir), depth);
 
         for (Path result : results) {
             int pathDepth = result.toString().split(dir)[1].split("/").length - 1;
@@ -902,20 +897,19 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getHadoopLateData(PrismHelper prismHelper, String feed)
-    throws Exception {
+    public static List<String> getHadoopLateData(PrismHelper prismHelper, String feed) throws IOException, JSchException, JAXBException {
 
         //this command copies hadoop files in a directory....then gets the contents
         String command = prismHelper.getClusterHelper().getHadoopLocation() + "  dfs -lsr hdfs://" +
                 prismHelper.getClusterHelper().getHadoopURL() +
                 "/lateDataTest/testFolders | awk '{print $8}'";
 
-        ArrayList<String> result = runRemoteScript(prismHelper.getClusterHelper()
+        List<String> result = runRemoteScript(prismHelper.getClusterHelper()
                 .getQaHost(), prismHelper.getClusterHelper().getUsername(),
                 prismHelper.getClusterHelper().getPassword(), command,
                 prismHelper.getClusterHelper().getIdentityFile());
 
-        ArrayList<String> finalResult = new ArrayList<String>();
+        List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
 
@@ -932,8 +926,7 @@ public class Util {
         return finalResult;
     }
 
-    public static String insertRetentionValueInFeed(String feed, String retentionValue)
-    throws Exception {
+    public static String insertRetentionValueInFeed(String feed, String retentionValue) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
@@ -956,8 +949,7 @@ public class Util {
     }
 
     @Deprecated
-    public static void replenishData(PrismHelper prismHelper, List<String> folderList)
-    throws Exception {
+    public static void replenishData(PrismHelper prismHelper, List<String> folderList) throws IOException, JSchException, InterruptedException {
 
         //purge data first
         runRemoteScript(prismHelper.getClusterHelper().getQaHost(),
@@ -972,8 +964,7 @@ public class Util {
 
     }
 
-    public static void replenishData(ColoHelper helper, List<String> folderList)
-            throws Exception {
+    public static void replenishData(ColoHelper helper, List<String> folderList) throws IOException, InterruptedException {
         //purge data first
         FileSystem fs = HadoopUtil.getFileSystem(helper.getFeedHelper().getHadoopURL());
         HadoopUtil.deleteDirIfExists("/retention/testFolders/", fs);
@@ -981,10 +972,10 @@ public class Util {
         createHDFSFolders(helper, folderList);
     }
 
-    public static ArrayList<String> convertDatesToFolders(List<String> dateList, int skipInterval)
-    throws Exception {
+    public static List<String> convertDatesToFolders(List<String> dateList, int skipInterval)
+     {
         logger.info("converting dates to folders....");
-        ArrayList<String> folderList = new ArrayList<String>();
+        List<String> folderList = new ArrayList<String>();
 
         for (String date : dateList) {
             for (int i = 0; i < 24; i += skipInterval + 1) {
@@ -1000,9 +991,9 @@ public class Util {
     }
 
     public static List<String> addMinutesToCreatedFolders(List<String> folderList, int skipMinutes)
-    throws Exception {
+     {
         logger.info("adding minutes to current folders.....");
-        ArrayList<String> finalFolderList = new ArrayList<String>();
+        List<String> finalFolderList = new ArrayList<String>();
 
         if (skipMinutes == 0) {
             skipMinutes = 1;
@@ -1021,15 +1012,14 @@ public class Util {
         return finalFolderList;
     }
 
-    public static ArrayList<String> filterDataOnRetention(String feed, int time, String interval,
+    public static List<String> filterDataOnRetention(String feed, int time, String interval,
                                                           DateTime endDate,
-                                                          List<String> inputData)
-    throws Exception {
+                                                          List<String> inputData) throws JAXBException {
         String locationType = "";
         String appender = "";
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        ArrayList<String> finalData = new ArrayList<String>();
+        List<String> finalData = new ArrayList<String>();
 
         //determine what kind of data is there in the feed!
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
@@ -1095,7 +1085,7 @@ public class Util {
 
     }
 
-    public static List<String> getDailyDatesOnEitherSide(int interval, int skip) throws Exception {
+    public static List<String> getDailyDatesOnEitherSide(int interval, int skip)  {
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
 
@@ -1119,7 +1109,7 @@ public class Util {
     }
 
     public static List<String> getMonthlyDatesOnEitherSide(int interval, int skip)
-    throws Exception {
+     {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM");
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
@@ -1142,12 +1132,12 @@ public class Util {
 
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip)
-    throws Exception {
+     {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         logger.info("generating data between " + formatter.print(startDate) + " and " +
                 formatter.print(endDate));
 
-        ArrayList<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<String>();
 
 
         while (!startDate.isAfter(endDate)) {
@@ -1162,7 +1152,7 @@ public class Util {
     }
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip)
-    throws Exception {
+     {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         if (minuteSkip == 0) {
             minuteSkip = 1;
@@ -1170,7 +1160,7 @@ public class Util {
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
-        ArrayList<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<String>();
         dates.add(formatter.print(today));
 
         //first lets get all dates before today
@@ -1187,12 +1177,12 @@ public class Util {
     }
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int daySkip, int minuteSkip)
-    throws Exception {
+     {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
-        ArrayList<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<String>();
         dates.add(formatter.print(today));
 
         //first lets get all dates before today
@@ -1208,7 +1198,7 @@ public class Util {
         return addMinutesToCreatedFolders(dates, minuteSkip);
     }
 
-    public static List<String> getYearlyDatesOnEitherSide(int interval, int skip) throws Exception {
+    public static List<String> getYearlyDatesOnEitherSide(int interval, int skip)  {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
@@ -1229,8 +1219,7 @@ public class Util {
         return dates;
     }
 
-    public static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList)
-    throws Exception {
+    public static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList) throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
 
@@ -1244,7 +1233,7 @@ public class Util {
             user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                 @Override
-                public Boolean run() throws Exception {
+                public Boolean run() throws IOException {
                     logger.info("/retention/testFolders/" + folder);
                     return fs.mkdirs(new Path("/retention/testFolders/" + folder));
                 }
@@ -1252,7 +1241,7 @@ public class Util {
         }
     }
 
-    public static String readQueueLocationFromCluster(String cluster) throws Exception {
+    public static String readQueueLocationFromCluster(String cluster) throws JAXBException {
         JAXBContext clusterContext = JAXBContext.newInstance(Cluster.class);
         Unmarshaller um = clusterContext.createUnmarshaller();
 
@@ -1267,8 +1256,7 @@ public class Util {
         return "tcp://mk-qa-63:61616?daemon=true";
     }
 
-    public static String setFeedProperty(String feed, String propertyName, String propertyValue)
-    throws Exception {
+    public static String setFeedProperty(String feed, String propertyName, String propertyValue) throws JAXBException {
 
         Feed feedObject = InstanceUtil.getFeedElement(feed);
 
@@ -1297,18 +1285,17 @@ public class Util {
     public static void validateDataFromFeedQueue(PrismHelper prismHelper, String feedName,
                                                  List<HashMap<String, String>> queueData,
                                                  List<String> expectedOutput,
-                                                 List<String> input)
-    throws Exception {
+                                                 List<String> input) throws OozieClientException {
 
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
-        ArrayList<String> jobIds = getCoordinatorJobs(prismHelper,
+        List<String> jobIds = getCoordinatorJobs(prismHelper,
                 Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                         feedName, ENTITY_TYPE.FEED).get(0));
 
         //create queuedata folderList:
-        ArrayList<String> deletedFolders = new ArrayList<String>();
+        List<String> deletedFolders = new ArrayList<String>();
 
         for (HashMap<String, String> data : queueData) {
             if (data != null) {
@@ -1340,8 +1327,7 @@ public class Util {
 
     @SuppressWarnings("deprecation")
     public static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
-                                                   String interval)
-    throws Exception {
+                                                   String interval) throws JAXBException, OozieClientException, IOException, URISyntaxException {
         //get Data created in the cluster
         List<String> initialData = Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
 
@@ -1358,7 +1344,7 @@ public class Util {
         String bundleId = Util.getBundles(helper.getFeedHelper().getOozieClient(),
                 Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
-        ArrayList<String> workflows = getFeedRetentionJobs(helper, bundleId);
+        List<String> workflows = getFeedRetentionJobs(helper, bundleId);
         logger.info("got a workflow list of length:" + workflows.size());
         Collections.sort(workflows);
 
@@ -1371,7 +1357,11 @@ public class Util {
             String status = getWorkflowInfo(helper, workflowId);
             while (!(status.equalsIgnoreCase("KILLED") || status.equalsIgnoreCase("FAILED") ||
                     status.equalsIgnoreCase("SUCCEEDED"))) {
-                Thread.sleep(1000);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
                 status = getWorkflowInfo(helper, workflowId);
             }
         }
@@ -1388,11 +1378,11 @@ public class Util {
         }
 
         //now look for cluster data
-        ArrayList<String> finalData =
+        List<String> finalData =
                 Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
 
         //now see if retention value was matched to as expected
-        ArrayList<String> expectedOutput =
+        List<String> expectedOutput =
                 Util.filterDataOnRetention(Util.getInputFeedFromBundle(bundle), time, interval,
                         currentTime, initialData);
 
@@ -1422,7 +1412,7 @@ public class Util {
                 expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
-    public static String getFeedPath(String feed) throws Exception {
+    public static String getFeedPath(String feed) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
@@ -1436,15 +1426,15 @@ public class Util {
         return null;
     }
 
-    private static BufferedReader getErrorReader(java.lang.Process process) throws Exception {
+    private static BufferedReader getErrorReader(java.lang.Process process)  {
         return new BufferedReader(new InputStreamReader(process.getErrorStream()));
     }
 
-    private static BufferedReader getOutputReader(java.lang.Process process) throws Exception {
+    private static BufferedReader getOutputReader(java.lang.Process process)  {
         return new BufferedReader(new InputStreamReader(process.getInputStream()));
     }
 
-    public static String executeCommand(String command) throws Exception {
+    public static String executeCommand(String command) throws IOException, InterruptedException {
         Util.print("Command to be executed: " + command);
         StringBuilder errors = new StringBuilder();
         StringBuilder output = new StringBuilder();
@@ -1481,8 +1471,7 @@ public class Util {
 
     }
 
-    public static String insertLateFeedValue(String feed, String delay, String delayUnit)
-    throws Exception {
+    public static String insertLateFeedValue(String feed, String delay, String delayUnit) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
@@ -1510,8 +1499,7 @@ public class Util {
         return sw.toString();
     }
 
-    public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList)
-    throws Exception {
+    public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList) throws IOException, InterruptedException {
         logger.info("creating late data folders.....");
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
@@ -1526,7 +1514,7 @@ public class Util {
             user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                 @Override
-                public Boolean run() throws Exception {
+                public Boolean run() throws IOException {
                     return fs.mkdirs(new Path("/lateDataTest/testFolders/" + folder));
 
                 }
@@ -1537,8 +1525,7 @@ public class Util {
     }
 
     public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
-                                         String directory)
-    throws Exception {
+                                         String directory) throws IOException, InterruptedException {
         logger.info("copying data into folders....");
 
         Configuration conf = new Configuration();
@@ -1557,7 +1544,7 @@ public class Util {
                     user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                         @Override
-                        public Boolean run() throws Exception {
+                        public Boolean run() throws IOException {
                             fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
                                     new Path("/lateDataTest/testFolders/" + folder));
                             return true;
@@ -1570,7 +1557,7 @@ public class Util {
         logger.info("copied data into latedata folders....");
     }
 
-     public static DateTime getSystemDate(PrismHelper prismHelper) throws Exception {
+     public static DateTime getSystemDate(PrismHelper prismHelper) throws IOException, JSchException {
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
 
@@ -1583,9 +1570,8 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getBundles(PrismHelper coloHelper, String entityName,
-                                               String entityType)
-    throws Exception {
+    public static List<String> getBundles(PrismHelper coloHelper, String entityName,
+                                               String entityType) throws IOException, JSchException {
 
         if (entityType.equalsIgnoreCase("feed")) {
             return runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
@@ -1614,7 +1600,7 @@ public class Util {
         return OozieUtil.getBundleIds(client, filter, 0, 10);
     }
 
-    public static String setFeedPathValue(String feed, String pathValue) throws Exception {
+    public static String setFeedPathValue(String feed, String pathValue) throws JAXBException {
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
@@ -1630,10 +1616,9 @@ public class Util {
         return feedWriter.toString();
     }
 
-    public static ArrayList<DateTime> getStartTimeForRunningCoordinators(PrismHelper prismHelper,
-                                                                         String bundleID)
-    throws Exception {
-        ArrayList<DateTime> startTimes = new ArrayList<DateTime>();
+    public static List<DateTime> getStartTimeForRunningCoordinators(PrismHelper prismHelper,
+                                                                         String bundleID) throws OozieClientException {
+        List<DateTime> startTimes = new ArrayList<DateTime>();
 
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
@@ -1661,8 +1646,7 @@ public class Util {
         return null;
     }
 
-    public static String getBundleStatus(PrismHelper prismHelper, String bundleId)
-    throws Exception {
+    public static String getBundleStatus(PrismHelper prismHelper, String bundleId) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
         return bundleJob.getStatus().toString();
@@ -1670,7 +1654,7 @@ public class Util {
 
     public static String findFolderBetweenGivenTimeStamps(DateTime startTime, DateTime endTime,
                                                           List<String> folderList)
-    throws Exception {
+     {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
 
         for (String folder : folderList) {
@@ -1683,20 +1667,19 @@ public class Util {
     }
 
     @Deprecated
-    public static void HDFSCleanup(PrismHelper prismHelper, String hdfsPath) throws Exception {
+    public static void HDFSCleanup(PrismHelper prismHelper, String hdfsPath) throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
         final FileSystem fs = FileSystem.get(conf);
         HDFSCleanup(fs, hdfsPath);
     }
 
-    public static void HDFSCleanup(FileSystem fs, String hdfsPath) throws Exception {
+    public static void HDFSCleanup(FileSystem fs, String hdfsPath) throws IOException {
         HadoopUtil.deleteDirIfExists(hdfsPath, fs);
     }
 
     public static void lateDataReplenish(PrismHelper prismHelper, int interval,
-                                         int minuteSkip)
-    throws Exception {
+                                         int minuteSkip) throws IOException, InterruptedException {
         List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFolders(prismHelper, folderData);
@@ -1705,8 +1688,7 @@ public class Util {
     }
 
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
-                                         int minuteSkip, String... files)
-    throws Exception {
+                                         int minuteSkip, String... files) throws IOException, InterruptedException {
         List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFolders(prismHelper, folderData);
@@ -1714,8 +1696,7 @@ public class Util {
     }
 
     public static void injectMoreData(PrismHelper prismHelper, final String remoteLocation,
-                                      String localLocation)
-    throws Exception {
+                                      String localLocation) throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getClusterHelper().getHadoopURL() + "");
 
@@ -1731,7 +1712,7 @@ public class Util {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                     @Override
-                    public Boolean run() throws Exception {
+                    public Boolean run() throws IOException {
 
                         String path = "/lateDataTest/testFolders/" + remoteLocation + "/" +
                                 System.currentTimeMillis() / 1000 + "/";
@@ -1746,7 +1727,7 @@ public class Util {
 
     }
 
-    public static String getInputFeedNameFromBundle(Bundle b) throws Exception {
+    public static String getInputFeedNameFromBundle(Bundle b) throws JAXBException {
         String feedData = getInputFeedFromBundle(b);
 
         JAXBContext processContext = JAXBContext.newInstance(Feed.class);
@@ -1758,8 +1739,7 @@ public class Util {
 
     public static void lateDataReplenish(PrismHelper prismHelper, int interval,
                                          int minuteSkip,
-                                         String folderPrefix)
-    throws Exception {
+                                         String folderPrefix) throws IOException, InterruptedException {
         List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
         Util.print("folderData: " + folderPaths.toString());
 
@@ -1770,8 +1750,7 @@ public class Util {
     }
 
     public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
-                                             final String FolderPrefix)
-    throws Exception {
+                                             final String FolderPrefix) throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
 
@@ -1783,7 +1762,7 @@ public class Util {
             user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                 @Override
-                public Boolean run() throws Exception {
+                public Boolean run() throws IOException {
                     return fs.mkdirs(new Path(FolderPrefix + folder));
 
                 }
@@ -1793,8 +1772,7 @@ public class Util {
 
     public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
                                          List<String> folderList,
-                                         String... fileLocations)
-    throws Exception {
+                                         String... fileLocations) throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
 
@@ -1829,7 +1807,7 @@ public class Util {
                 user.doAs(new PrivilegedExceptionAction<Boolean>() {
 
                     @Override
-                    public Boolean run() throws Exception {
+                    public Boolean run() throws IOException {
                         logger.info("copying  " + file + " to " + folderPrefix + folder);
                         fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
                         return true;
@@ -1840,14 +1818,14 @@ public class Util {
         }
     }
 
-    public static String getFeedName(String feedData) throws Exception {
+    public static String getFeedName(String feedData) throws JAXBException {
         JAXBContext processContext = JAXBContext.newInstance(Feed.class);
         Unmarshaller unmarshaller = processContext.createUnmarshaller();
         Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
         return feedObject.getName();
     }
 
-    public static String getOutputFeedFromBundle(Bundle bundle) throws Exception {
+    public static String getOutputFeedFromBundle(Bundle bundle) throws JAXBException {
         String processData = bundle.getProcessData();
 
         JAXBContext processContext = JAXBContext.newInstance(Process.class);
@@ -1864,7 +1842,7 @@ public class Util {
         return null;
     }
 
-    public static String setFeedName(String outputFeed, String newName) throws Exception {
+    public static String setFeedName(String outputFeed, String newName) throws JAXBException {
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
         Feed feedObject =
                 (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(outputFeed));
@@ -1876,9 +1854,8 @@ public class Util {
         return feedWriter.toString().trim();
     }
 
-    public static ArrayList<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
-    throws Exception {
-        ArrayList<String> jobIds = new ArrayList<String>();
+    public static List<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID) throws OozieClientException {
+        List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = new XOozieClient(prismHelper.getFeedHelper().getOozieURL());
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
@@ -1910,11 +1887,10 @@ public class Util {
     }
 
     @Deprecated
-    public static void verifyFeedDeletion(String feed, PrismHelper... prismHelper)
-    throws Exception {
+    public static void verifyFeedDeletion(String feed, PrismHelper... prismHelper) throws IOException, JSchException, JAXBException {
         for (PrismHelper helper : prismHelper) {
             //make sure feed bundle is not there
-            ArrayList<String> feedList =
+            List<String> feedList =
                     runRemoteScript(helper.getFeedHelper().getQaHost(),
                             helper.getFeedHelper().getUsername(),
                             helper.getFeedHelper().getPassword(),
@@ -1932,7 +1908,7 @@ public class Util {
 
     }
 
-    public static void verifyFeedDeletion(String feed, ColoHelper... helpers) throws Exception {
+    public static void verifyFeedDeletion(String feed, ColoHelper... helpers) throws JAXBException, IOException {
         for (ColoHelper helper : helpers) {
             String directory = "/projects/ivory/staging/"+ helper.getFeedHelper().getServiceUser()
                     + "/workflows/feed/" + Util.readDatasetName(feed);
@@ -1944,8 +1920,7 @@ public class Util {
 
     }
 
-    public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId)
-    throws Exception {
+    public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId) throws OozieClientException {
         XOozieClient client = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
@@ -1958,22 +1933,20 @@ public class Util {
     }
 
     public static Cluster getClusterObject(
-            String clusterXML)
-    throws Exception {
+            String clusterXML) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Cluster.class);
         Unmarshaller um = context.createUnmarshaller();
         return (Cluster) um.unmarshal(new StringReader(clusterXML));
     }
 
-    public static ArrayList<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
-    throws Exception {
-        ArrayList<String> raw = runRemoteScript(coloHelper.getProcessHelper()
+    public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId) throws IOException, JSchException {
+        List<String> raw = runRemoteScript(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
                 coloHelper.getProcessHelper().getPassword(),
                 "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
                         "\"Received\" | awk '{print $2}'",
                 coloHelper.getProcessHelper().getIdentityFile());
-        ArrayList<String> finalList = new ArrayList<String>();
+        List<String> finalList = new ArrayList<String>();
         for (String line : raw) {
             finalList.add(line.split(",")[0]);
 
@@ -1982,15 +1955,14 @@ public class Util {
         return finalList;
     }
 
-    public static ArrayList<String> getInstanceRetryTimes(ColoHelper coloHelper, String workflowId)
-    throws Exception {
-        ArrayList<String> raw = runRemoteScript(coloHelper.getProcessHelper()
+    public static List<String> getInstanceRetryTimes(ColoHelper coloHelper, String workflowId) throws IOException, JSchException {
+        List<String> raw = runRemoteScript(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
                 coloHelper.getProcessHelper().getPassword(),
                 "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
                         "\"Retrying attempt\" | awk '{print $2}'",
                 coloHelper.getProcessHelper().getIdentityFile());
-        ArrayList<String> finalList = new ArrayList<String>();
+        List<String> finalList = new ArrayList<String>();
         for (String line : raw) {
             finalList.add(line.split(",")[0]);
         }
@@ -1998,14 +1970,18 @@ public class Util {
         return finalList;
     }
 
-    public static void shutDownService(IEntityManagerHelper helper) throws Exception {
+    public static void shutDownService(IEntityManagerHelper helper) throws IOException, JSchException {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStopCmd(),
                 helper.getServiceUser(), helper.getIdentityFile());
-        Thread.sleep(10000);
+        try {
+            TimeUnit.SECONDS.sleep(10);
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
     }
 
-    public static void startService(IEntityManagerHelper helper) throws Exception {
+    public static void startService(IEntityManagerHelper helper) throws IOException, JSchException {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
                 helper.getIdentityFile());
@@ -2017,27 +1993,30 @@ public class Util {
             } catch (URISyntaxException e) {
             }
             if (statusCode == 200) return;
-            TimeUnit.SECONDS.sleep(5);
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
         }
         throw new RuntimeException("Service on" + helper.getHostname() + " did not start!");
     }
 
-    public static void restartService(IEntityManagerHelper helper) throws Exception {
+    public static void restartService(IEntityManagerHelper helper) throws IOException, JSchException {
         Util.print("restarting service for: " + helper.getQaHost());
 
         shutDownService(helper);
         startService(helper);
     }
 
-    private static ArrayList<String> runRemoteScriptAsSudo(String hostName,
+    private static List<String> runRemoteScriptAsSudo(String hostName,
                                                            String userName,
                                                            String password,
                                                            String command,
                                                            String
                                                                    runAs,
                                                            String identityFile
-    ) throws
-    Exception {
+    ) throws JSchException, IOException {
         JSch jsch = new JSch();
         Session session = jsch.getSession(userName, hostName, 22);
         // only set the password if its not empty
@@ -2055,7 +2034,7 @@ public class Util {
         session.connect();
         Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
 
-        ArrayList<String> data = new ArrayList<String>();
+        List<String> data = new ArrayList<String>();
 
         ChannelExec channel = (ChannelExec) session.openChannel("exec");
         channel.setPty(true);
@@ -2075,7 +2054,11 @@ public class Util {
         channel.setErrStream(System.err);
 
         channel.connect();
-        Thread.sleep(10000);
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
         // only print the password if its not empty
         if (null != password && !password.isEmpty()) {
             out.write((password + "\n").getBytes());
@@ -2089,18 +2072,18 @@ public class Util {
         return data;
     }
 
-    public static void verifyNoJobsFoundInOozie(ArrayList<String> data) throws Exception {
+    public static void verifyNoJobsFoundInOozie(List<String> data)  {
         Assert.assertTrue(data.get(0).contains("No Jobs match your criteria!"),
                 "Job was found on this oozie when not expected! Please check!");
     }
 
-    public static Process getProcessObject(String processData) throws Exception {
+    public static Process getProcessObject(String processData) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Process.class);
         Unmarshaller um = context.createUnmarshaller();
         return (Process) um.unmarshal(new StringReader(processData));
     }
 
-    public static Feed getFeedObject(String feedData) throws Exception {
+    public static Feed getFeedObject(String feedData) throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
 
@@ -2109,14 +2092,12 @@ public class Util {
 
     }
 
-    public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId)
-    throws Exception {
+    public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId) throws OozieClientException {
         return getDefaultOozieCoord(prismHelper, bundleId).getActions().size();
     }
 
-    public static List<String> generateUniqueClusterEntity(List<String> clusterData)
-    throws Exception {
-        ArrayList<String> newList = new ArrayList<String>();
+    public static List<String> generateUniqueClusterEntity(List<String> clusterData) throws JAXBException {
+        List<String> newList = new ArrayList<String>();
         for (String cluster : clusterData) {
             newList.add(generateUniqueClusterEntity(cluster));
         }
@@ -2125,9 +2106,8 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getBundles(String entityName, String entityType,
-                                               IEntityManagerHelper helper)
-    throws Exception {
+    public static List<String> getBundles(String entityName, String entityType,
+                                               IEntityManagerHelper helper) throws IOException, JSchException {
         if (entityType.equals("FEED"))
             return runRemoteScript(helper.getQaHost(), helper.getUsername(),
                     helper.getPassword(), helper.getOozieLocation() + "/oozie jobs -oozie " +
@@ -2143,7 +2123,7 @@ public class Util {
 
     }
 
-    public static void dumpConsumerData(Consumer consumer) throws Exception {
+    public static void dumpConsumerData(Consumer consumer)  {
         logger.info("dumping all queue data:");
 
         for (HashMap<String, String> data : consumer.getMessageData()) {
@@ -2157,8 +2137,7 @@ public class Util {
 
     public static void lateDataReplenish(PrismHelper prismHelper, int interval,
                                          int minuteSkip,
-                                         String folderPrefix, String postFix)
-    throws Exception {
+                                         String folderPrefix, String postFix) throws IOException, InterruptedException {
         List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
         Util.print("folderData: " + folderPaths.toString());
 
@@ -2186,7 +2165,7 @@ public class Util {
                 response.getStatus().toString().equals("FAILED"));
     }
 
-    public static boolean isBundleOver(ColoHelper coloHelper, String bundleId) throws Exception {
+    public static boolean isBundleOver(ColoHelper coloHelper, String bundleId) throws OozieClientException {
         XOozieClient client = new XOozieClient(coloHelper.getClusterHelper().getOozieURL());
 
         BundleJob bundleJob = client.getBundleJobInfo(bundleId);
@@ -2199,14 +2178,17 @@ public class Util {
         }
 
 
-        Thread.sleep(20000);
+        try {
+            TimeUnit.SECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
         return false;
     }
 
     public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
-                                                        String postFix)
-    throws Exception {
+                                                        String postFix) throws IOException, InterruptedException {
         List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
         Util.print("folderData: " + folderPaths.toString());
 
@@ -2225,8 +2207,7 @@ public class Util {
     }
 
     public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
-                                           String folderPrefix, String fileToBePut)
-    throws Exception {
+                                           String folderPrefix, String fileToBePut) throws IOException, InterruptedException {
         List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
         Util.print("folderData: " + folderPaths.toString());
 
@@ -2242,8 +2223,7 @@ public class Util {
 
     }
 
-    public static void submitAllClusters(Bundle... b) throws Exception {
-
+    public static void submitAllClusters(Bundle... b) throws IOException {
         for (Bundle aB : b) {
             Util.print("Submitting Cluster: " + aB.getClusters().get(0));
             ServiceResponse r = prismHelper.getClusterHelper()
@@ -2254,9 +2234,8 @@ public class Util {
     }
 
     @Deprecated
-    public static ArrayList<String> getBundles(PrismHelper coloHelper,
-                                               String entityName, ENTITY_TYPE entityType)
-    throws Exception {
+    public static List<String> getBundles(PrismHelper coloHelper,
+                                               String entityName, ENTITY_TYPE entityType) throws IOException, JSchException {
 
         if (entityType.equals(ENTITY_TYPE.FEED)) {
             return runRemoteScript(
@@ -2283,7 +2262,7 @@ public class Util {
         }
     }
 
-    public static void forceRestartService(IEntityManagerHelper helper) throws Exception {
+    public static void forceRestartService(IEntityManagerHelper helper) throws IOException, JSchException {
         Util.print("force restarting service for: " + helper.getQaHost());
 
         //check if needs to be restarted or not
@@ -2310,11 +2289,16 @@ public class Util {
         return null;
     }
 
-    public static List<Bundle> getDataFromFolder(String folderPath) throws Exception {
-
-        File[] files = Util.getFiles(folderPath);
+    public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
 
         List<Bundle> bundleList = new ArrayList<Bundle>();
+        File[] files;
+        try {
+            files = Util.getFiles(folderPath);
+        } catch (URISyntaxException e) {
+            return bundleList;
+        }
+
 
         List<String> dataSets = new ArrayList<String>();
         String processData = new String();
@@ -2438,7 +2422,7 @@ public class Util {
             }
 
             b.generateUniqueBundle();
-            return new Bundle(b, cluster.getEnvFileName());
+            return new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         } catch (Exception e) {
             System.out.println(Arrays.toString(e.getStackTrace()));
         }

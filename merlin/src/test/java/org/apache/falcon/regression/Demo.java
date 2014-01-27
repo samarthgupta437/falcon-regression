@@ -45,8 +45,8 @@ public class Demo {
 //    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
 //    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);
 
-    PrismHelper prismHelper = new PrismHelper("prism.properties");
-    ColoHelper gs1001 = new ColoHelper("gs1001.config.properties");
+    PrismHelper prismHelper = new PrismHelper("prism.properties", "");
+    ColoHelper gs1001 = new ColoHelper("gs1001.config.properties", "");
 
 /*
     @Test(dataProvider = "demo-DP")
@@ -70,7 +70,7 @@ public class Demo {
     }
 */
 
-    @Test
+    @Test(enabled = false)
     public void test() throws Exception {
 
 

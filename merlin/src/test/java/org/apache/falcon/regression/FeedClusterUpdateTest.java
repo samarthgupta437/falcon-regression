@@ -62,9 +62,9 @@ public class FeedClusterUpdateTest extends BaseMultiClusterTests {
         b3 = (Bundle) Util.readELBundles()[0][0];
         b3.generateUniqueBundle();
         try {
-            b1 = new Bundle(b1, server1.getEnvFileName());
-            b2 = new Bundle(b2, server2.getEnvFileName());
-            b3 = new Bundle(b3, server3.getEnvFileName());
+            b1 = new Bundle(b1, server1.getEnvFileName(), server1.getPrefix());
+            b2 = new Bundle(b2, server2.getEnvFileName(), server2.getPrefix());
+            b3 = new Bundle(b3, server3.getEnvFileName(), server3.getPrefix());
             String postFix = "/US/ua2";
             HadoopUtil.deleteDirIfExists(baseTestDir, server2FS);
             Util.lateDataReplenish(server2, 80, 1, baseTestDir, postFix);
@@ -93,9 +93,9 @@ public class FeedClusterUpdateTest extends BaseMultiClusterTests {
         b3 = (Bundle) Util.readELBundles()[0][0];
         b3.generateUniqueBundle();
 
-        b1 = new Bundle(b1, server1.getEnvFileName());
-        b2 = new Bundle(b2, server2.getEnvFileName());
-        b3 = new Bundle(b3, server3.getEnvFileName());
+        b1 = new Bundle(b1, server1.getEnvFileName(), server1.getPrefix());
+        b2 = new Bundle(b2, server2.getEnvFileName(), server2.getPrefix());
+        b3 = new Bundle(b3, server3.getEnvFileName(), server3.getPrefix());
         Util.submitAllClusters(b1, b2, b3);
         feed = b1.getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,

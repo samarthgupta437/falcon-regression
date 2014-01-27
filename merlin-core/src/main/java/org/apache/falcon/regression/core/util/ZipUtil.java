@@ -28,21 +28,14 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 public class ZipUtil {
 
 
-    public static String unzipFileToString(String filePath) throws Exception {
+    public static String unzipFileToString(String filePath) throws IOException {
         StringBuilder outputBuffer = new StringBuilder();
 
         @Cleanup InputStream in = new GZIPInputStream(Util.class.getResourceAsStream("/" + filePath));
