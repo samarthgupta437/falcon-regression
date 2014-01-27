@@ -417,6 +417,7 @@ public class Util {
         return InstanceUtil.feedElementToString(dataElement);
     }
 
+    @Deprecated
     public static String getEnvClusterXML(String filename, String cluster) throws JAXBException {
         Cluster clusterObject =
                 getClusterObject(cluster);
@@ -2344,6 +2345,37 @@ public class Util {
 
         return bundleList;
 
+    }
+
+    public static String getEnvClusterXML(String filename, String cluster, String prefix)
+    throws JAXBException {
+
+        Cluster clusterObject =
+                getClusterObject(cluster);
+
+        //now read and set relevant values
+        for (Interface iface : clusterObject.getInterfaces().getInterface()) {
+            if (iface.getType().equals(Interfacetype.READONLY)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix+".cluster_readonly"));
+            } else if (iface.getType().equals(Interfacetype.WRITE)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix+".cluster_write"));
+            } else if (iface.getType().equals(Interfacetype.EXECUTE)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix+".cluster_execute"));
+            } else if (iface.getType().equals(Interfacetype.WORKFLOW)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix+".oozie_url"));
+            } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix+".activemq_url"));
+            }
+        }
+
+        //set colo name:
+        clusterObject.setColo(readPropertiesFile(filename, prefix+".colo"));
+        JAXBContext context = JAXBContext.newInstance(Cluster.class);
+        Marshaller m = context.createMarshaller();
+        StringWriter writer = new StringWriter();
+
+        m.marshal(clusterObject, writer);
+        return writer.toString();
     }
 
     public enum URLS {

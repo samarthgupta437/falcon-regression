@@ -85,7 +85,7 @@ public class BaseTestClass {
         for (int i = 0; i < serverNames.size(); i++)
             serverNames.set(i, serverNames.get(i).trim());
 
-        serverNames.add(PRISM_PREFIX);
+        //serverNames.add(PRISM_PREFIX);
 
 /*        for (int i = 0; i < serverNames.size(); i++)
             serverNames.set(i, serverNames.get(i).trim() + ".properties");

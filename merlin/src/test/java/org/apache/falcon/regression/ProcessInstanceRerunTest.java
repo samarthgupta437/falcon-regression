@@ -25,26 +25,30 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.WorkflowAction.Status;
 import org.joda.time.DateTime;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
+public class ProcessInstanceRerunTest extends BaseTestClass {
 
     String baseTestDir = baseHDFSDir + "/ProcessInstanceRerunTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedInputTimedOutPath = baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedInputTimedOutPath =
+            baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
     Bundle b = new Bundle();
     ColoHelper cluster;
@@ -52,8 +56,8 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
 
     public ProcessInstanceRerunTest() throws IOException {
         super();
-       // cluster = servers.get(0);
-       // clusterFS = cluster.getClusterHelper().getHadoopFS();
+        cluster = servers.get(1);
+        clusterFS = cluster.getClusterHelper().getHadoopFS();
 
     }
 
@@ -67,10 +71,8 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
-//        b = new Bundle(b, cluster.getEnvFileName());
- //       b = new Bundle(b, cluster.getEnvFileName());
+        //       b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
 
         String startDate = "2010-01-01T20:00Z";
@@ -102,10 +104,9 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        //  b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
 
-     //   b = new Bundle(b, cluster.getEnvFileName());
-      //  b.setInputFeedDataPath(feedInputPath);
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -355,8 +356,8 @@ public class ProcessInstanceRerunTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
-    //    b = new Bundle(b, cluster.getEnvFileName());
+        //    b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();

@@ -180,7 +180,7 @@ public class Bundle {
         this.clusters = new ArrayList<String>();
         colohelper = new ColoHelper(envFileName, prefix);
         for (String cluster : bundle.getClusters()) {
-            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster));
+            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster,prefix));
         }
 
         if (null == bundle.getClusterHelper()) {
