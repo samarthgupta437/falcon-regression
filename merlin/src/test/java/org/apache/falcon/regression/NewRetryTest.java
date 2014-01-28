@@ -88,7 +88,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -151,7 +151,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -220,7 +220,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
 
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -284,7 +284,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -349,7 +349,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -411,7 +411,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -471,7 +471,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(
@@ -536,7 +536,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
         bundle.getDataSets().add(feed);
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -599,7 +599,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         bundle.getDataSets().add(feed);
         bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
 
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -646,7 +646,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         bundle.getDataSets().add(feed);
         bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
 
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -706,7 +706,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         bundle.getDataSets().add(feed);
         bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
 
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -766,7 +766,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         bundle.getDataSets().add(feed);
         bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
 
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -864,7 +864,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
 
         bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
 
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -946,7 +946,7 @@ public class NewRetryTest extends BaseSingleClusterTests {
         bundle.getDataSets().add(feed);
 
         bundle.setRetry(getRetry(bundle, delay, delayUnits, retryType, retryAttempts));
-        submitClusters(bundle);
+        bundle.submitClusters(prism);
 
         for (String data : bundle.getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -1360,12 +1360,6 @@ public class NewRetryTest extends BaseSingleClusterTests {
             return Math.abs(delay * attempts);
         }
 
-    }
-
-    private void submitClusters(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
-        }
     }
 
 }

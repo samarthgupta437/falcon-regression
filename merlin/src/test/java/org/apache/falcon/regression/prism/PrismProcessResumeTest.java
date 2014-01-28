@@ -19,11 +19,9 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.oozie.client.Job;
 import org.testng.TestNGException;
@@ -52,8 +50,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testResumeSuspendedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
-        submitAndScheduleProcessUsingColoHelper(server2, UA1Bundle);
-        submitAndScheduleProcessUsingColoHelper(server1, UA2Bundle);
+        UA1Bundle.submitAndScheduleProcessUsingColoHelper(server2);
+        UA2Bundle.submitAndScheduleProcessUsingColoHelper(server1);
 
         //suspend using prism
         Util.assertSucceeded(prism.getProcessHelper()
@@ -102,8 +100,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testResumeDeletedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
-        submitAndScheduleProcessUsingColoHelper(server2, UA1Bundle);
-        submitAndScheduleProcessUsingColoHelper(server1, UA2Bundle);
+        UA1Bundle.submitAndScheduleProcessUsingColoHelper(server2);
+        UA2Bundle.submitAndScheduleProcessUsingColoHelper(server1);
 
         //delete using coloHelpers
         Util.assertSucceeded(prism.getProcessHelper()
@@ -136,8 +134,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testResumeResumedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
-        submitAndScheduleProcessUsingColoHelper(server2, UA1Bundle);
-        submitAndScheduleProcessUsingColoHelper(server1, UA2Bundle);
+        UA1Bundle.submitAndScheduleProcessUsingColoHelper(server2);
+        UA2Bundle.submitAndScheduleProcessUsingColoHelper(server1);
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
@@ -205,8 +203,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
 
     @Test()
     public void testResumeSubmittedProcessOnBothColos() throws Exception {
-        submitProcess(UA1Bundle);
-        submitProcess(UA2Bundle);
+        UA1Bundle.submitProcess();
+        UA2Bundle.submitProcess();
 
         Util.assertFailed(prism.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, UA1Bundle.getProcessData()));
@@ -226,8 +224,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
     throws Exception {
         try {
             //schedule using colohelpers
-            submitAndScheduleProcessUsingColoHelper(server2, UA1Bundle);
-            submitAndScheduleProcessUsingColoHelper(server1, UA2Bundle);
+            UA1Bundle.submitAndScheduleProcessUsingColoHelper(server2);
+            UA2Bundle.submitAndScheduleProcessUsingColoHelper(server1);
             Util.assertSucceeded(
                     server2.getProcessHelper()
                             .suspend(Util.URLS.SUSPEND_URL, UA1Bundle.getProcessData())
@@ -265,8 +263,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
     public void testResumeDeletedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         try {
             //schedule using colohelpers
-            submitAndScheduleProcessUsingColoHelper(server2, UA1Bundle);
-            submitAndScheduleProcessUsingColoHelper(server1, UA2Bundle);
+            UA1Bundle.submitAndScheduleProcessUsingColoHelper(server2);
+            UA2Bundle.submitAndScheduleProcessUsingColoHelper(server1);
 
             //delete using coloHelpers
             Util.assertSucceeded(
@@ -318,8 +316,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
     public void testResumeResumedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         try {
             //schedule using colohelpers
-            submitAndScheduleProcessUsingColoHelper(server2, UA1Bundle);
-            submitAndScheduleProcessUsingColoHelper(server1, UA2Bundle);
+            UA1Bundle.submitAndScheduleProcessUsingColoHelper(server2);
+            UA2Bundle.submitAndScheduleProcessUsingColoHelper(server1);
 
             //suspend using prism
             Util.assertSucceeded(
@@ -396,8 +394,8 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
     public void testResumeSubmittedProcessOnBothColosWhen1ColoIsDown()
     throws Exception {
         try {
-            submitProcess(UA1Bundle);
-            submitProcess(UA2Bundle);
+            UA1Bundle.submitProcess();
+            UA2Bundle.submitProcess();
 
             Util.shutDownService(server2.getProcessHelper());
 
@@ -417,30 +415,4 @@ public class PrismProcessResumeTest extends BaseMultiClusterTests {
         }
 
     }
-
-
-    private void submitProcess(Bundle bundle) throws Exception {
-
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        for (String feed : bundle.getDataSets()) {
-            Util.assertSucceeded(
-                    prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
-        }
-
-        Util.assertSucceeded(
-                prism.getProcessHelper()
-                        .submitEntity(Util.URLS.SUBMIT_URL, bundle.getProcessData())
-        );
-    }
-
-    private void submitAndScheduleProcessUsingColoHelper(ColoHelper coloHelper, Bundle bundle)
-    throws Exception {
-        submitProcess(bundle);
-        Util.assertSucceeded(coloHelper.getProcessHelper()
-                .schedule(Util.URLS.SCHEDULE_URL, bundle.getProcessData()));
-    }
-
 }
