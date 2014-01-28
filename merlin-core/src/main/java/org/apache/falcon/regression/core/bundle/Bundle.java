@@ -96,6 +96,59 @@ public class Bundle {
 
     private static String sBundleLocation;
 
+    public void submitFeed() throws Exception {
+        submitClusters(prismHelper);
+
+        Util.assertSucceeded(prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, dataSets.get(0)));
+    }
+
+    public void submitAndScheduleFeed() throws Exception {
+        submitClusters(prismHelper);
+
+        Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, dataSets.get(0)));
+    }
+
+    public void submitAndScheduleFeedUsingColoHelper(ColoHelper coloHelper) throws Exception {
+        submitFeed();
+
+        Util.assertSucceeded(coloHelper.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, dataSets.get(0)));
+    }
+
+    public void submitAndScheduleAllFeeds() throws JAXBException, IOException {
+        submitClusters(prismHelper);
+
+        for (String feed : dataSets) {
+            Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
+        }
+    }
+
+    public void submitProcess() throws Exception {
+        submitAndScheduleAllFeeds();
+
+        Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, processData));
+    }
+
+    public void submitFeedsScheduleProcess() throws Exception {
+        submitClusters(prismHelper);
+
+        submitFeeds(prismHelper);
+
+        Util.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+    }
+
+
+    public void submitAndScheduleProcess() throws Exception {
+        submitAndScheduleAllFeeds();
+
+        Util.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+    }
+
+    public void submitAndScheduleProcessUsingColoHelper(ColoHelper coloHelper) throws Exception {
+        submitProcess();
+
+        Util.assertSucceeded(coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
+    }
+
     public List<String> getClusters() {
         return clusters;
     }

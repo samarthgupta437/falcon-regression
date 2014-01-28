@@ -1541,32 +1541,6 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         return InstanceUtil.processToString(p);
     }
 
-    private void submitClusters(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            System.out.println("will submit: " + cluster);
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-    }
-
-    private void submitProcess(Bundle bundle) throws Exception {
-        submitClusters(bundle);
-        for (String feed : bundle.getDataSets()) {
-            System.out.println(feed);
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
-        }
-
-        Util.assertSucceeded(
-                prism.getProcessHelper()
-                        .submitEntity(Util.URLS.SUBMIT_URL, bundle.getProcessData()));
-    }
-
-    private void submitAndScheduleProcess(Bundle bundle) throws Exception {
-        submitProcess(bundle);
-        Util.assertSucceeded(prism.getProcessHelper()
-                .schedule(Util.URLS.SCHEDULE_URL, bundle.getProcessData()));
-    }
-
     public ServiceResponse updateProcessConcurrency(Bundle bundle, int concurrency)
             throws Exception {
         String oldData = new String(bundle.getProcessData());
