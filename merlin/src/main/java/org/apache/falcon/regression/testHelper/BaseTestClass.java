@@ -39,8 +39,7 @@ public class BaseTestClass {
             prepareProperties();
         } catch (Exception e) {
             System.out.println(e.getMessage());  //To change body of catch statement use
-            // File | Settings |
-            // File Templates.
+            System.exit(1);
         }
     }
 
@@ -49,7 +48,6 @@ public class BaseTestClass {
     public List<FileSystem> serverFS;
     public List<OozieClient> serverOC;
     public String baseHDFSDir = "/tmp/falcon-regression";
-    public static final String PRISM_PROPERTIES = "prism.properties";
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public static final String PRISM_PREFIX = "prism";
 
@@ -63,64 +61,24 @@ public class BaseTestClass {
         for (ColoHelper server : servers) {
             try {
                 serverFS.add(server.getClusterHelper().getHadoopFS());
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(0);
-            }
-            serverOC.add(server.getClusterHelper().getOozieClient());
-            try {
+
+                serverOC.add(server.getClusterHelper().getOozieClient());
                 HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size() - 1));
             } catch (IOException e) {
                 e.printStackTrace();
-                System.exit(0);
+                System.exit(1);
             }
         }
     }
 
     private static void prepareProperties() throws Exception {
-        //read Merlin.properties and create prism/servers and PrismServer.properties
+
         Properties merlinProp = Util.getPropertiesObj(MERLIN_PROPERTIES);
         serverNames = new ArrayList<String>(Arrays.asList(merlinProp.getProperty("servers").split
                 (",")));
         for (int i = 0; i < serverNames.size(); i++)
             serverNames.set(i, serverNames.get(i).trim());
 
-        //serverNames.add(PRISM_PREFIX);
-
-/*        for (int i = 0; i < serverNames.size(); i++)
-            serverNames.set(i, serverNames.get(i).trim() + ".properties");
-
-        serverNames.add(PRISM_PROPERTIES);
-        for (String server : serverNames) {
-            Properties serverPorp = new Properties();
-            serverPorp.setProperty("oozie_url", merlinProp.getProperty(server + ".oozie_url"));
-            serverPorp.setProperty("oozie_location",
-                    merlinProp.getProperty(server + ".oozie_location"));
-            serverPorp.setProperty("username", merlinProp.getProperty(server + ".username"));
-            serverPorp.setProperty("qa_host", merlinProp.getProperty(server + ".qa_host"));
-            serverPorp.setProperty("password", merlinProp.getProperty(server + ".password"));
-            serverPorp.setProperty("hadoop_url", merlinProp.getProperty(server + ".hadoop_url"));
-            serverPorp.setProperty("hadoop_location",
-                    merlinProp.getProperty(server + ".hadoop_location"));
-            serverPorp.setProperty("ivory_hostname",
-                    merlinProp.getProperty(server + ".ivory_hostname"));
-            serverPorp.setProperty("cluster_readonly",
-                    merlinProp.getProperty(server + ".cluster_readonly"));
-            serverPorp.setProperty("cluster_execute",
-                    merlinProp.getProperty(server + ".cluster_execute"));
-            serverPorp.setProperty("cluster_write",
-                    merlinProp.getProperty(server + ".cluster_write"));
-            serverPorp
-                    .setProperty("activemq_url", merlinProp.getProperty(server + ".activemq_url"));
-            serverPorp.setProperty("storeLocation",
-                    merlinProp.getProperty(server + ".storeLocation"));
-            serverPorp.setProperty("colo", merlinProp.getProperty(server + ".colo"));
-            serverPorp.setProperty("oozie_url", merlinProp.getProperty(server + ".oozie_url"));
-
-            serverPorp.store(new FileOutputStream(new File("merlin/src/main/resources/" + server)),
-                    null);
-
-        }    */
 
     }
 

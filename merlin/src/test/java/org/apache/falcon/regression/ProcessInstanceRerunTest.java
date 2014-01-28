@@ -71,7 +71,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        //       b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
 
@@ -134,14 +133,14 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        Thread.sleep(15000);
         InstanceUtil
                 .areWorkflowsRunning(cluster, Util.readEntityName(b.getProcessData()), 6, 5, 1,
                         0);
     }
 
 
-    @Test(groups = {"singleCluster"})
+    @Test(groups = {"singleCluster"}, enabled
+            = false)
     public void testProcessInstanceRerun_multipleSucceededDeleted() throws Exception {
         try {
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
@@ -231,7 +230,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z");
-        Thread.sleep(15000);
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(
                 InstanceUtil.getWorkflows(cluster, Util.getProcessName(b.getProcessData()),
                         Status.RUNNING)
@@ -255,7 +253,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z");
-        Thread.sleep(25000);
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(
                 InstanceUtil.getWorkflows(cluster, Util.getProcessName(b.getProcessData()),
                         Status.RUNNING)
@@ -275,7 +272,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z");
-        Thread.sleep(15000);
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(
                 InstanceUtil.getWorkflows(cluster, Util.getProcessName(b.getProcessData()),
                         Status.RUNNING)
@@ -299,7 +295,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
-        Thread.sleep(15000);
         Assert.assertEquals(InstanceUtil
                 .getInstanceStatus(cluster, Util.getProcessName(b.getProcessData()), 0, 1),
                 CoordinatorAction.Status.SUSPENDED);
@@ -317,7 +312,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        Thread.sleep(15000);
         InstanceUtil
                 .areWorkflowsRunning(cluster, Util.readEntityName(b.getProcessData()), 3, 3, 0,
                         0);
@@ -342,7 +336,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        Thread.sleep(15000);
         s = InstanceUtil
                 .getInstanceStatus(cluster, Util.readEntityName(b.getProcessData()), 0, 0);
         Assert.assertTrue(CoordinatorAction.Status.WAITING.equals(s),
@@ -356,7 +349,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        //    b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         b.setInputFeedDataPath(feedInputPath);
