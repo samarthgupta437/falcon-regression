@@ -170,7 +170,9 @@ public class Util {
         URL url = Util.class.getResource("/" + directoryPath);
         System.out.println("url" + url);
         File dir = new File(url.toURI());
-        return dir.listFiles();
+        File[] files = dir.listFiles();
+        Arrays.sort(files);
+        return files;
     }
 
     public static String fileToString(File file) throws IOException {
