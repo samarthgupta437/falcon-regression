@@ -145,7 +145,7 @@ public class Bundle {
         this.processData = processData;
         this.envFileName = envFileName;
         this.clusters = new ArrayList<String>();
-        this.clusters.add(Util.getEnvClusterXML(envFileName, clusterData));
+        this.clusters.add(Util.getEnvClusterXML(envFileName, clusterData, prefix));
         this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS,
                 envFileName, prefix);
         this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName, prefix);
@@ -157,7 +157,7 @@ public class Bundle {
         this.processData = processData;
         this.clusters = new ArrayList<String>();
         for (String cluster : clusterData) {
-            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster));
+            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster, prefix));
         }
         this.envFileName = envFileName;
         this.clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER,
@@ -180,7 +180,7 @@ public class Bundle {
         this.clusters = new ArrayList<String>();
         colohelper = new ColoHelper(envFileName, prefix);
         for (String cluster : bundle.getClusters()) {
-            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster));
+            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster,prefix));
         }
 
         if (null == bundle.getClusterHelper()) {
@@ -212,7 +212,8 @@ public class Bundle {
         this.clusters = new ArrayList<String>();
         for (String cluster : bundle.getClusters()) {
             this.clusters
-                    .add(Util.getEnvClusterXML(prismHelper.getEnvFileName(), cluster));
+                    .add(Util.getEnvClusterXML(prismHelper.getEnvFileName(), cluster,
+                            prismHelper.getPrefix()));
         }
         this.clusterHelper = prismHelper.getClusterHelper();
         this.processHelper = prismHelper.getProcessHelper();

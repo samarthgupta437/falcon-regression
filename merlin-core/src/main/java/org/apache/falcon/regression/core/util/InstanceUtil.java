@@ -318,7 +318,7 @@ public class InstanceUtil {
         List<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
             CoordinatorAction wfJob = oozieClient.getCoordActionInfo(jobID);
-            WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getExternalId());
+            WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getId());
             Util.print("wa.getExternalId(): " + wa.getExternalId() + " wa.getExternalStatus():  " +
                     wa.getExternalStatus());
             Util.print("wf id: " + jobID + "  wf status: " + wa.getStatus());
@@ -332,7 +332,7 @@ public class InstanceUtil {
 
     public static boolean isWorkflowRunning(String workflowID) throws OozieClientException {
         CoordinatorAction wfJob = oozieClient.getCoordActionInfo(workflowID);
-        WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getExternalId());
+        WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getId());
         return wa.getStatus().toString().equals("RUNNING");
     }
 
@@ -420,7 +420,7 @@ public class InstanceUtil {
         for (String jobID : workflows) {
 
             was.add(oozieClient
-                    .getWorkflowActionInfo(oozieClient.getCoordActionInfo(jobID).getExternalId()));
+                    .getWorkflowActionInfo(oozieClient.getCoordActionInfo(jobID).getId()));
         }
         return was;
     }

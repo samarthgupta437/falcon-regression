@@ -26,9 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.testng.log4testng.Logger;
 
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -38,13 +36,14 @@ import java.util.List;
 public class HadoopUtil {
 
     static Logger logger = Logger.getLogger(HadoopUtil.class);
+
     public static void setSystemPropertyHDFS() {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
     }
 
-    public static Configuration getHadoopConfiguration(ColoHelper prismHelper)  {
+    public static Configuration getHadoopConfiguration(ColoHelper prismHelper) {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
         return conf;
@@ -61,7 +60,8 @@ public class HadoopUtil {
         final FileSystem fs = FileSystem.get(conf);
 
         if (location.toString().contains("*"))
-            location = new Path(location.toString().substring(0, location.toString().indexOf("*") - 1));
+            location = new Path(
+                    location.toString().substring(0, location.toString().indexOf("*") - 1));
 
         FileStatus[] stats = fs.listStatus(location);
 
@@ -79,7 +79,8 @@ public class HadoopUtil {
         return returnList;
     }
 
-    public static List<String> getAllFilesHDFS(String hadoopURL, String location) throws IOException {
+    public static List<String> getAllFilesHDFS(String hadoopURL, String location)
+    throws IOException {
         setSystemPropertyHDFS();
         Configuration conf = new Configuration();
         conf.set("fs.default.name", hadoopURL);
@@ -87,7 +88,7 @@ public class HadoopUtil {
 
         return getAllFilesHDFS(fs, new Path(location));
 
-        }
+    }
 
     public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 
@@ -230,7 +231,8 @@ public class HadoopUtil {
         return false;
     }
 
-    public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion) throws IOException {
+    public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion)
+    throws IOException {
         setSystemPropertyHDFS();
         Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
 
@@ -241,7 +243,8 @@ public class HadoopUtil {
     }
 
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
-                                        final String fileLocation) throws IOException, InterruptedException {
+                                        final String fileLocation)
+    throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://"
                 + coloHelper.getProcessHelper().getHadoopURL());
@@ -267,7 +270,7 @@ public class HadoopUtil {
 
     @Deprecated
     public static List<String> getHDFSSubFoldersName(ColoHelper prismHelper,
-                                                          String baseDir) throws IOException {
+                                                     String baseDir) throws IOException {
         setSystemPropertyHDFS();
 
         List<String> returnList = new ArrayList<String>();
@@ -281,7 +284,7 @@ public class HadoopUtil {
     }
 
     public static List<String> getHDFSSubFoldersName(FileSystem fs,
-                                                          String baseDir) throws IOException {
+                                                     String baseDir) throws IOException {
         setSystemPropertyHDFS();
 
         List<String> returnList = new ArrayList<String>();
@@ -371,7 +374,7 @@ public class HadoopUtil {
 
     public static void createDir(String path, FileSystem... fileSystems) throws IOException {
         System.out.println("creating hdfs dir: " + path);
-        for(FileSystem fs:fileSystems) {
+        for (FileSystem fs : fileSystems) {
             deleteDirIfExists(path, fs);
             fs.mkdirs(new Path(path));
         }
@@ -379,8 +382,8 @@ public class HadoopUtil {
 
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
-        if (fs.exists(path)){
-         fs.delete(path, true);
+        if (fs.exists(path)) {
+            fs.delete(path, true);
         }
     }
 
@@ -391,14 +394,17 @@ public class HadoopUtil {
     }
 
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
-                                       List<String> remoteLocations) throws IOException {
+                                                 List<String> remoteLocations) throws IOException {
         File[] files = new File(inputPath).listFiles();
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
                 for (String remoteLocation : remoteLocations) {
-                    logger.info(String.format("Copy file %s to folder %s", file.toString(),
+                    logger.info(String.format("Copy file %s to folder %s", file.getPath(),
                             remoteLocation));
+                    if (!fs.exists(new Path(remoteLocation)))
+                        fs.mkdirs(new Path(remoteLocation));
+
                     fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
                             new Path(remoteLocation));
                 }
