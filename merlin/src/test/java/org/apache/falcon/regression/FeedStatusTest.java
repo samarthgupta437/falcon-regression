@@ -22,6 +22,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
@@ -77,8 +78,7 @@ public class FeedStatusTest extends BaseSingleClusterTests {
 
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
 
@@ -97,9 +97,7 @@ public class FeedStatusTest extends BaseSingleClusterTests {
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUSPENDED"));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
-        
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
 
@@ -115,8 +113,7 @@ public class FeedStatusTest extends BaseSingleClusterTests {
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUBMITTED"));
-        Assert.assertTrue(Util.getOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED) != Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
 
@@ -135,8 +132,7 @@ public class FeedStatusTest extends BaseSingleClusterTests {
 
         Assert.assertTrue(
                 response.getMessage().contains(Util.getFeedName(feed) + " (FEED) not found"));
-        Assert.assertTrue(Util.getOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED) != Job.Status.KILLED);
+        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
     }
 
 

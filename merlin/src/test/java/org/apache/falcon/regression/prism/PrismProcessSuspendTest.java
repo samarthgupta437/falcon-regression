@@ -21,6 +21,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
@@ -73,8 +74,8 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         //suspend using prismHelper
         Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getProcessData()));
         //verify
-        checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-        checkStatus(server2, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
 
         Util.shutDownService(server1.getProcessHelper());
 
@@ -83,8 +84,8 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         for (int i = 0; i < 2; i++) {
             //suspend on the other one
             Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle2.getProcessData()));
-            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-            checkStatus(server2, bundle2, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.SUSPENDED);
         }
     }
 
@@ -98,13 +99,13 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         //suspend using prismHelper
         Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getProcessData()));
         //verify
-        checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-        checkStatus(server2, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
 
         //suspend on the other one
         Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getProcessData()));
-        checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-        checkStatus(server2, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
 
         Assert.assertTrue(Util.parseResponse(prism.getProcessHelper()
                 .getStatus(URLS.STATUS_URL, bundle1.getProcessData())).getMessage().contains("SUSPENDED"));
@@ -125,14 +126,14 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         //suspend using prismHelper
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getProcessData()));
         //verify
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
 
         Util.assertSucceeded(prism.getProcessHelper().delete(Util.URLS.DELETE_URL, bundle2.getProcessData()));
         //suspend on the other one
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle2.getProcessData()));
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.KILLED);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -146,16 +147,16 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
             //suspend using prismHelper
             Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getProcessData()));
             //verify
-            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-            checkStatus(server2, bundle2, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
         }
 
 
         for (int i = 0; i < 2; i++) {
             //suspend on the other one
             Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle2.getProcessData()));
-            checkStatus(server1, bundle1, Job.Status.SUSPENDED);
-            checkStatus(server2, bundle2, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.SUSPENDED);
         }
     }
 
@@ -192,12 +193,12 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         //suspend using prismHelper
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getProcessData()));
         //verify
-        checkStatus(server2, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
 
         //suspend on the other one
         Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle2.getProcessData()));
-        checkStatus(server2, bundle2, Job.Status.SUSPENDED);
-        checkStatus(server1, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -214,14 +215,14 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         //suspend using prismHelper
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getProcessData()));
         //verify
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
 
         Util.assertSucceeded(prism.getProcessHelper().delete(Util.URLS.DELETE_URL, bundle2.getProcessData()));
         //suspend on the other one
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundle2.getProcessData()));
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.KILLED);
     }
 
 
@@ -268,10 +269,5 @@ public class PrismProcessSuspendTest extends BaseMultiClusterTests {
         Util.assertSucceeded(coloHelper.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundle.getProcessData()));
     }
 
-
-    private void checkStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
-        Assert.assertTrue(Util.verifyOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
-                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS, expectedStatus));
-    }
 
 }
