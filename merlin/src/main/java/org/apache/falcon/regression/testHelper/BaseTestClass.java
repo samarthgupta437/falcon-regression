@@ -78,8 +78,6 @@ public class BaseTestClass {
                 (",")));
         for (int i = 0; i < serverNames.size(); i++)
             serverNames.set(i, serverNames.get(i).trim());
-
-
     }
 
     private List<ColoHelper> getServers() {
