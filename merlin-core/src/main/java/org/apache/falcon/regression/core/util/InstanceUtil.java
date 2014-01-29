@@ -609,7 +609,8 @@ public class InstanceUtil {
                                         String type) throws IOException, InterruptedException {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
-            putDataInFolder(colo, anInputFoldersForInstance, type);
+            putDataInFolder(colo.getClusterHelper().getHadoopFS(),
+              anInputFoldersForInstance, type);
 
     }
 
