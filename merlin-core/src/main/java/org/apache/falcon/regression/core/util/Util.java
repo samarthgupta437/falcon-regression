@@ -2437,6 +2437,31 @@ public class Util {
     return writer.toString();
   }
 
+  public static void validateNumberOfWorkflowInstances(PrismHelper prismHelper,int originalCount,String oldBundleId,String updatedBundleId) throws Exception
+  {
+    //first make sure sum of all parts is same
+    Assert.assertEquals(getNumberOfWorkflowInstances(prismHelper,oldBundleId)+getNumberOfWorkflowInstances(prismHelper,updatedBundleId),originalCount,"The total number of workflow instances dont match post update! Please check.");
+
+  }
+
+  public static void verifyNewBundleCreation(ColoHelper coloHelper,
+                                             String originalBundleId,
+                                             int originalBundleCount,
+                                             String processName, boolean shouldBeCreated)
+    throws Exception {
+    String newBundleId = InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
+    if (shouldBeCreated) {
+      Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
+        "eeks! new bundle is not getting created!!!!");
+      System.out.println("old bundleId=" + originalBundleId);
+      System.out.println("new bundleId=" + newBundleId);
+      Util.validateNumberOfWorkflowInstances(coloHelper,
+        originalBundleCount, originalBundleId, newBundleId);
+    } else {
+      Assert.assertEquals(newBundleId,
+        originalBundleId,"eeks! new bundle is getting created!!!!");
+    }
+  }
   public enum URLS {
 
     SUBMIT_URL("/api/entities/submit"),
