@@ -422,36 +422,6 @@ public class Util {
     return InstanceUtil.feedElementToString(dataElement);
   }
 
-  @Deprecated
-  public static String getEnvClusterXML(String filename, String cluster) throws JAXBException {
-    Cluster clusterObject =
-      getClusterObject(cluster);
-
-    //now read and set relevant values
-    for (Interface iface : clusterObject.getInterfaces().getInterface()) {
-      if (iface.getType().equals(Interfacetype.READONLY)) {
-        iface.setEndpoint(readPropertiesFile(filename, "cluster_readonly"));
-      } else if (iface.getType().equals(Interfacetype.WRITE)) {
-        iface.setEndpoint(readPropertiesFile(filename, "cluster_write"));
-      } else if (iface.getType().equals(Interfacetype.EXECUTE)) {
-        iface.setEndpoint(readPropertiesFile(filename, "cluster_execute"));
-      } else if (iface.getType().equals(Interfacetype.WORKFLOW)) {
-        iface.setEndpoint(readPropertiesFile(filename, "oozie_url"));
-      } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
-        iface.setEndpoint(readPropertiesFile(filename, "activemq_url"));
-      }
-    }
-
-    //set colo name:
-    clusterObject.setColo(readPropertiesFile(filename, "colo"));
-    JAXBContext context = JAXBContext.newInstance(Cluster.class);
-    Marshaller m = context.createMarshaller();
-    StringWriter writer = new StringWriter();
-
-    m.marshal(clusterObject, writer);
-    return writer.toString();
-  }
-
   public static String readPropertiesFile(String property) {
     String desired_property;
 
@@ -2145,6 +2115,17 @@ public class Util {
     return getDefaultOozieCoord(prismHelper, bundleId).getActions().size();
   }
 
+  public static List<String> getActionsNominalTime(PrismHelper prismHelper,
+                                       String bundleId)
+    throws OozieClientException {
+    List<String> nominalTime = new ArrayList<String>();
+    List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper, bundleId).getActions();
+    for(CoordinatorAction action : actions){
+      nominalTime.add(action.getNominalTime().toString());
+    }
+    return nominalTime;
+  }
+
   public static List<String> generateUniqueClusterEntity(List<String> clusterData)
     throws JAXBException {
     List<String> newList = new ArrayList<String>();
@@ -2462,6 +2443,45 @@ public class Util {
         originalBundleId,"eeks! new bundle is getting created!!!!");
     }
   }
+
+  public static void verifyNewBundleCreation(ColoHelper cluster,
+                                             String originalBundleId,
+                                             List<String>
+                                               initialNominalTimes,
+                                             String processName,
+                                             boolean shouldBeCreated) throws
+    Exception {
+
+    String newBundleId = InstanceUtil.getLatestBundleID(cluster, processName, ENTITY_TYPE.PROCESS);
+    if (shouldBeCreated) {
+      Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
+        "eeks! new bundle is not getting created!!!!");
+      System.out.println("old bundleId=" + originalBundleId);
+      System.out.println("new bundleId=" + newBundleId);
+      Util.validateNumberOfWorkflowInstances(cluster,
+        initialNominalTimes, originalBundleId, newBundleId);
+    } else {
+      Assert.assertEquals(newBundleId,
+        originalBundleId,"eeks! new bundle is getting created!!!!");
+    }
+  }
+
+  private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId) throws OozieClientException {
+
+    List<String> nominalTimesOriginalAndNew = Util.getActionsNominalTime
+      (cluster,
+      originalBundleId);
+
+    nominalTimesOriginalAndNew.addAll(Util.getActionsNominalTime(cluster,
+      newBundleId));
+
+    initialNominalTimes.removeAll(nominalTimesOriginalAndNew) ;
+
+    if(initialNominalTimes.size()!=0)
+       Assert.assertFalse(true,"some instances have gone missing after " +
+         "update");
+  }
+
   public enum URLS {
 
     SUBMIT_URL("/api/entities/submit"),
