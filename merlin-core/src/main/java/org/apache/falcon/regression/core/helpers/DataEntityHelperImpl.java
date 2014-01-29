@@ -45,24 +45,24 @@ import java.util.List;
 
 public class DataEntityHelperImpl extends IEntityManagerHelper {
 
-    public DataEntityHelperImpl() {
-    }
+  public DataEntityHelperImpl() {
+  }
 
-    public DataEntityHelperImpl(String envFileName, String prefix)  {
-        super(envFileName, prefix);
-    }
+  public DataEntityHelperImpl(String envFileName, String prefix) {
+    super(envFileName, prefix);
+  }
 
-    public ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException {
+  public ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException {
 
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
 //        url+="/process/"+readEntityName(data);
-    }
+  }
 
-    public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException, IOException, URISyntaxException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data));
-    }
+  public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data));
+  }
 
     /*public ServiceResponse updateFeed(String processName, String newProcess)  {
 
@@ -70,55 +70,55 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return Util.sendRequest(url + colo, newProcess);
     }*/
 
-    public ServiceResponse getEntityDefinition(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return getEntityDefinition(this.hostname + url.getValue(), data);
-    }
+  public ServiceResponse getEntityDefinition(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return getEntityDefinition(this.hostname + url.getValue(), data);
+  }
 
-    public ServiceResponse getStatus(String url, String data) throws JAXBException, IOException, URISyntaxException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
-    }
+  public ServiceResponse getStatus(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
+  }
 
-    public ServiceResponse getStatus(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return getStatus(this.hostname + url.getValue(), data);
-    }
+  public ServiceResponse getStatus(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return getStatus(this.hostname + url.getValue(), data);
+  }
 
-    public ServiceResponse resume(String url, String data) throws JAXBException, IOException, URISyntaxException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
-    }
+  public ServiceResponse resume(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
+  }
 
-    public ServiceResponse schedule(String url, String data) throws JAXBException, IOException, URISyntaxException {
-        url += "/feed/" + Util.readDatasetName(data) + colo;
-        return Util.sendRequest(url);
-    }
+  public ServiceResponse schedule(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    url += "/feed/" + Util.readDatasetName(data) + colo;
+    return Util.sendRequest(url);
+  }
 
-    public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return Util.sendRequest(url + "/feed" + colo, data);
-    }
+  public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return Util.sendRequest(url + "/feed" + colo, data);
+  }
 
-    public ServiceResponse submitAndSchedule(Util.URLS url, String data) throws IOException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        return submitAndSchedule(this.hostname + url.getValue(), data);
-    }
+  public ServiceResponse submitAndSchedule(Util.URLS url, String data) throws IOException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    return submitAndSchedule(this.hostname + url.getValue(), data);
+  }
 
-    public ServiceResponse submitEntity(String url, String data) throws IOException {
+  public ServiceResponse submitEntity(String url, String data) throws IOException {
 
-        url += "/feed" + colo;
+    url += "/feed" + colo;
 
-        return Util.sendRequest(url, data);
-    }
+    return Util.sendRequest(url, data);
+  }
 
-    public ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException {
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
-    }
+  public ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo);
+  }
 
-    public ServiceResponse suspend(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
-        return suspend(this.hostname + url.getValue(), data);
-    }
+  public ServiceResponse suspend(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
+    return suspend(this.hostname + url.getValue(), data);
+  }
 
     /*public ServiceResponse validateEntity(String url, String data)  {
 
@@ -129,53 +129,53 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return Util.sendRequest(url + colo, data);
     }*/
 
-    public void validateResponse(String response, APIResult.Status expectedResponse,
-                                 String filename) throws JAXBException, IOException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        JAXBContext jc = JAXBContext.newInstance(APIResult.class);
+  public void validateResponse(String response, APIResult.Status expectedResponse,
+                               String filename) throws JAXBException, IOException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    JAXBContext jc = JAXBContext.newInstance(APIResult.class);
 
-        Unmarshaller u = jc.createUnmarshaller();
+    Unmarshaller u = jc.createUnmarshaller();
 
-        APIResult result = (APIResult) u.unmarshal(new InputSource(new StringReader(response)));
+    APIResult result = (APIResult) u.unmarshal(new InputSource(new StringReader(response)));
 
-        Assert.assertEquals(expectedResponse, result.getStatus(),
-                "Status message does not match with expected one!");
+    Assert.assertEquals(expectedResponse, result.getStatus(),
+      "Status message does not match with expected one!");
 
-        if (expectedResponse.equals(APIResult.Status.FAILED)) {
-            //now to check for the correct error message!
-            Assert.assertEquals(result.getMessage(), Util.getExpectedErrorMessage(filename),
-                    "Error message does not match in failure case!");
-        } else {
-            Assert.assertEquals(result.getMessage(), "Validate successful",
-                    "validation success message does not match in valid case!");
-        }
+    if (expectedResponse.equals(APIResult.Status.FAILED)) {
+      //now to check for the correct error message!
+      Assert.assertEquals(result.getMessage(), Util.getExpectedErrorMessage(filename),
+        "Error message does not match in failure case!");
+    } else {
+      Assert.assertEquals(result.getMessage(), "Validate successful",
+        "validation success message does not match in valid case!");
     }
+  }
 
-    @Override
-    public ServiceResponse submitEntity(Util.URLS url, String data) throws IOException {
-        return submitEntity(this.hostname + url.getValue(), data);
-    }
+  @Override
+  public ServiceResponse submitEntity(Util.URLS url, String data) throws IOException {
+    return submitEntity(this.hostname + url.getValue(), data);
+  }
 
-    @Override
-    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData) throws JAXBException, IOException, URISyntaxException {
-        return schedule(this.hostname + scheduleUrl.getValue(), processData);
-    }
+  @Override
+  public ServiceResponse schedule(Util.URLS scheduleUrl, String processData) throws JAXBException, IOException, URISyntaxException {
+    return schedule(this.hostname + scheduleUrl.getValue(), processData);
+  }
 
-    @Override
-    public ServiceResponse delete(Util.URLS deleteUrl, String data) throws JAXBException, IOException, URISyntaxException {
+  @Override
+  public ServiceResponse delete(Util.URLS deleteUrl, String data) throws JAXBException, IOException, URISyntaxException {
 
-        //String url=deleteUrl.getValue()+"/feed/"+Util.readDatasetName(data);
-        //return Util.sendRequest(url);
+    //String url=deleteUrl.getValue()+"/feed/"+Util.readDatasetName(data);
+    //return Util.sendRequest(url);
 
-        return delete(this.hostname + deleteUrl.getValue(), data);
+    return delete(this.hostname + deleteUrl.getValue(), data);
 
-    }
+  }
 
-    @Override
-    public ServiceResponse resume(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
-        // TODO Auto-generated method stub
-        return resume(this.hostname + url.getValue(), data);
-    }
+  @Override
+  public ServiceResponse resume(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
+    // TODO Auto-generated method stub
+    return resume(this.hostname + url.getValue(), data);
+  }
 
 
     /*@Override
@@ -187,68 +187,68 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return InstanceUtil.sendRequestProcessInstance(url);
     }*/
 
-    @Override
-    public ProcessInstancesResult getRunningInstance(
-            Util.URLS processRuningInstance, String name) throws IOException, URISyntaxException {
+  @Override
+  public ProcessInstancesResult getRunningInstance(
+    Util.URLS processRuningInstance, String name) throws IOException, URISyntaxException {
 
-        String url = this.hostname + processRuningInstance.getValue() + "/feed/" + name + allColo;
+    String url = this.hostname + processRuningInstance.getValue() + "/feed/" + name + allColo;
 
-        return InstanceUtil.sendRequestProcessInstance(url);
-    }
+    return InstanceUtil.sendRequestProcessInstance(url);
+  }
 
-    @Override
-    public ProcessInstancesResult getProcessInstanceStatus(
-            String EntityName, String params) throws IOException, URISyntaxException {
+  @Override
+  public ProcessInstancesResult getProcessInstanceStatus(
+    String EntityName, String params) throws IOException, URISyntaxException {
 
-        String url =
-                this.hostname + Util.URLS.INSTANCE_STATUS.getValue() + "/" + "feed/" + EntityName +
-                        "/";
+    String url =
+      this.hostname + Util.URLS.INSTANCE_STATUS.getValue() + "/" + "feed/" + EntityName +
+        "/";
 
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
-    }
-
-
-    @Override
-    public ProcessInstancesResult getProcessInstanceSuspend(
-            String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue() + "/" + "feed/" + EntityName +
-                        "/";
-
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  }
 
 
-    }
+  @Override
+  public ProcessInstancesResult getProcessInstanceSuspend(
+    String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue() + "/" + "feed/" + EntityName +
+        "/";
 
-    @Override
-    public String list()  {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
 
-    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + Util.URLS.INSTANCE_RESUME.getValue() + "/" + "feed/" + EntityName +
-                        "/";
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  }
 
-    }
+  @Override
+  public String list() {
+    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
 
-    public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + Util.URLS.INSTANCE_KILL.getValue() + "/" + "feed/" + EntityName +
-                        "/";
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
-    }
+  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + Util.URLS.INSTANCE_RESUME.getValue() + "/" + "feed/" + EntityName +
+        "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
-    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + Util.URLS.INSTANCE_RERUN.getValue() + "/" + "feed/" + EntityName +
-                        "/";
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  }
 
-    }
+  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + Util.URLS.INSTANCE_KILL.getValue() + "/" + "feed/" + EntityName +
+        "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+
+  }
+
+  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + Util.URLS.INSTANCE_RERUN.getValue() + "/" + "feed/" + EntityName +
+        "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+
+  }
 
 
     /*public String writeEntityToFile(String entity)  {
@@ -340,53 +340,58 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type feed");
     }*/
 
-    @Override
-    public String getDependencies(String entityName) throws IOException, InterruptedException {
+  @Override
+  public String getDependencies(String entityName) throws IOException, InterruptedException {
 
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-
-    @Override
-    public List<String> getArchiveInfo() throws IOException, JSchException {
-
-        return Util.getDataSetArchiveInfo(this);
-    }
-
-    @Override
-    public List<String> getStoreInfo() throws IOException, JSchException {
-
-        return Util.getDataSetStoreInfo(this);
-    }
-
-    @Override
-    public ServiceResponse update(String oldEntity, String newEntity) throws JAXBException, IOException {
-
-        String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
-                Util.readDatasetName(oldEntity);
-        return Util.sendRequest(url + colo, newEntity);
-    }
+    return Util.executeCommand(
+      BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type feed -name " +
+        entityName);
+  }
 
 
-    public ServiceResponse update(String newEntity) throws JAXBException, IOException {
+  @Override
+  public List<String> getArchiveInfo() throws IOException, JSchException {
 
-        String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
-                Util.readDatasetName(newEntity);
-        return Util.sendRequest(url + colo, newEntity);
-    }
+    return Util.getDataSetArchiveInfo(this);
+  }
 
-    @Override
-    public String toString(Object object) throws JAXBException {
-        Feed processObject = (Feed) object;
+  @Override
+  public List<String> getStoreInfo() throws IOException, JSchException {
 
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Marshaller um = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-        um.marshal(processObject, writer);
-        return writer.toString();
-    }
+    return Util.getDataSetStoreInfo(this);
+  }
+
+  @Override
+  public ServiceResponse update(String oldEntity, String newEntity) throws JAXBException, IOException {
+
+    String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
+      Util.readDatasetName(oldEntity);
+    return Util.sendRequest(url + colo, newEntity);
+  }
+
+  @Override
+  public ServiceResponse update(String oldEntity, String newEntity, String updateTime) throws IOException, JAXBException {
+    return updateRequestHelper(oldEntity,  newEntity,  updateTime,
+      Util.URLS.FEED_UPDATE.getValue()) ;
+  }
+
+  public ServiceResponse update(String newEntity) throws JAXBException, IOException {
+
+    String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
+      Util.readDatasetName(newEntity);
+    return Util.sendRequest(url + colo, newEntity);
+  }
+
+  @Override
+  public String toString(Object object) throws JAXBException {
+    Feed processObject = (Feed) object;
+
+    JAXBContext context = JAXBContext.newInstance(Feed.class);
+    Marshaller um = context.createMarshaller();
+    StringWriter writer = new StringWriter();
+    um.marshal(processObject, writer);
+    return writer.toString();
+  }
 
 /*
     @Override

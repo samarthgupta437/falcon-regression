@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -46,73 +47,73 @@ import java.util.List;
 
 public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
-    public ProcessEntityHelperImpl() {
+  public ProcessEntityHelperImpl() {
 
-    }
+  }
 
-    public ProcessEntityHelperImpl(String envFileName, String prefix)  {
-        super(envFileName, prefix);
-    }
+  public ProcessEntityHelperImpl(String envFileName, String prefix) {
+    super(envFileName, prefix);
+  }
 
-    public ServiceResponse delete(String url, String data) throws IOException, URISyntaxException, JAXBException {
+  public ServiceResponse delete(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
-        //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
-        //        {
-        //           url+="/process/"+readEntityName(data);
-        //        }
+    //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
+    //        {
+    //           url+="/process/"+readEntityName(data);
+    //        }
 
-        url += "/process/" + readEntityName(data) + colo;
+    url += "/process/" + readEntityName(data) + colo;
 
-        //System.out.println("printing the response: " + Util.sendRequest(url, data));
+    //System.out.println("printing the response: " + Util.sendRequest(url, data));
 
-        return Util.sendRequest(url);
-    }
+    return Util.sendRequest(url);
+  }
 
 //	public ServiceResponse delete(URLS url, String data)  {
 //		// TODO Auto-generated method stub
 //		return delete(url.getValue(), data);
 //	}
 
-    public ServiceResponse getEntityDefinition(String url, String data) throws IOException, URISyntaxException, JAXBException {
+  public ServiceResponse getEntityDefinition(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
-        //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
-        //        {
-        //           url+="/"+"process/"+readEntityName(data);
-        //        }
+    //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
+    //        {
+    //           url+="/"+"process/"+readEntityName(data);
+    //        }
 
-        url += "/process/" + readEntityName(data);
+    url += "/process/" + readEntityName(data);
 
-        return Util.sendRequest(url);
+    return Util.sendRequest(url);
 
-    }
+  }
 
-    public ServiceResponse getStatus(String url, String data) throws IOException, URISyntaxException, JAXBException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        url += "/process/" + readEntityName(data) + colo;
-        return Util.sendRequest(url);
-    }
+  public ServiceResponse getStatus(String url, String data) throws IOException, URISyntaxException, JAXBException {
+    //throw new UnsupportedOperationException("Not supported yet.");
+    url += "/process/" + readEntityName(data) + colo;
+    return Util.sendRequest(url);
+  }
 
 //	public ServiceResponse getStatus(URLS url, String data)  {
 //		//throw new UnsupportedOperationException("Not supported yet.");
 //		return getStatus(url.getValue(), data);
 //	}
 
-    public ServiceResponse schedule(String url, String data) throws IOException, URISyntaxException, JAXBException {
+  public ServiceResponse schedule(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
-        url += "/process/" + readEntityName(data) + colo;
-        return Util.sendRequest(url);
-    }
+    url += "/process/" + readEntityName(data) + colo;
+    return Util.sendRequest(url);
+  }
 
 //	public ServiceResponse schedule(Util.URLS url, String data)  {
 //		return schedule(url.getValue(), data);
 //	}
 
-    public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
+  public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
 
-        url += "/process";
-        return Util.sendRequest(url, data);
+    url += "/process";
+    return Util.sendRequest(url, data);
 
-    }
+  }
 
 //	public ServiceResponse submitAndSchedule(URLS url, String data)  {
 //
@@ -120,37 +121,37 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 //		return response;
 //	}
 
-    public ServiceResponse submitEntity(String url, String data) throws IOException {
+  public ServiceResponse submitEntity(String url, String data) throws IOException {
 
-        //    	 if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
-        //         {
-        //            url+="/process";
-        //         }
+    //    	 if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
+    //         {
+    //            url+="/process";
+    //         }
 
-        url += "/process";
+    url += "/process";
 
-        return Util.sendRequest(url, data);
+    return Util.sendRequest(url, data);
 
 
-    }
+  }
 
 //	public ServiceResponse submitEntity(Util.URLS url, String data)  {
 //
 //		return submitEntity(url.getValue(), data);
 //	}
 
-    public ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException {
+  public ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException {
 
-        return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
-    }
+    return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
+  }
 
 //	public ServiceResponse suspend(URLS url, String data)  {
 //		return suspend(url.getValue(), data);
 //	}
 
-    public ServiceResponse resume(String url, String data) throws JAXBException, IOException, URISyntaxException {
-        return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
-    }
+  public ServiceResponse resume(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
+  }
 
 //	public ServiceResponse resume(Util.URLS url, String data)  {
 //		return resume(url.getValue(), data);
@@ -167,57 +168,57 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.sendRequest(url, data);
     }*/
 
-    public void validateResponse(String response, APIResult.Status expectedResponse,
-                                 String filename) throws JAXBException, IOException {
+  public void validateResponse(String response, APIResult.Status expectedResponse,
+                               String filename) throws JAXBException, IOException {
 
-        JAXBContext jc = JAXBContext.newInstance(APIResult.class);
+    JAXBContext jc = JAXBContext.newInstance(APIResult.class);
 
-        Unmarshaller u = jc.createUnmarshaller();
+    Unmarshaller u = jc.createUnmarshaller();
 
-        APIResult result = (APIResult) u.unmarshal(new InputSource(new StringReader(response)));
+    APIResult result = (APIResult) u.unmarshal(new InputSource(new StringReader(response)));
 
-        Assert.assertEquals(expectedResponse, result.getStatus(),
-                "Status message does not match with expected one!");
+    Assert.assertEquals(expectedResponse, result.getStatus(),
+      "Status message does not match with expected one!");
 
-        if (expectedResponse.equals(APIResult.Status.FAILED)) {
-            //now to check for the correct error message!
-            Assert.assertEquals(result.getMessage(), Util.getExpectedErrorMessage(filename),
-                    "Error message does not match in failure case!");
-        } else {
-            Assert.assertEquals(result.getMessage(), "Validate successful",
-                    "validation success message does not match in valid case!");
-        }
-
-        //System.out.println(result.getMessage());
-
-
-        //       SchemaFactory factory=SchemaFactory.newInstance("http://www.w3
-        // .org/2001/XMLSchema");
-        //
-        //       File schemaLocation = new File("src/test/resources/xsd/process.xsd");
-        //       Schema schema = factory.newSchema(schemaLocation);
-        //
-        //       Validator validator = schema.newValidator();
-        //
-        //       SAXSource source=new SAXSource(new InputSource(new StringReader(response)));
-        //
-        //       validator.validate(source);
-
-
+    if (expectedResponse.equals(APIResult.Status.FAILED)) {
+      //now to check for the correct error message!
+      Assert.assertEquals(result.getMessage(), Util.getExpectedErrorMessage(filename),
+        "Error message does not match in failure case!");
+    } else {
+      Assert.assertEquals(result.getMessage(), "Validate successful",
+        "validation success message does not match in valid case!");
     }
 
-    public String readEntityName(String data) throws JAXBException {
+    //System.out.println(result.getMessage());
 
 
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
+    //       SchemaFactory factory=SchemaFactory.newInstance("http://www.w3
+    // .org/2001/XMLSchema");
+    //
+    //       File schemaLocation = new File("src/test/resources/xsd/process.xsd");
+    //       Schema schema = factory.newSchema(schemaLocation);
+    //
+    //       Validator validator = schema.newValidator();
+    //
+    //       SAXSource source=new SAXSource(new InputSource(new StringReader(response)));
+    //
+    //       validator.validate(source);
 
-        Unmarshaller u = jc.createUnmarshaller();
 
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
+  }
 
-        return processElement.getName();
+  public String readEntityName(String data) throws JAXBException {
 
-    }
+
+    JAXBContext jc = JAXBContext.newInstance(Process.class);
+
+    Unmarshaller u = jc.createUnmarshaller();
+
+    Process processElement = (Process) u.unmarshal((new StringReader(data)));
+
+    return processElement.getName();
+
+  }
 
 
     /*@Override
@@ -229,26 +230,26 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return InstanceUtil.sendRequestProcessInstance(url);
     }*/
 
-    @Override
-    public ProcessInstancesResult getRunningInstance(
-            URLS processRuningInstance, String name) throws IOException, URISyntaxException {
+  @Override
+  public ProcessInstancesResult getRunningInstance(
+    URLS processRuningInstance, String name) throws IOException, URISyntaxException {
 
-        String url =
-                this.hostname + URLS.INSTANCE_RUNNING.getValue() + "/" + "process/" + name + "/";
+    String url =
+      this.hostname + URLS.INSTANCE_RUNNING.getValue() + "/" + "process/" + name + "/";
 
-        return InstanceUtil.createAndsendRequestProcessInstance(url, null, allColo);
-    }
+    return InstanceUtil.createAndsendRequestProcessInstance(url, null, allColo);
+  }
 
-    @Override
-    public ProcessInstancesResult getProcessInstanceStatus(String EntityName, String params) throws IOException, URISyntaxException {
+  @Override
+  public ProcessInstancesResult getProcessInstanceStatus(String EntityName, String params) throws IOException, URISyntaxException {
 
 
-        String url =
-                this.hostname + URLS.INSTANCE_STATUS.getValue() + "/" + "process/" + EntityName +
-                        "/";
+    String url =
+      this.hostname + URLS.INSTANCE_STATUS.getValue() + "/" + "process/" + EntityName +
+        "/";
 
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
-    }
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  }
 
 
     /*@Override
@@ -270,32 +271,32 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
 
-    @Override
-    public ProcessInstancesResult getProcessInstanceSuspend(
-            String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + URLS.INSTANCE_SUSPEND.getValue() + "/" + "process/" + EntityName +
-                        "/";
+  @Override
+  public ProcessInstancesResult getProcessInstanceSuspend(
+    String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + URLS.INSTANCE_SUSPEND.getValue() + "/" + "process/" + EntityName +
+        "/";
 
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
 
-    }
+  }
 
-    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + URLS.INSTANCE_RESUME.getValue() + "/" + "process/" + EntityName +
-                        "/";
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + URLS.INSTANCE_RESUME.getValue() + "/" + "process/" + EntityName +
+        "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
-    }
+  }
 
-    public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + URLS.INSTANCE_KILL.getValue() + "/" + "process/" + EntityName + "/";
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + URLS.INSTANCE_KILL.getValue() + "/" + "process/" + EntityName + "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
-    }
+  }
 
     /*public ServiceResponse updateProcess(String processName, String newProcess)  {
 
@@ -375,13 +376,13 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                         entityName);
     }  */
 
-    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params) throws IOException, URISyntaxException {
-        String url =
-                this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
-                        "/";
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
+        "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
-    }
+  }
 
     /*@Override
     public ProcessInstancesResult getInstanceRerun(String EntityName, String params)
@@ -512,18 +513,18 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.executeCommand(command);
     }*/
 
-    public String list() throws IOException, InterruptedException {
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
-    }
+  public String list() throws IOException, InterruptedException {
+    return Util.executeCommand(
+      BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
+  }
 
-    @Override
-    public String getDependencies(String entityName) throws IOException, InterruptedException {
+  @Override
+  public String getDependencies(String entityName) throws IOException, InterruptedException {
 
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -dependency -url " + this.hostname +
-                        " -type process -name " + entityName);
-    }
+    return Util.executeCommand(
+      BASE_COMMAND + " entity -dependency -url " + this.hostname +
+        " -type process -name " + entityName);
+  }
 
     /*public String getProcessInstanceStatusCLI(String processName,
                                               String start, String end, int runid, String type)
@@ -567,79 +568,85 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     }*/
 
-    @Override
-    public ServiceResponse submitEntity(URLS url, String data) throws IOException {
+  @Override
+  public ServiceResponse submitEntity(URLS url, String data) throws IOException {
 
-        return submitEntity(this.hostname + url.getValue(), data);
-    }
+    return submitEntity(this.hostname + url.getValue(), data);
+  }
 
-    @Override
-    public ServiceResponse submitAndSchedule(URLS url, String data) throws IOException {
-        return submitAndSchedule(this.hostname + url.getValue(), data);
-    }
+  @Override
+  public ServiceResponse submitAndSchedule(URLS url, String data) throws IOException {
+    return submitAndSchedule(this.hostname + url.getValue(), data);
+  }
 
-    @Override
-    public ServiceResponse resume(URLS url, String data) throws JAXBException, IOException, URISyntaxException {
-        return resume(this.hostname + url.getValue(), data);
-    }
+  @Override
+  public ServiceResponse resume(URLS url, String data) throws JAXBException, IOException, URISyntaxException {
+    return resume(this.hostname + url.getValue(), data);
+  }
 
-    @Override
-    public ServiceResponse getStatus(URLS url, String data) throws IOException, URISyntaxException, JAXBException {
-        return getStatus(this.hostname + url.getValue(), data);
-    }
+  @Override
+  public ServiceResponse getStatus(URLS url, String data) throws IOException, URISyntaxException, JAXBException {
+    return getStatus(this.hostname + url.getValue(), data);
+  }
 
-    @Override
-    public ServiceResponse schedule(URLS scheduleUrl, String processData) throws IOException, URISyntaxException, JAXBException {
-        return schedule(this.hostname + scheduleUrl.getValue(), processData);
-    }
+  @Override
+  public ServiceResponse schedule(URLS scheduleUrl, String processData) throws IOException, URISyntaxException, JAXBException {
+    return schedule(this.hostname + scheduleUrl.getValue(), processData);
+  }
 
-    @Override
-    public ServiceResponse delete(URLS deleteUrl, String data) throws IOException, URISyntaxException, JAXBException {
+  @Override
+  public ServiceResponse delete(URLS deleteUrl, String data) throws IOException, URISyntaxException, JAXBException {
 
-        return delete(this.hostname + deleteUrl.getValue(), data);
-    }
+    return delete(this.hostname + deleteUrl.getValue(), data);
+  }
 
-    @Override
-    public ServiceResponse suspend(URLS suspendUrl, String data) throws JAXBException, IOException, URISyntaxException {
+  @Override
+  public ServiceResponse suspend(URLS suspendUrl, String data) throws JAXBException, IOException, URISyntaxException {
 
-        return suspend(this.hostname + suspendUrl.getValue(), data);
-    }
+    return suspend(this.hostname + suspendUrl.getValue(), data);
+  }
 
-    @Override
-    public List<String> getArchiveInfo() throws IOException, JSchException {
+  @Override
+  public List<String> getArchiveInfo() throws IOException, JSchException {
 
-        return Util.getArchiveStoreInfo(this);
-    }
+    return Util.getArchiveStoreInfo(this);
+  }
 
-    @Override
-    public List<String> getStoreInfo() throws IOException, JSchException {
+  @Override
+  public List<String> getStoreInfo() throws IOException, JSchException {
 
-        return Util.getProcessStoreInfo(this);
-    }
+    return Util.getProcessStoreInfo(this);
+  }
 
-    @Override
-    public ServiceResponse getEntityDefinition(URLS getUrl, String data) throws IOException, URISyntaxException, JAXBException {
-        return getEntityDefinition(this.hostname + getUrl.getValue(), data);
-    }
+  @Override
+  public ServiceResponse getEntityDefinition(URLS getUrl, String data) throws IOException, URISyntaxException, JAXBException {
+    return getEntityDefinition(this.hostname + getUrl.getValue(), data);
+  }
 
-    @Override
-    public ServiceResponse update(String oldEntity, String newEntity) throws IOException, JAXBException {
+  @Override
+  public ServiceResponse update(String oldEntity, String newEntity) throws IOException, JAXBException {
 
-        String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" +
-                Util.readEntityName(oldEntity);
-        return Util.sendRequest(url + colo, newEntity);
-    }
+    String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" +
+      Util.readEntityName(oldEntity);
+    return Util.sendRequest(url + colo, newEntity);
+  }
 
-    @Override
-    public String toString(Object object) throws JAXBException {
-        Process processObject = (Process) object;
+  @Override
+  public ServiceResponse update(String oldEntity, String newEntity, String updateTime) throws IOException, JAXBException {
+    return updateRequestHelper(oldEntity, newEntity,
+       updateTime,URLS.PROCESS_UPDATE.getValue());
+  }
 
-        JAXBContext context = JAXBContext.newInstance(Process.class);
-        Marshaller um = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-        um.marshal(processObject, writer);
-        return writer.toString();
-    }
+  @Override
+  public String toString(Object object) throws JAXBException {
+    Process processObject = (Process) object;
+
+    JAXBContext context = JAXBContext.newInstance(Process.class);
+    Marshaller um = context.createMarshaller();
+    StringWriter writer = new StringWriter();
+    um.marshal(processObject, writer);
+    return writer.toString();
+  }
 }
 
 
