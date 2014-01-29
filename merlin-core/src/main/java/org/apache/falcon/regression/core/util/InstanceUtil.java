@@ -1621,5 +1621,11 @@ public class InstanceUtil {
         InstanceUtil.createHDFSFolders(colo, dataFolder);
         return dataFolder;
     }
+
+  public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
+    Feed feedElement = InstanceUtil.getFeedElement(feed);
+    feedElement.setFrequency(f);
+    return InstanceUtil.feedElementToString(feedElement);
+  }
 }
 
