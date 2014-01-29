@@ -168,7 +168,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         dualComparison(UA2Bundle, server3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         waitingForBundleFinish(server3, oldBundleId, 5);
         int finalNumberOfInstances =
@@ -223,7 +223,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             Thread.sleep(10000);
         }
 
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
 
         String prismString = getResponse(prism, UA2Bundle, true);
@@ -382,7 +382,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated
         // correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
     }
@@ -418,7 +418,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated
         // correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), false);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
     }
@@ -463,7 +463,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated
         // correctly.
-        verifyNewBundleCreation(server3, oldBundleId, 0,
+        Util.verifyNewBundleCreation(server3, oldBundleId, 0,
                 Util.readEntityName(UA2Bundle.getProcessData()),
                 false);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
@@ -536,7 +536,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                 .getStatus() != APIResult.Status.SUCCEEDED) {
         }
 
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), false);
 
         int i = 0;
@@ -623,7 +623,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         dualComparison(UA2Bundle, server3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), false);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
         Util.assertSucceeded(server3.getProcessHelper()
@@ -742,7 +742,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                 Thread.sleep(30000);
             }
             Assert.assertTrue(doesExist, "Er! The desired concurrency levels are never reached!!!");
-            verifyNewBundleCreation(server3, InstanceUtil
+            Util.verifyNewBundleCreation(server3, InstanceUtil
                     .getLatestBundleID(server3,
                             Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS),
                     coordCount, Util.readEntityName(UA2Bundle.getProcessData()), false);
@@ -816,7 +816,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         dualComparison(UA2Bundle, server3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
@@ -891,7 +891,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         dualComparison(UA2Bundle, server3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
@@ -957,7 +957,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         dualComparison(UA2Bundle, server3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
@@ -1029,7 +1029,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         dualComparison(UA2Bundle, server3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
@@ -1096,7 +1096,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             dualComparisonFailure(UA2Bundle, server3);
             //ensure that the running process has new coordinators created; while the submitted
             // one is updated correctly.
-            verifyNewBundleCreation(server3, oldBundleId, coordCount,
+            Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), false);
             checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
             waitForProcessToReachACertainState(server3, UA2Bundle, Job.Status.RUNNING);
@@ -1111,7 +1111,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             prismString = getResponse(prism, UA2Bundle, true);
             dualComparisonFailure(UA2Bundle, server3);
             UA2Bundle.verifyDependencyListing();
-            verifyNewBundleCreation(server3, oldBundleId, coordCount,
+            Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
             checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(server3, oldBundleId);
@@ -1167,7 +1167,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             System.out.println("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), false);
 
         String prismString = getResponse(prism, UA2Bundle, true);
@@ -1306,7 +1306,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated
         // correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
     }
@@ -1359,7 +1359,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         dualComparison(UA2Bundle, server3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
     }
@@ -1397,7 +1397,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                 prism.getProcessHelper()
                         .update(UA2Bundle.getProcessData(), UA2Bundle.getProcessData()));
 
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
 
         String prismString = dualComparison(UA2Bundle, server2);
@@ -1514,7 +1514,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                         .update(UA2Bundle.getProcessData(), UA2Bundle.getProcessData()));
         Util.assertSucceeded(server3.getProcessHelper()
                 .resume(URLS.RESUME_URL, UA2Bundle.getProcessData()));
-        verifyNewBundleCreation(server3, oldBundleId, coordCount,
+        Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
 
         String prismString = dualComparison(UA2Bundle, server2);
@@ -1604,21 +1604,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
 
     }
 
-    private void verifyNewBundleCreation(ColoHelper coloHelper, String originalBundleId,
-                                         int originalBundleCount,
-                                         String processName, boolean shouldBeCreated)
-            throws Exception {
-        String newBundleId = InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
-        if (shouldBeCreated) {
-            Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
-                    "eeks! new bundle is not getting created!!!!");
-            System.out.println("old bundleId=" + originalBundleId);
-            System.out.println("new bundleId=" + newBundleId);
-        } else {
-            AssertJUnit.assertEquals("eeks! new bundle is getting created!!!!", newBundleId,
-                    originalBundleId);
-        }
-    }
+
 
     private void waitForProcessToReachACertainState(ColoHelper coloHelper, Bundle bundle,
                                                     Job.Status state)
