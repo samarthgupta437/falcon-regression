@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 
 import javax.xml.bind.JAXBContext;
@@ -287,7 +288,14 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    @Override
+  @Override
+  public ServiceResponse update(String oldEntity,
+                                String newEntity,
+                                String updateTime) throws IOException, JAXBException {
+    return null;
+  }
+
+  @Override
     public String toString(Object object) throws JAXBException {
         Cluster processObject = (Cluster) object;
 
