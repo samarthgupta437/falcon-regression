@@ -1933,16 +1933,23 @@ public class Util {
 
   }
 
-  public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId)
+  public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId, ENTITY_TYPE type)
     throws OozieClientException {
     XOozieClient client = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
     BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
     for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-      if (coord.getAppName().contains("DEFAULT")) {
+      if ( (coord.getAppName().contains("DEFAULT") && ENTITY_TYPE.PROCESS
+        .equals(type)) || (coord.getAppName().contains("REPLICATION") && ENTITY_TYPE
+        .FEED
+        .equals(type))) {
         return client.getCoordJobInfo(coord.getId());
       }
-    }
+      else {
+        System.out.println("Desired coord does not exists");
+      }
+     }
+
     return null;
   }
 
@@ -2112,14 +2119,17 @@ public class Util {
 
   public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId)
     throws OozieClientException {
-    return getDefaultOozieCoord(prismHelper, bundleId).getActions().size();
+    return getDefaultOozieCoord(prismHelper, bundleId,
+      ENTITY_TYPE.PROCESS).getActions().size();
   }
 
   public static List<String> getActionsNominalTime(PrismHelper prismHelper,
-                                       String bundleId)
+                                                   String bundleId,
+                                                   ENTITY_TYPE type)
     throws OozieClientException {
     List<String> nominalTime = new ArrayList<String>();
-    List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper, bundleId).getActions();
+    List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
+      bundleId, type).getActions();
     for(CoordinatorAction action : actions){
       nominalTime.add(action.getNominalTime().toString());
     }
@@ -2449,7 +2459,8 @@ public class Util {
                                              List<String>
                                                initialNominalTimes,
                                              String processName,
-                                             boolean shouldBeCreated) throws
+                                             boolean shouldBeCreated,
+                                             ENTITY_TYPE type) throws
     Exception {
 
     String newBundleId = InstanceUtil.getLatestBundleID(cluster, processName, ENTITY_TYPE.PROCESS);
@@ -2459,21 +2470,21 @@ public class Util {
       System.out.println("old bundleId=" + originalBundleId);
       System.out.println("new bundleId=" + newBundleId);
       Util.validateNumberOfWorkflowInstances(cluster,
-        initialNominalTimes, originalBundleId, newBundleId);
+        initialNominalTimes, originalBundleId, newBundleId, type);
     } else {
       Assert.assertEquals(newBundleId,
         originalBundleId,"eeks! new bundle is getting created!!!!");
     }
   }
 
-  private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId) throws OozieClientException {
+  private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId, ENTITY_TYPE type) throws OozieClientException {
 
     List<String> nominalTimesOriginalAndNew = Util.getActionsNominalTime
       (cluster,
-      originalBundleId);
+      originalBundleId, type);
 
     nominalTimesOriginalAndNew.addAll(Util.getActionsNominalTime(cluster,
-      newBundleId));
+      newBundleId, type));
 
     initialNominalTimes.removeAll(nominalTimesOriginalAndNew) ;
 
