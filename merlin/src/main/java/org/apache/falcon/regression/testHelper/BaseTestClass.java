@@ -63,7 +63,8 @@ public class BaseTestClass {
                 serverFS.add(server.getClusterHelper().getHadoopFS());
 
                 serverOC.add(server.getClusterHelper().getOozieClient());
-                HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size() - 1));
+                HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size
+                  ()-1));
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(1);
@@ -82,7 +83,7 @@ public class BaseTestClass {
 
     private List<ColoHelper> getServers() {
         ArrayList<ColoHelper> returnList = new ArrayList<ColoHelper>();
-        for (int i = 0; i < serverNames.size() - 1; i++)
+        for (int i = 0; i < serverNames.size(); i++)
             returnList.add(new ColoHelper(MERLIN_PROPERTIES, serverNames.get(i)));
 
         return returnList;
