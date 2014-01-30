@@ -57,7 +57,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     public ProcessInstanceRerunTest() throws IOException {
         super();
         cluster = servers.get(1);
-        clusterFS = cluster.getClusterHelper().getHadoopFS();
+        clusterFS = serverFS.get(1);
 
     }
 
