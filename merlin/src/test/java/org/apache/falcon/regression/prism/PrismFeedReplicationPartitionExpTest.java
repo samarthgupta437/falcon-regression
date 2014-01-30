@@ -195,24 +195,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // place normally
         //partition is left blank
 
-        bundle1.setCLusterColo(server1Colo);
-        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
+      Bundle.submitCluster(bundle1, bundle2, bundle3);
 
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-        bundle2.setCLusterColo(server2Colo);
-        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-
-        bundle3.setCLusterColo(server3Colo);
-        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle3.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-        String startTimeUA1 = "2012-10-01T12:05Z";
+      String startTimeUA1 = "2012-10-01T12:05Z";
         String startTimeUA2 = "2012-10-01T12:10Z";
 
 
@@ -239,7 +224,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
         Util.print("feed: " + feed);
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+      ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
         AssertUtil.assertFailed(r, "submit of feed should have fialed as the partiton in source is blank");
     }
