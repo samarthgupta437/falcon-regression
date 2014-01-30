@@ -85,6 +85,7 @@ public class ProcessLibPath extends BaseSingleClusterTests {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle.generateUniqueBundle();
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundle.setProcessPeriodicity(5, TimeUnit.minutes);
