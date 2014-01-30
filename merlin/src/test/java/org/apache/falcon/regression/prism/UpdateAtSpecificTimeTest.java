@@ -32,12 +32,16 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.oozie.client.OozieClientException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.text.ParseException;
 import java.util.List;
 
 
@@ -58,7 +62,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @BeforeMethod(alwaysRun = true)
-  public void setup(Method method) throws Exception {
+  public void setup(Method method) throws IOException, JAXBException {
     Util.print("test name: " + method.getName());
     b = Util.readELBundles()[0][0];
     b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
@@ -66,7 +70,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
-  public void invalidChar_Process() throws Exception {
+  public void invalidChar_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
     b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
     b.submitAndScheduleBundle(prism);
@@ -147,7 +151,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }  */
 
   @AfterMethod(alwaysRun = true)
-  public void tearDown(Method method) throws Exception {
+  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException {
     Util.print("tearDown " + method.getName());
     b.deleteBundle(prism);
   }
