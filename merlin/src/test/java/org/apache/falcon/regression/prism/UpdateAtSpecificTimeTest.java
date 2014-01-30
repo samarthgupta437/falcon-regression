@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.prism;
 
-import junit.framework.Assert;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
@@ -32,7 +31,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.oozie.client.OozieClientException;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -46,9 +45,13 @@ import java.util.List;
 
 
 public class UpdateAtSpecificTimeTest extends BaseTestClass {
-  Bundle b = new Bundle();
-  ColoHelper cluster;
-  FileSystem clusterFS;
+  Bundle bundle1 = new Bundle();
+  Bundle bundle2 = new Bundle();
+  Bundle bundle3 = new Bundle();
+
+  ColoHelper cluster_1, cluster_2, cluster_3;
+  FileSystem clusterFS_1, clusterFS_2, clusterFS_3;
+
   private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
   private final String inputPath = baseHDFSDir +
     "/UpdateAtSpecificTimeTest-data";
@@ -56,36 +59,47 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   public UpdateAtSpecificTimeTest() throws IOException {
     super();
-    cluster = servers.get(0);
-    clusterFS = cluster.getClusterHelper().getHadoopFS();
+    cluster_1 = servers.get(0);
+    clusterFS_1 = serverFS.get(0);
+    cluster_2 = servers.get(1);
+    clusterFS_2 = serverFS.get(1);
+    cluster_3 = servers.get(2);
+    clusterFS_3 = serverFS.get(2);
 
   }
 
   @BeforeMethod(alwaysRun = true)
   public void setup(Method method) throws IOException, JAXBException {
     Util.print("test name: " + method.getName());
-    b = Util.readELBundles()[0][0];
-    b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+    Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+
+    bundle1 = new Bundle(bundle, cluster_1.getEnvFileName(), cluster_1.getPrefix());
+    bundle2 = new Bundle(bundle, cluster_2.getEnvFileName(), cluster_2.getPrefix());
+    bundle3 = new Bundle(bundle, cluster_3.getEnvFileName(), cluster_3.getPrefix());
+
+    bundle1.generateUniqueBundle();
+    bundle2.generateUniqueBundle();
+    bundle3.generateUniqueBundle();
   }
 
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
   public void invalidChar_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
-    b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
+    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
-    b.submitAndScheduleBundle(prism);
-    String oldProcess = b.getProcessData();
-    b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
+    bundle1.submitAndScheduleBundle(prism);
+    String oldProcess = bundle1.getProcessData();
+    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
       InstanceUtil.getTimeWrtSystemTime(100));
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-      b.getProcessData(), "abc");
+      bundle1.getProcessData(), "abc");
     Assert.assertTrue(r.getMessage().contains("java.lang.IllegalArgumentException: abc is not a valid UTC string"));
   }
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
   public void invalidChar_Feed() throws Exception {
 
-    String feed = submitAndScheduleFeed(b);
+    String feed = submitAndScheduleFeed(bundle1);
 
     //update frequency
     Frequency f = new Frequency(21, Frequency.TimeUnit.minutes);
@@ -98,62 +112,135 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
   public void updateTimeInPast_Process() throws Exception {
-    b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
+    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
-    b.submitAndScheduleBundle(prism);
+    bundle1.submitAndScheduleBundle(prism);
     Thread.sleep(15000);
     //get old process details
-    String oldProcess = b.getProcessData();
+    String oldProcess = bundle1.getProcessData();
 
     String oldBundleId = InstanceUtil
-      .getLatestBundleID(cluster,
-        Util.readEntityName(b.getProcessData()), ENTITY_TYPE.PROCESS);
+      .getLatestBundleID(cluster_1,
+        Util.readEntityName(bundle1.getProcessData()), ENTITY_TYPE.PROCESS);
 
-    List<String> initialNominalTimes = Util.getActionsNominalTime(cluster, oldBundleId);
+    List<String> initialNominalTimes = Util.getActionsNominalTime(cluster_1,
+      oldBundleId,ENTITY_TYPE.PROCESS);
 
     // update process by changing process validity
-    b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
+    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
       InstanceUtil.getTimeWrtSystemTime(100));
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-      b.getProcessData(), InstanceUtil.getTimeWrtSystemTime(-10000));
+      bundle1.getProcessData(), InstanceUtil.getTimeWrtSystemTime(-10000));
     AssertUtil.assertSucceeded(r);
 
     //check new coord created with current time
 
-    Util.verifyNewBundleCreation(cluster, oldBundleId, initialNominalTimes,
-      Util.readEntityName(b.getProcessData()), true);
+    Util.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
+      Util.readEntityName(bundle1.getProcessData()), true, ENTITY_TYPE.PROCESS);
   }
 
- /* @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
- enabled = true)
+  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = true)
 
   public void updateTimeInPast_Feed() throws Exception {
 
-    InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-      InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-10)),
+
+    String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-10);
+    String startTimeCluster_target = InstanceUtil.getTimeWrtSystemTime(5);
+
+    String testDataDir = inputPath + "/replication";
+
+    //create test data on cluster_2
+    InstanceUtil.createDataWithinDatesAndPrefix(cluster_2,
+      InstanceUtil.oozieDateToDate(startTimeCluster_source),
       InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(60)),
-      inputPath+"/replication",1);
+      testDataDir, 1);
+
+    //submit clusters
+    Bundle.submitCluster(bundle1, bundle2, bundle3);
+
+    //create desired feed
+    String feed = bundle1.getDataSets().get(0);
+
+    //cluster_1 is target, cluster_2 is source and cluster_3 is neutral
+
+    feed = InstanceUtil.setFeedCluster(feed,
+      XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+      XmlUtil.createRtention("days(100000)", ActionType.DELETE), null,
+      ClusterType.SOURCE, null, null);
+
+    feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_source, "2099-10-01T12:10Z"),
+      XmlUtil.createRtention("days(100000)", ActionType.DELETE),
+      Util.readClusterName(bundle3.getClusters().get(0)), null, null, null);
+
+    feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_target, "2099-10-01T12:25Z"),
+      XmlUtil.createRtention("days(100000)", ActionType.DELETE),
+      Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+      null,
+      testDataDir + dateTemplate);
+
+    feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_source, "2099-01-01T00:00Z"),
+      XmlUtil.createRtention("days(100000)", ActionType.DELETE),
+      Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+      null, testDataDir + dateTemplate);
+
+    Util.print("feed: " + feed);
 
 
+    //submit and schedule feed
+    ServiceResponse r = prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+    Thread.sleep(10000);
+    AssertUtil.assertSucceeded(r);
 
+   try {
+    //save initial bundle info
+    String oldBundleId = InstanceUtil
+      .getLatestBundleID(cluster_1,
+        Util.readEntityName(feed), ENTITY_TYPE.FEED);
+
+    List<String> initialNominalTimes = Util.getActionsNominalTime(cluster_1,
+      oldBundleId,ENTITY_TYPE.FEED);
 
 
     //update frequency
-    Frequency f = new Frequency(21, Frequency.TimeUnit.minutes);
+    Frequency f = new Frequency(7, Frequency.TimeUnit.minutes);
     String updatedFeed = InstanceUtil.setFeedFrequency(feed, f);
 
-    ServiceResponse r = prism.getFeedHelper().update(feed, updatedFeed,
+    r = prism.getFeedHelper().update(feed, updatedFeed,
       InstanceUtil.getTimeWrtSystemTime(-10000));
     AssertUtil.assertSucceeded(r);
-    Thread.sleep(15000);
+    Thread.sleep(60000);
+
+    //check correct number of coord exists or not
+    Assert.assertEquals(InstanceUtil
+      .checkIfFeedCoordExist(cluster_2.getFeedHelper(), Util.readDatasetName(feed),
+        "REPLICATION"), 2);
+    Assert.assertEquals(InstanceUtil
+      .checkIfFeedCoordExist(cluster_2.getFeedHelper(), Util.readDatasetName(feed),
+        "RETENTION"), 2);
+    Assert.assertEquals(InstanceUtil
+      .checkIfFeedCoordExist(cluster_1.getFeedHelper(), Util.readDatasetName(feed),
+        "RETENTION"), 2);
+    Assert.assertEquals(InstanceUtil
+      .checkIfFeedCoordExist(cluster_3.getFeedHelper(), Util.readDatasetName(feed),
+        "RETENTION"), 2);
 
 
-  }  */
+    //verify some instance of replication has not gone missing
+    Util.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
+      Util.readEntityName(feed), true,ENTITY_TYPE.FEED);
+   }
+   finally{
+     prism.getFeedHelper().delete(Util.URLS.DELETE_URL,feed);
+   }
+
+  }
+
 
   @AfterMethod(alwaysRun = true)
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException {
     Util.print("tearDown " + method.getName());
-    b.deleteBundle(prism);
+    bundle1.deleteBundle(prism);
   }
 
 
