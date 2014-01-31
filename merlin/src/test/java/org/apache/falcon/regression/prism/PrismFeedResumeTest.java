@@ -21,6 +21,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.oozie.client.Job;
@@ -103,17 +104,17 @@ public class PrismFeedResumeTest extends BaseMultiClusterTests {
         //suspend using prismHelper
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle1.getDataSets().get(0)));
         //verify
-        checkStatus(server1, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
         checkAndCompareStatus(server2, bundle2, Job.Status.RUNNING);
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle2.getDataSets().get(0)));
         //suspend on the other one
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle2.getDataSets().get(0)));
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
         Util.assertFailed(server1.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle1.getDataSets().get(0)));
-        checkStatus(server1, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
         Util.assertFailed(server2.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle2.getDataSets().get(0)));
-        checkStatus(server2, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -146,8 +147,8 @@ public class PrismFeedResumeTest extends BaseMultiClusterTests {
         for (int i = 0; i < 2; i++) {
             //suspend on the other one
             Util.assertSucceeded(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle2.getDataSets().get(0)));
-            checkStatus(server1, bundle1, Job.Status.RUNNING);
-            checkStatus(server2, bundle2, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
         }
 
         for (int i = 0; i < 2; i++) {
@@ -223,24 +224,24 @@ public class PrismFeedResumeTest extends BaseMultiClusterTests {
         //suspend using prismHelper
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle1.getDataSets().get(0)));
         //verify
-        checkStatus(server1, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
         checkAndCompareStatus(server2, bundle2, Job.Status.RUNNING);
 
         //suspend using prismHelper
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle1.getDataSets().get(0)));
         //verify
-        checkStatus(server1, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
         checkAndCompareStatus(server2, bundle2, Job.Status.RUNNING);
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle2.getDataSets().get(0)));
         //suspend on the other one
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle2.getDataSets().get(0)));
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
 
         Util.assertFailed(server2.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle2.getDataSets().get(0)));
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundle2.getDataSets().get(0)));
-        checkStatus(server1, bundle1, Job.Status.KILLED);
-        checkStatus(server2, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -285,7 +286,7 @@ public class PrismFeedResumeTest extends BaseMultiClusterTests {
     }
 
     private void checkAndCompareStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
-        checkStatus(coloHelper, bundle, expectedStatus);
+        AssertUtil.checkStatus(coloHelper.getFeedHelper().getOozieClient(), ENTITY_TYPE.FEED, bundle, expectedStatus);
         String entity = bundle.getDataSets().get(0);
         Assert.assertEquals(Util.parseResponse(prism.getFeedHelper().getStatus(Util.URLS.STATUS_URL, entity)).getMessage(),
                 coloHelper.getFeedHelper().getColo().split("=")[1] + "/" + expectedStatus);
@@ -294,8 +295,4 @@ public class PrismFeedResumeTest extends BaseMultiClusterTests {
                 + Util.parseResponse(coloHelper.getFeedHelper().getStatus(Util.URLS.STATUS_URL, entity)).getMessage());
     }
 
-    private void checkStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
-        Assert.assertTrue(Util.verifyOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, expectedStatus));
-    }
 }

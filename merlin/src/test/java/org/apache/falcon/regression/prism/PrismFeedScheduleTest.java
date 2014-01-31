@@ -20,11 +20,11 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.oozie.client.Job;
-import org.testng.Assert;
 import org.testng.TestNGException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -55,17 +55,12 @@ public class PrismFeedScheduleTest extends BaseMultiClusterTests{
             submitAndScheduleFeed(UA1Bundle);
             Util.assertSucceeded(prism.getFeedHelper()
                     .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-            Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, UA1Bundle, Job.Status.SUSPENDED);
             submitAndScheduleFeed(UA2Bundle);
-            Assert.assertTrue(Util.verifyOozieJobStatus(server2.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
-            Assert.assertTrue(Util.getOozieJobStatus(server2.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS) != Job.Status.RUNNING);
-            Assert.assertTrue(Util.verifyOozieJobStatus(server1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(UA1Bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
-            Assert.assertTrue(Util.getOozieJobStatus(server1.getFeedHelper().getOozieClient(),
-                    Util.readDatasetName(UA2Bundle.getDataSets().get(0)), ENTITY_TYPE.PROCESS) != Job.Status.RUNNING);
+            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, UA1Bundle, Job.Status.SUSPENDED);
+            AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());

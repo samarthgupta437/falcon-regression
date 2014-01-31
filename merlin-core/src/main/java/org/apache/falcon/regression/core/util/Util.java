@@ -161,17 +161,6 @@ public class Util {
     return properties.getProperty(filename);
   }
 
-  public static File[] getFiles(String directoryPath) throws URISyntaxException {
-    if (directoryPath.contains("/test-classes"))
-      directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
-        + "/test-classes".length() + 1, directoryPath.length());
-    System.out.println("directoryPath: " + directoryPath);
-    URL url = Util.class.getResource("/" + directoryPath);
-    System.out.println("url" + url);
-    File dir = new File(url.toURI());
-    return dir.listFiles();
-  }
-
   public static String fileToString(File file) throws IOException {
 
     StringBuilder fileData = new StringBuilder(1000);
@@ -308,7 +297,10 @@ public class Util {
     }
     session.setConfig(config);
 
+
     session.connect();
+
+
 
     Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
 
@@ -351,6 +343,19 @@ public class Util {
     session.disconnect();
 
     return data;
+  }
+
+  public static File[] getFiles(String directoryPath) throws URISyntaxException {
+    if (directoryPath.contains("/test-classes"))
+      directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
+        + "/test-classes".length() + 1, directoryPath.length());
+    System.out.println("directoryPath: " + directoryPath);
+    URL url = Util.class.getResource("/" + directoryPath);
+    System.out.println("url" + url);
+    File dir = new File(url.toURI());
+    File[] files = dir.listFiles();
+    Arrays.sort(files);
+    return files;
   }
 
   public static String readEntityName(String data) throws JAXBException {
@@ -879,7 +884,8 @@ public class Util {
 
     String feedPath = getFeedPath(feed);
     int depth = feedPath.split(dir)[1].split("/").length - 1;
-    List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper, new Path(dir), depth);
+    List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper,
+      new Path(dir), depth);
 
     for (Path result : results) {
       int pathDepth = result.toString().split(dir)[1].split("/").length - 1;
