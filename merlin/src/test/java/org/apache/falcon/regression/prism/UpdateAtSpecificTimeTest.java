@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.prism;
 
+import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
@@ -31,6 +32,8 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -48,6 +51,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   Bundle bundle1 = new Bundle();
   Bundle bundle2 = new Bundle();
   Bundle bundle3 = new Bundle();
+  Bundle processBundle = new Bundle();
 
   ColoHelper cluster_1, cluster_2, cluster_3;
   FileSystem clusterFS_1, clusterFS_2, clusterFS_3;
@@ -72,7 +76,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void setup(Method method) throws IOException, JAXBException {
     Util.print("test name: " + method.getName());
     Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
-
     bundle1 = new Bundle(bundle, cluster_1.getEnvFileName(), cluster_1.getPrefix());
     bundle2 = new Bundle(bundle, cluster_2.getEnvFileName(), cluster_2.getPrefix());
     bundle3 = new Bundle(bundle, cluster_3.getEnvFileName(), cluster_3.getPrefix());
@@ -80,26 +83,31 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     bundle1.generateUniqueBundle();
     bundle2.generateUniqueBundle();
     bundle3.generateUniqueBundle();
+
+    processBundle = Util.readELBundles()[0][0];
+    processBundle = new Bundle(processBundle, cluster_1.getEnvFileName(),
+      cluster_1.getPrefix());
+    processBundle.generateUniqueBundle();
   }
 
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
   public void invalidChar_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
-    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
+    processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
-    bundle1.submitAndScheduleBundle(prism);
-    String oldProcess = bundle1.getProcessData();
-    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
+    processBundle.submitAndScheduleBundle(prism);
+    String oldProcess = processBundle.getProcessData();
+    processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
       InstanceUtil.getTimeWrtSystemTime(100));
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-      bundle1.getProcessData(), "abc");
+      processBundle.getProcessData(), "abc");
     Assert.assertTrue(r.getMessage().contains("java.lang.IllegalArgumentException: abc is not a valid UTC string"));
   }
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
   public void invalidChar_Feed() throws Exception {
 
-    String feed = submitAndScheduleFeed(bundle1);
+    String feed = submitAndScheduleFeed(processBundle);
 
     //update frequency
     Frequency f = new Frequency(21, Frequency.TimeUnit.minutes);
@@ -112,35 +120,36 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
   public void updateTimeInPast_Process() throws Exception {
-    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
+    processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
-    bundle1.submitAndScheduleBundle(prism);
+    processBundle.submitAndScheduleBundle(prism);
     Thread.sleep(15000);
     //get old process details
-    String oldProcess = bundle1.getProcessData();
+    String oldProcess = processBundle.getProcessData();
 
     String oldBundleId = InstanceUtil
       .getLatestBundleID(cluster_1,
-        Util.readEntityName(bundle1.getProcessData()), ENTITY_TYPE.PROCESS);
+        Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
     List<String> initialNominalTimes = Util.getActionsNominalTime(cluster_1,
-      oldBundleId,ENTITY_TYPE.PROCESS);
+      oldBundleId, ENTITY_TYPE.PROCESS);
 
     // update process by changing process validity
-    bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
+    processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
       InstanceUtil.getTimeWrtSystemTime(100));
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-      bundle1.getProcessData(), InstanceUtil.getTimeWrtSystemTime(-10000));
+      processBundle.getProcessData(), InstanceUtil.getTimeWrtSystemTime(-10000));
     AssertUtil.assertSucceeded(r);
 
     //check new coord created with current time
 
     Util.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
-      Util.readEntityName(bundle1.getProcessData()), true, ENTITY_TYPE.PROCESS);
+      Util.readEntityName(processBundle.getProcessData()), true,
+      ENTITY_TYPE.PROCESS,true);
   }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
 
   public void updateTimeInPast_Feed() throws Exception {
 
@@ -192,14 +201,14 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Thread.sleep(10000);
     AssertUtil.assertSucceeded(r);
 
-   try {
+
     //save initial bundle info
     String oldBundleId = InstanceUtil
       .getLatestBundleID(cluster_1,
         Util.readEntityName(feed), ENTITY_TYPE.FEED);
 
     List<String> initialNominalTimes = Util.getActionsNominalTime(cluster_1,
-      oldBundleId,ENTITY_TYPE.FEED);
+      oldBundleId, ENTITY_TYPE.FEED);
 
 
     //update frequency
@@ -228,19 +237,147 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     //verify some instance of replication has not gone missing
     Util.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
-      Util.readEntityName(feed), true,ENTITY_TYPE.FEED);
-   }
-   finally{
-     prism.getFeedHelper().delete(Util.URLS.DELETE_URL,feed);
-   }
+      Util.readEntityName(feed), true, ENTITY_TYPE.FEED,true);
+
 
   }
 
+  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = true)
+  public void inNextFewMinutesUpdate_RollForward_Process() throws Exception {
+    /*
+    submit process on 3 clusters. Schedule on 2 clusters. Bring down one of
+    the scheduled cluster. Update with time 5 minutes from now. On running
+    cluster new coord should be created with start time +5 and no instance
+    should be missing. On 3rd cluster where process was only submit,
+    definition should be updated. Bring the down cluster up. Update with same
+     definition again, now the recently up cluster should also have new
+     coords.
+     */
+
+    String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
+    processBundle.setProcessValidity(startTime,
+      InstanceUtil.getTimeWrtSystemTime(60));
+    processBundle.addClusterToBundle(bundle2.getClusters().get(0), ClusterType.SOURCE);
+    processBundle.addClusterToBundle(bundle3.getClusters().get(0), ClusterType.SOURCE);
+    processBundle.submitBundle(prism);
+
+    try {
+
+    //schedule of 2 cluster
+    cluster_1.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL,
+      processBundle.getProcessData());
+
+    cluster_2.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL,
+      processBundle.getProcessData());
+
+    Thread.sleep(30000);
+
+    //shut down cluster_2
+    Util.shutDownService(cluster_2.getProcessHelper());
+    Thread.sleep(5000);
+
+    // save old data before update
+     String oldProcess = processBundle.getProcessData();
+    String oldBundleID_cluster1 = InstanceUtil
+      .getLatestBundleID(cluster_1,
+        Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+    String oldBundleID_cluster2 = InstanceUtil
+      .getLatestBundleID(cluster_2,
+        Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+
+    List<String> oldNominalTimes_cluster1 = Util.getActionsNominalTime
+      (cluster_1,
+      oldBundleID_cluster1, ENTITY_TYPE.PROCESS);
+
+    List<String> oldNominalTimes_cluster2 = Util.getActionsNominalTime
+      (cluster_2,
+        oldBundleID_cluster2, ENTITY_TYPE.PROCESS);
+
+    //update process validity
+    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime,5),
+      InstanceUtil.getTimeWrtSystemTime(80));
+
+    //send update request
+    String updateTime = InstanceUtil.getTimeWrtSystemTime(5);
+    ServiceResponse r = prism.getProcessHelper().update(oldProcess, processBundle.getProcessData(),updateTime
+      );
+    AssertUtil.assertPartial(r);
+
+    Thread.sleep(15000);
+    //verify new bundle on cluster_1 and definition on cluster_3
+    Util.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
+      Util.readEntityName(oldProcess), true, ENTITY_TYPE.PROCESS,false);
+
+    Util.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
+      oldNominalTimes_cluster2,
+      Util.readEntityName(oldProcess), false, ENTITY_TYPE.PROCESS,false);
+
+    String definition = Util.getEntityDefinition(cluster_3,
+      processBundle.getProcessData(), true);
+
+    Diff diff = XMLUnit.compareXML(definition, processBundle.getProcessData());
+    System.out.println(diff);
+
+    //start the stopped cluster_2
+    Util.startService(cluster_2.getProcessHelper());
+    Thread.sleep(20000);
+
+    String newBundleID_cluster1 = InstanceUtil
+      .getLatestBundleID(cluster_1,
+        Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+
+    //send second update request
+    r = prism.getProcessHelper().update(oldProcess,
+      processBundle.getProcessData(),
+      updateTime);
+    AssertUtil.assertSucceeded(r);
+
+
+    // verify new bundle in cluster_2 and no new bundle in cluster_1  and
+    // start time of new coord
+    Util.verifyNewBundleCreation(cluster_1, newBundleID_cluster1, oldNominalTimes_cluster1,
+      Util.readEntityName(oldProcess), false, ENTITY_TYPE.PROCESS,false);
+
+    Util.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
+      oldNominalTimes_cluster2,
+      Util.readEntityName(oldProcess), true, ENTITY_TYPE.PROCESS,false);
+
+    String startTime_cluster1 = Util.getCoordStartTime(cluster_1,
+      processBundle.getProcessData(),1);
+
+    String startTime_cluster2 = Util.getCoordStartTime(cluster_2,
+      processBundle.getProcessData(),1);
+
+    //wait till update time is reached
+    InstanceUtil.sleepTill(cluster_1,updateTime);
+
+    Util.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
+      oldNominalTimes_cluster2,
+      Util.readEntityName(oldProcess), true, ENTITY_TYPE.PROCESS,true);
+
+    Util.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
+      Util.readEntityName(oldProcess), true, ENTITY_TYPE.PROCESS,true);
+
+   /* Assert.assertEquals(startTime_cluster1,startTime_cluster2,
+      "start time of coords on both the colos should be same");
+
+    Assert.assertEquals(startTime_cluster1,updateTime,
+      "start time of coords is not what was given");*/
+    }
+    finally {
+      prism.getProcessHelper().delete(Util.URLS.DELETE_URL,
+        processBundle.getProcessData());
+    }
+  }
 
   @AfterMethod(alwaysRun = true)
-  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException {
+  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
     Util.print("tearDown " + method.getName());
+    Util.restartService(cluster_2.getProcessHelper());
     bundle1.deleteBundle(prism);
+    processBundle.deleteBundle(prism);
+    Thread.sleep(30000);
   }
 
 
