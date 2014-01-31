@@ -496,7 +496,7 @@ public class InstanceUtil {
                                            ENTITY_TYPE entityType) throws OozieClientException {
         List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType);
 
-        String max = "";
+        String max = "0";
         int maxID = -1;
         for (String strID : bundleIds) {
             if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
@@ -542,6 +542,7 @@ public class InstanceUtil {
     public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber) throws OozieClientException {
 
+        //sequence start from 0
         List<String> bundleIds = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(), entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
         String bundleID;
@@ -568,7 +569,7 @@ public class InstanceUtil {
     public static String dateToOozieDate(Date dt) throws ParseException {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        Util.print("jadaSystemTime: " + jodaTime);
+        Util.print("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         return fmt.print(jodaTime);
     }
@@ -710,6 +711,7 @@ public class InstanceUtil {
 
         while (true) {
             DateTime sysDate = new DateTime(Util.getSystemDate(prismHelper));
+            sysDate.withZoneRetainFields(DateTimeZone.UTC);
             Util.print("sysDate: " + sysDate + "  finalDate: " + finalDate);
             if (sysDate.compareTo(finalDate) > 0)
                 break;
