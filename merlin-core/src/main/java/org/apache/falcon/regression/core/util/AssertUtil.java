@@ -66,4 +66,10 @@ public class AssertUtil {
         Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
 
+  public static void assertPartial(ServiceResponse response) throws JAXBException {
+    Assert.assertEquals(Util.parseResponse(response).getStatus(),APIResult.Status.PARTIAL);
+    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
+    Assert.assertNotNull(Util.parseResponse(response).getMessage());
+
+  }
 }
