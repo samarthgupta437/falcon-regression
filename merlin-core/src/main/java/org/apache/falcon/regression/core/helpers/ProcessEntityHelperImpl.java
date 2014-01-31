@@ -62,17 +62,11 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     //           url+="/process/"+readEntityName(data);
     //        }
 
-    url += "/process/" + readEntityName(data) + colo;
+    url += "/process/" + Util.readEntityName(data) + colo;
 
-    //System.out.println("printing the response: " + Util.sendRequest(url, data));
 
     return Util.sendRequest(url);
   }
-
-//	public ServiceResponse delete(URLS url, String data)  {
-//		// TODO Auto-generated method stub
-//		return delete(url.getValue(), data);
-//	}
 
   public ServiceResponse getEntityDefinition(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
