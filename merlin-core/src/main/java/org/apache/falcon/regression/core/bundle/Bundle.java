@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.bundle;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
@@ -797,12 +798,8 @@ public class Bundle {
 
     public void setProcessValidity(String startDate, String endDate) throws JAXBException, ParseException {
 
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-
-
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+       Process processElement = InstanceUtil.getProcessElement(this
+         .getProcessData());
 
         for (Cluster cluster : processElement.getClusters().getCluster()) {
 
@@ -813,13 +810,8 @@ public class Bundle {
             cluster.setValidity(validity);
 
         }
-
-
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-        processData = sw.toString();
+        this.setProcessData(InstanceUtil.processToString
+          (processElement));
     }
 
     public void setProcessLatePolicy(LateProcess lateProcess) throws JAXBException {
@@ -983,6 +975,7 @@ public class Bundle {
 
     public void deleteBundle(PrismHelper prismHelper) throws JAXBException, IOException, URISyntaxException {
 
+      if(!StringUtils.isEmpty(getProcessData()))
         prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
 
         for (String dataset : getDataSets()) {
