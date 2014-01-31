@@ -697,6 +697,11 @@ public class InstanceUtil {
         }
         File[] files = new File(inputPath).listFiles();
         assert files != null;
+
+        Path remotePath = new Path(remoteLocation);
+        if(!fs.exists(remotePath))
+          fs.mkdirs(remotePath);
+
         for (final File file : files) {
             if (!file.isDirectory()) {
                 Util.print("putDataInFolder: " + remoteLocation);
@@ -795,6 +800,9 @@ public class InstanceUtil {
                                                       int interval) throws IOException, InterruptedException {
         List<String> dataDates =
                 Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+
+        if(!prefix.endsWith("/"))
+          prefix = prefix+"/";
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
