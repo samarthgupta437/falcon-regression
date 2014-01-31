@@ -26,7 +26,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.oozie.client.Job;
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -64,8 +63,7 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         //now try re-scheduling again
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(response);
@@ -81,8 +79,7 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
         //now schedule the thing
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Util.assertSucceeded(response);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
 
@@ -92,12 +89,10 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
 
         //now suspend
         Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         //now schedule this!
         Util.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
     @Test(groups = {"singleCluster"})
@@ -106,8 +101,7 @@ public class FeedScheduleTest extends BaseSingleClusterTests {
 
         //now suspend
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.KILLED));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
         //now schedule this!
         Util.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
     }

@@ -34,6 +34,7 @@ import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -246,7 +247,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                                         UA2Bundle.getProcessObject().getClusters().getCluster()
                                                 .get(0).getValidity()
                                                 .getEnd())));
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         int expectedNumberOfWorkflows =
                 getExpectedNumberOfWorkflowInstances(newStartTime, InstanceUtil
                         .dateToOozieDate(
@@ -301,7 +302,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             dualComparisonFailure(UA2Bundle, server3);
             //ensure that the running process has new coordinators created; while the submitted
             // one is updated correctly.
-            checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
             waitForProcessToReachACertainState(server3, UA2Bundle, Job.Status.RUNNING);
             while (Util.parseResponse(
@@ -319,7 +320,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
                     UA2Bundle.getProcessObject().getOrder());
             dualComparison(UA2Bundle, server3);
-            checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(server3, oldBundleId);
             int finalNumberOfInstances =
                     InstanceUtil.getProcessInstanceListFromAllBundles(server3,
@@ -384,7 +385,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
 
@@ -420,7 +421,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), false);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
@@ -466,7 +467,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         Util.verifyNewBundleCreation(server3, oldBundleId, 0,
                 Util.readEntityName(UA2Bundle.getProcessData()),
                 false);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         Job.Status status = Util.getOozieJobStatus(server3.getFeedHelper().getOozieClient(),
                 Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
@@ -578,7 +579,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                                         UA2Bundle.getProcessObject().getClusters().getCluster()
                                                 .get(0).getValidity()
                                                 .getEnd())));
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
@@ -625,11 +626,10 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // one is updated correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), false);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         Util.assertSucceeded(server3.getProcessHelper()
                 .resume(URLS.RESUME_URL, UA2Bundle.getProcessData()));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server3.getFeedHelper().getOozieClient(),
-                UA2Bundle.getProcessData(), ENTITY_TYPE.PROCESS, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server3OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         Job.Status status = Util.getOozieJobStatus(server3.getFeedHelper().getOozieClient(),
                 Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
@@ -710,7 +710,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
 
             //ensure that the running process has new coordinators created; while the submitted
             // one is updated correctly.
-            checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
             while (Util
                     .parseResponse(updateProcessConcurrency(UA2Bundle,
@@ -818,7 +818,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // one is updated correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
         int finalNumberOfInstances =
                 InstanceUtil.getProcessInstanceListFromAllBundles(server3,
@@ -893,7 +893,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // one is updated correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
         int finalNumberOfInstances =
                 InstanceUtil.getProcessInstanceListFromAllBundles(server3,
@@ -959,7 +959,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // one is updated correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
 
         int finalNumberOfInstances =
@@ -1031,7 +1031,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // one is updated correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         waitingForBundleFinish(server3, oldBundleId);
 
         int finalNumberOfInstances =
@@ -1098,7 +1098,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             // one is updated correctly.
             Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), false);
-            checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
             waitForProcessToReachACertainState(server3, UA2Bundle, Job.Status.RUNNING);
 
             while (Util.parseResponse(
@@ -1113,7 +1113,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
             UA2Bundle.verifyDependencyListing();
             Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                     Util.readEntityName(UA2Bundle.getProcessData()), true);
-            checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
             waitingForBundleFinish(server3, oldBundleId);
 
             int finalNumberOfInstances =
@@ -1188,7 +1188,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                         .getStart(),
                         UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                 .getValidity().getEnd()));
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         int expectedNumberOfWorkflows =
                 getExpectedNumberOfWorkflowInstances(InstanceUtil.dateToOozieDate(
                         UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
@@ -1255,7 +1255,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                         .getStart(),
                         UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                 .getValidity().getEnd()));
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
     private void setBundleWFPath(Bundle... bundles) throws Exception {
@@ -1308,7 +1308,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
 
@@ -1361,7 +1361,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         // one is updated correctly.
         Util.verifyNewBundleCreation(server3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
 
@@ -1414,7 +1414,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                 getExpectedNumberOfWorkflowInstances(oldStartTime,
                         UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                 .getValidity().getEnd()));
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         int expectedNumberOfWorkflows = getExpectedNumberOfWorkflowInstances(newStartTime,
                 UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                         .getEnd());
@@ -1477,7 +1477,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                 UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                         .getEnd()));
 
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
@@ -1531,7 +1531,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                 getExpectedNumberOfWorkflowInstances(oldStartTime,
                         UA2Bundle.getProcessObject().getClusters().getCluster().get(0)
                                 .getValidity().getEnd()));
-        checkNotStatus(server2, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
     private String setProcessTimeOut(String process, int mag, TimeUnit unit) throws Exception {
@@ -1742,8 +1742,4 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         return null;
     }
 
-    private void checkNotStatus(ColoHelper coloHelper, Bundle bundle, Job.Status expectedStatus) throws Exception {
-        Assert.assertNotEquals(Util.getOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
-                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS), expectedStatus);
-    }
 }
