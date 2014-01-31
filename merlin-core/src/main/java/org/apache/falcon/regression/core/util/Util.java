@@ -24,10 +24,7 @@ import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.Location;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
-import org.apache.falcon.regression.core.generated.feed.Property;
+import org.apache.falcon.regression.core.generated.feed.*;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Output;
 import org.apache.falcon.regression.core.generated.process.Process;
@@ -74,6 +71,7 @@ import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class Util {
