@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
@@ -79,16 +80,14 @@ public class FeedSubmitAndScheduleTest extends BaseSingleClusterTests {
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
                 APIResult.Status.SUCCEEDED);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.RUNNING);
         //try to submitand schedule the same process again
         response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.RUNNING);
     }
 
     @Test(groups = {"singleCluster"})
@@ -114,8 +113,7 @@ public class FeedSubmitAndScheduleTest extends BaseSingleClusterTests {
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
                 APIResult.Status.SUCCEEDED);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.RUNNING);
         response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
@@ -139,14 +137,12 @@ public class FeedSubmitAndScheduleTest extends BaseSingleClusterTests {
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
                 APIResult.Status.SUCCEEDED);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.RUNNING);
         Assert.assertEquals(
                 Util.parseResponse(prism.getFeedHelper()
                         .delete(URLS.DELETE_URL, bundle.getDataSets().get(0)))
                         .getStatusCode(), 200);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.KILLED));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.KILLED);
         response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
@@ -154,8 +150,7 @@ public class FeedSubmitAndScheduleTest extends BaseSingleClusterTests {
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
                 APIResult.Status.SUCCEEDED);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.RUNNING);
     }
 
 
@@ -173,15 +168,13 @@ public class FeedSubmitAndScheduleTest extends BaseSingleClusterTests {
                 APIResult.Status.SUCCEEDED);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
         TimeUnit.SECONDS.sleep(20);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.RUNNING);
         Assert.assertEquals(Util.parseResponse(
                 prism.getFeedHelper()
                         .suspend(URLS.SUSPEND_URL, bundle.getDataSets().get(0)))
                 .getStatusCode(),
                 200);
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.SUSPENDED);
         response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0));
 
@@ -189,8 +182,7 @@ public class FeedSubmitAndScheduleTest extends BaseSingleClusterTests {
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
                 APIResult.Status.SUCCEEDED);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(bundle.getDataSets().get(0)), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle, Job.Status.SUSPENDED);
     }
 }
 

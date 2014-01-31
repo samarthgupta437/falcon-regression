@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
@@ -61,16 +62,14 @@ public class FeedResumeTest extends BaseSingleClusterTests {
     public void resumeSuspendedFeed() throws Exception {
         Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.SUSPENDED));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
 
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
 
@@ -94,15 +93,13 @@ public class FeedResumeTest extends BaseSingleClusterTests {
     public void resumeScheduledFeed() throws Exception {
         Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
 
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        Assert.assertTrue(Util.verifyOozieJobStatus(server1OC,
-                Util.readDatasetName(feed), ENTITY_TYPE.FEED, Job.Status.RUNNING));
+        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 }
