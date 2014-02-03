@@ -208,8 +208,7 @@ public class InstanceUtil {
     }
 
     public static void validateSuccessWOInstances(ProcessInstancesResult r) {
-        Assert.assertTrue(r.getMessage().contains("is successful"));
-        Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
+        Util.assertSucceeded(r);
         if (r.getInstances() != null)
             Assert.assertTrue(false);
     }
@@ -1483,7 +1482,7 @@ public class InstanceUtil {
                 return;
             Thread.sleep(sleepTime);
         }
-        Assert.assertTrue(false, "expceted state of instance was never reached");
+        Assert.assertTrue(false, "expected state of instance was never reached");
     }
 
     private static List<org.apache.oozie.client.CoordinatorAction.Status>
