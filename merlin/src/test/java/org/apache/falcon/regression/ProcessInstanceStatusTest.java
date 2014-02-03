@@ -358,6 +358,6 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        InstanceUtil.validateSuccessWithStatusCode(r, 2);
+        InstanceUtil.validateFailedInstances(r, 3);
     }
 }

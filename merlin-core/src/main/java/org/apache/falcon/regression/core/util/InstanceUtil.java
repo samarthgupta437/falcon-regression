@@ -305,6 +305,17 @@ public class InstanceUtil {
         Assert.assertEquals(actualKilledInstances, killedInstances);
     }
 
+    public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
+        Util.assertSucceeded(r);
+        int counter = 0;
+        for (ProcessInstancesResult.ProcessInstance processInstance : r.getInstances()) {
+            if(processInstance.getStatus() == ProcessInstancesResult.WorkflowStatus.FAILED)
+                counter++;
+        }
+        Assert.assertEquals(counter, failCount, "Actual number of failed instances does not " +
+                "match expected number of failed instances.");
+    }
+
     public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
                                                  WorkflowAction.Status ws) throws OozieClientException {
 
