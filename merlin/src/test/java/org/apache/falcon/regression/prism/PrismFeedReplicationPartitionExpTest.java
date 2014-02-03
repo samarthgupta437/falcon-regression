@@ -21,6 +21,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
@@ -30,8 +31,11 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -42,7 +46,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests {
+public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
     private Bundle bundle1, bundle2, bundle3;
     private String testDate = "/2012/10/01/12/";
@@ -52,13 +56,12 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
     private String testBaseDir4 = baseHDFSDir + "/data/fetlrc/billing";
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    
-    private String server1Colo = server1.getClusterHelper().getColo().split("=")[1];
-    private String server2Colo = server2.getClusterHelper().getColo().split("=")[1];
-    private String server3Colo = server3.getClusterHelper().getColo().split("=")[1];
 
+    private ColoHelper server1,server2,server3;
+    private FileSystem server1FS,server2FS,server3FS;
+    private OozieClient server1OC,server2OC;
 
-
+    private String server1Colo,server2Colo,server3Colo;
 
 // pt : partition in target
 // ps: partition in source
@@ -68,6 +71,26 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
     public void createTestData() throws Exception {
 
         System.out.println("creating test data");
+
+      server1 = servers.get(2);
+      server2 = servers.get(1);
+      server3 = servers.get(0);
+
+      server1FS = serverFS.get(2);
+      server2FS = serverFS.get(1);
+      server3FS = serverFS.get(0);
+
+      server1OC = serverOC.get(2);
+      server2OC = serverOC.get(1);
+
+      server1Colo = server1
+        .getClusterHelper()
+        .getColo().split
+          ("=")[1];
+      server2Colo = server2.getClusterHelper().getColo().split("=")[1];
+
+      server3Colo = server3.getClusterHelper().getColo().split("=")[1];
+
 
         HadoopUtil.createDir(testDirWithDate + "00/ua2/", server3FS);
         HadoopUtil.createDir(testDirWithDate + "05/ua2/", server3FS);
