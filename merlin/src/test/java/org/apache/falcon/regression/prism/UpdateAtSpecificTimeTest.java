@@ -204,7 +204,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Util.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
       Util.readEntityName(feed), true, ENTITY_TYPE.FEED, true);
 
-
   }
 
 
@@ -333,7 +332,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void inNextFewMinutesUpdate_RollForward_Feed() throws Exception {
 
     String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-18);
@@ -406,6 +405,113 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   }
 
+
+  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = false)
+  public void updateTimeAfterEndTime_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
+
+    /*
+      submit and schedule process with end time after 3 mins. Set update time
+       as with +5 mins from now.
+     */
+    String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
+    String endTime = InstanceUtil.getTimeWrtSystemTime(3);
+    processBundle.setProcessValidity(startTime, endTime);
+    processBundle.submitAndScheduleBundle(prism);
+    Thread.sleep(30000);
+
+    String oldProcess = processBundle.getProcessData();
+    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime, 3),
+      endTime);
+    String updateTime = InstanceUtil.addMinsToTime(endTime, 2);
+    ServiceResponse r = prism.getProcessHelper().update(oldProcess,
+      processBundle.getProcessData(), updateTime);
+
+     /*
+     bug:  getting following error "ua3/jobId cannot be null"  and instances
+     on oozie have gone in suspended state.
+      */
+
+  }
+
+  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = false)
+  public void updateTimeAfterEndTime_Feed() throws ParseException, JAXBException, IOException {
+    /*
+    submit and schedule feed with end time 3 mins in future and update with 5
+     in future.
+     */
+    String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
+    String endTime = InstanceUtil.getTimeWrtSystemTime(3);
+
+    String feed = processBundle.getDataSets().get(0);
+    feed = InstanceUtil.setFeedCluster(feed,
+      XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+      XmlUtil.createRtention("days(100000)", ActionType.DELETE), null,
+      ClusterType.SOURCE, null, null);
+
+    feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, endTime),
+      XmlUtil.createRtention("days(100000)", ActionType.DELETE),
+      Util.readClusterName(processBundle.getClusters().get(0)), ClusterType.SOURCE,
+      null, inputPath + "/replication" + dateTemplate);
+
+
+    ServiceResponse r = prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL,
+      processBundle.getClusters().get(0));
+    AssertUtil.assertSucceeded(r);
+    r = prism.getFeedHelper().submitAndSchedule(Util.URLS
+      .SUBMIT_AND_SCHEDULE_URL, feed);
+    AssertUtil.assertSucceeded(r);
+
+    String updateTime = InstanceUtil.addMinsToTime(endTime, 2);
+    String updatedFeed = Util.setFeedProperty(feed, "someProp", "someVal");
+
+    r = prism.getFeedHelper().update(feed, updatedFeed, updateTime);
+
+    /*
+     bug:  getting following error "ua3/jobId cannot be null"  and instances
+     on oozie have gone in suspended state.
+      */
+
+  }
+
+  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = false)
+  public void updateTimeBeforeStartTime_Process() throws JAXBException,
+    ParseException, InterruptedException, IOException, URISyntaxException {
+
+    /*
+      submit and schedule process with end time after 3 mins. Set update time
+       as with +5 mins from now.
+     */
+    String startTime = InstanceUtil.getTimeWrtSystemTime(10);
+    String endTime = InstanceUtil.getTimeWrtSystemTime(20);
+    processBundle.setProcessValidity(startTime, endTime);
+    processBundle.submitAndScheduleBundle(prism);
+    Thread.sleep(30000);
+
+    String oldProcess = processBundle.getProcessData();
+    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime, -2),
+      endTime);
+    String updateTime = InstanceUtil.addMinsToTime(endTime, -5);
+    ServiceResponse r = prism.getProcessHelper().update(oldProcess,
+      processBundle.getProcessData(), updateTime);
+
+      /*
+      The web service response is <?xml version="1.0" encoding="UTF-8" standalone="yes"?><result><status>FAILED</status><message>ua3/For Job0001039-140114120113803-oozie-oozi-C, actual statuses: PREP, expected statuses: [RUNNING, SUCCEEDED, FAILED, KILLED]</message><requestId>ua3/cd67fb40-ee3e-42e7-9787-8fdedbe76692</requestId></result>
+
+      new bundle got created , but y ????
+       */
+
+  }
+
+  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = true)
+  public void udpateDiffClusterDiffValidity_Process(){
+
+
+
+  }
 
   @AfterMethod(alwaysRun = true)
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
