@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -47,6 +48,8 @@ import java.util.List;
  */
 public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
+    public static final String PIG_SCRIPT_DIR = "/examples/apps/pig/";
+    public static final String PIG_SCRIPT_PATH = PIG_SCRIPT_DIR + "id.pig";
     private Bundle bundle;
     private String prefix;
 
@@ -54,6 +57,10 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
+        //copy pig script
+        HadoopUtil.createDir(PIG_SCRIPT_DIR, server1FS);
+        HadoopUtil.copyDataToFolder(server1, new Path(PIG_SCRIPT_DIR),
+                "src/test/resources/pig/id.pig");
 
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
@@ -91,7 +98,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
         bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setProcessWorkflow("/examples/apps/pig/id.pig");
+        bundle.setProcessWorkflow(PIG_SCRIPT_PATH);
         bundle.setProcessData(bundle.setProcessInputNames(bundle.getProcessData(), "INPUT"));
         bundle.setProcessData(bundle.setProcessOutputNames(bundle.getProcessData(), "OUTPUT"));
     }
@@ -151,7 +158,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
         bundle.submitAndScheduleBundle(prism);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundle.getProcessData());
-        Thread.sleep(5000);
+        Thread.sleep(10000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundle.getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
@@ -222,7 +229,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
         InstanceUtil.validateSuccess(r, bundle, WorkflowStatus.RUNNING);
 
         Job.Status status = null;
-        for (int i = 0; i < 60; i++) {
+        for (int i = 0; i < 100; i++) {
             status = InstanceUtil.getDefaultCoordinatorStatus(server1, Util.getProcessName(bundle.getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED) {
                 break;
@@ -230,7 +237,8 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
             Thread.sleep(30000);
         }
 
-        Assert.assertTrue(status != Job.Status.SUCCEEDED, "The job did not succeeded even in long time");
+        Assert.assertEquals(status, Job.Status.SUCCEEDED,
+                "The job did not succeeded even in long time");
 
         Thread.sleep(5000);
         r = prism.getProcessHelper()
