@@ -48,6 +48,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     private Bundle bundle1;
     private Bundle bundle2;
     private boolean restartRequired;
+    private String server1Colo = server1.getClusterHelper().getColo().split("=")[1];
+    private String server2Colo = server2.getClusterHelper().getColo().split("=")[1];
 
 
     @BeforeMethod(alwaysRun = true)
@@ -356,14 +358,14 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         bundle1 = new Bundle(bundle1, server1.getEnvFileName(), server1.getPrefix());
         bundle2 = new Bundle(bundle2, server2.getEnvFileName(), server2.getPrefix());
 
-        this.bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
+        bundle1.setCLusterColo(server1Colo);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        this.bundle2.setCLusterColo(server2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(server2Colo);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -764,13 +766,13 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedSuspendedInOneColoWhileAnotherColoIsDown() throws Exception {
         restartRequired = true;
 
-        bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
+        bundle1.setCLusterColo(server1Colo);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        bundle2.setCLusterColo(server2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(server2Colo);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -821,12 +823,12 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         r = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Thread.sleep(10000);
         Util.assertPartialSucceeded(r);                
-        Assert.assertTrue(r.getMessage().contains("Connection refused"
-                + server2.getClusterHelper().getColo().split("=")[1] + "/" + Util.getFeedName(feed)));
+        Assert.assertTrue(r.getMessage().contains(server1Colo + "/org.apache.falcon.FalconException")
+                && r.getMessage().contains(server2Colo + "/" + Util.getFeedName(feed)));
 
         ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
-        Assert.assertTrue(response.getMessage().contains("Connection refused"
-                + server2.getClusterHelper().getColo().split("=")[1] + "/" + Util.getFeedName(feed)));
+        Assert.assertTrue(response.getMessage().contains(server1Colo + "/org.apache.falcon.FalconException")
+                && response.getMessage().contains(server2Colo + "/" + Util.getFeedName(feed)));
         Util.assertPartialSucceeded(response);
 
         //now lets get the final states
@@ -860,13 +862,13 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedSuspendedInOneColoWhileAnotherColoIsDownWithFeedSuspended() throws Exception {
         restartRequired = true;
 
-        this.bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
+        bundle1.setCLusterColo(server1Colo);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        this.bundle2.setCLusterColo(server2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(server2Colo);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -920,8 +922,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         Util.shutDownService(server1.getFeedHelper());
 
         ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
-        Assert.assertTrue(response.getMessage().contains("Connection refused"
-                + server2.getClusterHelper().getColo().split("=")[1] + "/" + Util.getFeedName(feed)));
+        Assert.assertTrue(response.getMessage().contains(server1Colo + "/org.apache.falcon.FalconException")
+                && response.getMessage().contains(server2Colo + "/" + Util.getFeedName(feed)));
         Util.assertPartialSucceeded(response);
 
         //now lets get the final states
