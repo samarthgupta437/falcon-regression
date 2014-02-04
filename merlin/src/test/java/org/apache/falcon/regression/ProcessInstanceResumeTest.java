@@ -130,8 +130,10 @@ public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
         result = prism.getProcessHelper()
                 .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                         "?end=2010-01-02T01:15Z");
+        Assert.assertNotNull(result, "result should not be null");
+        Assert.assertNotNull(result.getMessage(), "result's message should not be null");
         Assert.assertTrue(result.getMessage().contains("Parameter start is empty"),
-                "start instance was not mentioned, RESUME should have fialed");
+                "start instance was not mentioned, RESUME should have failed");
     }
 
 
