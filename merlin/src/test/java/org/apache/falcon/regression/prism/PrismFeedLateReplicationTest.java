@@ -76,22 +76,7 @@ public class PrismFeedLateReplicationTest extends BaseMultiClusterTests {
     public void multipleSourceOneTarget_pastData() throws Exception {
 
         bundle1.setInputFeedDataPath(inputPath);
-
-        bundle1.setCLusterColo(server1Colo);
-        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
-
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
-        Util.assertSucceeded(r);
-
-        bundle2.setCLusterColo(server2Colo);
-        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
-        Util.assertSucceeded(r);
-
-        bundle3.setCLusterColo(server3Colo);
-        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle3.getClusters().get(0));
-        Util.assertSucceeded(r);
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
         String feed = bundle1.getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
@@ -151,18 +136,20 @@ public class PrismFeedLateReplicationTest extends BaseMultiClusterTests {
 
         Thread.sleep(15000);
 
-        List<String> inputFolderListForColo1 = InstanceUtil
-                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(0),
-                        0);
-        List<String> inputFolderListForColo2 = InstanceUtil
-                .getInputFoldersForInstanceForReplication(server1, replicationCoordIDTarget.get(1),
-                        0);
+        List<String> inputFolderListForColo1 =
+                InstanceUtil.getInputFoldersForInstanceForReplication(server1,
+                        replicationCoordIDTarget.get(0), 1);
+        List<String> inputFolderListForColo2 =
+                InstanceUtil.getInputFoldersForInstanceForReplication(server1,
+                        replicationCoordIDTarget.get(1), 1);
 
         Util.print("folder list 1: " + inputFolderListForColo1.toString());
         Util.print("folder list 2: " + inputFolderListForColo2.toString());
 
-        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath, inputFolderListForColo1);
-        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath, inputFolderListForColo2);
+        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath,
+                HadoopUtil.getWriteLocations(server2, inputFolderListForColo1));
+        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath,
+                HadoopUtil.getWriteLocations(server3, inputFolderListForColo2));
 
         Util.print("test");
     }

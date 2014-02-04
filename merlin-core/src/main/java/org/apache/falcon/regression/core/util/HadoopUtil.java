@@ -395,6 +395,17 @@ public class HadoopUtil {
         return FileSystem.get(conf);
     }
 
+    public static List<String> getWriteLocations(ColoHelper coloHelper,
+                                                 List<String> readOnlyLocations) {
+        List<String> writeFolders = new ArrayList<String>();
+        final String clusterReadonly = coloHelper.getClusterHelper().getClusterReadonly();
+        final String clusterWrite = coloHelper.getClusterHelper().getClusterWrite();
+        for (String location : readOnlyLocations) {
+            writeFolders.add(location.trim().replaceFirst(clusterReadonly, clusterWrite));
+        }
+        return writeFolders;
+    }
+
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  List<String> remoteLocations) throws IOException {
         File[] files = new File(inputPath).listFiles();
