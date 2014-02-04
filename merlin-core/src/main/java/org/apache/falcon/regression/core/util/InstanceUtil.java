@@ -1112,8 +1112,11 @@ public class InstanceUtil {
             int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(ua1.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        WorkflowJob actionInfo =
-                oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId());
+        String jobId = coordInfo.getActions().get(instanceNumber).getExternalId();
+        Util.print("jobId = " + jobId);
+        if(jobId == null)
+            return null;
+        WorkflowJob actionInfo = oozieClient.getJobInfo(jobId);
         return actionInfo.getStatus();
         //return coordInfo.getActions().get(instanceNumber).getStatus();
     }
@@ -1122,13 +1125,15 @@ public class InstanceUtil {
             ColoHelper coloHelper, String coordID, int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorAction x = oozieClient.getCoordActionInfo(coordID + "@" + instanceNumber);
-        return InstanceUtil.getReplicationFolderFromInstanceRunConf(x.getRunConf());
+        String jobId = x.getExternalId();
+        WorkflowJob wfJob = oozieClient.getJobInfo(jobId);
+        return InstanceUtil.getReplicationFolderFromInstanceRunConf(wfJob.getConf());
     }
 
     public static List<String> getReplicationFolderFromInstanceRunConf(
             String runConf) {
         String conf;
-        conf = runConf.substring(runConf.indexOf("ivoryInPaths</name>") + 19);
+        conf = runConf.substring(runConf.indexOf("falconInPaths</name>") + 20);
         //	Util.print("conf1: "+conf);
 
         conf = conf.substring(conf.indexOf("<value>") + 7);
