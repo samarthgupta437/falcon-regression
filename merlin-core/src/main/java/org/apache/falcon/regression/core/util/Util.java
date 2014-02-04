@@ -24,10 +24,7 @@ import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.Location;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
-import org.apache.falcon.regression.core.generated.feed.Property;
+import org.apache.falcon.regression.core.generated.feed.*;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Output;
 import org.apache.falcon.regression.core.generated.process.Process;
@@ -72,7 +69,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
+import java.text.ParseException;
 import java.util.*;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class Util {
@@ -1569,9 +1568,9 @@ public class Util {
     throws IOException, JSchException {
 
     DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+    fmt = fmt.withZoneUTC();
 
-
-    return fmt.parseDateTime(runRemoteScript(prismHelper.getClusterHelper()
+   return fmt.parseDateTime(runRemoteScript(prismHelper.getClusterHelper()
       .getQaHost(), prismHelper.getClusterHelper().getUsername(),
       prismHelper.getClusterHelper().getPassword(), "date '+%Y-%m-%dT%H:%MZ'",
       prismHelper.getClusterHelper().getIdentityFile()).get(0));
@@ -1945,16 +1944,15 @@ public class Util {
     BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
     for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-      if ( (coord.getAppName().contains("DEFAULT") && ENTITY_TYPE.PROCESS
+      if ((coord.getAppName().contains("DEFAULT") && ENTITY_TYPE.PROCESS
         .equals(type)) || (coord.getAppName().contains("REPLICATION") && ENTITY_TYPE
         .FEED
         .equals(type))) {
         return client.getCoordJobInfo(coord.getId());
-      }
-      else {
+      } else {
         System.out.println("Desired coord does not exists");
       }
-     }
+    }
 
     return null;
   }
@@ -2033,10 +2031,11 @@ public class Util {
   }
 
   public static void restartService(IEntityManagerHelper helper)
-    throws IOException, JSchException {
+    throws IOException, JSchException, InterruptedException {
     Util.print("restarting service for: " + helper.getQaHost());
 
     shutDownService(helper);
+    Thread.sleep(30000);
     startService(helper);
   }
 
@@ -2083,7 +2082,6 @@ public class Util {
     InputStream in = channel.getInputStream();
     OutputStream out = channel.getOutputStream();
     channel.setErrStream(System.err);
-
     channel.connect();
     try {
       Thread.sleep(10000);
@@ -2096,6 +2094,36 @@ public class Util {
       out.flush();
     }
 
+
+    BufferedReader r = new BufferedReader(new InputStreamReader(in));
+    String line;
+    while (true) {
+
+      while ((line=r.readLine())!=null) {
+        System.out.println(line);
+        data.add(line);
+      }
+      if (channel.isClosed()) {
+        break;
+      }
+
+    }
+
+    byte[] tmp=new byte[1024];
+    while(true){
+      while(in.available()>0){
+        int i=in.read(tmp, 0, 1024);
+        if(i<0)break;
+        System.out.print(new String(tmp, 0, i));
+      }
+      if(channel.isClosed()){
+        System.out.println("exit-status: "+channel.getExitStatus());
+        break;
+      }
+      try{Thread.sleep(1000);}catch(Exception ee){}
+    }
+
+    r.close();
     in.close();
     channel.disconnect();
     session.disconnect();
@@ -2136,7 +2164,7 @@ public class Util {
     List<String> nominalTime = new ArrayList<String>();
     List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
       bundleId, type).getActions();
-    for(CoordinatorAction action : actions){
+    for (CoordinatorAction action : actions) {
       nominalTime.add(action.getNominalTime().toString());
     }
     return nominalTime;
@@ -2434,10 +2462,9 @@ public class Util {
     return writer.toString();
   }
 
-  public static void validateNumberOfWorkflowInstances(PrismHelper prismHelper,int originalCount,String oldBundleId,String updatedBundleId) throws Exception
-  {
+  public static void validateNumberOfWorkflowInstances(PrismHelper prismHelper, int originalCount, String oldBundleId, String updatedBundleId) throws Exception {
     //first make sure sum of all parts is same
-    Assert.assertEquals(getNumberOfWorkflowInstances(prismHelper,oldBundleId)+getNumberOfWorkflowInstances(prismHelper,updatedBundleId),originalCount,"The total number of workflow instances dont match post update! Please check.");
+    Assert.assertEquals(getNumberOfWorkflowInstances(prismHelper, oldBundleId) + getNumberOfWorkflowInstances(prismHelper, updatedBundleId), originalCount, "The total number of workflow instances dont match post update! Please check.");
 
   }
 
@@ -2456,7 +2483,7 @@ public class Util {
         originalBundleCount, originalBundleId, newBundleId);
     } else {
       Assert.assertEquals(newBundleId,
-        originalBundleId,"eeks! new bundle is getting created!!!!");
+        originalBundleId, "eeks! new bundle is getting created!!!!");
     }
   }
 
@@ -2466,20 +2493,23 @@ public class Util {
                                                initialNominalTimes,
                                              String processName,
                                              boolean shouldBeCreated,
-                                             ENTITY_TYPE type) throws
+                                             ENTITY_TYPE type,
+                                             boolean matchInstances) throws
     Exception {
 
-    String newBundleId = InstanceUtil.getLatestBundleID(cluster, processName, ENTITY_TYPE.PROCESS);
+    String newBundleId = InstanceUtil.getLatestBundleID(cluster, processName,
+      type);
     if (shouldBeCreated) {
       Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
         "eeks! new bundle is not getting created!!!!");
       System.out.println("old bundleId=" + originalBundleId);
       System.out.println("new bundleId=" + newBundleId);
-      Util.validateNumberOfWorkflowInstances(cluster,
+      if(matchInstances)
+        Util.validateNumberOfWorkflowInstances(cluster,
         initialNominalTimes, originalBundleId, newBundleId, type);
     } else {
       Assert.assertEquals(newBundleId,
-        originalBundleId,"eeks! new bundle is getting created!!!!");
+        originalBundleId, "eeks! new bundle is getting created!!!!");
     }
   }
 
@@ -2487,16 +2517,71 @@ public class Util {
 
     List<String> nominalTimesOriginalAndNew = Util.getActionsNominalTime
       (cluster,
-      originalBundleId, type);
+        originalBundleId, type);
 
     nominalTimesOriginalAndNew.addAll(Util.getActionsNominalTime(cluster,
       newBundleId, type));
 
-    initialNominalTimes.removeAll(nominalTimesOriginalAndNew) ;
+    initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
 
-    if(initialNominalTimes.size()!=0)
-       Assert.assertFalse(true,"some instances have gone missing after " +
-         "update");
+    if (initialNominalTimes.size() != 0)
+      Assert.assertFalse(true, "some instances have gone missing after " +
+        "update");
+  }
+
+  public static String getEntityDefinition(ColoHelper cluster_3,
+                                           String entity,
+                                           boolean shouldReturn) throws
+    JAXBException,
+    IOException, URISyntaxException {
+    ENTITY_TYPE type = getEntityType(entity);
+    IEntityManagerHelper helper;
+    if (ENTITY_TYPE.PROCESS.equals(type))
+      helper = cluster_3.getProcessHelper();
+    else if (ENTITY_TYPE.FEED.equals(type))
+      helper = cluster_3.getFeedHelper();
+    else
+      helper = cluster_3.getClusterHelper();
+
+    ServiceResponse response = helper.getEntityDefinition(URLS
+      .GET_ENTITY_DEFINITION, entity);
+
+    if (shouldReturn)
+      Util.assertSucceeded(response);
+    else
+      Util.assertFailed(response);
+    String result = response.getMessage();
+    Assert.assertNotNull(result);
+
+    return result;
+
+
+  }
+
+  private static ENTITY_TYPE getEntityType(String entity) {
+    if (
+      entity.contains("uri:falcon:process:0.1"))
+      return ENTITY_TYPE.PROCESS;
+    else if (
+      entity.contains("uri:falcon:cluster:0.1"))
+      return ENTITY_TYPE.CLUSTER;
+    else if (
+      entity.contains("uri:falcon:feed:0.1")) {
+      return ENTITY_TYPE.FEED;
+    }
+    return null;
+  }
+
+  public static String getCoordStartTime(ColoHelper colo, String entity,
+                                         int bundleNo) throws JAXBException, OozieClientException, ParseException {
+    String bundleID = InstanceUtil.getSequenceBundleID(colo,
+      Util.readEntityName(entity),Util.getEntityType(entity),bundleNo);
+
+    CoordinatorJob coord = Util.getDefaultOozieCoord(colo, bundleID,
+      Util.getEntityType(entity));
+
+    return InstanceUtil.dateToOozieDate(coord.getStartTime()
+    );
   }
 
   public enum URLS {

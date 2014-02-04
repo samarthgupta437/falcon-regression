@@ -70,6 +70,12 @@ public class AssertUtil {
         Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
 
+  public static void assertPartial(ServiceResponse response) throws JAXBException {
+    Assert.assertEquals(Util.parseResponse(response).getStatus(),APIResult.Status.PARTIAL);
+    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
+    Assert.assertNotNull(Util.parseResponse(response).getMessage());
+
+  }
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data, Job.Status expectedStatus) throws Exception {
         String name = null;
         if(entityType == ENTITY_TYPE.FEED) {
@@ -110,5 +116,4 @@ public class AssertUtil {
         }
         checkNotStatus(oozieClient, entityType, data, expectedStatus);
     }
-
 }
