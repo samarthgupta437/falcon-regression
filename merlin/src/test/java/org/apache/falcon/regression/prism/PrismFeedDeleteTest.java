@@ -75,11 +75,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testServer1FeedDeleteInBothColos() throws Exception {
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
+        bundle1.submitFeed();
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
@@ -126,11 +122,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testServer1FeedDeleteWhen1ColoIsDown() throws Exception {
         restartRequired = true;
 
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
+        bundle1.submitFeed();
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
@@ -202,11 +194,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"multiCluster"})
     public void testServer1FeedDeleteAlreadyDeletedFeed() throws Exception {
         restartRequired = true;
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
+        bundle1.submitFeed();
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
         //fetch the initial store and archive state for prism
@@ -253,11 +241,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testServer1FeedDeleteTwiceWhen1ColoIsDownDuring1stDelete() throws Exception {
         restartRequired = true;
 
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
+        bundle1.submitFeed();
 
         Util.shutDownService(server1.getClusterHelper());
 
@@ -399,8 +383,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testDeleteFeedScheduledInOneColo() throws Exception {
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
@@ -448,8 +432,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testDeleteFeedSuspendedInOneColo() throws Exception {
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //suspend Server1 colo thingy
         Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
@@ -500,8 +484,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testDeleteFeedSuspendedInOneColoWhileBothFeedsAreSuspended() throws Exception {
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //suspend Server1 colo thingy
         Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
@@ -553,8 +537,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
 
@@ -630,8 +614,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedSuspendedInOneColoWhileThatColoIsDownAndOtherHasSuspendedFeed() throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
@@ -699,8 +683,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedScheduledInOneColoWhileThatColoIsDown() throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
@@ -958,8 +942,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedScheduledInOneColoWhileAnotherColoIsDown() throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
@@ -1031,14 +1015,6 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         Assert.assertEquals(temp.size(), 1);
         Assert.assertTrue(temp.get(0).contains(filename));
 
-    }
-
-    private void submitAndScheduleFeed(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle.getDataSets().get(0)));
-        Util.assertSucceeded(prism.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, bundle.getDataSets().get(0)));
     }
 
     private void compareDataStoresForEquality(List<String> store1, List<String> store2) throws Exception {

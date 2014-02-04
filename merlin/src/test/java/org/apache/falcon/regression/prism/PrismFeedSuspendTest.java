@@ -19,7 +19,6 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -49,8 +48,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
 
     @Test(groups = {"prism", "0.2"})
     public void testSuspendDeletedFeedOnBothColos() throws Exception {
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //delete using prism
         Util.assertSucceeded(prism.getFeedHelper()
@@ -74,8 +73,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testSuspendSuspendedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
-        submitAndScheduleFeedUsingColoHelper(server1, bundle1);
-        submitAndScheduleFeedUsingColoHelper(server2, bundle2);
+        bundle1.submitAndScheduleFeedUsingColoHelper(server1);
+        bundle2.submitAndScheduleFeedUsingColoHelper(server2);
 
         for (int i = 0; i < 2; i++) {
             //suspend using prism
@@ -115,8 +114,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
 
     @Test()
     public void testSuspendSubmittedFeedOnBothColos() throws Exception {
-        submitFeed(bundle1);
-        submitFeed(bundle2);
+        bundle1.submitFeed();
+        bundle2.submitFeed();
 
         Util.assertFailed(prism.getFeedHelper()
                 .suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
@@ -135,8 +134,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
     public void testSuspendScheduledFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
             //schedule using colohelpers
-            submitAndScheduleFeedUsingColoHelper(server1, bundle1);
-            submitAndScheduleFeedUsingColoHelper(server2, bundle2);
+            bundle1.submitAndScheduleFeedUsingColoHelper(server1);
+            bundle2.submitAndScheduleFeedUsingColoHelper(server2);
 
             Util.shutDownService(server1.getFeedHelper());
 
@@ -165,8 +164,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
     public void testSuspendDeletedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
             //schedule using colohelpers
-            submitAndScheduleFeedUsingColoHelper(server1, bundle1);
-            submitAndScheduleFeedUsingColoHelper(server2, bundle2);
+            bundle1.submitAndScheduleFeedUsingColoHelper(server1);
+            bundle2.submitAndScheduleFeedUsingColoHelper(server2);
 
             //delete using coloHelpers
             Util.assertSucceeded(
@@ -207,8 +206,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
     public void testSuspendSuspendedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
             //schedule using colohelpers
-            submitAndScheduleFeedUsingColoHelper(server1, bundle1);
-            submitAndScheduleFeedUsingColoHelper(server2, bundle2);
+            bundle1.submitAndScheduleFeedUsingColoHelper(server1);
+            bundle2.submitAndScheduleFeedUsingColoHelper(server2);
 
 
             //suspend using prism
@@ -270,8 +269,8 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testSuspendSubmittedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         try {
-            submitFeed(bundle1);
-            submitFeed(bundle2);
+            bundle1.submitFeed();
+            bundle2.submitFeed();
 
             Util.shutDownService(server1.getFeedHelper());
 
@@ -293,34 +292,6 @@ public class PrismFeedSuspendTest extends BaseMultiClusterTests {
         } finally {
             Util.restartService(server1.getProcessHelper());
         }
-    }
-
-    private void submitFeed(Bundle bundle) throws Exception {
-
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        Util.assertSucceeded(
-                prism.getFeedHelper()
-                        .submitEntity(Util.URLS.SUBMIT_URL, bundle.getDataSets().get(0)));
-    }
-
-
-    private void submitAndScheduleFeedUsingColoHelper(ColoHelper coloHelper, Bundle bundle)
-    throws Exception {
-        submitFeed(bundle);
-        Util.assertSucceeded(coloHelper.getFeedHelper()
-                .schedule(Util.URLS.SCHEDULE_URL, bundle.getDataSets().get(0)));
-    }
-
-    private void submitAndScheduleFeed(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        Util.assertSucceeded(prism.getFeedHelper()
-                .submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0)));
     }
 
 }

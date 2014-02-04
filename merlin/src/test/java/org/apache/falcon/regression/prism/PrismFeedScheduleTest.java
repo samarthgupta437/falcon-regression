@@ -52,11 +52,11 @@ public class PrismFeedScheduleTest extends BaseMultiClusterTests{
             System.out.println("cluster: " + UA1Bundle.getClusters().get(0));
             System.out.println("feed: " + UA1Bundle.getDataSets().get(0));
 
-            submitAndScheduleFeed(UA1Bundle);
+            UA1Bundle.submitAndScheduleFeed();
             Util.assertSucceeded(prism.getFeedHelper()
                     .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
             AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, UA1Bundle, Job.Status.SUSPENDED);
-            submitAndScheduleFeed(UA2Bundle);
+            UA2Bundle.submitAndScheduleFeed();
             AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, UA2Bundle, Job.Status.RUNNING);
             AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
             AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, UA1Bundle, Job.Status.SUSPENDED);
@@ -68,22 +68,6 @@ public class PrismFeedScheduleTest extends BaseMultiClusterTests{
 
     }
 
-    private void submitFeed(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        Util.assertSucceeded(
-                prism.getFeedHelper()
-                        .submitEntity(Util.URLS.SUBMIT_URL, bundle.getDataSets().get(0)));
-    }
-
-
-    private void submitAndScheduleFeed(Bundle bundle) throws Exception {
-        submitFeed(bundle);
-        Util.assertSucceeded(prism.getFeedHelper()
-                .schedule(Util.URLS.SCHEDULE_URL, bundle.getDataSets().get(0)));
-    }
 
     @DataProvider(name = "DP")
     public Object[][] getData() throws Exception {

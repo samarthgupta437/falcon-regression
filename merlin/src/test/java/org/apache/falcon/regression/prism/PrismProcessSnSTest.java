@@ -56,10 +56,10 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testProcessSnSOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleProcess(UA1Bundle);
+        UA1Bundle.submitAndScheduleProcess();
         AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        submitAndScheduleProcess(UA2Bundle);
+        UA2Bundle.submitAndScheduleProcess();
 
         //now check if they have been scheduled correctly or not
         AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
@@ -75,13 +75,15 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testProcessSnSForSubmittedProcessOnBothColos() throws Exception {
         //schedule both bundles
-        submitProcess(UA1Bundle);
+        UA1Bundle.submitProcess();
+
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
-        submitProcess(UA2Bundle);
+        UA2Bundle.submitProcess();
+
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         //now check if they have been scheduled correctly or not
@@ -95,12 +97,17 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     public void testProcessSnSForSubmittedProcessOnBothColosUsingColoHelper()
     throws Exception {
         //schedule both bundles
-        submitProcess(UA1Bundle);
+        UA1Bundle.submitProcess();
+
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        submitProcess(UA2Bundle);
+        UA2Bundle.submitProcess();
+        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        UA2Bundle.submitProcess();
+
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         //now check if they have been scheduled correctly or not
@@ -113,10 +120,10 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testProcessSnSAlreadyScheduledOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleProcess(UA1Bundle);
+        UA1Bundle.submitAndScheduleProcess();
         AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        submitAndScheduleProcess(UA2Bundle);
+        UA2Bundle.submitAndScheduleProcess();
 
         //now check if they have been scheduled correctly or not
         AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
@@ -136,8 +143,8 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testSnSSuspendedProcessOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleProcess(UA1Bundle);
-        submitAndScheduleProcess(UA2Bundle);
+        UA1Bundle.submitAndScheduleProcess();
+        UA2Bundle.submitAndScheduleProcess();
 
         Util.assertSucceeded(server2.getProcessHelper()
                 .suspend(URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
@@ -165,14 +172,14 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testSnSDeletedProcessOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleProcess(UA1Bundle);
+        UA1Bundle.submitAndScheduleProcess();
         Assert.assertEquals(Util.parseResponse(
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, UA1Bundle.getProcessData())).getMessage(),
                 UA1_RUNNING
         );
 
-        submitAndScheduleProcess(UA2Bundle);
+        UA2Bundle.submitAndScheduleProcess();
         Assert.assertEquals(Util.parseResponse(
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, UA2Bundle.getProcessData())).getMessage(),
@@ -218,34 +225,4 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
 
     }
 
-    private void submitProcess(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
-        }
-
-        for (String feed : bundle.getDataSets()) {
-            Util.assertSucceeded(
-                    prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
-        }
-
-        Util.assertSucceeded(
-                prism.getProcessHelper()
-                        .submitEntity(URLS.SUBMIT_URL, bundle.getProcessData())
-        );
-    }
-
-    private void submitAndScheduleProcess(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
-        }
-        for (String feed : bundle.getDataSets()) {
-            Util.assertSucceeded(
-                    prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
-        }
-
-        Util.assertSucceeded(prism.getProcessHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData()));
-    }
 }
