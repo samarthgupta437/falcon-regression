@@ -64,7 +64,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteInBothColos() throws Exception {
         //now submit the thing to prism
-        submitAndScheduleProcess(UA1Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
@@ -112,7 +112,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testUA1ProcessDeleteWhen1ColoIsDown() throws Exception {
         try {
             //now submit the thing to prism
-            submitAndScheduleProcess(UA1Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
             //fetch the initial store and archive state for prism
             List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
@@ -264,7 +264,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testUA1ProcessDeleteAlreadyDeletedProcess() throws Exception {
         try {
             //now submit the thing to prism
-            submitAndScheduleProcess(UA1Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
             Util.assertSucceeded(
                     prism.getProcessHelper()
                             .delete(Util.URLS.DELETE_URL, UA1Bundle.getProcessData())
@@ -320,7 +320,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testUA1ProcessDeleteTwiceWhen1ColoIsDownDuring1stDelete()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
 
             Util.shutDownService(server3.getClusterHelper());
 
@@ -502,8 +502,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessScheduledInOneColo() throws Exception {
-        submitAndScheduleProcess(UA1Bundle);
-        submitAndScheduleProcess(UA2Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
+        UA2Bundle.submitFeedsScheduleProcess();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
@@ -551,8 +551,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColo() throws Exception {
         //create a UA1 bundle
-        submitAndScheduleProcess(UA1Bundle);
-        submitAndScheduleProcess(UA2Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
+        UA2Bundle.submitFeedsScheduleProcess();
 
         //suspend UA1 colo thingy
         Util.assertSucceeded(prism.getProcessHelper()
@@ -605,8 +605,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileBothProcessesAreSuspended()
     throws Exception {
-        submitAndScheduleProcess(UA1Bundle);
-        submitAndScheduleProcess(UA2Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
+        UA2Bundle.submitFeedsScheduleProcess();
 
         //suspend UA1 colo thingy
         Util.assertSucceeded(prism.getProcessHelper()
@@ -661,8 +661,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessSuspendedInOneColoWhileThatColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             Util.assertSucceeded(
                     prism.getProcessHelper()
@@ -726,8 +726,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessScheduledInOneColoWhileThatColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //fetch the initial store and archive state for prism
             List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
@@ -805,8 +805,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //now submit the thing to prism
             Util.assertSucceeded(
@@ -871,8 +871,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDownWithFeedSuspended() throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //now submit the thing to prism
             Util.assertSucceeded(
@@ -940,8 +940,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessScheduledInOneColoWhileAnotherColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //fetch the initial store and archive state for prism
             List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
@@ -1033,22 +1033,6 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 
     }
 
-
-    private void submitAndScheduleProcess(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        for (String feed : bundle.getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
-        }
-
-        Util.assertSucceeded(prism.getProcessHelper()
-                .submitEntity(URLS.SUBMIT_URL, bundle.getProcessData()));
-        Util.assertSucceeded(prism.getProcessHelper()
-                .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
-    }
 
     private void compareDataStoresForEquality(List<String> store1, List<String> store2)
     throws Exception {

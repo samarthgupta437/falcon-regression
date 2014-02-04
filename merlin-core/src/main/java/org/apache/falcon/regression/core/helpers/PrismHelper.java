@@ -84,24 +84,4 @@ public class PrismHelper {
 
   }
 
-  public ServiceResponse submitCluster(Bundle bundle) throws IOException {
-    return clusterHelper.submitEntity(Util.URLS.SUBMIT_URL, bundle.getClusterData());
-  }
-
-    /*public List<ServiceResponse> submitFeed(Bundle bundle)  {
-        List<ServiceResponse> responseList = new ArrayList<ServiceResponse>();
-        for (String feed : bundle.getDataSets()) {
-            responseList.add(feedHelper.submitEntity(Util.URLS.SUBMIT_URL, feed));
-        }
-        return responseList;
-    }*/
-
-    /*public ServiceResponse submitProcess(Bundle bundle)  {
-        return processHelper.submitEntity(Util.URLS.SUBMIT_URL, bundle.getProcessData());
-    }*/
-
-    /*public ServiceResponse scheduleProcess(Bundle bundle)  {
-        return processHelper
-                .schedule(Util.URLS.SCHEDULE_URL, Util.readEntityName(bundle.getProcessData()));
-    }*/
 }
