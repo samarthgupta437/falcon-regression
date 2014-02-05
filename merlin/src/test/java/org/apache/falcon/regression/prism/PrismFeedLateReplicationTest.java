@@ -219,6 +219,13 @@ public class PrismFeedLateReplicationTest extends BaseMultiClusterTests {
             Thread.sleep(20000);
         }
 
+        Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(server1,
+                replicationCoordIDTarget.get(0), 0),
+                WorkflowJob.Status.SUCCEEDED);
+        Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(server1,
+                replicationCoordIDTarget.get(1), 0),
+                WorkflowJob.Status.SUCCEEDED);
+
         Thread.sleep(15000);
 
         List<String> inputFolderListForColo1 = InstanceUtil
@@ -229,17 +236,21 @@ public class PrismFeedLateReplicationTest extends BaseMultiClusterTests {
         Util.print("folder list 1: " + inputFolderListForColo1.toString());
         Util.print("folder list 2: " + inputFolderListForColo2.toString());
 
-        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath, inputFolderListForColo1);
-        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath, inputFolderListForColo2);
+        HadoopUtil.flattenAndPutDataInFolder(server2FS, normalInputPath,
+                HadoopUtil.getWriteLocations(server2, inputFolderListForColo1));
+        HadoopUtil.flattenAndPutDataInFolder(server3FS, normalInputPath,
+                HadoopUtil.getWriteLocations(server3, inputFolderListForColo2));
 
         //sleep till late starts
         InstanceUtil.sleepTill(server1, InstanceUtil.addMinsToTime(startTime, 4));
 
         //check for run id to  be 1
-        Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0) == 1
-                && InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0) == 1 , 
-                "id have to be equal 1");
-
+        Assert.assertEquals(
+                InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0),
+                1, "id has to be equal 1");
+        Assert.assertEquals(
+                InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0),
+                1, "id has to be equal 1");
 
         //wait for lates run to complete
         for (int i = 0; i < 30; i++) {
@@ -252,21 +263,31 @@ public class PrismFeedLateReplicationTest extends BaseMultiClusterTests {
             Util.print("still in for loop");
             Thread.sleep(20000);
         }
-
+        Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(server1,
+                    replicationCoordIDTarget.get(0),0),
+                WorkflowJob.Status.SUCCEEDED);
+        Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(server1,
+                    replicationCoordIDTarget.get(1), 0),
+                WorkflowJob.Status.SUCCEEDED);
 
         Thread.sleep(30000);
 
         //put data for the second time
-        InstanceUtil.putLateDataInFolders(server2, inputFolderListForColo1, 2);
-        InstanceUtil.putLateDataInFolders(server3, inputFolderListForColo2, 2);
+        InstanceUtil.putLateDataInFolders(server2,
+                HadoopUtil.getWriteLocations(server2, inputFolderListForColo1), 2);
+        InstanceUtil.putLateDataInFolders(server3,
+                HadoopUtil.getWriteLocations(server3, inputFolderListForColo2), 2);
 
         //sleep till late 2 starts
         InstanceUtil.sleepTill(server1, InstanceUtil.addMinsToTime(startTime, 9));
 
         //check for run id to be 2
-        Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0) == 2
-                && InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0) == 2, 
-                "id have to be equal 2");
+        Assert.assertEquals(
+                InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(0), 0),
+                2, "id has to be equal 2");
+        Assert.assertEquals(
+                InstanceUtil.getInstanceRunIdFromCoord(server1, replicationCoordIDTarget.get(1), 0),
+                2, "id has to be equal 2");
     }
 
     /** this test case does the following
