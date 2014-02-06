@@ -592,7 +592,10 @@ public class InstanceUtil {
         String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        return coordInfo.getActions().get(instanceNumber).getStatus();
+        List<CoordinatorAction> actions = coordInfo.getActions();
+        if(actions.size() == 0)
+            return null;
+        return actions.get(instanceNumber).getStatus();
 
     }
 

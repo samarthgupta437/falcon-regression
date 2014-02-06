@@ -24,12 +24,14 @@ import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -49,6 +51,7 @@ public class ProcessInstanceColoMixedTest extends BaseMultiClusterTests {
     private final String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceColoMixedTest";
     private final String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     private final String feedPath = baseTestHDFSDir + "/feed0%d" + datePattern;
+    private static final String AGG_DIR = "/examples/apps/aggregator";
 
     private Bundle b1 = new Bundle();
     private Bundle b2 = new Bundle();
@@ -65,6 +68,13 @@ public class ProcessInstanceColoMixedTest extends BaseMultiClusterTests {
         Util.restartService(prism.getClusterHelper());
         Util.restartService(server1.getClusterHelper());
         Util.restartService(server3.getClusterHelper());
+
+        HadoopUtil.deleteDirIfExists(AGG_DIR, server1FS);
+        HadoopUtil.copyDataToFolder(server1, new Path(AGG_DIR),
+                "src/test/resources/oozie");
+        HadoopUtil.deleteDirIfExists(AGG_DIR, server3FS);
+        HadoopUtil.copyDataToFolder(server3, new Path(AGG_DIR),
+                "src/test/resources/oozie");
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -239,20 +249,24 @@ public class ProcessInstanceColoMixedTest extends BaseMultiClusterTests {
 
         int i;
 
+        Status sUa1 = null, sUa2 = null;
         for (i = 0; i < 30; i++) {
-            Status sUa1 =
-                    InstanceUtil.getInstanceStatus(server1, Util.getProcessName(process), 0, 0);
-            Status sUa2 =
-                    InstanceUtil.getInstanceStatus(server3, Util.getProcessName(process), 0, 0);
-            if ((sUa1.toString().equals("RUNNING") || (sUa1.toString().equals("SUCCEEDED"))) &&
-                    (sUa2.toString().equals("RUNNING") || sUa2.toString().equals("SUCCEEDED")))
+            sUa1 = InstanceUtil.getInstanceStatus(server1, Util.getProcessName(process), 0, 0);
+            sUa2 = InstanceUtil.getInstanceStatus(server3, Util.getProcessName(process), 0, 0);
+            if (sUa1 != null && sUa2 != null &&
+                    (sUa1.toString().equals("RUNNING") || sUa1.toString().equals("SUCCEEDED") ||
+                            sUa1.toString().equals("KILLED")) &&
+                    (sUa2.toString().equals("RUNNING") || sUa2.toString().equals("SUCCEEDED") ||
+                            sUa2.toString().equals("KILLED")))
                 break;
             Thread.sleep(20000);
 
         }
 
-        if (i == 30)
-            Assert.assertTrue(false);
+        Assert.assertNotNull(sUa1);
+        Assert.assertTrue(sUa1.toString().equals("RUNNING") || sUa1.toString().equals("SUCCEEDED"));
+        Assert.assertNotNull(sUa2);
+        Assert.assertTrue(sUa2.toString().equals("RUNNING") || sUa2.toString().equals("SUCCEEDED"));
 
         ProcessInstancesResult responseInstance = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(b1.getProcessData()),
