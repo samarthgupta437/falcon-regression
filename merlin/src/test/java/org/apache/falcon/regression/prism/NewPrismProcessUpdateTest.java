@@ -15,11 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.prism;
 
 
@@ -64,7 +59,7 @@ import java.util.Random;
 public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-    String baseTestDir = baseHDFSDir + "NewPrismProcessUpdateTest";
+    String baseTestDir = baseHDFSDir + "/NewPrismProcessUpdateTest";
     String inputFeedPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String WORKFLOW_PATH = "/tmp/falcon-oozie-wf";
     String WORKFLOW_PATH2 = "/tmp/falcon-oozie-wf2";
@@ -108,6 +103,9 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     @BeforeClass
     public void setup() throws Exception {
+        HadoopUtil.deleteDirIfExists(baseHDFSDir, cluster1FS);
+        HadoopUtil.deleteDirIfExists(baseHDFSDir, cluster2FS);
+        HadoopUtil.deleteDirIfExists(baseHDFSDir, cluster3FS);
         setupOozieData(cluster1FS, WORKFLOW_PATH, WORKFLOW_PATH2);
         setupOozieData(cluster2FS, WORKFLOW_PATH, WORKFLOW_PATH2);
         setupOozieData(cluster3FS, WORKFLOW_PATH, WORKFLOW_PATH2);
@@ -130,7 +128,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             fs.mkdirs(new Path(workflowPath + "/lib"));
             fs.copyFromLocalFile(new Path("src/test/resources/oozie/workflow.xml"),
                     new Path(workflowPath + "/workflow.xml"));
-            fs.copyFromLocalFile(new Path("src/test/resources/oozie/oozie-examples-3.1.5.jar"),
+            fs.copyFromLocalFile(new Path("src/test/resources/oozie/lib/oozie-examples-3.1.5.jar"),
                     new Path(workflowPath + "/lib/oozie-examples-3.1.5.jar"));
         }
     }
@@ -837,10 +835,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         dualComparison(UA2Bundle, cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
+        waitingForBundleFinish(cluster3, oldBundleId);
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        waitingForBundleFinish(cluster3, oldBundleId);
         int finalNumberOfInstances =
                 InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
                         Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size();
