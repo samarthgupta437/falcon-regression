@@ -38,6 +38,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,95 +65,65 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 // ps: partition in source
 
 
+    private void uploadDataToServer3(String location, String fileName) throws IOException,
+    InterruptedException {
+        HadoopUtil.createDir(location, server3FS);
+        HadoopUtil.copyDataToFolder(server3, new Path(location), fileName);
+    }
+
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         System.out.println("creating test data");
 
-        HadoopUtil.createDir(testDirWithDate + "00/ua2/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "05/ua2/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "10/ua2/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "15/ua2/", server3FS);
+        uploadDataToServer3(testDirWithDate + "00/ua2/", "feed-s4Replication.xml");
+        uploadDataToServer3(testDirWithDate + "05/ua2/", "log_01.txt");
+        uploadDataToServer3(testDirWithDate + "10/ua2/", "src/main/resources/gs1001.config.properties");
+        uploadDataToServer3(testDirWithDate + "15/ua2/",
+                "src/main/resources/log4testng.properties");
 
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "00/ua2/"), "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "05/ua2/"), "log_01.txt");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "10/ua2/"),
+        uploadDataToServer3(testDirWithDate + "00/ua1/", "feed-s4Replication.xml");
+        uploadDataToServer3(testDirWithDate + "05/ua1/", "log_01.txt");
+        uploadDataToServer3(testDirWithDate + "10/ua1/",
                 "src/main/resources/gs1001.config.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "15/ua2/"),
+        uploadDataToServer3(testDirWithDate + "15/ua1/",
                 "src/main/resources/log4testng.properties");
 
-        HadoopUtil.createDir(testDirWithDate + "00/ua1/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "05/ua1/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "10/ua1/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "15/ua1/", server3FS);
-
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "00/ua1/"), "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "05/ua1/"), "log_01.txt");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "10/ua1/"),
+        uploadDataToServer3(testDirWithDate + "00/ua3/", "feed-s4Replication.xml");
+        uploadDataToServer3(testDirWithDate + "05/ua3/", "log_01.txt");
+        uploadDataToServer3(testDirWithDate + "10/ua3/",
                 "src/main/resources/gs1001.config.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "15/ua1/"),
+        uploadDataToServer3(testDirWithDate + "15/ua3/",
                 "src/main/resources/log4testng.properties");
 
-        HadoopUtil.createDir(testDirWithDate + "00/ua3/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "05/ua3/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "10/ua3/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "15/ua3/", server3FS);
 
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "00/ua3/"), "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "05/ua3/"), "log_01.txt");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "10/ua3/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "00/ua2/", "feed-s4Replication.xml");
+        uploadDataToServer3(testBaseDir3 + testDate + "05/ua2/", "log_01.txt");
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua2/",
                 "src/main/resources/gs1001.config.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "15/ua3/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua2/",
+                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua2/",
                 "src/main/resources/log4testng.properties");
 
 
-        HadoopUtil.createDir(testBaseDir3 + testDate + "00/ua2/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "05/ua2/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "10/ua2/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "15/ua2/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "20/ua2/", server3FS);
-
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "00/ua2/"), "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "05/ua2/"), "log_01.txt");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "10/ua2/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "00/ua1/", "feed-s4Replication.xml");
+        uploadDataToServer3(testBaseDir3 + testDate + "05/ua1/", "log_01.txt");
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua1/",
                 "src/main/resources/gs1001.config.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "15/ua2/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua1/",
                 "src/main/resources/log4testng.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "20/ua2/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua1/",
                 "src/main/resources/log4testng.properties");
 
 
-        HadoopUtil.createDir(testBaseDir3 + testDate + "00/ua1/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "05/ua1/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "10/ua1/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "15/ua1/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "20/ua1/", server3FS);
-
-
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "00/ua1/"), "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "05/ua1/"), "log_01.txt");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "10/ua1/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "00/ua3/", "feed-s4Replication.xml");
+        uploadDataToServer3(testBaseDir3 + testDate + "05/ua3/", "log_01.txt");
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua3/",
                 "src/main/resources/gs1001.config.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "15/ua1/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua3/",
                 "src/main/resources/log4testng.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "20/ua1/"),
-                "src/main/resources/log4testng.properties");
-
-
-        HadoopUtil.createDir(testBaseDir3 + testDate + "00/ua3/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "05/ua3/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "10/ua3/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "15/ua3/", server3FS);
-        HadoopUtil.createDir(testBaseDir3 + testDate + "20/ua3/", server3FS);
-
-
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "00/ua3/"), "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "05/ua3/"), "log_01.txt");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "10/ua3/"),
-                "src/main/resources/gs1001.config.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "15/ua3/"),
-                "src/main/resources/log4testng.properties");
-        HadoopUtil.copyDataToFolder(server3, new Path(testBaseDir3 + testDate + "20/ua3/"),
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua3/",
                 "src/main/resources/log4testng.properties");
 
         Util.print("completed creating test data");
