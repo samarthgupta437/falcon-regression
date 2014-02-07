@@ -53,7 +53,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
     private String testBaseDir4 = baseHDFSDir + "/data/fetlrc/billing";
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    
+
 // pt : partition in target
 // ps: partition in source
 
@@ -200,9 +200,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // replication takes
         // place normally
 
-        // there are 1 source clusters 10.14.110.46
-        //10.14.118.26 is the target
-        //data should be replicated to 10.14.118.26 from 46
+        // there are 1 source clusters cluster3
+        //cluster2 is the target
+        //data should be replicated to cluster2 from cluster3
 
         // path for data in target cluster should also be customized
         Bundle.submitCluster(bundle1, bundle2, bundle3);
@@ -369,10 +369,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // replication takes
         // place normally
 
-        //10.14.110.46 is global cluster where test data is present in location
+        //cluster3 is global cluster where test data is present in location
         // /data/fetlrc/billing/2012/10/01/12/
         // (00 to 30)
-        //data should be replicated to folder on 10.14.117.33 and 10.14.118.26 as targets
+        //data should be replicated to folder on cluster1 and cluster2 as targets
         //ua3 is the source and ua1 and ua2 are target
 
         Bundle.submitCluster(bundle1, bundle2, bundle3);
@@ -468,10 +468,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // replication takes
         // place normally
 
-        // there are 2 source clusters 10.14.110.46 and 10.14.117.33
-        //10.14.118.26 is the target
-        //data should be replicated to 10.14.118.26 from ua2 sub dir of 46 and 33
-        // source cluster path in 33 should be mentioned in cluster definition
+        // there are 2 source clusters cluster3 and cluster1
+        //cluster2 is the target
+        //data should be replicated to cluster2 from ua2 sub dir of cluster3 and cluster1
+        // source cluster path in cluster1 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
 
         Bundle.submitCluster(bundle1, bundle2, bundle3);
@@ -567,10 +567,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // replication takes
         // place normally
 
-        //10.14.110.46 is global cluster where test data is present in location
+        //cluster3 is global cluster where test data is present in location
         // /data/fetlrc/billing/2012/10/01/12/
         // (00 to 30)
-        //data should be replicated to folder on 10.14.117.33 and 10.14.118.26 as targets
+        //data should be replicated to folder on cluster1 and cluster2 as targets
         //ua3 is the source and ua1 and ua2 are target
         Bundle.submitCluster(bundle1, bundle2, bundle3);
 
@@ -663,10 +663,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // replication takes
         // place normally
 
-        // there are 2 source clusters 10.14.110.46 and 10.14.117.33
-        //10.14.118.26 is the target
-        //data should be replicated to 10.14.118.26 from ua2 sub dir of 46 and 33
-        // source cluster path in 33 should be mentioned in cluster definition
+        // there are 2 source clusters cluster3 and cluster1
+        //cluster2 is the target
+        //data should be replicated to cluster2 from ua2 sub dir of cluster3 and cluster1
+        // source cluster path in cluster1 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
         Bundle.submitCluster(bundle1, bundle2, bundle3);
 
@@ -743,10 +743,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // replication takes
         // place normally
 
-        //10.14.110.46 is global cluster where test data is present in location
+        //cluster3 is global cluster where test data is present in location
         // /data/fetlrc/billing/2012/10/01/12/
         // (00 to 30)
-        //data should be replicated to folder on 10.14.117.33 and 10.14.118.26 as targets
+        //data should be replicated to folder on cluster1 and cluster2 as targets
         //ua3 is the source and ua1 and ua2 are target
         Bundle.submitCluster(bundle1, bundle2, bundle3);
 
