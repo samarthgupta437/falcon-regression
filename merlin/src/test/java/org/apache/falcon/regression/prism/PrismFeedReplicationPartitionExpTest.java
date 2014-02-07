@@ -54,13 +54,6 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     
-    private String server1Colo = server1.getClusterHelper().getColo().split("=")[1];
-    private String server2Colo = server2.getClusterHelper().getColo().split("=")[1];
-    private String server3Colo = server3.getClusterHelper().getColo().split("=")[1];
-
-
-
-
 // pt : partition in target
 // ps: partition in source
 
@@ -481,23 +474,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // source cluster path in 33 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
 
-        bundle1.setCLusterColo(server1Colo);
-        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
-
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-
-        bundle2.setCLusterColo(server2Colo);
-        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-
-        bundle3.setCLusterColo(server3Colo);
-        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle3.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
         String startTimeUA1 = "2012-10-01T12:05Z";
         String startTimeUA2 = "2012-10-01T12:10Z";
@@ -528,7 +505,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         //clean target if old data exists
         Util.print("feed: " + feed);
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
@@ -691,24 +668,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         //data should be replicated to 10.14.118.26 from ua2 sub dir of 46 and 33
         // source cluster path in 33 should be mentioned in cluster definition
         // path for data in target cluster should also be customized
-        bundle1.setCLusterColo(server1Colo);
-        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
-
-        ServiceResponse r = prism.getClusterHelper()
-                .submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-
-        bundle2.setCLusterColo(server2Colo);
-        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-
-        bundle3.setCLusterColo(server3Colo);
-        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle3.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
         String startTimeUA1 = "2012-10-01T12:00Z";
         String startTimeUA2 = "2012-10-01T12:00Z";
@@ -738,7 +698,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
         Util.print("feed: " + feed);
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
@@ -788,21 +748,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         // (00 to 30)
         //data should be replicated to folder on 10.14.117.33 and 10.14.118.26 as targets
         //ua3 is the source and ua1 and ua2 are target
-        bundle1.setCLusterColo(server1Colo);
-        Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-        bundle2.setCLusterColo(server2Colo);
-        Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
-
-        bundle3.setCLusterColo(server3Colo);
-        Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle3.getClusters().get(0));
-        Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        Bundle.submitCluster(bundle1, bundle2, bundle3);
 
         String startTimeUA1 = "2012-10-01T12:05Z";
         String startTimeUA2 = "2012-10-01T12:10Z";
@@ -832,7 +778,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
         Util.print("feed: " + feed);
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
