@@ -470,9 +470,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
         // there are 2 source clusters cluster3 and cluster1
         //cluster2 is the target
-        //data should be replicated to cluster2 from ua2 sub dir of cluster3 and cluster1
-        // source cluster path in cluster1 should be mentioned in cluster definition
-        // path for data in target cluster should also be customized
+        // Since there is no partition expression in source clusters, the feed submission should
+        // fail (FALCON-305).
 
         Bundle.submitCluster(bundle1, bundle2, bundle3);
 
@@ -506,57 +505,12 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         Util.print("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
-        AssertUtil.assertSucceeded(r);
-
-        r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-        AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
-
-        InstanceUtil.waitTillInstanceReachState(server1OC, Util.getFeedName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
-        InstanceUtil.waitTillInstanceReachState(server2OC, Util.getFeedName(feed), 3,
-                CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
-
-        //check if data has been replicated correctly
-
-        //on ua1 only ua1 should be replicated, ua2 only ua2
-        //number of files should be same as source
-
-
-        List<Path> ua1ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir4 + testDate));
-        //check for no ua2 or ua3 in ua1
-        AssertUtil.failIfStringFoundInPath(ua1ReplicatedData, "ua2", "ua3");
-
-        List<Path> ua2ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir4 + testDate));
-        AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1", "ua3");
-
-
-        List<Path> ua1ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir4 + testDate + "00/"), "_SUCCESS");
-        List<Path> ua1ReplicatedData05 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir4 + testDate + "05/"), "_SUCCESS");
-
-        List<Path> ua2ReplicatedData10 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir4 + testDate + "10"), "_SUCCESS");
-        List<Path> ua2ReplicatedData15 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir4 + testDate + "15"), "_SUCCESS");
-
-        List<Path> ua3OriginalData00ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir4 + testDate + "00/ua1"), "_SUCCESS");
-        List<Path> ua3OriginalData05ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir4 + testDate + "05/ua1"), "_SUCCESS");
-        List<Path> ua3OriginalData10ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir4 + testDate + "10/ua2"), "_SUCCESS");
-        List<Path> ua3OriginalData15ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir4 + testDate + "15/ua2"), "_SUCCESS");
-
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData00, new ArrayList<Path>());
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData05, ua3OriginalData05ua1);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
+        AssertUtil.assertFailed(r, "Submission of feed should have failed.");
+        Assert.assertTrue(r.getMessage().contains(
+                "Partition expression has to be specified for cluster " +
+                        Util.readClusterName(bundle1.getClusters().get(0)) +
+                        " as there are more than one source clusters"),
+                "Failed response has unexpected error message.");
     }
 
 
