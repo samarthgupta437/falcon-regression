@@ -415,6 +415,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Util.assertSucceeded(
                 cluster3.getProcessHelper()
                         .schedule(URLS.SCHEDULE_URL, UA2Bundle.getProcessData()));
+        String originalProcessData = UA2Bundle.getProcessData();
         String oldBundleId = InstanceUtil
                 .getLatestBundleID(cluster3,
                         Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
@@ -428,17 +429,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         //now to update
         ServiceResponse response =
-                prism.getProcessHelper()
-                        .update((UA2Bundle.getProcessData()), UA2Bundle.getProcessData());
+                prism.getProcessHelper().update((UA2Bundle.getProcessData()), UA2Bundle.getProcessData());
         Util.assertFailed(response);
         String prismString = getResponse(prism, UA2Bundle, false);
-        Assert.assertEquals(Util.getProcessObject(prismString).getName(), oldName);
-        dualComparison(UA2Bundle, cluster3);
-        //ensure that the running process has new coordinators created; while the submitted
-        // one is updated
-        // correctly.
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
-                Util.readEntityName(UA2Bundle.getProcessData()), false);
+                Util.readEntityName(originalProcessData), false);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
