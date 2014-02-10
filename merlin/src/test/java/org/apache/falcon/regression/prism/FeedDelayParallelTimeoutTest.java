@@ -21,18 +21,22 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class FeedDelayParallelTimeoutTest extends BaseMultiClusterTests {
+public class FeedDelayParallelTimeoutTest extends BaseTestClass {
+
+    ColoHelper cluster2;
+    ColoHelper cluster3;
 
     String baseTestDir = baseHDFSDir + "/FeedDelayParallelTimeoutTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
@@ -40,6 +44,11 @@ public class FeedDelayParallelTimeoutTest extends BaseMultiClusterTests {
     Bundle b1 = new Bundle();
     Bundle b2 = new Bundle();
 
+    public FeedDelayParallelTimeoutTest(){
+        super();
+        cluster2 = servers.get(1);
+        cluster3 = servers.get(2);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
@@ -48,8 +57,8 @@ public class FeedDelayParallelTimeoutTest extends BaseMultiClusterTests {
         b1.generateUniqueBundle();
         b2 = (Bundle) Util.readELBundles()[0][0];
         b2.generateUniqueBundle();
-        b1 = new Bundle(b1, server3.getEnvFileName(), server3.getPrefix());
-        b2 = new Bundle(b2, server2.getEnvFileName(), server2.getPrefix());
+        b1 = new Bundle(b1, cluster3.getEnvFileName(), cluster3.getPrefix());
+        b2 = new Bundle(b2, cluster2.getEnvFileName(), cluster2.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)

@@ -19,35 +19,41 @@
 package org.apache.falcon.regression.hcat;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 
-public class SubmitClusterHcat extends BaseSingleClusterTests {
+public class SubmitClusterHcat extends BaseTestClass {
+
+    ColoHelper cluster;
+
     public SubmitClusterHcat() throws IOException {
         super();
+        cluster = servers.get(1);
     }
 
     // private HCatClient client;
 
     @Test(enabled = true, timeOut = 1800000)
     public void SubmitCluster_hcat() {
-        String cluster = "";
-        String feed01 = "";
-        String feed02 = "";
-        String process = "";
+        String clusterData = "";
+        String feedData01 = "";
+        String feedData02 = "";
+        String processData = "";
 
-        Bundle b = Util.getBundle(server1, "");
+        Bundle b = Util.getBundle(cluster, "");
         try {
 
-            cluster = b.getClusters().get(0);
-            feed01 = b.getDataSets().get(0);
-            feed02 = b.getDataSets().get(1);
-            process = b.getProcessData();
+            clusterData = b.getClusters().get(0);
+            feedData01 = b.getDataSets().get(0);
+            feedData02 = b.getDataSets().get(1);
+            processData = b.getProcessData();
 
             //client = getHcatClient();
 
@@ -56,34 +62,34 @@ public class SubmitClusterHcat extends BaseSingleClusterTests {
 			createDB(dbName);
 			createSampleTable(dbName,tableName);
 */
-            System.out.println("Cluster: " + cluster);
+            System.out.println("Cluster: " + clusterData);
             ServiceResponse r =
-                    prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster);
+                    prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, clusterData);
             Util.assertSucceeded(r);
 
-            System.out.println("Feed: " + feed01);
-            r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed01);
+            System.out.println("Feed: " + feedData01);
+            r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedData01);
             Util.assertSucceeded(r);
 
-            System.out.println("Feed: " + feed02);
-            r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed02);
+            System.out.println("Feed: " + feedData02);
+            r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedData02);
             Util.assertSucceeded(r);
 
-            System.out.println("process: " + process);
-            r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, process);
+            System.out.println("process: " + processData);
+            r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, processData);
             Util.assertSucceeded(r);
 
-            r = prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, process);
+            r = prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData);
             Util.assertSucceeded(r);
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
-                prism.getProcessHelper().delete(URLS.DELETE_URL, process);
-                prism.getFeedHelper().delete(URLS.DELETE_URL, feed01);
-                prism.getFeedHelper().delete(URLS.DELETE_URL, feed02);
-                prism.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+                prism.getProcessHelper().delete(URLS.DELETE_URL, processData);
+                prism.getFeedHelper().delete(URLS.DELETE_URL, feedData01);
+                prism.getFeedHelper().delete(URLS.DELETE_URL, feedData02);
+                prism.getClusterHelper().delete(URLS.DELETE_URL, clusterData);
             } catch (Exception e) {
                 e.printStackTrace();
             }
