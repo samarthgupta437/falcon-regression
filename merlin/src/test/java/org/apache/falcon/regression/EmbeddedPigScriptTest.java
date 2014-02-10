@@ -32,7 +32,6 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
-import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -48,8 +47,8 @@ import java.util.List;
  */
 public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
-    public static final String PIG_SCRIPT_DIR = "/examples/apps/pig/";
-    public static final String PIG_SCRIPT_PATH = PIG_SCRIPT_DIR + "id.pig";
+    String pigScriptDir = baseWorkflowDir + "/pig";
+    String pigScriptLocation = pigScriptDir + "/id.pig";
     private Bundle bundle;
     private String prefix;
 
@@ -58,9 +57,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
         Util.print("in @BeforeClass");
         //copy pig script
-        HadoopUtil.createDir(PIG_SCRIPT_DIR, server1FS);
-        HadoopUtil.copyDataToFolder(server1, new Path(PIG_SCRIPT_DIR),
-                "src/test/resources/pig/id.pig");
+        HadoopUtil.uploadDir("src/test/resources/pig", server1, pigScriptDir);
 
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
@@ -98,7 +95,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
         bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setProcessWorkflow(PIG_SCRIPT_PATH);
+        bundle.setProcessWorkflow(pigScriptLocation);
         bundle.setProcessData(bundle.setProcessInputNames(bundle.getProcessData(), "INPUT"));
         bundle.setProcessData(bundle.setProcessOutputNames(bundle.getProcessData(), "OUTPUT"));
     }
