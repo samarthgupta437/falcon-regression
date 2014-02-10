@@ -268,6 +268,13 @@ public class HadoopUtil {
 
     }
 
+    public static void uploadDir(final String localLocation, final ColoHelper coloHelper,
+                                 final String dstHdfsDir)
+    throws IOException, InterruptedException {
+        HadoopUtil.deleteDirIfExists(dstHdfsDir, coloHelper.getClusterHelper().getHadoopFS());
+        HadoopUtil.copyDataToFolder(coloHelper, new Path(dstHdfsDir), localLocation);
+    }
+
     @Deprecated
     public static List<String> getHDFSSubFoldersName(ColoHelper prismHelper,
                                                      String baseDir) throws IOException {
