@@ -57,7 +57,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
         Util.print("in @BeforeClass");
         //copy pig script
-        HadoopUtil.uploadDir("src/test/resources/pig", server1, pigScriptDir);
+        HadoopUtil.uploadDir(server1FS, pigScriptDir, "src/test/resources/pig");
 
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");

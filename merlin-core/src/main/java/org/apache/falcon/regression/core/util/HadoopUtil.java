@@ -250,6 +250,12 @@ public class HadoopUtil {
                 + coloHelper.getProcessHelper().getHadoopURL());
 
         final FileSystem fs = FileSystem.get(conf);
+        copyDataToFolder(fs, folder.toString(), fileLocation);
+    }
+
+    public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
+                                         final String srcFileLocation)
+    throws IOException, InterruptedException {
         UserGroupInformation user = UserGroupInformation
                 .createRemoteUser("hdfs");
 
@@ -258,21 +264,18 @@ public class HadoopUtil {
 
             @Override
             public Boolean run() throws IOException {
-                //	logger.info("copying  "+file+" to "+folderPrefix+folder);
-                fs.copyFromLocalFile(new Path(fileLocation), folder);
+                fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
                 return true;
 
             }
         });
-
-
     }
 
-    public static void uploadDir(final String localLocation, final ColoHelper coloHelper,
-                                 final String dstHdfsDir)
+    public static void uploadDir(final FileSystem fs, final String dstHdfsDir,
+                                 final String localLocation)
     throws IOException, InterruptedException {
-        HadoopUtil.deleteDirIfExists(dstHdfsDir, coloHelper.getClusterHelper().getHadoopFS());
-        HadoopUtil.copyDataToFolder(coloHelper, new Path(dstHdfsDir), localLocation);
+        HadoopUtil.deleteDirIfExists(dstHdfsDir, fs);
+        HadoopUtil.copyDataToFolder(fs, dstHdfsDir, localLocation);
     }
 
     @Deprecated
