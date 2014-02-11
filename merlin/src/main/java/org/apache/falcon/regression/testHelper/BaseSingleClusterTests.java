@@ -37,6 +37,7 @@ public class BaseSingleClusterTests {
     public FileSystem server1FS = null;
     public OozieClient server1OC = null;
     public String baseHDFSDir = "/tmp/falcon-regression";
+    public String baseWorkflowDir = baseHDFSDir + "/workflows";
 
     public BaseSingleClusterTests() {
         server1OC = server1.getClusterHelper().getOozieClient();

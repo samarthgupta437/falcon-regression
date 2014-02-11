@@ -27,7 +27,6 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
-import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -41,7 +40,7 @@ import java.util.List;
 
 public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
 
-    private static final String AGG_DIR = "/examples/apps/aggregator";
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -55,9 +54,7 @@ public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         Util.print("in @BeforeClass");
-        HadoopUtil.deleteDirIfExists(AGG_DIR, server1FS);
-        HadoopUtil.copyDataToFolder(server1, new Path(AGG_DIR),
-                "src/test/resources/oozie");
+        HadoopUtil.uploadDir(server1FS, aggregateWorkflowDir, "src/test/resources/oozie");
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
@@ -93,6 +90,7 @@ public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
         b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
+        b.setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)

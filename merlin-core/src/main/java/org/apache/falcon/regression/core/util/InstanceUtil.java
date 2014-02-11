@@ -305,6 +305,17 @@ public class InstanceUtil {
         Assert.assertEquals(actualKilledInstances, killedInstances);
     }
 
+    public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
+        Util.assertSucceeded(r);
+        int counter = 0;
+        for (ProcessInstancesResult.ProcessInstance processInstance : r.getInstances()) {
+            if(processInstance.getStatus() == ProcessInstancesResult.WorkflowStatus.FAILED)
+                counter++;
+        }
+        Assert.assertEquals(counter, failCount, "Actual number of failed instances does not " +
+                "match expected number of failed instances.");
+    }
+
     public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
                                                  WorkflowAction.Status ws) throws OozieClientException {
 
@@ -581,7 +592,10 @@ public class InstanceUtil {
         String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        return coordInfo.getActions().get(instanceNumber).getStatus();
+        List<CoordinatorAction> actions = coordInfo.getActions();
+        if(actions.size() == 0)
+            return null;
+        return actions.get(instanceNumber).getStatus();
 
     }
 
@@ -1101,8 +1115,11 @@ public class InstanceUtil {
             int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(ua1.getProcessHelper().getOozieURL());
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        WorkflowJob actionInfo =
-                oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId());
+        String jobId = coordInfo.getActions().get(instanceNumber).getExternalId();
+        Util.print("jobId = " + jobId);
+        if(jobId == null)
+            return null;
+        WorkflowJob actionInfo = oozieClient.getJobInfo(jobId);
         return actionInfo.getStatus();
         //return coordInfo.getActions().get(instanceNumber).getStatus();
     }
@@ -1111,13 +1128,15 @@ public class InstanceUtil {
             ColoHelper coloHelper, String coordID, int instanceNumber) throws OozieClientException {
         XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
         CoordinatorAction x = oozieClient.getCoordActionInfo(coordID + "@" + instanceNumber);
-        return InstanceUtil.getReplicationFolderFromInstanceRunConf(x.getRunConf());
+        String jobId = x.getExternalId();
+        WorkflowJob wfJob = oozieClient.getJobInfo(jobId);
+        return InstanceUtil.getReplicationFolderFromInstanceRunConf(wfJob.getConf());
     }
 
     public static List<String> getReplicationFolderFromInstanceRunConf(
             String runConf) {
         String conf;
-        conf = runConf.substring(runConf.indexOf("ivoryInPaths</name>") + 19);
+        conf = runConf.substring(runConf.indexOf("falconInPaths</name>") + 20);
         //	Util.print("conf1: "+conf);
 
         conf = conf.substring(conf.indexOf("<value>") + 7);
