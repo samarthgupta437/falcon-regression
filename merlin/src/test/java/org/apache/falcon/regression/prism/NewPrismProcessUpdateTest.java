@@ -1507,7 +1507,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                         Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
         Thread.sleep(30000);
 
-        int coordCount = Util.getNumberOfWorkflowInstances(cluster3, oldBundleId);
         String oldStartTime = InstanceUtil.dateToOozieDate(
                 UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                         .getStart());
@@ -1528,6 +1527,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                         .update(UA2Bundle.getProcessData(), UA2Bundle.getProcessData()));
         Util.assertSucceeded(cluster3.getProcessHelper()
                 .resume(URLS.RESUME_URL, UA2Bundle.getProcessData()));
+        int coordCount = Util.getNumberOfWorkflowInstances(cluster3, oldBundleId);
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
 
