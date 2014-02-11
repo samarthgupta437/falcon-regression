@@ -54,7 +54,7 @@ public class ProcessInstanceRunningTest extends BaseSingleClusterTests {
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         Util.print("in @BeforeClass");
-        HadoopUtil.uploadDir("src/test/resources/oozie", server1, aggregateWorkflowDir);
+        HadoopUtil.uploadDir(server1FS, aggregateWorkflowDir, "src/test/resources/oozie");
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
