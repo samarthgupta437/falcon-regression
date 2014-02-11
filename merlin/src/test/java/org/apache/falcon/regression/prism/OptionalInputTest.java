@@ -19,38 +19,49 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
+import java.io.IOException;
 import java.lang.reflect.Method;
 
 
-public class OptionalInputTest extends BaseSingleClusterTests {
+public class OptionalInputTest extends BaseTestClass {
 
-    OozieClient oozieClient = server1.getFeedHelper().getOozieClient();
+    ColoHelper cluster;
+    FileSystem clusterFS;
+    OozieClient oozieClient;
     String baseTestDir = baseHDFSDir + "/OptionalInputTest";
     String inputPath = baseTestDir + "/input";
     Bundle b = new Bundle();
+
+    public OptionalInputTest() throws IOException {
+        super();
+        cluster = servers.get(1);
+        oozieClient = serverOC.get(1);
+        clusterFS = serverFS.get(1);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         b.deleteBundle(prism);
-        HadoopUtil.deleteDirIfExists(inputPath + "/", server1FS);
+        HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
     }
 
     @Test(enabled = true, groups = {"singleCluster"})
@@ -74,9 +85,9 @@ public class OptionalInputTest extends BaseSingleClusterTests {
 
         Thread.sleep(20000);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate("2010-01-02T00:00Z"),
-                InstanceUtil.oozieDateToDate("2010-01-02T01:00Z"), inputPath + "/input1/",
+                InstanceUtil.oozieDateToDate("2010-01-02T01:15Z"), inputPath + "/input1/",
                 1);
 
         InstanceUtil
@@ -110,11 +121,11 @@ public class OptionalInputTest extends BaseSingleClusterTests {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 5, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate("2010-01-01T22:00Z"),
                 InstanceUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input2/",
                 1);
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate("2010-01-01T22:00Z"),
                 InstanceUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input1/",
                 1);
@@ -148,9 +159,9 @@ public class OptionalInputTest extends BaseSingleClusterTests {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate("2010-01-01T22:00Z"),
-                InstanceUtil.oozieDateToDate("2010-01-02T04:00Z"), inputPath + "input2/",
+                InstanceUtil.oozieDateToDate("2010-01-02T04:00Z"), inputPath + "/input2/",
                 1);
 
         InstanceUtil
@@ -180,12 +191,12 @@ public class OptionalInputTest extends BaseSingleClusterTests {
 
         Util.print(b.getProcessData());
 
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input1/",
                 1);
-        InstanceUtil.createEmptyDirWithinDatesAndPrefix(server1,
+        InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input0/",
@@ -258,7 +269,7 @@ public class OptionalInputTest extends BaseSingleClusterTests {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input1/",
@@ -283,7 +294,7 @@ public class OptionalInputTest extends BaseSingleClusterTests {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input0/",
@@ -322,7 +333,7 @@ public class OptionalInputTest extends BaseSingleClusterTests {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input1/",
@@ -334,7 +345,7 @@ public class OptionalInputTest extends BaseSingleClusterTests {
         b.setProcessData(b.setProcessFeeds(b.getProcessData(), b.getDataSets(), 2, 2, 1));
 
         //delete all input data
-        HadoopUtil.deleteDirIfExists(inputPath + "/", server1FS);
+        HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
 
         b.setProcessData(b.setProcessInputNames(b.getProcessData(), "inputData0", "inputData"));
 
