@@ -30,7 +30,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
 import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
@@ -51,7 +50,7 @@ public class ProcessInstanceColoMixedTest extends BaseMultiClusterTests {
     private final String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceColoMixedTest";
     private final String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     private final String feedPath = baseTestHDFSDir + "/feed0%d" + datePattern;
-    private static final String AGG_DIR = "/examples/apps/aggregator";
+    private String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
 
     private Bundle b1 = new Bundle();
     private Bundle b2 = new Bundle();
@@ -69,12 +68,8 @@ public class ProcessInstanceColoMixedTest extends BaseMultiClusterTests {
         Util.restartService(server1.getClusterHelper());
         Util.restartService(server3.getClusterHelper());
 
-        HadoopUtil.deleteDirIfExists(AGG_DIR, server1FS);
-        HadoopUtil.copyDataToFolder(server1, new Path(AGG_DIR),
-                "src/test/resources/oozie");
-        HadoopUtil.deleteDirIfExists(AGG_DIR, server3FS);
-        HadoopUtil.copyDataToFolder(server3, new Path(AGG_DIR),
-                "src/test/resources/oozie");
+        HadoopUtil.uploadDir(server1FS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(server3FS, aggregateWorkflowDir, "src/test/resources/oozie");
     }
 
     @BeforeMethod(alwaysRun = true)
