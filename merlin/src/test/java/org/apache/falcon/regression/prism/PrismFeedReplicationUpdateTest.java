@@ -264,7 +264,8 @@ public class PrismFeedReplicationUpdateTest extends BaseMultiClusterTests {
         for (int i = 0; i < 30; i++) {
             Status status1 = InstanceUtil.getInstanceStatus(server1, Util.getProcessName(process), 0, 0);
             Status status2 = InstanceUtil.getInstanceStatus(server3, Util.getProcessName(process), 0, 0);
-            if ((status1 == Status.RUNNING || status1 == Status.SUCCEEDED)
+            if (status1 != null && status2 != null &&
+                    (status1 == Status.RUNNING || status1 == Status.SUCCEEDED)
                     && (status2 == Status.RUNNING || status2 == Status.SUCCEEDED)) {
                 break;
             }

@@ -58,6 +58,14 @@ public abstract class IEntityManagerHelper {
     return hadoopURL;
   }
 
+  public String getClusterReadonly() {
+    return clusterReadonly;
+  }
+
+  public String getClusterWrite() {
+    return clusterWrite;
+  }
+
   public String getHostname() {
     return hostname;
   }
@@ -94,6 +102,8 @@ public abstract class IEntityManagerHelper {
   protected String password = "";
   protected String hadoopLocation = "";
   protected String hadoopURL = "";
+  protected String clusterReadonly = "";
+  protected String clusterWrite = "";
   protected String oozieURL = "";
   protected String oozieLocation = "";
   protected String activeMQ = "";
@@ -180,6 +190,8 @@ public abstract class IEntityManagerHelper {
     this.password = prop.getProperty(prefix + "password", "");
     this.hadoopLocation = prop.getProperty(prefix + "hadoop_location");
     this.hadoopURL = prop.getProperty(prefix + "hadoop_url");
+    this.clusterReadonly = prop.getProperty(prefix + "cluster_readonly");
+    this.clusterWrite = prop.getProperty(prefix + "cluster_write");
     this.oozieURL = prop.getProperty(prefix + "oozie_url");
     this.oozieLocation = prop.getProperty(prefix + "oozie_location");
     this.activeMQ = prop.getProperty(prefix + "activemq_url");
