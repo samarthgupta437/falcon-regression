@@ -905,10 +905,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         dualComparison(UA2Bundle, cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
+        waitingForBundleFinish(cluster3, oldBundleId);
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        waitingForBundleFinish(cluster3, oldBundleId);
+        AssertUtil.checkNotStatus(cluster3OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         int finalNumberOfInstances =
                 InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
                         Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size();
