@@ -21,21 +21,30 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class FeedReplicationS4 extends BaseMultiClusterTests {
+public class FeedReplicationS4 extends BaseTestClass {
 
+    ColoHelper cluster2;
+    ColoHelper cluster3;
     String baseTestHDFSDir = baseHDFSDir + "/FeedReplicationS4/${YEAR}/${MONTH}/${DAY}/${HOUR}";
     String s4location = "s4://inmobi-iat-data/userplatform/${YEAR}/${MONTH}/${DAY}/${HOUR}";
     Bundle b1 = new Bundle();
     Bundle b2 = new Bundle();
+
+    public FeedReplicationS4(){
+        super();
+        cluster2 = servers.get(1);
+        cluster3 = servers.get(2);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setupTest() throws Exception {
@@ -43,8 +52,8 @@ public class FeedReplicationS4 extends BaseMultiClusterTests {
         b1.generateUniqueBundle();
         b2 = (Bundle) Bundle.readBundle("S4Replication")[0][0];
         b2.generateUniqueBundle();
-        b1 = new Bundle(b1, server3.getEnvFileName(), server3.getPrefix());
-        b2 = new Bundle(b2, server2.getEnvFileName(), server2.getPrefix());
+        b1 = new Bundle(b1, cluster3.getEnvFileName(), cluster3.getPrefix());
+        b2 = new Bundle(b2, cluster2.getEnvFileName(), cluster2.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)
