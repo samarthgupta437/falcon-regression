@@ -85,13 +85,9 @@ public class InstanceUtil {
 
 
     static XOozieClient oozieClient = null;
-    static String hdfs_url = null;
 
-
-    public InstanceUtil(String envFileName)  {
-        oozieClient = new XOozieClient(Util.readPropertiesFile(envFileName, "oozie_url"));
-        hdfs_url = "hdfs://" + Util.readPropertiesFile(envFileName, "hadoop_url");
-
+    public InstanceUtil(OozieClient oozieClient)  {
+        this.oozieClient = new XOozieClient(oozieClient.getOozieUrl());
     }
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
@@ -772,11 +768,7 @@ public class InstanceUtil {
 
     public static void putFileInFolders(ColoHelper colo, List<String> folderList,
                                         final String... fileName) throws IOException, InterruptedException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name",
-                Util.readPropertiesFile(colo.getEnvFileName(), "cluster_write"));
-
-        final FileSystem fs = FileSystem.get(conf);
+        final FileSystem fs = colo.getClusterHelper().getHadoopFS();
 
         UserGroupInformation user = UserGroupInformation.createRemoteUser("rishu");
 
