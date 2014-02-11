@@ -21,12 +21,13 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -34,9 +35,17 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
-public class FeedRetentionTest extends BaseMultiClusterTests {
+public class FeedRetentionTest extends BaseTestClass {
 
+    ColoHelper cluster1;
+    ColoHelper cluster2;
     private Bundle bundle1, bundle2;
+
+    public FeedRetentionTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
@@ -44,11 +53,11 @@ public class FeedRetentionTest extends BaseMultiClusterTests {
         //getImpressionRC bundle
         bundle1 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundle1.generateUniqueBundle();
-        bundle1 = new Bundle(bundle1, server1.getEnvFileName(), server1.getPrefix());
+        bundle1 = new Bundle(bundle1, cluster1.getEnvFileName(), cluster1.getPrefix());
 
         bundle2 = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundle2.generateUniqueBundle();
-        bundle2 = new Bundle(bundle2, server2.getEnvFileName(), server2.getPrefix());
+        bundle2 = new Bundle(bundle2, cluster2.getEnvFileName(), cluster2.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)
@@ -69,13 +78,13 @@ public class FeedRetentionTest extends BaseMultiClusterTests {
         String inputData = inputPath + "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
         String outputPathTemplate = baseHDFSDir + "/testOutput/op%d/ivoryRetention0%d/%s/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
-        InstanceUtil.putFileInFolders(server1,
-                InstanceUtil.createEmptyDirWithinDatesAndPrefix(server1,
+        InstanceUtil.putFileInFolders(cluster1,
+                InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster1,
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
                         inputPath, 1), "thriftRRMar0602.gz");
-        InstanceUtil.putFileInFolders(server2,
-                InstanceUtil.createEmptyDirWithinDatesAndPrefix(server2,
+        InstanceUtil.putFileInFolders(cluster2,
+                InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster2,
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
                         inputPath, 1), "thriftRRMar0602.gz");
