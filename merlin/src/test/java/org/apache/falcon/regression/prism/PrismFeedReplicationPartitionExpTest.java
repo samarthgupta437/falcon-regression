@@ -21,6 +21,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
@@ -29,9 +30,11 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -43,8 +46,16 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests {
+public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
+    ColoHelper cluster1;
+    ColoHelper cluster2;
+    ColoHelper cluster3;
+    FileSystem cluster1FS;
+    FileSystem cluster2FS;
+    FileSystem cluster3FS;
+    OozieClient cluster1OC;
+    OozieClient cluster2OC;
     private Bundle bundle1, bundle2, bundle3;
     private String testDate = "/2012/10/01/12/";
     private String testBaseDir1 = baseHDFSDir + "/localDC/rc/billing";
@@ -54,14 +65,26 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
+    public PrismFeedReplicationPartitionExpTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster3 = servers.get(2);
+        cluster1FS = serverFS.get(0);
+        cluster2FS = serverFS.get(1);
+        cluster3FS = serverFS.get(2);
+        cluster1OC = serverOC.get(0);
+        cluster2OC = serverOC.get(1);
+    }
+
 // pt : partition in target
 // ps: partition in source
 
 
     private void uploadDataToServer3(String location, String fileName) throws IOException,
     InterruptedException {
-        HadoopUtil.createDir(location, server3FS);
-        HadoopUtil.copyDataToFolder(server3, new Path(location), fileName);
+        HadoopUtil.createDir(location, cluster3FS);
+        HadoopUtil.copyDataToFolder(cluster3, new Path(location), fileName);
     }
 
     @BeforeClass(alwaysRun = true)
@@ -128,9 +151,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         Util.print("test name: " + method.getName());
         Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
 
-        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
-        bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
-        bundle3 = new Bundle(bundle, server3.getEnvFileName(), server3.getPrefix());
+        bundle1 = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundle2 = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundle3 = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
 
         bundle1.generateUniqueBundle();
         bundle2.generateUniqueBundle();
@@ -141,8 +164,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
     public void tearDown() throws Exception {
 
         for (String dir : new String []{testBaseDir1, testBaseDir2, testBaseDir3, testBaseDir4}) {
-            HadoopUtil.deleteDirIfExists(dir, server1FS);
-            HadoopUtil.deleteDirIfExists(dir, server2FS);
+            HadoopUtil.deleteDirIfExists(dir, cluster1FS);
+            HadoopUtil.deleteDirIfExists(dir, cluster2FS);
         }
         prism.getFeedHelper().delete(URLS.DELETE_URL, bundle1.getDataSets().get(0));
         prism.getClusterHelper().delete(URLS.DELETE_URL, bundle2.getClusters().get(0));
@@ -240,23 +263,23 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         AssertUtil.assertSucceeded(r);
         Thread.sleep(15000);
 
-        HadoopUtil.createDir(testDirWithDate + "00/ua3/", server3FS);
-        HadoopUtil.createDir(testDirWithDate + "05/ua3/", server3FS);
+        HadoopUtil.createDir(testDirWithDate + "00/ua3/", cluster3FS);
+        HadoopUtil.createDir(testDirWithDate + "05/ua3/", cluster3FS);
 
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "00/ua3/"),
+        HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "00/ua3/"),
                 "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(server3, new Path(testDirWithDate + "05/ua3/"),
+        HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "05/ua3/"),
                 "log_01.txt");
 
-        InstanceUtil.waitTillInstanceReachState(server2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
                 "REPLICATION"), 1);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
                 "RETENTION"), 1);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server1.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
                 "RETENTION"), 1);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server3.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
                 "RETENTION"), 1);
 
 
@@ -267,19 +290,19 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
 
         List<Path> ua2ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir2));
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2));
         AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1", "ua2");
 
 
         List<Path> ua3ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "00/ua3/"));
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "00/ua3/"));
         List<Path> ua3ReplicatedData05 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "05/ua3/"));
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "05/ua3/"));
 
         List<Path> ua2ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir2 + testDate + "00"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2 + testDate + "00"), "_SUCCESS");
         List<Path> ua2ReplicatedData05 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir2 + testDate + "05"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2 + testDate + "05"), "_SUCCESS");
 
         AssertUtil.checkForPathsSizes(ua3ReplicatedData00, ua2ReplicatedData00);
         AssertUtil.checkForPathsSizes(ua3ReplicatedData05, ua2ReplicatedData05);
@@ -325,17 +348,17 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
-        InstanceUtil.waitTillInstanceReachState(server2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         Assert.assertEquals(InstanceUtil
-                        .checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed), "REPLICATION"), 1);
+                        .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed), "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-                        .checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed), "RETENTION"), 1);
+                        .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed), "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                        .checkIfFeedCoordExist(server1.getFeedHelper(), Util.readDatasetName(feed), "RETENTION"), 1);
+                        .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed), "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                        .checkIfFeedCoordExist(server3.getFeedHelper(), Util.readDatasetName(feed), "RETENTION"), 1);
+                        .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed), "RETENTION"), 1);
 
 
         //check if data has been replicated correctly
@@ -344,19 +367,19 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         //number of files should be same as source
 
 
-        List<Path> ua2ReplicatedData = HadoopUtil.getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir2));
+        List<Path> ua2ReplicatedData = HadoopUtil.getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2));
         AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1", "ua3");
 
 
         List<Path> ua3ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "00/ua2/"));
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "00/ua2/"));
         List<Path> ua3ReplicatedData05 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "05/ua2/"));
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "05/ua2/"));
 
         List<Path> ua2ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir2 + testDate + "00"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2 + testDate + "00"), "_SUCCESS");
         List<Path> ua2ReplicatedData05 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir2 + testDate + "05"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2 + testDate + "05"), "_SUCCESS");
 
         AssertUtil.checkForPathsSizes(ua3ReplicatedData00, ua2ReplicatedData00);
         AssertUtil.checkForPathsSizes(ua3ReplicatedData05, ua2ReplicatedData05);
@@ -413,10 +436,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Thread.sleep(15000);
 
-        InstanceUtil.waitTillInstanceReachState(server1OC, Util.getFeedName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.getFeedName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
-        InstanceUtil.waitTillInstanceReachState(server2OC, Util.getFeedName(feed), 3,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 3,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -426,35 +449,35 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
 
         List<Path> ua1ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1,
+                .getAllFilesRecursivelyHDFS(cluster1,
                         new Path(testBaseDir3 + testDate));
         //check for no ua2 or ua3 in ua1
         AssertUtil.failIfStringFoundInPath(ua1ReplicatedData, "ua2", "ua3");
 
         List<Path> ua2ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2,
+                .getAllFilesRecursivelyHDFS(cluster2,
                         new Path(testBaseDir3 + testDate));
         AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1", "ua3");
 
 
         List<Path> ua1ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir3 + testDate + "00/"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir3 + testDate + "00/"), "_SUCCESS");
         List<Path> ua1ReplicatedData10 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir3 + testDate + "10/"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir3 + testDate + "10/"), "_SUCCESS");
 
         List<Path> ua2ReplicatedData10 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir3 + testDate + "10"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "10"), "_SUCCESS");
         List<Path> ua2ReplicatedData15 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir3 + testDate + "15"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "15"), "_SUCCESS");
 
         List<Path> ua3OriginalData00ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir3 + testDate + "00/ua1"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "00/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir3 + testDate + "10/ua1"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "10/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir3 + testDate + "10/ua2"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "10/ua2"), "_SUCCESS");
         List<Path> ua3OriginalData15ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir3 + testDate + "15/ua2"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "15/ua2"), "_SUCCESS");
 
         AssertUtil.checkForPathsSizes(ua1ReplicatedData00, new ArrayList<Path>());
         AssertUtil.checkForPathsSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
@@ -565,9 +588,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Thread.sleep(15000);
 
-        InstanceUtil.waitTillInstanceReachState(server1OC, Util.getFeedName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.getFeedName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 7,ENTITY_TYPE.FEED);
-        InstanceUtil.waitTillInstanceReachState(server2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -577,31 +600,31 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
 
         List<Path> ua1ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir1 + "/ua1" + testDate));
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + "/ua1" + testDate));
         //check for no ua2 or ua3 in ua1
         AssertUtil.failIfStringFoundInPath(ua1ReplicatedData, "ua2");
 
         List<Path> ua2ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir1 + "/ua2" + testDate));
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate));
         AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1");
 
 
         List<Path> ua1ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir1 + "/ua1" + testDate + "00/"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + "/ua1" + testDate + "00/"), "_SUCCESS");
         List<Path> ua1ReplicatedData05 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir1 + "/ua1" + testDate + "05/"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + "/ua1" + testDate + "05/"), "_SUCCESS");
 
         List<Path> ua2ReplicatedData10 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir1 + "/ua2" + testDate + "10"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "10"), "_SUCCESS");
         List<Path> ua2ReplicatedData15 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir1 + "/ua2" + testDate + "15"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "15"), "_SUCCESS");
 
         List<Path> ua3OriginalData05ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "05/ua3"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "05/ua3"), "_SUCCESS");
         List<Path> ua3OriginalData10ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "10/ua3"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "10/ua3"), "_SUCCESS");
         List<Path> ua3OriginalData15ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "15/ua3"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "15/ua3"), "_SUCCESS");
 
         AssertUtil.checkForPathsSizes(ua1ReplicatedData00, new ArrayList<Path>());
         AssertUtil.checkForPathsSizes(ua1ReplicatedData05, ua3OriginalData05ua1);
@@ -660,7 +683,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         AssertUtil.assertSucceeded(r);
         Thread.sleep(15000);
 
-        InstanceUtil.waitTillInstanceReachState(server2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -669,20 +692,20 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
         //number of files should be same as source
 
 
-        List<Path> ua2ReplicatedData = HadoopUtil.getAllFilesRecursivelyHDFS(server2,
+        List<Path> ua2ReplicatedData = HadoopUtil.getAllFilesRecursivelyHDFS(cluster2,
                 new Path(testBaseDir2 + "/replicated" + testDate));
         AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua2");
 
-        List<Path> ua2ReplicatedData00ua1 = HadoopUtil.getAllFilesRecursivelyHDFS(server2,
+        List<Path> ua2ReplicatedData00ua1 = HadoopUtil.getAllFilesRecursivelyHDFS(cluster2,
                 new Path(testBaseDir2 + "/replicated" + testDate + "00/ua1"), "_SUCCESS");
-        List<Path> ua2ReplicatedData05ua3 = HadoopUtil.getAllFilesRecursivelyHDFS(server2,
+        List<Path> ua2ReplicatedData05ua3 = HadoopUtil.getAllFilesRecursivelyHDFS(cluster2,
                 new Path(testBaseDir2 + "/replicated" + testDate + "05/ua3/"), "_SUCCESS");
 
 
         List<Path> ua1OriginalData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir1 + testDate + "00/ua1"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + testDate + "00/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData05 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server3, new Path(testDirWithDate + "05/ua1"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "05/ua1"), "_SUCCESS");
 
         AssertUtil.checkForPathsSizes(ua2ReplicatedData00ua1, ua1OriginalData00);
         AssertUtil.checkForPathsSizes(ua2ReplicatedData05ua3, ua3OriginalData05);
@@ -738,9 +761,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Thread.sleep(15000);        
-        InstanceUtil.waitTillInstanceReachState(server1OC, Util.getFeedName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.getFeedName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
-        InstanceUtil.waitTillInstanceReachState(server2OC, Util.getFeedName(feed), 3,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 3,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -750,33 +773,33 @@ public class PrismFeedReplicationPartitionExpTest extends BaseMultiClusterTests 
 
 
         List<Path> ua1ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir1 + "/ua1" + testDate));
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + "/ua1" + testDate));
         //check for no ua2 or ua3 in ua1
         AssertUtil.failIfStringFoundInPath(ua1ReplicatedData, "ua2", "ua3");
 
         List<Path> ua2ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir1 + "/ua2" + testDate));
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate));
         AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1", "ua3");
 
 
         List<Path> ua1ReplicatedData00 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir1 + "/ua1" + testDate + "00/"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + "/ua1" + testDate + "00/"), "_SUCCESS");
         List<Path> ua1ReplicatedData10 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server1, new Path(testBaseDir1 + "/ua1" + testDate + "10/"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + "/ua1" + testDate + "10/"), "_SUCCESS");
 
         List<Path> ua2ReplicatedData10 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir1 + "/ua2" + testDate + "10"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "10"), "_SUCCESS");
         List<Path> ua2ReplicatedData15 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testBaseDir1 + "/ua2" + testDate + "15"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "15"), "_SUCCESS");
 
         List<Path> ua3OriginalData00ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testDirWithDate + "00/ua1"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "00/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testDirWithDate + "10/ua1"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "10/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testDirWithDate + "10/ua2"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "10/ua2"), "_SUCCESS");
         List<Path> ua3OriginalData15ua2 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(server2, new Path(testDirWithDate + "15/ua2"), "_SUCCESS");
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "15/ua2"), "_SUCCESS");
 
         AssertUtil.checkForPathsSizes(ua1ReplicatedData00, new ArrayList<Path>());
         AssertUtil.checkForPathsSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
