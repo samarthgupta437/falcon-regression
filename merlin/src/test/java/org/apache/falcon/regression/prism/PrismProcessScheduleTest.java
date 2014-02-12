@@ -19,29 +19,43 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.testng.TestNGException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class PrismProcessScheduleTest extends BaseMultiClusterTests {
+public class PrismProcessScheduleTest extends BaseTestClass {
 
+    ColoHelper cluster1;
+    ColoHelper cluster2;
+    OozieClient cluster1OC;
+    OozieClient cluster2OC;
     Bundle UA1Bundle = new Bundle();
     Bundle UA2Bundle = new Bundle();
+
+    public PrismProcessScheduleTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster1OC = serverOC.get(0);
+        cluster2OC = serverOC.get(1);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
-        UA1Bundle = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
-        UA2Bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        UA1Bundle = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        UA2Bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         UA1Bundle.generateUniqueBundle();
         UA2Bundle.generateUniqueBundle();
     }
@@ -50,16 +64,16 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
     public void testProcessScheduleOnBothColos() throws Exception {
         //schedule both bundles
         UA1Bundle.submitAndScheduleProcess();
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         UA2Bundle.submitAndScheduleProcess();
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
 
     }
 
@@ -70,20 +84,20 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
         UA2Bundle.submitAndScheduleProcess();
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
 
-        Util.assertSucceeded(server2.getProcessHelper()
+        Util.assertSucceeded(cluster2.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Util.assertSucceeded(server1.getProcessHelper()
+        Util.assertSucceeded(cluster1.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA2Bundle.getProcessData()));
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
     }
 
@@ -93,23 +107,23 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
         UA1Bundle.submitAndScheduleProcess();
         UA2Bundle.submitAndScheduleProcess();
 
-        Util.assertSucceeded(server2.getProcessHelper()
+        Util.assertSucceeded(cluster2.getProcessHelper()
                 .suspend(URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         //now check if they have been scheduled correctly or not
 
-        Util.assertSucceeded(server2.getProcessHelper()
+        Util.assertSucceeded(cluster2.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
-        Util.assertSucceeded(server2.getProcessHelper()
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
+        Util.assertSucceeded(cluster2.getProcessHelper()
                 .resume(URLS.RESUME_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
 
-        Util.assertSucceeded(server1.getProcessHelper()
+        Util.assertSucceeded(cluster1.getProcessHelper()
                 .suspend(URLS.SUSPEND_URL, UA2Bundle.getProcessData()));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -120,17 +134,17 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
 
         Util.assertSucceeded(
                 prism.getProcessHelper().delete(URLS.DELETE_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         Util.assertSucceeded(
                 prism.getProcessHelper().delete(URLS.DELETE_URL, UA2Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.KILLED);
 
-        Util.assertFailed(server2.getProcessHelper()
+        Util.assertFailed(cluster2.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Util.assertFailed(server1.getProcessHelper()
+        Util.assertFailed(cluster1.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA2Bundle.getProcessData()));
 
     }
@@ -138,9 +152,9 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
 
     @Test(groups = {"prism", "0.2"})
     public void testScheduleNonExistentProcessOnBothColos() throws Exception {
-        Util.assertFailed(server2.getProcessHelper()
+        Util.assertFailed(cluster2.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Util.assertFailed(server1.getProcessHelper()
+        Util.assertFailed(cluster1.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA2Bundle.getProcessData()));
 
     }
@@ -151,21 +165,21 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
         try {
             UA2Bundle.submitProcess();
 
-            Util.shutDownService(server2.getProcessHelper());
+            Util.shutDownService(cluster2.getProcessHelper());
 
             Util.assertSucceeded(prism.getProcessHelper()
                     .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getProcessData()));
 
             //now check if they have been scheduled correctly or not
-            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
             //check if there is no criss cross
-            AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server2.getProcessHelper());
+            Util.restartService(cluster2.getProcessHelper());
         }
     }
 
@@ -175,16 +189,16 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
         try {
             UA1Bundle.submitProcess();
 
-            Util.shutDownService(server2.getProcessHelper());
+            Util.shutDownService(cluster2.getProcessHelper());
 
             Util.assertFailed(prism.getProcessHelper()
                     .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
-            AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server2.getProcessHelper());
+            Util.restartService(cluster2.getProcessHelper());
         }
 
     }
@@ -196,13 +210,13 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
             UA1Bundle.submitAndScheduleProcess();
             Util.assertSucceeded(UA1Bundle.getProcessHelper()
                     .suspend(URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
-            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
 
             UA2Bundle.submitAndScheduleProcess();
-            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-            AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
-            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
+            AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -218,13 +232,13 @@ public class PrismProcessScheduleTest extends BaseMultiClusterTests {
             UA1Bundle.submitAndScheduleProcess();
             Util.assertSucceeded(prism.getProcessHelper()
                     .delete(URLS.DELETE_URL, UA1Bundle.getProcessData()));
-            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
 
             UA2Bundle.submitAndScheduleProcess();
-            AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-            AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-            AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
-            AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+            AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
+            AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
