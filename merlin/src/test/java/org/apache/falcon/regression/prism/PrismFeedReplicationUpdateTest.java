@@ -21,12 +21,14 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -35,24 +37,42 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class PrismFeedReplicationUpdateTest extends BaseMultiClusterTests {
+public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
+    ColoHelper cluster1;
+    ColoHelper cluster2;
+    ColoHelper cluster3;
+    FileSystem cluster1FS;
+    FileSystem cluster2FS;
+    FileSystem cluster3FS;
+    private String cluster1Colo;
+    private String cluster2Colo;
+    private String cluster3Colo;
+    private Bundle bundle1, bundle2, bundle3;
     private final String inputPath = baseHDFSDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String alternativeInputPath = baseHDFSDir + "/newFeedPath/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private Bundle bundle1, bundle2, bundle3;
 
-    private String server1Colo = server1.getClusterHelper().getColo().split("=")[1];
-    private String server2Colo = server2.getClusterHelper().getColo().split("=")[1];
-    private String server3Colo = server3.getClusterHelper().getColo().split("=")[1];
+    public PrismFeedReplicationUpdateTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster3 = servers.get(2);
+        cluster1FS = serverFS.get(0);
+        cluster2FS = serverFS.get(1);
+        cluster3FS = serverFS.get(2);
+        cluster1Colo = cluster1.getClusterHelper().getColo().split("=")[1];
+        cluster2Colo = cluster2.getClusterHelper().getColo().split("=")[1];
+        cluster3Colo = cluster3.getClusterHelper().getColo().split("=")[1];
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
 
-        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
-        bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
-        bundle3 = new Bundle(bundle, server3.getEnvFileName(), server3.getPrefix());
+        bundle1 = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundle2 = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundle3 = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
 
         bundle1.generateUniqueBundle();
         bundle2.generateUniqueBundle();
@@ -80,14 +100,14 @@ public class PrismFeedReplicationUpdateTest extends BaseMultiClusterTests {
 
         String postFix = "/US/ua2";
         String prefix = bundle1.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
-        Util.lateDataReplenish(server2, 5, 80, prefix, postFix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
+        Util.lateDataReplenish(cluster2, 5, 80, prefix, postFix);
 
 
         postFix = "/UK/ua3";
         prefix = bundle1.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
-        Util.lateDataReplenish(server3, 5, 80, prefix, postFix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
+        Util.lateDataReplenish(cluster3, 5, 80, prefix, postFix);
 
         String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
 
@@ -128,28 +148,32 @@ public class PrismFeedReplicationUpdateTest extends BaseMultiClusterTests {
         prism.getFeedHelper().update(feed, feed);
         Thread.sleep(30000);
 
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feed),
                                 "REPLICATION"), 0);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server2.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feed),
                                 "RETENTION"), 2);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server3.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feed),
                                 "REPLICATION"), 0);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server3.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feed),
                                 "RETENTION"), 2);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server1.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
                                 "REPLICATION"), 4);
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(server1.getFeedHelper(), Util.readDatasetName(feed),
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
                                 "RETENTION"), 2);
     }
 
     @Test(enabled = true, timeOut = 1200000)
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
-        bundle1.setCLusterColo(server1Colo);
+        bundle1.setCLusterColo(cluster1Colo);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
-        bundle2.setCLusterColo(server2Colo);
+        bundle2.setCLusterColo(cluster2Colo);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
-        bundle3.setCLusterColo(server3Colo);
+        bundle3.setCLusterColo(cluster3Colo);
         Util.print("cluster bundle3: " + bundle3.getClusters().get(0));
 
         //submit 3 clusters
@@ -182,12 +206,12 @@ public class PrismFeedReplicationUpdateTest extends BaseMultiClusterTests {
 
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
-        Util.lateDataReplenish(server1, 70, 1, prefix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
+        Util.lateDataReplenish(cluster1, 70, 1, prefix);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
-        Util.lateDataReplenish(server3, 70, 1, prefix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
+        Util.lateDataReplenish(cluster3, 70, 1, prefix);
 
         String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
 
@@ -262,8 +286,9 @@ public class PrismFeedReplicationUpdateTest extends BaseMultiClusterTests {
         Util.print("Wait till process goes into running ");
 
         for (int i = 0; i < 30; i++) {
-            Status status1 = InstanceUtil.getInstanceStatus(server1, Util.getProcessName(process), 0, 0);
-            Status status2 = InstanceUtil.getInstanceStatus(server3, Util.getProcessName(process), 0, 0);
+            Status status1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
+            Status status2 = InstanceUtil.getInstanceStatus(cluster3,
+                    Util.getProcessName(process), 0, 0);
             if (status1 != null && status2 != null &&
                     (status1 == Status.RUNNING || status1 == Status.SUCCEEDED)
                     && (status2 == Status.RUNNING || status2 == Status.SUCCEEDED)) {

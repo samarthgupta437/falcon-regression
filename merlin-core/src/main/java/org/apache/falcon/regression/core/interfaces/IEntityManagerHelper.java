@@ -214,7 +214,7 @@ public abstract class IEntityManagerHelper {
     this.serviceStatusCmd =
       prop.getProperty(prefix + "service_status_cmd", "/etc/init.d/tomcat6 status");
     this.identityFile = prop.getProperty(prefix + "identityFile",
-      System.getProperty(prefix + "user.home") + "/.ssh/id_rsa");
+      System.getProperty("user.home") + "/.ssh/id_rsa");
     this.hadoopFS = null;
     this.oozieClient = null;
   }

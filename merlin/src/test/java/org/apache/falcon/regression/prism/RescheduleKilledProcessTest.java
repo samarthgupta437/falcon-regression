@@ -19,15 +19,14 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -37,15 +36,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class RescheduleKilledProcessTest extends BaseSingleClusterTests {
+public class RescheduleKilledProcessTest extends BaseTestClass {
 
     private Bundle bundle;
+    ColoHelper cluster1;
+    FileSystem cluster1FS;
+
+    public RescheduleKilledProcessTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster1FS = serverFS.get(0);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)
@@ -91,8 +98,8 @@ public class RescheduleKilledProcessTest extends BaseSingleClusterTests {
         bundle.setInputFeedDataPath(baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
         String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(bundle));
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
-        Util.lateDataReplenish(server1, 40, 1, prefix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
+        Util.lateDataReplenish(cluster1, 40, 1, prefix);
 
         System.out.println("process: " + bundle.getProcessData());
 

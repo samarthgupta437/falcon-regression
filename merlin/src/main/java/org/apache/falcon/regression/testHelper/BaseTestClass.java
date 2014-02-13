@@ -48,6 +48,7 @@ public class BaseTestClass {
     public List<FileSystem> serverFS;
     public List<OozieClient> serverOC;
     public String baseHDFSDir = "/tmp/falcon-regression";
+    public String baseWorkflowDir = baseHDFSDir + "/workflows";
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public static final String PRISM_PREFIX = "prism";
 

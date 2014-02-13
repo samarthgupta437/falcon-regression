@@ -21,6 +21,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -28,7 +29,8 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -40,7 +42,7 @@ import java.lang.reflect.Method;
 /**
  * Feed instance status tests.
  */
-public class FeedInstanceStatusTest extends BaseMultiClusterTests {
+public class FeedInstanceStatusTest extends BaseTestClass {
 
     private String baseTestDir = baseHDFSDir + "/FeedInstanceStatusTest";
     private String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
@@ -48,11 +50,26 @@ public class FeedInstanceStatusTest extends BaseMultiClusterTests {
     private Bundle b2 = new Bundle();
     private Bundle b3 = new Bundle();
 
+    ColoHelper cluster1;
+    ColoHelper cluster2;
+    ColoHelper cluster3;
+    FileSystem cluster2FS;
+    FileSystem cluster3FS;
+
+    public FeedInstanceStatusTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster3 = servers.get(2);
+        cluster2FS = serverFS.get(1);
+        cluster3FS = serverFS.get(2);
+    }
+
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        Util.restartService(server1.getClusterHelper());
-        Util.restartService(server2.getClusterHelper());
+        Util.restartService(cluster1.getClusterHelper());
+        Util.restartService(cluster2.getClusterHelper());
 
         b1 = (Bundle) Util.readELBundles()[0][0];
         b1.generateUniqueBundle();
@@ -60,9 +77,9 @@ public class FeedInstanceStatusTest extends BaseMultiClusterTests {
         b2.generateUniqueBundle();
         b3 = (Bundle) Util.readELBundles()[0][0];
         b3.generateUniqueBundle();
-        b1 = new Bundle(b1, server1.getEnvFileName(), server1.getPrefix());
-        b2 = new Bundle(b2, server2.getEnvFileName(), server2.getPrefix());
-        b3 = new Bundle(b3, server3.getEnvFileName(), server3.getPrefix());
+        b1 = new Bundle(b1, cluster1.getEnvFileName(), cluster1.getPrefix());
+        b2 = new Bundle(b2, cluster2.getEnvFileName(), cluster2.getPrefix());
+        b3 = new Bundle(b3, cluster3.getEnvFileName(), cluster3.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)
@@ -174,14 +191,14 @@ public class FeedInstanceStatusTest extends BaseMultiClusterTests {
 
         String postFix = "/US/ua2";
         String prefix = b1.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
-        Util.lateDataReplenish(server2, 80, 1, prefix, postFix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
+        Util.lateDataReplenish(cluster2, 80, 1, prefix, postFix);
 
 
         postFix = "/UK/ua3";
         prefix = b1.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server3FS);
-        Util.lateDataReplenish(server3, 80, 1, prefix, postFix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
+        Util.lateDataReplenish(cluster3, 80, 1, prefix, postFix);
 
 
         // both replication instances

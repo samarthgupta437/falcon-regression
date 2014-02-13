@@ -22,15 +22,11 @@
  */
 package org.apache.falcon.regression.core.helpers;
 
-import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
-import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-
-import java.io.IOException;
 
 
 public class PrismHelper {
@@ -76,7 +72,7 @@ public class PrismHelper {
       processHelper =
         EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
       feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
-      instanceUtil = new InstanceUtil(this.envFileName);
+      instanceUtil = new InstanceUtil(this.clusterHelper.getOozieClient());
 
     } catch (Exception e) {
       System.out.println(e.getMessage());

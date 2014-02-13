@@ -20,10 +20,11 @@ package org.apache.falcon.regression;
 
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -34,17 +35,23 @@ import java.lang.reflect.Method;
 /**
  * Feed submission tests.
  */
-public class FeedSubmitTest extends BaseSingleClusterTests {
+public class FeedSubmitTest extends BaseTestClass {
 
+    ColoHelper cluster;
     private Bundle bundle;
     private String feed;
+
+    public FeedSubmitTest(){
+        super();
+        cluster = servers.get(0);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
 
         //submit the cluster
         ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
