@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.generated.process.EngineType;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -31,7 +32,8 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -45,33 +47,42 @@ import java.util.List;
 /**
  * Embedded pig script test.
  */
-public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
+public class EmbeddedPigScriptTest extends BaseTestClass {
 
-    String pigScriptDir = baseWorkflowDir + "/pig";
-    String pigScriptLocation = pigScriptDir + "/id.pig";
+    ColoHelper cluster;
+    FileSystem clusterFS;
     private Bundle bundle;
     private String prefix;
+    String pigScriptDir = baseWorkflowDir + "/pig";
+    String pigScriptLocation = pigScriptDir + "/id.pig";
+
+
+    public EmbeddedPigScriptTest(){
+        super();
+        cluster = servers.get(0);
+        clusterFS = serverFS.get(0);
+    }
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
         //copy pig script
-        HadoopUtil.uploadDir(server1FS, pigScriptDir, "src/test/resources/pig");
+        HadoopUtil.uploadDir(clusterFS, pigScriptDir, "src/test/resources/pig");
 
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         prefix = bundle.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -85,14 +96,14 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setProcessWorkflow(pigScriptLocation);
@@ -227,7 +238,7 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
 
         Job.Status status = null;
         for (int i = 0; i < 100; i++) {
-            status = InstanceUtil.getDefaultCoordinatorStatus(server1, Util.getProcessName(bundle.getProcessData()), 0);
+            status = InstanceUtil.getDefaultCoordinatorStatus(cluster, Util.getProcessName(bundle.getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED) {
                 break;
             }
@@ -246,6 +257,6 @@ public class EmbeddedPigScriptTest extends BaseSingleClusterTests {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 }
