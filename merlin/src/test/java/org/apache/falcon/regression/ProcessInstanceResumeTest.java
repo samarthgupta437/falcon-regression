@@ -20,13 +20,15 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -34,8 +36,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,17 +43,20 @@ import java.util.List;
 /**
  * Process instance resume tests.
  */
-public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
+public class ProcessInstanceResumeTest extends BaseTestClass {
 
+    ColoHelper cluster;
+    FileSystem clusterFS;
+    Bundle b = new Bundle();
+    private Bundle bundle;
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceResumeTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
-    Bundle b = new Bundle();
-    private Bundle bundle;
-
-    public ProcessInstanceResumeTest() throws IOException {
+    public ProcessInstanceResumeTest() {
         super();
+        cluster = servers.get(0);
+        clusterFS = serverFS.get(0);
     }
 
     @BeforeClass(alwaysRun = true)
@@ -66,15 +69,15 @@ public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
 
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server1FS, prefix.substring(1));
+        Util.HDFSCleanup(clusterFS, prefix.substring(1));
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -87,7 +90,7 @@ public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
             dataFolder.add(i, prefix + dataDate);
             i++;
         }
-        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -96,7 +99,7 @@ public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
 
         bundle = (Bundle) Util.readELBundles()[0][0];
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
         b.setOutputFeedLocationData(feedOutputPath);
     }
@@ -105,7 +108,7 @@ public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
         if (bundle != null) {
-            bundle.deleteBundle(server1);
+            bundle.deleteBundle(cluster);
         }
         b.deleteBundle(prism);
     }
@@ -328,9 +331,9 @@ public class ProcessInstanceResumeTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server1FS, prefix.substring(1));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 }
