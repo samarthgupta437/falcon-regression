@@ -20,12 +20,15 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.testng.annotations.*;
 
@@ -36,10 +39,20 @@ import java.util.List;
 /**
  * EL Expression test.
  */
-public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
-    
+public class ELExp_FutureAndLatest extends BaseTestClass {
+
+    ColoHelper cluster;
+    FileSystem clusterFS;
+    OozieClient clusterOC;
     private Bundle bundle;
     private String prefix;
+
+    public ELExp_FutureAndLatest(){
+        super();
+        cluster = servers.get(0);
+        clusterFS = serverFS.get(0);
+        clusterOC = serverOC.get(0);
+    }
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -50,14 +63,14 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = InstanceUtil.getTimeWrtSystemTime(-150);
         String endDate = InstanceUtil.getTimeWrtSystemTime(100);
 
         b.setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         prefix = b.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -72,14 +85,14 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
         }
-        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setInputFeedPeriodicity(5, TimeUnit.minutes);
         bundle.setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
@@ -99,7 +112,7 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
     public void latestTest() throws Exception {
         bundle.setDatasetInstances("latest(-3)", "latest(0)");
         bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstanceReachState(server1OC, bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -107,13 +120,13 @@ public class ELExp_FutureAndLatest extends BaseSingleClusterTests {
     public void futureTest() throws Exception {
         bundle.setDatasetInstances("future(0,10)", "future(3,10)");
         bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstanceReachState(server1OC, bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 }

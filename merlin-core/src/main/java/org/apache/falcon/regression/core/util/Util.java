@@ -766,7 +766,7 @@ public class Util {
   public static List<String> getMissingDependencies(PrismHelper helper, String bundleID)
     throws OozieClientException {
     XOozieClient oozieClient =
-      new XOozieClient(readPropertiesFile(helper.getEnvFileName(), "oozie_url"));
+      new XOozieClient(helper.getClusterHelper().getOozieURL());
     BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo =
       oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());

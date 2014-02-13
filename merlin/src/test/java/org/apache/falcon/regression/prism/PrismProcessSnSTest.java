@@ -23,32 +23,47 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class PrismProcessSnSTest extends BaseMultiClusterTests {
+public class PrismProcessSnSTest extends BaseTestClass {
 
+    ColoHelper cluster1;
+    ColoHelper cluster2;
+    OozieClient cluster1OC;
+    OozieClient cluster2OC;
     public static final String UA1_RUNNING = "ua1/RUNNING";
     public static final String UA2_RUNNING = "ua2/RUNNING";
     Bundle UA1Bundle = new Bundle();
     Bundle UA2Bundle = new Bundle();
 
+
+    public PrismProcessSnSTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster1OC = serverOC.get(0);
+        cluster2OC = serverOC.get(1);
+    }
+
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
-        UA1Bundle = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
-        UA2Bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        UA1Bundle = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        UA2Bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         UA1Bundle.generateUniqueBundle();
         UA2Bundle.generateUniqueBundle();
     }
@@ -57,18 +72,18 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     public void testProcessSnSOnBothColos() throws Exception {
         //schedule both bundles
         UA1Bundle.submitAndScheduleProcess();
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         UA2Bundle.submitAndScheduleProcess();
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
         ServiceResponse response =
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, UA2Bundle.getProcessData());
         System.out.println(response.getMessage());
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
 
     }
 
@@ -79,17 +94,17 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         UA2Bundle.submitProcess();
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
 
     }
 
@@ -101,19 +116,19 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         UA2Bundle.submitProcess();
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         UA2Bundle.submitProcess();
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
 
     }
 
@@ -121,23 +136,23 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
     public void testProcessSnSAlreadyScheduledOnBothColos() throws Exception {
         //schedule both bundles
         UA1Bundle.submitAndScheduleProcess();
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         UA2Bundle.submitAndScheduleProcess();
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
 
         //reschedule trial
 
-        Util.assertSucceeded(server2.getProcessHelper()
+        Util.assertSucceeded(cluster2.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Assert.assertEquals(Util.getBundles(server2.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(Util.getBundles(cluster2.getFeedHelper().getOozieClient(),
                 Util.readEntityName(UA1Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -146,27 +161,27 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
         UA1Bundle.submitAndScheduleProcess();
         UA2Bundle.submitAndScheduleProcess();
 
-        Util.assertSucceeded(server2.getProcessHelper()
+        Util.assertSucceeded(cluster2.getProcessHelper()
                 .suspend(URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         //now check if they have been scheduled correctly or not
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
-        Assert.assertEquals(Util.getBundles(server2.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(Util.getBundles(cluster2.getFeedHelper().getOozieClient(),
                 Util.readEntityName(UA1Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
-        Util.assertSucceeded(server2.getProcessHelper()
+        Util.assertSucceeded(cluster2.getProcessHelper()
                 .resume(URLS.SUSPEND_URL, UA1Bundle.getProcessData()));
 
-        Util.assertSucceeded(server1.getProcessHelper()
+        Util.assertSucceeded(cluster1.getProcessHelper()
                 .suspend(URLS.SUSPEND_URL, UA2Bundle.getProcessData()));
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getProcessData()));
 
-        Assert.assertEquals(Util.getBundles(server1.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(Util.getBundles(cluster1.getFeedHelper().getOozieClient(),
                 Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.SUSPENDED);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -188,12 +203,12 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
 
         Util.assertSucceeded(
                 prism.getProcessHelper().delete(URLS.DELETE_URL, UA1Bundle.getProcessData()));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         Util.assertSucceeded(
                 prism.getProcessHelper().delete(URLS.DELETE_URL, UA2Bundle.getProcessData()));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.KILLED);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.KILLED);
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()));
         Util.assertSucceeded(prism.getProcessHelper()
@@ -216,10 +231,10 @@ public class PrismProcessSnSTest extends BaseMultiClusterTests {
 
     @Test(groups = {"prism", "0.2"})
     public void testScheduleNonExistentProcessOnBothColos() throws Exception {
-        Assert.assertEquals(Util.parseResponse(server2.getProcessHelper()
+        Assert.assertEquals(Util.parseResponse(cluster2.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA1Bundle.getProcessData()))
                 .getStatusCode(), 404);
-        Assert.assertEquals(Util.parseResponse(server1.getProcessHelper()
+        Assert.assertEquals(Util.parseResponse(cluster1.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, UA2Bundle.getProcessData()))
                 .getStatusCode(), 404);
 
