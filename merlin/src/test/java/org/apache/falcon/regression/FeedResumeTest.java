@@ -21,14 +21,16 @@ package org.apache.falcon.regression;
 
 import junit.framework.Assert;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -37,18 +39,26 @@ import java.lang.reflect.Method;
 /**
  * Feed resume tests.
  */
-public class FeedResumeTest extends BaseSingleClusterTests {
+public class FeedResumeTest extends BaseTestClass {
 
     private final IEntityManagerHelper feedHelper = prism.getFeedHelper();
     private Bundle bundle = new Bundle();
     private String feed;
+    ColoHelper cluster;
+    OozieClient clusterOC;
+
+    public FeedResumeTest(){
+        super();
+        cluster = servers.get(0);
+        clusterOC = serverOC.get(0);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundle.submitClusters(prism);
         feed = Util.getInputFeedFromBundle(bundle);
     }
@@ -62,14 +72,14 @@ public class FeedResumeTest extends BaseSingleClusterTests {
     public void resumeSuspendedFeed() throws Exception {
         Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
 
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
 
@@ -93,13 +103,13 @@ public class FeedResumeTest extends BaseSingleClusterTests {
     public void resumeScheduledFeed() throws Exception {
         Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
 
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 }
