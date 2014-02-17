@@ -765,11 +765,9 @@ public class Util {
 
   public static List<String> getMissingDependencies(PrismHelper helper, String bundleID)
     throws OozieClientException {
-    XOozieClient oozieClient =
-      new XOozieClient(helper.getClusterHelper().getOozieURL());
-    BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
+    BundleJob bundleJob = helper.getClusterHelper().getOozieClient().getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo =
-      oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+            helper.getClusterHelper().getOozieClient().getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
     List<CoordinatorAction> actions = jobInfo.getActions();
 
     Util.print("conf from event: " + actions.get(0).getMissingDependencies());
