@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
+import org.apache.falcon.regression.core.generated.feed.CatalogTable;
 import java.text.ParseException;
 
 public class XmlUtil {
@@ -40,6 +41,11 @@ public class XmlUtil {
         return r;
     }
 
+    public static CatalogTable createCatalogTable(String dbName, String tableName) {
+        CatalogTable ct = new CatalogTable();
+        ct.setUri("catalog:"+dbName+":"+tableName+"#year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTE}");
+        return ct;
+    }
 
     public static org.apache.falcon.regression.core.generated.process.Validity
     createProcessValidity(

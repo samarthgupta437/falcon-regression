@@ -871,6 +871,7 @@ public class InstanceUtil {
 
     }
 
+    @Deprecated
     public static String setFeedCluster(String feed,
                                         org.apache.falcon.regression.core.generated.feed.Validity
                                                 v1,
@@ -881,6 +882,60 @@ public class InstanceUtil {
                 new org.apache.falcon.regression.core.generated.feed.Cluster();
         c1.setName(n1);
         c1.setRetention(r1);
+        if (t1 != null)
+            c1.setType(t1);
+        c1.setValidity(v1);
+        if (partition != null)
+            c1.setPartition(partition);
+
+
+        org.apache.falcon.regression.core.generated.feed.Locations ls =
+                new org.apache.falcon.regression.core.generated.feed.Locations();
+        if (null != locations) {
+            for (int i = 0; i < locations.length; i++) {
+                org.apache.falcon.regression.core.generated.feed.Location l =
+                        new org.apache.falcon.regression.core.generated.feed.Location();
+                l.setPath(locations[i]);
+                if (i == 0)
+                    l.setType(LocationType.DATA);
+                else if (i == 1)
+                    l.setType(LocationType.STATS);
+                else if (i == 2)
+                    l.setType(LocationType.META);
+                else if (i == 3)
+                    l.setType(LocationType.TMP);
+                else
+                    Assert.assertTrue(false, "correct value of localtions were not passed");
+
+                ls.getLocation().add(l);
+            }
+
+            c1.setLocations(ls);
+        }
+        Feed f = getFeedElement(feed);
+
+        int numberOfInitialClusters = f.getClusters().getCluster().size();
+        if (n1 == null)
+            for (int i = 0; i < numberOfInitialClusters; i++)
+                f.getClusters().getCluster().set(i, null);
+        else {
+            f.getClusters().getCluster().add(c1);
+        }
+        return feedElementToString(f);
+    }
+
+    public static String setFeedCluster(String feed,
+                                        org.apache.falcon.regression.core.generated.feed.Validity
+                                                v1,
+                                        Retention r1, org.apache.falcon.regression.core.generated.feed.CatalogTable ct1 , String n1, ClusterType t1, String partition,
+                                        String... locations) throws JAXBException {
+
+        org.apache.falcon.regression.core.generated.feed.Cluster c1 =
+                new org.apache.falcon.regression.core.generated.feed.Cluster();
+        c1.setName(n1);
+        c1.setRetention(r1);
+        if(ct1!=null)
+            c1.setTable(ct1);
         if (t1 != null)
             c1.setType(t1);
         c1.setValidity(v1);

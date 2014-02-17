@@ -36,7 +36,7 @@
         </cluster>
     </clusters>
 
-   <table uri="catalog:default:output_table#year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}" />
+   <table uri="catalog:default:output_table#year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTE}" />
     
     <ACL owner="testuser" group="group" permission="0x755" />
     <schema location="hcat" provider="hcat" />

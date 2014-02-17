@@ -892,9 +892,26 @@ public class Util {
         finalResult.add(result.toString().split(dir)[1]);
       }
     }
-
-    return finalResult;
+      return finalResult;
   }
+
+  public static List<String> getHadoopDataFromDir2(ColoHelper helper, String feed, String dir)
+            throws IOException {
+        List<String> finalResult = new ArrayList<String>();
+
+        String feedPath = feed + "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+        int depth = feedPath.split(dir)[1].split("/").length-1;
+        List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper,
+                new Path(feed), depth);
+
+        for (Path result : results) {
+            int pathDepth = result.toString().split(dir)[1].split("/").length;
+            if (pathDepth == depth) {
+                finalResult.add(result.toString().split(dir)[1]);
+            }
+        }
+        return finalResult;
+    }
 
   @Deprecated
   public static List<String> getHadoopLateData(PrismHelper prismHelper, String feed)
@@ -1088,6 +1105,49 @@ public class Util {
     return finalData;
 
   }
+
+    public static List<String> filterDataOnRetention2(int time, String interval,
+                                                      DateTime endDate,
+                                                      List<String> inputData) throws JAXBException {
+
+
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        List<String> finalData = new ArrayList<String>();
+
+        //convert the start and end date boundaries to the same format
+
+        //end date is today's date
+        formatter.print(endDate);
+        String startLimit = "";
+
+        if (interval.equalsIgnoreCase("minutes")) {
+            startLimit =
+                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
+        } else if (interval.equalsIgnoreCase("hours")) {
+            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
+        } else if (interval.equalsIgnoreCase("days")) {
+            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
+        } else if (interval.equalsIgnoreCase("months")) {
+            startLimit =
+                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
+
+        }
+
+
+        //now to actually check!
+        for (String testDate : inputData) {
+            if (!testDate.equalsIgnoreCase("somethingRandom")) {
+                if ((testDate).compareTo(startLimit) >= 0) {
+                    finalData.add(testDate);
+                }
+            } else {
+                finalData.add(testDate);
+            }
+        }
+
+        return finalData;
+
+    }
 
   public static List<String> getDailyDatesOnEitherSide(int interval, int skip) {
 

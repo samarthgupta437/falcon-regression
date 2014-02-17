@@ -27,12 +27,12 @@
 	<clusters>
 		<cluster name="corp" type="source">
 			<validity start="2009-02-01T00:00Z" end="2099-05-01T00:00Z" />
-			<retention limit="months(9000)" action="delete" /> <!-- Limit can be in Time or Instances 100, Action ENUM DELETE,ARCHIVE -->
+			<retention limit="days(20)" action="delete" /> <!-- Limit can be in Time or Instances 100, Action ENUM DELETE,ARCHIVE -->
 		</cluster>
 	</clusters>
 
 	<table
-		uri="catalog:default:mytablepart3#year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}" />
+		uri="catalog:default:mytablepart3#year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTE}" />
 
 	<ACL owner="testuser" group="group" permission="0x755" />
 	<schema location="hcat" provider="hcat" />
