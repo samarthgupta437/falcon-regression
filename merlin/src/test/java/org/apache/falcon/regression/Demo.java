@@ -18,22 +18,27 @@
 
 package org.apache.falcon.regression;
 
+import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.XOozieClient;
 import org.apache.oozie.client.rest.RestConstants;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.Properties;
 
 
 /**
  * Demo.
  */
-public class Demo {
+public class Demo extends BaseTestClass{
 
     public static void main(String[] args) {
         String file = "prism.properties";
@@ -41,6 +46,13 @@ public class Demo {
         System.out.println("properties = " + properties);
     }
 
+
+    @Test
+    public void test_sleepTill() throws ParseException, JSchException, IOException {
+
+      InstanceUtil.sleepTill(servers.get(0),"2014-01-31T07:35Z");
+
+    }
 
 //    IEntityManagerHelper dataHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA);
 //    IEntityManagerHelper processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS);

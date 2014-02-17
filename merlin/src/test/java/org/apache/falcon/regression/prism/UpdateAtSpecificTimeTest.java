@@ -26,18 +26,19 @@ import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
-import org.apache.falcon.regression.core.util.AssertUtil;
-import org.apache.falcon.regression.core.util.InstanceUtil;
-import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.core.util.XmlUtil;
+import org.apache.falcon.regression.core.util.*;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.OozieClientException;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   ColoHelper cluster_1, cluster_2, cluster_3;
   FileSystem clusterFS_1, clusterFS_2, clusterFS_3;
-
+  OozieClient clusterOC_1;
   private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
   private final String inputPath = baseHDFSDir +
     "/UpdateAtSpecificTimeTest-data";
@@ -69,7 +70,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     clusterFS_2 = serverFS.get(1);
     cluster_3 = servers.get(2);
     clusterFS_3 = serverFS.get(2);
-
+    clusterOC_1 = serverOC.get(0);
   }
 
   @BeforeMethod(alwaysRun = true)
@@ -91,7 +92,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
+  @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = false)
   public void invalidChar_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
     processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
@@ -104,8 +106,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Assert.assertTrue(r.getMessage().contains("java.lang.IllegalArgumentException: abc is not a valid UTC string"));
   }
 
-  @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
-  public void invalidChar_Feed() throws Exception {
+  @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = false)
+  public void invalidChar_Feed() throws ParseException, JAXBException, IOException {
 
     String feed = submitAndScheduleFeed(processBundle);
 
@@ -118,8 +121,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
-  public void updateTimeInPast_Process() throws Exception {
+  @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
+    enabled = false)
+  public void updateTimeInPast_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException {
     processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
     processBundle.submitAndScheduleBundle(prism);
@@ -149,9 +153,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = false)
+    enabled = true)
 
-  public void updateTimeInPast_Feed() throws Exception {
+  public void updateTimeInPast_Feed() throws InterruptedException, JAXBException, ParseException, IOException, OozieClientException {
 
 
     String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-10);
@@ -209,7 +213,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = false)
-  public void inNextFewMinutesUpdate_RollForward_Process() throws Exception {
+  public void inNextFewMinutesUpdate_RollForward_Process() throws JAXBException, ParseException, IOException, URISyntaxException, InterruptedException, JSchException, OozieClientException, SAXException {
     /*
     submit process on 3 clusters. Schedule on 2 clusters. Bring down one of
     the scheduled cluster. Update with time 5 minutes from now. On running
@@ -276,15 +280,23 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       oldNominalTimes_cluster2,
       Util.readEntityName(oldProcess), false, ENTITY_TYPE.PROCESS, false);
 
-    String definition = Util.getEntityDefinition(cluster_3,
+    String definition_cluster_3 = Util.getEntityDefinition(cluster_3,
       processBundle.getProcessData(), true);
 
-    Diff diff = XMLUnit.compareXML(definition, processBundle.getProcessData());
-    System.out.println(diff);
+    String definition_prism = Util.getEntityDefinition(prism,
+      processBundle.getProcessData(), true);
+
+    //for debug
+    System.out.println("oldProcess: "+ oldProcess);
+    System.out.println("definition_prism: "+ definition_prism);
+    System.out.println("definition_cluster_3 : "+definition_cluster_3);
+
+    Assert.assertTrue(XmlUtil.isIdentical(definition_cluster_3,
+      processBundle.getProcessData()),"Process definitions should be equal");
 
     //start the stopped cluster_2
     Util.startService(cluster_2.getProcessHelper());
-    Thread.sleep(20000);
+    Thread.sleep(40000);
 
     String newBundleID_cluster1 = InstanceUtil
       .getLatestBundleID(cluster_1,
@@ -296,6 +308,18 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       updateTime);
     AssertUtil.assertSucceeded(r);
 
+
+    String def_cluster_2 = Util.getEntityDefinition(cluster_2,
+      processBundle.getProcessData(), true);
+    System.out.println("def_cluster_2 : "+def_cluster_2);
+
+    definition_prism = Util.getEntityDefinition(prism,
+      processBundle.getProcessData(), true);
+
+    //for debug
+    System.out.println("updated process: "+ processBundle.getProcessData());
+
+    System.out.println("definition_prism: "+ definition_prism);
 
     // verify new bundle in cluster_2 and no new bundle in cluster_1  and
     // start time of new coord
@@ -315,25 +339,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     Util.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
       Util.readEntityName(oldProcess), true, ENTITY_TYPE.PROCESS, true);
-
-   /*
-      String startTime_cluster1 = Util.getCoordStartTime(cluster_1,
-      processBundle.getProcessData(),1);
-
-    String startTime_cluster2 = Util.getCoordStartTime(cluster_2,
-      processBundle.getProcessData(),1);
-    Assert.assertEquals(startTime_cluster1,startTime_cluster2,
-      "start time of coords on both the colos should be same");
-
-    Assert.assertEquals(startTime_cluster1,updateTime,
-      "start time of coords is not what was given");*/
-
-
   }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = false)
-  public void inNextFewMinutesUpdate_RollForward_Feed() throws Exception {
+  public void inNextFewMinutesUpdate_RollForward_Feed() throws InterruptedException, JAXBException, ParseException, IOException, URISyntaxException, JSchException, OozieClientException, SAXException {
 
     String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-18);
 
@@ -406,43 +416,65 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+  @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = false)
-  public void updateTimeAfterEndTime_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
+  public void updateTimeAfterEndTime_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException {
 
     /*
-      submit and schedule process with end time after 3 mins. Set update time
-       as with +5 mins from now.
+      submit and schedule process with end time after 60 mins. Set update time
+       as with +60 from start mins.
      */
     String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
-    String endTime = InstanceUtil.getTimeWrtSystemTime(3);
+    String endTime = InstanceUtil.getTimeWrtSystemTime(60);
     processBundle.setProcessValidity(startTime, endTime);
     processBundle.submitAndScheduleBundle(prism);
-    Thread.sleep(30000);
+    Thread.sleep(10000);
 
+    InstanceUtil.waitTillParticularInstanceReachState(cluster_1,
+      Util.readEntityName(processBundle.getProcessData()),0,
+      CoordinatorAction.Status.WAITING,2,ENTITY_TYPE.PROCESS);
+
+    //save old data
     String oldProcess = processBundle.getProcessData();
-    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime, 3),
-      endTime);
-    String updateTime = InstanceUtil.addMinsToTime(endTime, 2);
+
+    String oldBundleID = InstanceUtil
+      .getLatestBundleID(cluster_1,
+        Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+
+    List<String> oldNominalTimes = Util.getActionsNominalTime(cluster_1, oldBundleID,
+      ENTITY_TYPE.PROCESS);
+
+    //update
+    processBundle.setProcessValidity(startTime,
+      InstanceUtil.addMinsToTime(endTime, 3));
+    String updateTime = InstanceUtil.addMinsToTime(endTime, 60);
+
+
+
+    System.out.println("Original Feed : "+oldProcess);
+    System.out.println("Updated Feed :"+ processBundle.getProcessData());
+    System.out.println("Update Time : " + updateTime);
+
+
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
       processBundle.getProcessData(), updateTime);
+    AssertUtil.assertSucceeded(r);
 
-     /*
-     bug:  getting following error "ua3/jobId cannot be null"  and instances
-     on oozie have gone in suspended state.
-      */
-
+    Thread.sleep(30000);
+    //verify new bundle creation with instances matching
+    Util.verifyNewBundleCreation(cluster_1,oldBundleID,oldNominalTimes,
+      Util.readEntityName(oldProcess),true,ENTITY_TYPE.PROCESS,true);
   }
 
-  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+  @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = false)
-  public void updateTimeAfterEndTime_Feed() throws ParseException, JAXBException, IOException {
+  public void updateTimeAfterEndTime_Feed() throws ParseException, JAXBException, IOException, OozieClientException, InterruptedException {
     /*
     submit and schedule feed with end time 3 mins in future and update with 5
      in future.
      */
     String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
-    String endTime = InstanceUtil.getTimeWrtSystemTime(3);
+    String endTime = InstanceUtil.getTimeWrtSystemTime(60);
 
     String feed = processBundle.getDataSets().get(0);
     feed = InstanceUtil.setFeedCluster(feed,
@@ -462,53 +494,68 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     r = prism.getFeedHelper().submitAndSchedule(Util.URLS
       .SUBMIT_AND_SCHEDULE_URL, feed);
     AssertUtil.assertSucceeded(r);
+    Thread.sleep(60000);
+    //save old data
+    String oldBundleID = InstanceUtil
+      .getLatestBundleID(cluster_1,
+        Util.readEntityName(feed), ENTITY_TYPE.FEED);
 
-    String updateTime = InstanceUtil.addMinsToTime(endTime, 2);
+    String updateTime = InstanceUtil.addMinsToTime(endTime, 60);
     String updatedFeed = Util.setFeedProperty(feed, "someProp", "someVal");
 
+    System.out.println("Original Feed : "+feed);
+    System.out.println("Updated Feed :"+ updatedFeed);
+    System.out.println("Update Time : " + updateTime);
+
     r = prism.getFeedHelper().update(feed, updatedFeed, updateTime);
+    AssertUtil.assertSucceeded(r);
+    Thread.sleep(30000);
 
-    /*
-     bug:  getting following error "ua3/jobId cannot be null"  and instances
-     on oozie have gone in suspended state.
-      */
-
+    //verify new bundle creation
+    Util.verifyNewBundleCreation(cluster_1,oldBundleID,null,
+      Util.readEntityName(feed),false,ENTITY_TYPE.FEED,false);
   }
 
-  @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
+  @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = false)
   public void updateTimeBeforeStartTime_Process() throws JAXBException,
-    ParseException, InterruptedException, IOException, URISyntaxException {
+    ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException {
 
     /*
-      submit and schedule process with end time after 3 mins. Set update time
-       as with +5 mins from now.
+      submit and schedule process with start time +10 mins from now. Update
+      with start time -4 and update time +2 mins
      */
     String startTime = InstanceUtil.getTimeWrtSystemTime(10);
     String endTime = InstanceUtil.getTimeWrtSystemTime(20);
     processBundle.setProcessValidity(startTime, endTime);
     processBundle.submitAndScheduleBundle(prism);
-    Thread.sleep(30000);
+    Thread.sleep(10000);
 
+    //save old data
     String oldProcess = processBundle.getProcessData();
-    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime, -2),
+    String oldBundleID = InstanceUtil
+      .getLatestBundleID(cluster_1,
+        Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+    List<String> oldNominalTimes = Util.getActionsNominalTime(cluster_1, oldBundleID,
+      ENTITY_TYPE.PROCESS);
+
+
+    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime,-4),
       endTime);
-    String updateTime = InstanceUtil.addMinsToTime(endTime, -5);
+    String updateTime = InstanceUtil.getTimeWrtSystemTime(2);
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
       processBundle.getProcessData(), updateTime);
+    AssertUtil.assertSucceeded(r);
 
-      /*
-      The web service response is <?xml version="1.0" encoding="UTF-8" standalone="yes"?><result><status>FAILED</status><message>ua3/For Job0001039-140114120113803-oozie-oozi-C, actual statuses: PREP, expected statuses: [RUNNING, SUCCEEDED, FAILED, KILLED]</message><requestId>ua3/cd67fb40-ee3e-42e7-9787-8fdedbe76692</requestId></result>
+    //verify new bundle creation
+    Util.verifyNewBundleCreation(cluster_1,oldBundleID,oldNominalTimes,
+      Util.readEntityName(oldProcess),true,ENTITY_TYPE.PROCESS,false);
 
-      new bundle got created , but y ????
-       */
-
-  }
+    }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
-  public void udpateDiffClusterDiffValidity_Process(){
-
+    enabled = false)
+  public void udpateDiffClusterDiffValidity_Process() {
 
 
   }
@@ -516,14 +563,15 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   @AfterMethod(alwaysRun = true)
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
     Util.print("tearDown " + method.getName());
-    Util.restartService(cluster_2.getProcessHelper());
+    processBundle.deleteBundle(prism);
+  //  Util.restartService(cluster_2.getProcessHelper());
     bundle1.deleteBundle(prism);
     processBundle.deleteBundle(prism);
     Thread.sleep(30000);
   }
 
 
-  private String submitAndScheduleFeed(Bundle b) throws Exception {
+  private String submitAndScheduleFeed(Bundle b) throws ParseException, JAXBException, IOException {
     String feed = b.getDataSets().get(0);
     feed = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),

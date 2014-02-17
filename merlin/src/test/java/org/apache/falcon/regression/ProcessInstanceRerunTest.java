@@ -338,6 +338,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 .getInstanceStatus(cluster, Util.readEntityName(b.getProcessData()), 0, 0);
         Assert.assertTrue(CoordinatorAction.Status.WAITING.equals(s),
                 "instance should have been in WAITING state");
+
+
     }
 
 

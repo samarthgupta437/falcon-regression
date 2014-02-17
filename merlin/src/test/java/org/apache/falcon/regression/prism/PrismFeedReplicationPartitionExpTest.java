@@ -342,6 +342,11 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
         AssertUtil.checkForPathsSizes(ua3ReplicatedData00, ua2ReplicatedData00);
         AssertUtil.checkForPathsSizes(ua3ReplicatedData05, ua2ReplicatedData05);
+
+      //verify log had been moved in post processing step or not ...
+      Util.verifyPostprcessingLogMove(server2FS,feed,
+        Util.getLocationFromCluster(bundle2.getClusters().get(0),"staging"),"2012-10-01-12-05");
+
     }
 
 

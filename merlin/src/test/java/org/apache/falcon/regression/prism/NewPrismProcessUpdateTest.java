@@ -23,12 +23,14 @@
 package org.apache.falcon.regression.prism;
 
 
+import org.apache.commons.io.FileUtils;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.process.ExecutionType;
-import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
@@ -39,14 +41,11 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.oozie.client.BundleJob;
-import org.apache.oozie.client.CoordinatorJob;
-import org.apache.oozie.client.Job;
-import org.apache.oozie.client.XOozieClient;
+import org.apache.oozie.client.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Minutes;
@@ -55,12 +54,18 @@ import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
 import org.testng.annotations.*;
+
+import javax.xml.bind.JAXBException;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
-public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
+public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
     String baseTestDir = baseHDFSDir + "NewPrismProcessUpdateTest";
@@ -73,11 +78,16 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
     Bundle UA2Bundle = null;
     Bundle UA3Bundle = null;
 
+    ColoHelper server1,server2,server3;
+    FileSystem server1FS,server2FS,server3FS;
+    OozieClient server1OC,server2OC,server3OC;
+
     @BeforeMethod(alwaysRun = true)
     public void testSetup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
+
         UA1Bundle = new Bundle(b, server1);
         UA2Bundle = new Bundle(b, server2);
         UA3Bundle = new Bundle(b, server3);
@@ -88,10 +98,23 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
 
     @BeforeClass
     public void setup() throws Exception {
+
+        server1 = servers.get(0);
+        server2 = servers.get(1);
+        server3 = servers.get(2);
+
+        server1FS = serverFS.get(0);
+        server2FS = serverFS.get(1);
+        server3FS = serverFS.get(2);
+
+      server1OC = serverOC.get(0);
+      server2OC = serverOC.get(1);
+      server3OC = serverOC.get(2);
+
         setupOozieData(server1FS, WORKFLOW_PATH, WORKFLOW_PATH2);
         setupOozieData(server2FS, WORKFLOW_PATH, WORKFLOW_PATH2);
         setupOozieData(server3FS, WORKFLOW_PATH, WORKFLOW_PATH2);
-        Util.restartService(server3.getClusterHelper());
+       // Util.restartService(server3.getClusterHelper());
     }
 
     @AfterMethod(alwaysRun = true)
@@ -1534,6 +1557,64 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
         AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
+  @Test(groups = {"multiCluster"}, timeOut = 1200000)
+  public void
+  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException {
+    Bundle b = Util.readELBundles()[0][0];
+
+    try {
+
+      b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+      b.submitBundle(prism);
+
+      b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-10),
+        InstanceUtil.getTimeWrtSystemTime(15));
+      b.submitAndScheduleBundle(prism);
+      InstanceUtil.waitTillParticularInstanceReachState(server1,
+      Util.readEntityName(b.getProcessData()), 0,
+      CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+
+      //save old data
+      String oldBundleID = InstanceUtil
+        .getLatestBundleID(server1,
+          Util.readEntityName(b.getProcessData()), ENTITY_TYPE.PROCESS);
+
+      List<String> oldNominalTimes = Util.getActionsNominalTime(server1,
+        oldBundleID,
+        ENTITY_TYPE.PROCESS);
+
+      //update workflow.xml
+      Util.updateWorkflowXml(server1FS, new ProcessMerlin(b
+        .getProcessData()).element
+        .getWorkflow().getPath());
+
+
+      //update
+      prism.getProcessHelper().update(b.getProcessData(),
+        b.getProcessData());
+
+      Thread.sleep(20000);
+      //verify new bundle creation
+      Util.verifyNewBundleCreation(server1,oldBundleID,oldNominalTimes,
+        Util.readEntityName(b.getProcessData()),true,ENTITY_TYPE.PROCESS,true);
+
+    } finally {
+      b.deleteBundle(prism);
+      HadoopUtil.deleteFile(server1, new Path(new ProcessMerlin(UA2Bundle
+        .getProcessData()).element
+        .getWorkflow().getPath() + "/workflow.xml"));
+
+      FileUtils.deleteQuietly(new File("workflow.xml"));
+      FileUtils.copyFile(new File("workflow.xml.bck"),
+        new File("workflow.xml"));
+
+      HadoopUtil.copyDataToFolder(server1, new Path(new ProcessMerlin(UA2Bundle
+        .getProcessData()).element
+        .getWorkflow().getPath() + "/"), "workflow.xml");
+    }
+
+  }
+
     private String setProcessTimeOut(String process, int mag, TimeUnit unit) throws Exception {
         Process p = InstanceUtil.getProcessElement(process);
         Frequency f = new Frequency(mag, unit);
@@ -1570,7 +1651,7 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
     public ServiceResponse updateProcessConcurrency(Bundle bundle, int concurrency)
             throws Exception {
         String oldData = new String(bundle.getProcessData());
-        Process updatedProcess = bundle.getProcessObject();
+      ProcessMerlin updatedProcess = new ProcessMerlin(bundle.getProcessData());
         updatedProcess.setParallel(concurrency);
 
         return prism.getProcessHelper()
@@ -1660,7 +1741,8 @@ public class NewPrismProcessUpdateTest extends BaseMultiClusterTests {
                                                   org.apache.falcon.regression.core.generated.dependencies.Frequency frequency)
             throws Exception {
         String oldData = new String(bundle.getProcessData());
-        Process updatedProcess = bundle.getProcessObject();
+        ProcessMerlin updatedProcess = new ProcessMerlin(bundle
+          .getProcessData());
         updatedProcess.setFrequency(frequency);
         return prism.getProcessHelper()
                 .update(oldData, prism.getProcessHelper().toString(updatedProcess));

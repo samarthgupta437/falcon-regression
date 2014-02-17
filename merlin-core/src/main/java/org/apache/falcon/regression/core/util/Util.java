@@ -19,15 +19,20 @@
 package org.apache.falcon.regression.core.util;
 
 import com.jcraft.jsch.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.*;
+import org.apache.falcon.regression.core.generated.feed.Location;
+import org.apache.falcon.regression.core.generated.feed.LocationType;
+import org.apache.falcon.regression.core.generated.feed.Property;
+import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Output;
-import org.apache.falcon.regression.core.generated.process.Process;
+import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
@@ -2094,21 +2099,6 @@ public class Util {
       out.flush();
     }
 
-
-    BufferedReader r = new BufferedReader(new InputStreamReader(in));
-    String line;
-    while (true) {
-
-      while ((line=r.readLine())!=null) {
-        System.out.println(line);
-        data.add(line);
-      }
-      if (channel.isClosed()) {
-        break;
-      }
-
-    }
-
     byte[] tmp=new byte[1024];
     while(true){
       while(in.available()>0){
@@ -2123,7 +2113,6 @@ public class Util {
       try{Thread.sleep(1000);}catch(Exception ee){}
     }
 
-    r.close();
     in.close();
     channel.disconnect();
     session.disconnect();
@@ -2494,8 +2483,7 @@ public class Util {
                                              String processName,
                                              boolean shouldBeCreated,
                                              ENTITY_TYPE type,
-                                             boolean matchInstances) throws
-    Exception {
+                                             boolean matchInstances) throws OozieClientException, ParseException {
 
     String newBundleId = InstanceUtil.getLatestBundleID(cluster, processName,
       type);
@@ -2513,7 +2501,7 @@ public class Util {
     }
   }
 
-  private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId, ENTITY_TYPE type) throws OozieClientException {
+  private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId, ENTITY_TYPE type) throws OozieClientException, ParseException {
 
     List<String> nominalTimesOriginalAndNew = Util.getActionsNominalTime
       (cluster,
@@ -2524,12 +2512,37 @@ public class Util {
 
     initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
 
-    if (initialNominalTimes.size() != 0)
+    if (initialNominalTimes.size() != 0){
+      System.out.println("Missing instance are : "+ Util
+        .getListElements(initialNominalTimes));
+      System.out.println("Original Bundle ID   : "+originalBundleId);
+      System.out.println("New Bundle ID        : "+newBundleId);
+
       Assert.assertFalse(true, "some instances have gone missing after " +
         "update");
+    }
   }
 
-  public static String getEntityDefinition(ColoHelper cluster_3,
+  private static String getListElements(List<String> list) {
+
+    String concatenated ="";
+    for(String curr : list)
+      concatenated = concatenated + " , " + curr;
+    return concatenated;
+  }
+
+  public static String toOozieDateList(String dateString) throws
+    ParseException {
+    String[] dateList = dateString.split(" , ");
+    String oozieDate="";
+    for(String date : dateList){
+      oozieDate = oozieDate + InstanceUtil.dateToOozieDate(new Date(date)) +
+        " , ";
+    }
+    return oozieDate ;
+  }
+
+  public static String getEntityDefinition(PrismHelper cluster,
                                            String entity,
                                            boolean shouldReturn) throws
     JAXBException,
@@ -2537,11 +2550,11 @@ public class Util {
     ENTITY_TYPE type = getEntityType(entity);
     IEntityManagerHelper helper;
     if (ENTITY_TYPE.PROCESS.equals(type))
-      helper = cluster_3.getProcessHelper();
+      helper = cluster.getProcessHelper();
     else if (ENTITY_TYPE.FEED.equals(type))
-      helper = cluster_3.getFeedHelper();
+      helper = cluster.getFeedHelper();
     else
-      helper = cluster_3.getClusterHelper();
+      helper = cluster.getClusterHelper();
 
     ServiceResponse response = helper.getEntityDefinition(URLS
       .GET_ENTITY_DEFINITION, entity);
@@ -2554,8 +2567,6 @@ public class Util {
     Assert.assertNotNull(result);
 
     return result;
-
-
   }
 
   private static ENTITY_TYPE getEntityType(String entity) {
@@ -2583,6 +2594,81 @@ public class Util {
     return InstanceUtil.dateToOozieDate(coord.getStartTime()
     );
   }
+
+  public static String getLocationFromCluster(String cluster, String name) throws JAXBException {
+
+    org.apache.falcon.regression.core.generated.cluster.Cluster c = InstanceUtil.getClusterElement(cluster);
+    org.apache.falcon.regression.core.generated.cluster.Locations l = c.getLocations();
+    for(org.apache.falcon.regression.core.generated.cluster.Location location
+      : l.getLocation()){
+      if(location.getName().equals(name))
+        return location.getPath().toString();
+    }
+    return "";
+
+  }
+
+
+  public static void verifyPostprcessingLogMove(FileSystem fs, String entity,
+                                                String basePath,
+                                                String instanceTime
+  ) throws JAXBException, IOException {
+    ENTITY_TYPE type = Util.getEntityType(entity);
+    String name = Util.readEntityName(entity);
+    FeedMerlin feedElement = new FeedMerlin(entity);
+    if(fs.exists(new Path(basePath)) ) {
+      if(!basePath.endsWith("/"))
+        basePath = basePath+"/";
+
+      String pathToCheck = basePath+"falcon/workflows/";
+      if(type.equals(ENTITY_TYPE.FEED))
+        pathToCheck = pathToCheck+"feed/";
+      else
+        pathToCheck = pathToCheck+"process/";
+
+      pathToCheck = pathToCheck+name+"/logs/job-"+instanceTime + "/" +
+        feedElement
+          .getTargetCluster()+"/000/replication_SUCCEEDED.log";
+
+      System.out.println("Checing of log in: "+pathToCheck.toString());
+      if(!fs.exists(new Path(pathToCheck)))
+        Assert.assertTrue(false);
+
+
+    }
+  }
+
+  public static void updateWorkflowXml(FileSystem fs, String path) throws IOException {
+    FileUtils.deleteQuietly(new File("workflow.xml"));
+    FileUtils.deleteQuietly(new File(".workflow.xml.crc"));
+    FileUtils.deleteQuietly(new File("workflow.xml.bck"));
+
+    if(!path.endsWith("/"))
+      path = path + "/workflow.xml";
+    else
+      path = path + "workflow.xml" ;
+
+    Path file = new Path(path);
+    //check if workflow.xml exists or not
+    if(fs.exists(file)){
+      fs.copyToLocalFile(file, new Path("workflow.xml"));
+      FileUtils.copyFile(new File("workflow.xml"),new File("workflow.xml.bck"));
+      PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter
+        ("workflow.xml", true)));
+      out.println("<!-- some comment -->");
+      out.close();
+      fs.delete(file,false);
+      File crcFile = new File(".workflow.xml.crc");
+      if(crcFile.exists())
+        crcFile.delete();
+      fs.copyFromLocalFile(new Path("workflow.xml"),file);
+    }
+    else {
+      System.out.println("Nothing to do, workflow.xml does not exists");
+    }
+
+  }
+
 
   public enum URLS {
 
