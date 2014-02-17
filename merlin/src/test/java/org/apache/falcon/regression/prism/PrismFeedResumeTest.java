@@ -23,7 +23,6 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
