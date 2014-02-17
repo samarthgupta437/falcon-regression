@@ -22,6 +22,11 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.text.ParseException;
 
 public class XmlUtil {
@@ -54,4 +59,12 @@ public class XmlUtil {
         return v;
 
     }
+
+  public static boolean isIdentical(String expected, String actual) throws IOException, SAXException {
+    XMLUnit.setIgnoreWhitespace(true);
+    XMLUnit.setIgnoreAttributeOrder(true);
+    Diff diff = XMLUnit.compareXML(expected, actual);
+    System.out.println(diff);
+    return diff.identical();
+  }
 }

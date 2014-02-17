@@ -21,13 +21,13 @@ package org.apache.falcon.regression.core.util;
 import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
@@ -923,7 +923,10 @@ public class InstanceUtil {
         return feedElementToString(f);
     }
 
-    public static Feed getFeedElement(String feed) throws JAXBException {
+    public static Feed
+    getFeedElement
+      (String feed) throws
+      JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         return (Feed) u.unmarshal((new StringReader(feed)));
@@ -1638,5 +1641,6 @@ public class InstanceUtil {
     feedElement.setFrequency(f);
     return InstanceUtil.feedElementToString(feedElement);
   }
+
 }
 
