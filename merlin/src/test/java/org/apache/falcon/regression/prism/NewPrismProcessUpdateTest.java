@@ -63,7 +63,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     String inputFeedPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String WORKFLOW_PATH = "/tmp/falcon-oozie-wf";
     String WORKFLOW_PATH2 = "/tmp/falcon-oozie-wf2";
-    String aggreagator1Path = "/examples/apps/aggregator1";
+    String aggreagator1Path = baseTestDir + "/aggregator1";
     ColoHelper cluster1;
     ColoHelper cluster2;
     ColoHelper cluster3;
@@ -103,12 +103,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     @BeforeClass
     public void setup() throws Exception {
-        HadoopUtil.deleteDirIfExists(baseHDFSDir, cluster1FS);
-        HadoopUtil.deleteDirIfExists(baseHDFSDir, cluster2FS);
-        HadoopUtil.deleteDirIfExists(baseHDFSDir, cluster3FS);
-        setupOozieData(cluster1FS, WORKFLOW_PATH, WORKFLOW_PATH2);
-        setupOozieData(cluster2FS, WORKFLOW_PATH, WORKFLOW_PATH2);
-        setupOozieData(cluster3FS, WORKFLOW_PATH, WORKFLOW_PATH2);
+        for (FileSystem fs : new FileSystem[]{cluster1FS, cluster2FS, cluster3FS}) {
+            HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
+            setupOozieData(fs, WORKFLOW_PATH, WORKFLOW_PATH2, aggreagator1Path);
+        }
         Util.restartService(cluster3.getClusterHelper());
     }
 
