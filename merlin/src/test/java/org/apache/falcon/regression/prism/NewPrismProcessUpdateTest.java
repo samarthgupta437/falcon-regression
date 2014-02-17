@@ -61,32 +61,20 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
     String baseTestDir = baseHDFSDir + "/NewPrismProcessUpdateTest";
     String inputFeedPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String WORKFLOW_PATH = "/tmp/falcon-oozie-wf";
-    String WORKFLOW_PATH2 = "/tmp/falcon-oozie-wf2";
+    String WORKFLOW_PATH = baseTestDir + "/falcon-oozie-wf";
+    String WORKFLOW_PATH2 = baseTestDir + "/falcon-oozie-wf2";
     String aggreagator1Path = baseTestDir + "/aggregator1";
-    ColoHelper cluster1;
-    ColoHelper cluster2;
-    ColoHelper cluster3;
-    FileSystem cluster1FS;
-    FileSystem cluster2FS;
-    FileSystem cluster3FS;
-    OozieClient cluster2OC;
-    OozieClient cluster3OC;
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
+    ColoHelper cluster3 = servers.get(2);
+    FileSystem cluster1FS = serverFS.get(0);
+    FileSystem cluster2FS = serverFS.get(1);
+    FileSystem cluster3FS = serverFS.get(2);
+    OozieClient cluster2OC = serverOC.get(1);
+    OozieClient cluster3OC = serverOC.get(2);
     Bundle UA1Bundle = null;
     Bundle UA2Bundle = null;
     Bundle UA3Bundle = null;
-
-    public NewPrismProcessUpdateTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster2 = servers.get(1);
-        cluster3 = servers.get(2);
-        cluster1FS = serverFS.get(0);
-        cluster2FS = serverFS.get(1);
-        cluster3FS = serverFS.get(2);
-        cluster2OC = serverOC.get(1);
-        cluster3OC = serverOC.get(2);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void testSetup(Method method) throws Exception {
