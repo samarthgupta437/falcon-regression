@@ -15,11 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.prism;
 
 
@@ -64,34 +59,22 @@ import java.util.Random;
 public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-    String baseTestDir = baseHDFSDir + "NewPrismProcessUpdateTest";
+    String baseTestDir = baseHDFSDir + "/NewPrismProcessUpdateTest";
     String inputFeedPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String WORKFLOW_PATH = "/tmp/falcon-oozie-wf";
-    String WORKFLOW_PATH2 = "/tmp/falcon-oozie-wf2";
-    String aggreagator1Path = "/examples/apps/aggregator1";
-    ColoHelper cluster1;
-    ColoHelper cluster2;
-    ColoHelper cluster3;
-    FileSystem cluster1FS;
-    FileSystem cluster2FS;
-    FileSystem cluster3FS;
-    OozieClient cluster2OC;
-    OozieClient cluster3OC;
+    String WORKFLOW_PATH = baseTestDir + "/falcon-oozie-wf";
+    String WORKFLOW_PATH2 = baseTestDir + "/falcon-oozie-wf2";
+    String aggreagator1Path = baseTestDir + "/aggregator1";
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
+    ColoHelper cluster3 = servers.get(2);
+    FileSystem cluster1FS = serverFS.get(0);
+    FileSystem cluster2FS = serverFS.get(1);
+    FileSystem cluster3FS = serverFS.get(2);
+    OozieClient cluster2OC = serverOC.get(1);
+    OozieClient cluster3OC = serverOC.get(2);
     Bundle UA1Bundle = null;
     Bundle UA2Bundle = null;
     Bundle UA3Bundle = null;
-
-    public NewPrismProcessUpdateTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster2 = servers.get(1);
-        cluster3 = servers.get(2);
-        cluster1FS = serverFS.get(0);
-        cluster2FS = serverFS.get(1);
-        cluster3FS = serverFS.get(2);
-        cluster2OC = serverOC.get(1);
-        cluster3OC = serverOC.get(2);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void testSetup(Method method) throws Exception {
@@ -108,9 +91,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     @BeforeClass
     public void setup() throws Exception {
-        setupOozieData(cluster1FS, WORKFLOW_PATH, WORKFLOW_PATH2);
-        setupOozieData(cluster2FS, WORKFLOW_PATH, WORKFLOW_PATH2);
-        setupOozieData(cluster3FS, WORKFLOW_PATH, WORKFLOW_PATH2);
+        for (FileSystem fs : new FileSystem[]{cluster1FS, cluster2FS, cluster3FS}) {
+            HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
+            setupOozieData(fs, WORKFLOW_PATH, WORKFLOW_PATH2, aggreagator1Path);
+        }
         Util.restartService(cluster3.getClusterHelper());
     }
 
@@ -130,7 +114,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             fs.mkdirs(new Path(workflowPath + "/lib"));
             fs.copyFromLocalFile(new Path("src/test/resources/oozie/workflow.xml"),
                     new Path(workflowPath + "/workflow.xml"));
-            fs.copyFromLocalFile(new Path("src/test/resources/oozie/oozie-examples-3.1.5.jar"),
+            fs.copyFromLocalFile(new Path("src/test/resources/oozie/lib/oozie-examples-3.1.5.jar"),
                     new Path(workflowPath + "/lib/oozie-examples-3.1.5.jar"));
         }
     }
@@ -417,6 +401,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Util.assertSucceeded(
                 cluster3.getProcessHelper()
                         .schedule(URLS.SCHEDULE_URL, UA2Bundle.getProcessData()));
+        String originalProcessData = UA2Bundle.getProcessData();
         String oldBundleId = InstanceUtil
                 .getLatestBundleID(cluster3,
                         Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
@@ -430,17 +415,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         //now to update
         ServiceResponse response =
-                prism.getProcessHelper()
-                        .update((UA2Bundle.getProcessData()), UA2Bundle.getProcessData());
+                prism.getProcessHelper().update((UA2Bundle.getProcessData()), UA2Bundle.getProcessData());
         Util.assertFailed(response);
         String prismString = getResponse(prism, UA2Bundle, false);
-        Assert.assertEquals(Util.getProcessObject(prismString).getName(), oldName);
-        dualComparison(UA2Bundle, cluster3);
-        //ensure that the running process has new coordinators created; while the submitted
-        // one is updated
-        // correctly.
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
-                Util.readEntityName(UA2Bundle.getProcessData()), false);
+                Util.readEntityName(originalProcessData), false);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
     }
 
@@ -837,10 +816,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         dualComparison(UA2Bundle, cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
+        waitingForBundleFinish(cluster3, oldBundleId);
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        waitingForBundleFinish(cluster3, oldBundleId);
         int finalNumberOfInstances =
                 InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
                         Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size();
@@ -912,10 +891,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         dualComparison(UA2Bundle, cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
+        waitingForBundleFinish(cluster3, oldBundleId);
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        waitingForBundleFinish(cluster3, oldBundleId);
+        AssertUtil.checkNotStatus(cluster3OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
         int finalNumberOfInstances =
                 InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
                         Util.getProcessName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS).size();
@@ -1050,10 +1029,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         dualComparison(UA2Bundle, cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
+        waitingForBundleFinish(cluster3, oldBundleId);
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
-        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        waitingForBundleFinish(cluster3, oldBundleId);
+        AssertUtil.checkNotStatus(cluster3OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
 
         int finalNumberOfInstances =
                 InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
@@ -1514,7 +1493,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                         Util.readEntityName(UA2Bundle.getProcessData()), ENTITY_TYPE.PROCESS);
         Thread.sleep(30000);
 
-        int coordCount = Util.getNumberOfWorkflowInstances(cluster3, oldBundleId);
         String oldStartTime = InstanceUtil.dateToOozieDate(
                 UA2Bundle.getProcessObject().getClusters().getCluster().get(0).getValidity()
                         .getStart());
@@ -1535,6 +1513,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                         .update(UA2Bundle.getProcessData(), UA2Bundle.getProcessData()));
         Util.assertSucceeded(cluster3.getProcessHelper()
                 .resume(URLS.RESUME_URL, UA2Bundle.getProcessData()));
+        int coordCount = Util.getNumberOfWorkflowInstances(cluster3, oldBundleId);
         Util.verifyNewBundleCreation(cluster3, oldBundleId, coordCount,
                 Util.readEntityName(UA2Bundle.getProcessData()), true);
 
