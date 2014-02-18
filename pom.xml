@@ -107,6 +107,7 @@
         <hadoop-distcp.version>0.9</hadoop-distcp.version>
         <jetty.version>6.1.26</jetty.version>
         <internal.maven.repo>file:///tmp/falcontemprepo</internal.maven.repo>
+        <hortonworks.repo.url>http://repo.hortonworks.com/content/repositories/releases</hortonworks.repo.url>
         <skipCheck>false</skipCheck>
     </properties>
 
@@ -220,7 +221,7 @@
         </repository>
         <repository>
             <id>hortonworks.repo</id>
-            <url>http://repo.hortonworks.com/content/repositories/releases</url>
+            <url>${hortonworks.repo.url}</url>
             <name>Hortonworks Repo</name>
             <snapshots>
                 <enabled>false</enabled>
