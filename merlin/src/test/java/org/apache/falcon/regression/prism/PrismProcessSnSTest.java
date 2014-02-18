@@ -44,8 +44,9 @@ public class PrismProcessSnSTest extends BaseTestClass {
     ColoHelper cluster2;
     OozieClient cluster1OC;
     OozieClient cluster2OC;
-    public static final String UA1_RUNNING = "ua1/RUNNING";
-    public static final String UA2_RUNNING = "ua2/RUNNING";
+    public static String RUNNING = "/RUNNING";
+    public static String UA1_RUNNING;
+    public static String UA2_RUNNING;
     Bundle UA1Bundle = new Bundle();
     Bundle UA2Bundle = new Bundle();
 
@@ -187,6 +188,8 @@ public class PrismProcessSnSTest extends BaseTestClass {
     @Test(groups = {"prism", "0.2"})
     public void testSnSDeletedProcessOnBothColos() throws Exception {
         //schedule both bundles
+        UA1_RUNNING = UA1Bundle.getClusterHelper().getColo().split("=")[1] + RUNNING;
+        UA2_RUNNING = UA2Bundle.getClusterHelper().getColo().split("=")[1] + RUNNING;
         UA1Bundle.submitAndScheduleProcess();
         Assert.assertEquals(Util.parseResponse(
                 prism.getProcessHelper()
