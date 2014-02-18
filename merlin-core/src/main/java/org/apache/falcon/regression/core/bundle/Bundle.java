@@ -84,7 +84,9 @@ import java.util.List;
  */
 public class Bundle {
 
-    static PrismHelper prismHelper = new PrismHelper("prism.properties", "");
+    public static final String MERLIN_PROPERTIES = "Merlin.properties";
+    public static final String PRISM_PREFIX = "prism";
+    static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
 
     public List<String> dataSets;
     String processData;
