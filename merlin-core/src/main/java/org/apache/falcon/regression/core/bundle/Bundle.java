@@ -1036,18 +1036,22 @@ public class Bundle {
         return clusterHelper.toString(clusterObj);
     }
 
-    public void deleteBundle(PrismHelper prismHelper) throws JAXBException, IOException, URISyntaxException {
+    public void deleteBundle(PrismHelper prismHelper) {
 
-        prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
+        try {
+            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
+        } catch (Exception e) {}
 
         for (String dataset : getDataSets()) {
-
-             prismHelper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
+            try {
+                prismHelper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
+            } catch (Exception e) {}
         }
 
         for (String cluster : this.getClusters()) {
-
-            prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+            try {
+                prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+            } catch (Exception e) {}
         }
 
 
