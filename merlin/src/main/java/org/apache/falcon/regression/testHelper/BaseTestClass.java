@@ -18,21 +18,24 @@
 
 package org.apache.falcon.regression.testHelper;
 
+import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.OozieClient;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 public class BaseTestClass {
-    private static List<String> serverNames;
+    private static String[] serverNames;
 
     static {
         try {
@@ -51,6 +54,7 @@ public class BaseTestClass {
     public String baseWorkflowDir = baseHDFSDir + "/workflows";
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public static final String PRISM_PREFIX = "prism";
+    protected Bundle[] bundles;
 
 
     public BaseTestClass() {
@@ -76,18 +80,40 @@ public class BaseTestClass {
     private static void prepareProperties() throws Exception {
 
         Properties merlinProp = Util.getPropertiesObj(MERLIN_PROPERTIES);
-        serverNames = new ArrayList<String>(Arrays.asList(merlinProp.getProperty("servers").split
-                (",")));
-        for (int i = 0; i < serverNames.size(); i++)
-            serverNames.set(i, serverNames.get(i).trim());
+        serverNames = merlinProp.getProperty("servers").split(",");
+        for (int i = 0; i < serverNames.length; i++)
+            serverNames[i] = serverNames[i].trim();
     }
 
     private List<ColoHelper> getServers() {
         ArrayList<ColoHelper> returnList = new ArrayList<ColoHelper>();
-        for (int i = 0; i < serverNames.size(); i++)
-            returnList.add(new ColoHelper(MERLIN_PROPERTIES, serverNames.get(i)));
-
+        for (int i = 0; i < serverNames.length; i++) {
+            returnList.add(new ColoHelper(MERLIN_PROPERTIES, serverNames[i]));
+        }
         return returnList;
     }
+
+    @BeforeMethod
+    public void createBundles() {
+        bundles = new Bundle[serverNames.length];
+    }
+
+
+    @AfterMethod
+    public void removeBundles() {
+        for (Bundle bundle : bundles) {
+            if (bundle != null){
+                bundle.deleteBundle(prism);
+            }
+        }
+    }
+
+    @AfterClass
+    public void deleteBaseDir() throws IOException {
+        for (FileSystem fs : serverFS) {
+            HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
+        }
+    }
+
 
 }
