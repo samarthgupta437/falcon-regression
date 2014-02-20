@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.oozie.client.AuthOozieClient;
 import org.apache.oozie.client.OozieClient;
 
 import javax.xml.bind.JAXBException;
@@ -70,14 +71,6 @@ public abstract class IEntityManagerHelper {
     return hostname;
   }
 
-  public String getOozieLocation() {
-    return oozieLocation;
-  }
-
-  public String getOozieURL() {
-    return oozieURL;
-  }
-
   public String getPassword() {
     return password;
   }
@@ -104,8 +97,7 @@ public abstract class IEntityManagerHelper {
   protected String hadoopURL = "";
   protected String clusterReadonly = "";
   protected String clusterWrite = "";
-  protected String oozieURL = "";
-  protected String oozieLocation = "";
+  private   String oozieURL = "";
   protected String activeMQ = "";
   protected String storeLocation = "";
   protected String hadoopGetCommand = "";
@@ -117,14 +109,14 @@ public abstract class IEntityManagerHelper {
   protected String serviceRestartCmd;
   protected String serviceStatusCmd;
 
-  public OozieClient getOozieClient() {
+  public AuthOozieClient getOozieClient() {
     if (null == this.oozieClient) {
       this.oozieClient = OozieUtil.getClient(this.oozieURL);
     }
     return this.oozieClient;
   }
 
-  protected OozieClient oozieClient;
+  protected AuthOozieClient oozieClient;
 
   public FileSystem getHadoopFS() throws IOException {
     if (null == this.hadoopFS)
@@ -139,14 +131,6 @@ public abstract class IEntityManagerHelper {
   }
 
   protected String identityFile;
-
-    /*public String getServiceStatusMsg() {
-        return serviceStatusMsg;
-    }*/
-
-    /*public String getServiceStatusCmd() {
-        return serviceStatusCmd;
-    }*/
 
   protected String serviceStatusMsg;
 
@@ -193,7 +177,6 @@ public abstract class IEntityManagerHelper {
     this.clusterReadonly = prop.getProperty(prefix + "cluster_readonly");
     this.clusterWrite = prop.getProperty(prefix + "cluster_write");
     this.oozieURL = prop.getProperty(prefix + "oozie_url");
-    this.oozieLocation = prop.getProperty(prefix + "oozie_location");
     this.activeMQ = prop.getProperty(prefix + "activemq_url");
     this.storeLocation = prop.getProperty(prefix + "storeLocation");
     this.hadoopGetCommand =
@@ -260,41 +243,11 @@ public abstract class IEntityManagerHelper {
 
   public abstract ProcessInstancesResult getRunningInstance(URLS processRuningInstance,
                                                             String name) throws IOException, URISyntaxException;
-
-
-    /*public abstract ProcessInstancesResult getRunningInstance(String processRuningInstance,
-                                                              String name)
-    ;*/
-
-
   public abstract ProcessInstancesResult getProcessInstanceStatus(
     String readEntityName, String params) throws IOException, URISyntaxException;
 
   public abstract ProcessInstancesResult getProcessInstanceSuspend(
     String readEntityName, String params) throws IOException, URISyntaxException;
-
-/*    public abstract String writeEntityToFile(String entity) ;
-
-    public abstract String submitEntityViaCLI(String filePath) ;
-
-    public abstract String validateEntityViaCLI(String filePath) ;
-
-    public abstract String submitAndScheduleViaCLI(String filePath) ;
-
-    public abstract String scheduleViaCLI(String filePath) ;
-
-    public abstract String resumeViaCLI(String filePath) ;
-
-    public abstract String getStatusViaCLI(String filePath) ;
-
-    public abstract String getEntityDefinitionViaCLI(String filePath) ;
-
-    public abstract String deleteViaCLI(String filePath) ;
-
-    public abstract String suspendViaCLI(String filePath) ;
-
-    public abstract String updateViaCLI(String processName, String newProcessFilePath)
-    ;*/
 
   public abstract String list() throws IOException, InterruptedException;
 
@@ -327,11 +280,6 @@ public abstract class IEntityManagerHelper {
 
   public abstract String toString(Object object) throws JAXBException;
 
-/*
-    public abstract ProcessInstancesResult getInstanceRerun(String EntityName, String params)
-    ;
-*/
-
   public abstract ProcessInstancesResult getProcessInstanceKill(String readEntityName,
                                                                 String string) throws IOException, URISyntaxException;
 
@@ -346,10 +294,4 @@ public abstract class IEntityManagerHelper {
   public String getColo() {
     return colo;
   }
-
-/*
-    public abstract String getProcessInstanceStatusViaCli(String EntityName,
-                                                          String start, String end, String colos)
-    ;
-*/
 }
