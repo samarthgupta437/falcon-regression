@@ -44,6 +44,7 @@ import java.util.List;
 /**
  * Null output process tests.
  */
+@Test(groups = "embedded")
 public class NoOutputProcessTest extends BaseTestClass {
 
     ColoHelper cluster;

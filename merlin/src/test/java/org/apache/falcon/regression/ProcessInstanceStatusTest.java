@@ -43,6 +43,7 @@ import java.util.List;
 /**
  * Process instance status tests.
  */
+@Test(groups = "embedded")
 public class ProcessInstanceStatusTest extends BaseTestClass {
 
     ColoHelper cluster;

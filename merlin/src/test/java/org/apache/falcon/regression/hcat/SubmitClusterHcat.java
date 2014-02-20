@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 
+@Test(groups = "embedded")
 public class SubmitClusterHcat extends BaseTestClass {
 
     ColoHelper cluster;

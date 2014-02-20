@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+@Test(groups = "embedded")
 public class RescheduleKilledProcessTest extends BaseTestClass {
 
     private Bundle bundle;

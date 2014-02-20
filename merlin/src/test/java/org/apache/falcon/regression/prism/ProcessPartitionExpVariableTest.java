@@ -37,6 +37,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 
+@Test(groups = "embedded")
 public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
     ColoHelper cluster1;
