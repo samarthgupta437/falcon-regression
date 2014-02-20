@@ -39,6 +39,7 @@ import java.util.List;
 /**
  * EL Expression test.
  */
+@Test(groups = "standalone")
 public class ELExp_FutureAndLatest extends BaseTestClass {
 
     ColoHelper cluster;

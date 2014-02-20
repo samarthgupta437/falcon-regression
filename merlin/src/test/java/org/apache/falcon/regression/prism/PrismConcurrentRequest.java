@@ -34,6 +34,7 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 
 
+@Test(groups = "standalone")
 public class PrismConcurrentRequest extends BaseTestClass {
 
     ColoHelper cluster;

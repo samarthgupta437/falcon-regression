@@ -40,6 +40,7 @@ import java.util.List;
 /**
  * Process lib path tests.
  */
+@Test(groups = "standalone")
 public class ProcessLibPath extends BaseTestClass {
 
     ColoHelper cluster;

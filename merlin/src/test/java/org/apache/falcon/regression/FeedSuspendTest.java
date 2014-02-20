@@ -38,6 +38,7 @@ import java.lang.reflect.Method;
 /**
  * Feed suspend tests.
  */
+@Test(groups = "standalone")
 public class FeedSuspendTest extends BaseTestClass {
 
     ColoHelper cluster;
