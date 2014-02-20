@@ -2158,7 +2158,7 @@ public class Util {
 
     Cluster clusterObject =
       getClusterObject(cluster);
-    if (prefix.isEmpty())
+    if ((null == prefix) || prefix.isEmpty())
       prefix = "";
     else prefix = prefix + ".";
 
