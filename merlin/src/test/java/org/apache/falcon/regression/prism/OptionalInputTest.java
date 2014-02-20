@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 
+@Test(groups = "standalone")
 public class OptionalInputTest extends BaseTestClass {
 
     ColoHelper cluster;

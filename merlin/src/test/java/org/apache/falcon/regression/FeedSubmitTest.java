@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 /**
  * Feed submission tests.
  */
+@Test(groups = "standalone")
 public class FeedSubmitTest extends BaseTestClass {
 
     ColoHelper cluster;

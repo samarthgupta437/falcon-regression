@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 /**
  * ELTest.
  */
+@Test(groups = "standalone")
 public class ELTest extends BaseTestClass {
 
     ColoHelper cluster;

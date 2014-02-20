@@ -42,6 +42,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+@Test(groups = "standalone")
 public class ProcessInstanceRerunTest extends BaseTestClass {
 
     String baseTestDir = baseHDFSDir + "/ProcessInstanceRerunTest";

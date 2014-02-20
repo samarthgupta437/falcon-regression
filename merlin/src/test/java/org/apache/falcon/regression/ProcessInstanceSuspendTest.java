@@ -40,6 +40,7 @@ import java.util.List;
 /**
  * Process instance suspend tests.
  */
+@Test(groups = "standalone")
 public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";

@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+@Test(groups = "standalone")
 public class RescheduleProcessInFinalStates extends BaseTestClass {
 
     private Bundle bundle;
