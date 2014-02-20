@@ -153,15 +153,11 @@ public class InstanceUtil {
                 jsonString.contains("(FEED) not found")) {
             r.setStatusCode(400);
             return r;
-        } else if (
-                (response.getStatusLine().getStatusCode() == 400 &&
-                        jsonString.contains("is beforePROCESS  start")) ||
-                        response.getStatusLine().getStatusCode() == 400 &&
-                                jsonString.contains("is after end date")
-                        || (response.getStatusLine().getStatusCode() == 400 &&
-                        jsonString.contains("is after PROCESS's end")) ||
-                        (response.getStatusLine().getStatusCode() == 400 &&
-                                jsonString.contains("is before PROCESS's  start"))) {
+        } else if (response.getStatusLine().getStatusCode() == 400
+                        && (jsonString.contains("is before")
+                        || jsonString.contains("is after")
+                        || jsonString.contains("ERROR")
+                        || jsonString.contains("FAILED"))) {
             r.setStatusCode(400);
             return r;
         }
