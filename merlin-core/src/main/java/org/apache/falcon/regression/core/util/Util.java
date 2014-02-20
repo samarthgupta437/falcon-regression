@@ -20,7 +20,9 @@ package org.apache.falcon.regression.core.util;
 
 import com.jcraft.jsch.*;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.cluster.*;
+import org.apache.falcon.regression.core.generated.cluster.Cluster;
+import org.apache.falcon.regression.core.generated.cluster.Interface;
+import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
