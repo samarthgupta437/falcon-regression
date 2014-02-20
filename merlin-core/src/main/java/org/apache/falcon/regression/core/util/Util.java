@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import com.jcraft.jsch.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
@@ -39,9 +40,7 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
-import org.apache.falcon.regression.core.supportClasses.GetBundle;
+import org.apache.falcon.regression.core.supportClasses.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -2569,7 +2568,7 @@ public class Util {
     return result;
   }
 
-  private static ENTITY_TYPE getEntityType(String entity) {
+  public static ENTITY_TYPE getEntityType(String entity) {
     if (
       entity.contains("uri:falcon:process:0.1"))
       return ENTITY_TYPE.PROCESS;
@@ -2666,6 +2665,68 @@ public class Util {
     else {
       System.out.println("Nothing to do, workflow.xml does not exists");
     }
+
+  }
+
+  public static List<String> getAppPath(ColoHelper cluster,
+                                  String entityData
+                                  ) throws JAXBException, OozieClientException {
+
+    List<String> appPaths = new ArrayList<String>();
+    List<CoordinatorJob> coords = InstanceUtil.getAllCoordIds(cluster, entityData);
+    for(CoordinatorJob coord : coords) {
+      appPaths.add(Util.getAppPathFromConf(coord.getConf()));
+    }
+    appPaths = new ArrayList<String>(new HashSet<String>(appPaths));
+    return appPaths;
+  }
+
+  private static String getAppPathFromConf(String conf) {
+
+    String tempConf = conf.substring(conf.indexOf("<name>oozie.coord" +
+      ".application.path</name>")+"<name>oozie.coord.application.path</name>"
+      .length());
+
+    return tempConf.substring(tempConf.indexOf("<value>")+"<value>".length(),
+      tempConf.indexOf("/coordinator.xm"));
+  }
+
+  public static int getOozieActionRetryCount(ColoHelper cluster,
+                                             String entityData,
+                                             int instanceNumber,
+                                             OozieActions action) throws JAXBException, OozieClientException {
+
+    CoordinatorAction actionOozie = getAction(cluster, entityData, instanceNumber);
+    WorkflowJob workflowJob =  cluster.getClusterHelper().getOozieClient()
+      .getJobInfo(actionOozie.getExternalId());
+
+    List<WorkflowAction> workflowActions = workflowJob.getActions();
+
+    for (int i=0; i < workflowActions.size(); i++) {
+      System.out.println(" outside : "+workflowActions.get(i).getName()+ " " +
+        workflowActions
+        .get(i)
+        .getUserRetryCount());
+
+      if (workflowActions.get(i).getName().contains("recordsize")) {
+        System.out.println(workflowActions.get(i).getUserRetryCount());
+      }
+    }
+    return cluster.getClusterHelper().getOozieClient().getWorkflowActionInfo
+      (actionOozie.getExternalId()+"@"+action.getValue())
+      .getRetries();
+
+  }
+
+  private static CoordinatorAction getAction(ColoHelper cluster, String entityData, int instanceNumber) throws JAXBException, OozieClientException {
+
+    String bundleId =  InstanceUtil
+      .getLatestBundleID(cluster,
+        Util.readEntityName(entityData), Util.getEntityType(entityData));
+    List<CoordinatorAction> actions = getDefaultOozieCoord(cluster,
+      bundleId, Util.getEntityType(entityData)).getActions();
+
+    return actions.get(instanceNumber);
 
   }
 

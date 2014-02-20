@@ -18,16 +18,48 @@
 
 package org.apache.falcon.regression.Entities;
 
-import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.generated.process.Process;
+import org.apache.falcon.regression.core.generated.process.Properties;
+import org.apache.falcon.regression.core.generated.process.Property;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.InstanceUtil;
 
 import javax.xml.bind.JAXBException;
 
 public class ProcessMerlin extends org.apache.falcon.regression.core.generated
   .process.Process {
 
-  public Process element ;
+  public Process element;
+
   public ProcessMerlin(String processData) throws JAXBException {
     element = InstanceUtil.getProcessElement(processData);
+  }
+
+  public void setProperty(String name, String value) {
+    Property p = new Property();
+    p.setName(name);
+    p.setValue(value);
+
+    if (null == element.getProperties() || null == element.getProperties()
+      .getProperty() || element.getProperties().getProperty().size()
+      <= 0) {
+      Properties props = new Properties();
+      props.addProperty(p);
+      element.setProperties(props);
+      return;
+    } else {
+      element.getProperties().getProperty().add(p);
+    }
+  }
+
+  @Override
+  public String toString() {
+
+    try {
+      return InstanceUtil.processToString(element);
+    } catch (JAXBException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }

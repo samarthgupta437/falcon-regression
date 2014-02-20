@@ -153,13 +153,13 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
 
   public void updateTimeInPast_Feed() throws InterruptedException, JAXBException, ParseException, IOException, OozieClientException {
 
 
     String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-10);
-    String startTimeCluster_target = InstanceUtil.getTimeWrtSystemTime(5);
+    String startTimeCluster_target = InstanceUtil.getTimeWrtSystemTime(10);
 
     String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_target);
 
@@ -257,13 +257,12 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       (cluster_1,
         oldBundleID_cluster1, ENTITY_TYPE.PROCESS);
 
-    List<String> oldNominalTimes_cluster2 = Util.getActionsNominalTime
+   List<String> oldNominalTimes_cluster2 = Util.getActionsNominalTime
       (cluster_2,
         oldBundleID_cluster2, ENTITY_TYPE.PROCESS);
 
     //update process validity
-    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime, 5),
-      InstanceUtil.getTimeWrtSystemTime(80));
+    processBundle.setProcessProperty("someProp","someValue");
 
     //send update request
     String updateTime = InstanceUtil.getTimeWrtSystemTime(5);
@@ -417,7 +416,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = false)
+    enabled = true)
   public void updateTimeAfterEndTime_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException {
 
     /*
@@ -467,7 +466,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = false)
+    enabled = true)
   public void updateTimeAfterEndTime_Feed() throws ParseException, JAXBException, IOException, OozieClientException, InterruptedException {
     /*
     submit and schedule feed with end time 3 mins in future and update with 5
@@ -564,7 +563,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
     Util.print("tearDown " + method.getName());
     processBundle.deleteBundle(prism);
-  //  Util.restartService(cluster_2.getProcessHelper());
+    Util.restartService(cluster_2.getProcessHelper());
     bundle1.deleteBundle(prism);
     processBundle.deleteBundle(prism);
     Thread.sleep(30000);

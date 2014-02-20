@@ -18,6 +18,28 @@
 
 package org.apache.falcon.regression.Entities;
 
+import org.apache.falcon.regression.core.generated.cluster.Cluster;
+import org.apache.falcon.regression.core.generated.cluster.Location;
+import org.apache.falcon.regression.core.generated.cluster.Locations;
+import org.apache.falcon.regression.core.supportClasses.ClusterLocationTypes;
+import org.apache.falcon.regression.core.util.InstanceUtil;
+
+import javax.xml.bind.JAXBException;
+
 public class ClusterMerlin extends org.apache.falcon.regression.core.generated
   .cluster.Cluster {
+
+  public Cluster element;
+
+  public ClusterMerlin(String clusterData) throws JAXBException {
+    element = InstanceUtil.getClusterElement(clusterData);
+  }
+
+  public String getLocation(ClusterLocationTypes locationType) {
+    for(Location l : element.getLocations().getLocation()) {
+       if (locationType.getValue().equals(l.getName()))
+          return l.getPath();
+    }
+    return null;
+  }
 }
