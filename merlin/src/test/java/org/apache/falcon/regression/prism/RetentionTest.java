@@ -38,7 +38,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.Random;
 
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class RetentionTest extends BaseTestClass {
 
     ColoHelper cluster1;

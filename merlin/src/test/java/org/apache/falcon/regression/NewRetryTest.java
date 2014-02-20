@@ -55,7 +55,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class NewRetryTest extends BaseTestClass {
 
     ColoHelper cluster;

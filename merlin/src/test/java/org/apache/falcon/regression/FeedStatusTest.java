@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
 /**
  * Feed status tests.
  */
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class FeedStatusTest extends BaseTestClass {
 
     ColoHelper cluster;

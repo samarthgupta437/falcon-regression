@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
 /**
  * Feed resume tests.
  */
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class FeedResumeTest extends BaseTestClass {
 
     private final IEntityManagerHelper feedHelper = prism.getFeedHelper();

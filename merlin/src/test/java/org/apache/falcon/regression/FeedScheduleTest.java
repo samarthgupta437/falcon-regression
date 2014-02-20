@@ -37,7 +37,7 @@ import java.lang.reflect.Method;
 /**
  * Feed schedule tests.
  */
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class FeedScheduleTest extends BaseTestClass {
 
     ColoHelper cluster;

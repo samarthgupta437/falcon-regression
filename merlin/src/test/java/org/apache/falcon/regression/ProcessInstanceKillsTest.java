@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Process instance kill tests.
  */
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class ProcessInstanceKillsTest extends BaseTestClass {
 
     ColoHelper cluster;

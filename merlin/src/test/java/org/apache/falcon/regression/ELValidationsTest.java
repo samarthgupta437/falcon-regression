@@ -32,7 +32,7 @@ import java.lang.reflect.Method;
 /**
  * EL Validations tests.
  */
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class ELValidationsTest extends BaseTestClass {
 
     ColoHelper cluster;
