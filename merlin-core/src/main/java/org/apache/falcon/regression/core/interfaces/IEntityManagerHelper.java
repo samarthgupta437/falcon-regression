@@ -106,6 +106,17 @@ public abstract class IEntityManagerHelper {
     protected String serviceRestartCmd;
     protected String serviceStatusCmd;
 
+    public String getNamenodePrincipal() {
+        return namenodePrincipal;
+    }
+
+    public String getHiveMetaStorePrincipal() {
+        return hiveMetaStorePrincipal;
+    }
+
+    protected String namenodePrincipal;
+    protected String hiveMetaStorePrincipal;
+
     public AuthOozieClient getOozieClient() {
         if (null == this.oozieClient) {
             this.oozieClient = OozieUtil.getClient(this.oozieURL);
@@ -198,13 +209,14 @@ public abstract class IEntityManagerHelper {
                 System.getProperty("user.home") + "/.ssh/id_rsa");
         this.hadoopFS = null;
         this.oozieClient = null;
+        this.namenodePrincipal = prop.getProperty(prefix + "namenode.kerberos.principal");
+        this.hiveMetaStorePrincipal = prop.getProperty(prefix + "hive.metastore.kerberos" +
+                ".principal");
     }
 
     public abstract ServiceResponse submitEntity(String url, String data) throws IOException;
 
     public abstract ServiceResponse submitEntity(Util.URLS url, String data) throws IOException;
-
-    /*public abstract ServiceResponse validateEntity(String url, String data) ;*/
 
     public abstract ServiceResponse schedule(String url, String data)
     throws JAXBException, IOException, URISyntaxException;
