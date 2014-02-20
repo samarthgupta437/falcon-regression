@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Feed submit and schedule tests.
  */
+@Test(groups = "embedded")
 public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
     ColoHelper cluster;
