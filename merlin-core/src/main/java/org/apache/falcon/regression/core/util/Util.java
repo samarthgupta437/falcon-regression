@@ -20,9 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import com.jcraft.jsch.*;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.cluster.Cluster;
-import org.apache.falcon.regression.core.generated.cluster.Interface;
-import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
+import org.apache.falcon.regression.core.generated.cluster.*;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
@@ -73,6 +71,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.util.*;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 public class Util {
@@ -2157,7 +2156,7 @@ public class Util {
 
     Cluster clusterObject =
       getClusterObject(cluster);
-    if (org.apache.commons.lang.StringUtils.isEmpty(prefix))
+    if (prefix.isEmpty())
       prefix = "";
     else prefix = prefix + ".";
 
@@ -2178,7 +2177,28 @@ public class Util {
 
     //set colo name:
     clusterObject.setColo(readPropertiesFile(filename, prefix + "colo"));
-    JAXBContext context = JAXBContext.newInstance(Cluster.class);
+
+      // get the properties object for the cluster
+      org.apache.falcon.regression.core.generated.cluster.Properties clusterProperties =
+              clusterObject.getProperties();
+      // create the property object for the namenode princpal
+      org.apache.falcon.regression.core.generated.cluster.Property namenodePrincipal = new org
+              .apache.falcon.regression.core.generated.cluster.Property();
+      namenodePrincipal.setName("dfs.namenode.kerberos.principal");
+      namenodePrincipal
+              .setValue(readPropertiesFile(filename, prefix + "namenode.kerberos.principal"));
+      // add the namenode principal to the properties object
+      clusterProperties.getProperty().add(namenodePrincipal);
+
+      // create the property for the hive meta store principal
+      org.apache.falcon.regression.core.generated.cluster.Property hivePrincipal = new org
+              .apache.falcon.regression.core.generated.cluster.Property();
+      hivePrincipal.setName("hive.metastore.kerberos.principal");
+      hivePrincipal.setValue(readPropertiesFile(filename, prefix + "hive.metastore.kerberos"));
+      // add the hive meta store principal to the properties object
+      clusterProperties.getProperty().add(hivePrincipal);
+
+      JAXBContext context = JAXBContext.newInstance(Cluster.class);
     Marshaller m = context.createMarshaller();
     StringWriter writer = new StringWriter();
 
