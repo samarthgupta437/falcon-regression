@@ -42,7 +42,6 @@ import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
-import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Minutes;
@@ -1682,7 +1681,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     private CoordinatorJob getDefaultOozieCoord(ColoHelper coloHelper, String bundleId)
             throws Exception {
-        XOozieClient client = new XOozieClient(coloHelper.getFeedHelper().getOozieURL());
+        OozieClient client = coloHelper.getFeedHelper().getOozieClient();
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
         for (CoordinatorJob coord : bundlejob.getCoordinators()) {

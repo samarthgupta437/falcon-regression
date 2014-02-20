@@ -39,7 +39,6 @@ import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.WorkflowJob;
-import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -1035,7 +1034,7 @@ public class NewRetryTest extends BaseTestClass {
 
         HashMap<String, Boolean> workflowMap = new HashMap<String, Boolean>();
 
-        XOozieClient client = new XOozieClient(coloHelper.getFeedHelper().getOozieURL());
+        OozieClient client =coloHelper.getFeedHelper().getOozieClient();
 
         if (coordinator.getActions().size() == 0) {
             return false;
@@ -1084,23 +1083,11 @@ public class NewRetryTest extends BaseTestClass {
     }
 
     private CoordinatorJob getDefaultOozieCoord(ColoHelper coloHelper, String bundleId) throws Exception {
-        XOozieClient client = new XOozieClient(coloHelper.getFeedHelper().getOozieURL());
+        OozieClient client = coloHelper.getFeedHelper().getOozieClient();
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
         for (CoordinatorJob coord : bundlejob.getCoordinators()) {
             if (coord.getAppName().contains("DEFAULT")) {
-                return client.getCoordJobInfo(coord.getId());
-            }
-        }
-        return null;
-    }
-
-    private CoordinatorJob getLateOozieCoord(String bundleId) throws Exception {
-        XOozieClient client = new XOozieClient(Util.readPropertiesFile("oozie_url"));
-        BundleJob bundlejob = client.getBundleJobInfo(bundleId);
-
-        for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-            if (coord.getAppName().contains("LATE")) {
                 return client.getCoordJobInfo(coord.getId());
             }
         }
@@ -1140,7 +1127,7 @@ public class NewRetryTest extends BaseTestClass {
     private boolean allRelevantWorkflowsAreOver(ColoHelper coloHelper, String bundleId,
                                                 String insertionFolder) throws Exception {
         boolean finished = true;
-        XOozieClient oozieClient = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
+        OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
         for (CoordinatorJob job : bundleJob.getCoordinators()) {
             if (job.getAppName().contains("DEFAULT")) {
@@ -1237,14 +1224,14 @@ public class NewRetryTest extends BaseTestClass {
 
 
     private CoordinatorAction getOozieActionInfo(ColoHelper colohelper, String actionId) throws Exception {
-        XOozieClient client = new XOozieClient(colohelper.getProcessHelper().getOozieURL());
+        OozieClient client =colohelper.getProcessHelper().getOozieClient();
         return client.getCoordActionInfo(actionId);
     }
 
 
     private HashMap<String, Integer> getFailureRetriesForEachWorkflow(ColoHelper coloHelper, CoordinatorJob coordinator)
     throws Exception {
-        XOozieClient client = new XOozieClient(coloHelper.getClusterHelper().getOozieURL());
+        OozieClient client = coloHelper.getClusterHelper().getOozieClient();
         HashMap<String, Integer> workflowRetryMap = new HashMap<String, Integer>();
         for (CoordinatorAction action : coordinator.getActions()) {
 
@@ -1260,7 +1247,7 @@ public class NewRetryTest extends BaseTestClass {
     }
 
     private DateTime[] getFailureTimeBoundaries(ColoHelper coloHelper, String bundleId) throws Exception {
-        XOozieClient client = new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
+        OozieClient client = coloHelper.getProcessHelper().getOozieClient();
         List<DateTime> dateList = new ArrayList<DateTime>();
 
         CoordinatorJob coordinator = getDefaultOozieCoord(coloHelper, bundleId);

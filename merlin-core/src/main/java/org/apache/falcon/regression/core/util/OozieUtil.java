@@ -18,11 +18,11 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.apache.oozie.client.AuthOozieClient;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.apache.oozie.client.XOozieClient;
 import org.testng.log4testng.Logger;
 
 import java.util.ArrayList;
@@ -32,8 +32,8 @@ public class OozieUtil {
 
     private static final Logger logger = Logger.getLogger(OozieUtil.class);
 
-    public static OozieClient getClient(String url) {
-        return new XOozieClient(url);
+    public static AuthOozieClient getClient(String url) {
+        return new AuthOozieClient(url);
     }
 
     public static List<BundleJob> getBundles(OozieClient client, String filter, int start, int len)
