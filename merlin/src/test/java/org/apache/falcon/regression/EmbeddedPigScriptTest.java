@@ -47,7 +47,7 @@ import java.util.List;
 /**
  * Embedded pig script test.
  */
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class EmbeddedPigScriptTest extends BaseTestClass {
 
     ColoHelper cluster;

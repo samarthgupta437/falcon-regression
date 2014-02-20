@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * Process instance resume tests.
  */
-@Test(groups = "standalone")
+@Test(groups = "embedded")
 public class ProcessInstanceResumeTest extends BaseTestClass {
 
     ColoHelper cluster;
