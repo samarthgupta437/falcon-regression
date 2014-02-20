@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.core.bundle;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
@@ -1324,4 +1325,12 @@ public class Bundle {
         p.setOutputs(outputs);
         return InstanceUtil.processToString(p);
     }
+
+  public void setProcessProperty(String property, String value) throws JAXBException {
+
+    ProcessMerlin process = new ProcessMerlin(this.getProcessData());
+    process.setProperty(property, value);
+    this.setProcessData(process.toString());
+
+  }
 }
