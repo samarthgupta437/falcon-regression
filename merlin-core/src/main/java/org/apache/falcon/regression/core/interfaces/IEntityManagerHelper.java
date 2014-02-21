@@ -209,9 +209,9 @@ public abstract class IEntityManagerHelper {
                 System.getProperty("user.home") + "/.ssh/id_rsa");
         this.hadoopFS = null;
         this.oozieClient = null;
-        this.namenodePrincipal = prop.getProperty(prefix + "namenode.kerberos.principal");
+        this.namenodePrincipal = prop.getProperty(prefix + "namenode.kerberos.principal", "none");
         this.hiveMetaStorePrincipal = prop.getProperty(prefix + "hive.metastore.kerberos" +
-                ".principal");
+                ".principal", "none");
     }
 
     public abstract ServiceResponse submitEntity(String url, String data) throws IOException;
