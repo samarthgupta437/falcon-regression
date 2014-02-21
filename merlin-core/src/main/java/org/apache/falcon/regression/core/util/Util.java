@@ -448,6 +448,10 @@ public class Util {
     }
 
     public static String readPropertiesFile(String filename, String property) {
+        return readPropertiesFile(filename, property, null);
+    }
+
+    public static String readPropertiesFile(String filename, String property, String defaultValue) {
         String desired_property;
 
         try {
@@ -455,7 +459,7 @@ public class Util {
 
             Properties properties = new Properties();
             properties.load(conf_stream);
-            desired_property = properties.getProperty(property);
+            desired_property = properties.getProperty(property, defaultValue);
             conf_stream.close();
 
             return desired_property;
@@ -464,7 +468,6 @@ public class Util {
         }
         return null;
     }
-
     public static Bundle[][] readBundles(String path) throws IOException {
 
         List<Bundle> bundleSet = Util.getDataFromFolder(path);
@@ -2187,7 +2190,7 @@ public class Util {
                 .apache.falcon.regression.core.generated.cluster.Property();
         namenodePrincipal.setName("dfs.namenode.kerberos.principal");
         namenodePrincipal
-                .setValue(readPropertiesFile(filename, prefix + "namenode.kerberos.principal"));
+                .setValue(readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none"));
         // add the namenode principal to the properties object
         clusterProperties.getProperty().add(namenodePrincipal);
 
@@ -2195,7 +2198,8 @@ public class Util {
         org.apache.falcon.regression.core.generated.cluster.Property hivePrincipal = new org
                 .apache.falcon.regression.core.generated.cluster.Property();
         hivePrincipal.setName("hive.metastore.kerberos.principal");
-        hivePrincipal.setValue(readPropertiesFile(filename, prefix + "hive.metastore.kerberos"));
+        hivePrincipal.setValue(readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
+                ".principal", "none"));
         // add the hive meta store principal to the properties object
         clusterProperties.getProperty().add(hivePrincipal);
 
