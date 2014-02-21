@@ -2545,7 +2545,7 @@ public class Util {
     PROCESS_UPDATE("/api/entities/update/process"),
     INSTANCE_RERUN("/api/instance/rerun"),
     FEED_UPDATE("/api/entities/update/feed"), 
-    NSTANCE_SUMMARY("/api/instance/summary");
+    INSTANCE_SUMMARY("/api/instance/summary");
     private final String url;
 
     URLS(String url) {
