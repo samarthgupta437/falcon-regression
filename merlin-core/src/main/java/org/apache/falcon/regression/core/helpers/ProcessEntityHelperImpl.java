@@ -285,6 +285,16 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
   }
 
+  @Override
+  public ProcessInstancesResult getInstanceSummary(String entityName,
+                                                    String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + URLS.INSTANCE_SUMMARY.getValue() + "/" + "process/" +
+        entityName +
+        "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  }
+
   public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
     String url =
       this.hostname + URLS.INSTANCE_KILL.getValue() + "/" + "process/" + EntityName + "/";

@@ -91,7 +91,7 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b = (Bundle) Util.readELBundles()[0][0];
+        b = Util.readELBundles()[0][0];
         b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
