@@ -171,7 +171,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   @Test(groups = {"prism", "0.2"})
   public void testProcessScheduleOn1ColoWhileOtherColoIsDown() throws Exception {
     try {
-      UA2Bundle.submitProcess();
+      UA2Bundle.submitProcess(true);
 
       Util.shutDownService(cluster2.getProcessHelper());
 
@@ -195,7 +195,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   @Test(groups = {"prism", "0.2"})
   public void testProcessScheduleOn1ColoWhileThatColoIsDown() throws Exception {
     try {
-      UA1Bundle.submitProcess();
+      UA1Bundle.submitProcess(true);
 
       Util.shutDownService(cluster2.getProcessHelper());
 
