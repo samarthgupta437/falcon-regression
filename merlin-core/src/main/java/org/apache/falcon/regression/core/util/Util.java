@@ -1161,7 +1161,8 @@ public class Util {
     @SuppressWarnings("deprecation")
     public static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
                                                    String interval)
-    throws JAXBException, OozieClientException, IOException, URISyntaxException {
+    throws JAXBException, OozieClientException, IOException, URISyntaxException,
+    InterruptedException {
         //get Data created in the cluster
         List<String> initialData = Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
 
@@ -1675,7 +1676,7 @@ public class Util {
     }
 
     public static List<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
-    throws OozieClientException {
+    throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = prismHelper.getFeedHelper().getOozieClient();
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
@@ -1694,10 +1695,15 @@ public class Util {
         for (CoordinatorAction action : jobInfo.getActions()) {
             CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
 
-            while (!actionInfo.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
-                //keep waiting till eternity. this can be dangerous :|
+            for(int i=0; i < 180; ++i) {
                 actionInfo = oozieClient.getCoordActionInfo(action.getId());
+                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED) {
+                    break;
+                }
+                Thread.sleep(10000);
             }
+            Assert.assertEquals(actionInfo.getStatus(),CoordinatorAction.Status.SUCCEEDED,
+                    "Action did not succeed even after a long time.");
             jobIds.add(action.getId());
 
         }
