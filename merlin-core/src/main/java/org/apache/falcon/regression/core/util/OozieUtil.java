@@ -18,20 +18,22 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.oozie.client.*;
-import org.testng.Assert;
+import org.apache.oozie.client.AuthOozieClient;
+import org.apache.oozie.client.BundleJob;
+import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.OozieClientException;
 import org.testng.log4testng.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class OozieUtil {
 
   private static final Logger logger = Logger.getLogger(OozieUtil.class);
 
-  public static OozieClient getClient(String url) {
-    return new XOozieClient(url);
+    public static AuthOozieClient getClient(String url) {
+        return new AuthOozieClient(url);
   }
 
   public static List<BundleJob> getBundles(OozieClient client, String filter, int start, int len)
@@ -93,25 +95,4 @@ public class OozieUtil {
     }
     return oozieId;
   }
-
-  public static void waitForBundleCoordToReachState(OozieClient client,
-                                                    String bundleID,
-                                                    int minutesToWait,
-                                                    Job.Status...
-                                                      status) throws OozieClientException, InterruptedException {
-
-    List<Job.Status> statusList = Arrays.asList(status);
-    int sleep = minutesToWait * 60 / 20;
-    for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-      BundleJob bundleInfo = client.getBundleJobInfo(bundleID);
-      List<CoordinatorJob> coords = bundleInfo.getCoordinators();
-      if (coords.size() > 0 && statusList.contains(coords.get(0).getStatus()))
-        return;
-
-      Thread.sleep(20000);
-    }
-    Assert.assertTrue(false, "Coord was never created or reached expected " +
-      "state reached");
-  }
 }
-

@@ -116,4 +116,5 @@ public class AssertUtil {
         }
         checkNotStatus(oozieClient, entityType, data, expectedStatus);
     }
+
 }

@@ -20,7 +20,6 @@ package org.apache.falcon.regression.core.util;
 
 import com.jcraft.jsch.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
@@ -40,7 +39,10 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.*;
+import org.apache.falcon.regression.core.supportClasses.Consumer;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.supportClasses.GetBundle;
+import org.apache.falcon.regression.core.supportClasses.OozieActions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -304,7 +306,6 @@ public class Util {
     session.connect();
 
 
-
     Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
 
     ChannelExec channel = (ChannelExec) session.openChannel("exec");
@@ -451,6 +452,10 @@ public class Util {
   }
 
   public static String readPropertiesFile(String filename, String property) {
+        return readPropertiesFile(filename, property, null);
+    }
+
+    public static String readPropertiesFile(String filename, String property, String defaultValue) {
     String desired_property;
 
     try {
@@ -458,7 +463,7 @@ public class Util {
 
       Properties properties = new Properties();
       properties.load(conf_stream);
-      desired_property = properties.getProperty(property);
+            desired_property = properties.getProperty(property, defaultValue);
       conf_stream.close();
 
       return desired_property;
@@ -467,7 +472,6 @@ public class Util {
     }
     return null;
   }
-
   public static Bundle[][] readBundles(String path) throws IOException {
 
     List<Bundle> bundleSet = Util.getDataFromFolder(path);
@@ -509,52 +513,6 @@ public class Util {
     return bundleSet.toArray(new Bundle[bundleSet.size()]);
   }
 
-  @Deprecated
-  public static List<String> getOozieJobStatus(PrismHelper coloHelper, String processName)
-    throws IOException, JSchException {
-
-    logger.info(coloHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-      coloHelper.getProcessHelper().getOozieURL() +
-      "  -jobtype bundle -localtime -filter \"status=RUNNING;name=FALCON_PROCESS_" +
-      processName +
-      "\" | tail -2 | head -1");
-
-    String expectedState = "RUNNING";
-    String statusCommand =
-      coloHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-        coloHelper.getProcessHelper().getOozieURL() +
-        "  -jobtype bundle -localtime -filter \"status=RUNNING;" +
-        "name=FALCON_PROCESS_" +
-        processName +
-        "\" | tail -2 | head -1";
-
-    List<String> jobList = new ArrayList<String>();
-
-    for (int seconds = 0; seconds < 20; seconds++) {
-      jobList = runRemoteScript(coloHelper.getProcessHelper().getQaHost(),
-        coloHelper.getProcessHelper().getUsername(),
-        coloHelper.getProcessHelper().getPassword(), statusCommand,
-        coloHelper.getProcessHelper().getIdentityFile());
-
-      if (jobList.get(0).contains(expectedState)) {
-        logger.info(jobList.get(0));
-        break;
-      } else {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.getMessage());
-        }
-      }
-
-    }
-
-    logger.info(jobList.get(0));
-    return jobList;
-
-
-  }
-
   public static boolean verifyOozieJobStatus(OozieClient client, String processName,
                                              ENTITY_TYPE entityType, Job.Status expectedStatus)
     throws OozieClientException, InterruptedException {
@@ -579,133 +537,6 @@ public class Util {
     } else {
       return statuses.get(0);
     }
-  }
-
-  @Deprecated
-  public static List<String> getOozieJobStatus(PrismHelper prismHelper, String processName,
-                                               String expectedState)
-    throws IOException, JSchException {
-
-
-    String statusCommand =
-      prismHelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-        prismHelper.getProcessHelper().getOozieURL() +
-        "  -jobtype bundle -localtime -filter \"";
-
-    if (!expectedState.equals("NONE")) {
-
-      statusCommand += "status=" + expectedState + ";";
-    }
-
-    statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
-    logger.info(statusCommand);
-
-    List<String> jobList = new ArrayList<String>();
-
-    for (int seconds = 0; seconds < 20; seconds++) {
-      jobList = runRemoteScript(prismHelper.getProcessHelper().getQaHost(),
-        prismHelper.getProcessHelper().getUsername(),
-        prismHelper.getProcessHelper().getPassword(), statusCommand,
-        prismHelper.getProcessHelper().getIdentityFile());
-
-      if ((expectedState.equalsIgnoreCase("NONE")) ||
-        !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
-        break;
-      } else {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.getMessage());
-        }
-      }
-    }
-
-    logger.info(jobList.get(0));
-    return jobList;
-  }
-
-  @Deprecated
-  public static List<String> getOozieJobStatus(String processName, String expectedState,
-                                               ColoHelper colohelper)
-    throws IOException, JSchException {
-    String statusCommand =
-      colohelper.getProcessHelper().getOozieLocation() + "/oozie jobs -oozie " +
-        colohelper.getProcessHelper().getOozieURL() +
-        "  -jobtype bundle -localtime -filter \"";
-
-    if (!expectedState.equals("NONE")) {
-
-      statusCommand += "status=" + expectedState + ";";
-    }
-
-
-    statusCommand += "name=FALCON_PROCESS_" + processName + "\" | tail -2 | head -1";
-    logger.info(statusCommand);
-
-    List<String> jobList = new ArrayList<String>();
-
-    for (int seconds = 0; seconds < 20; seconds++) {
-      jobList = runRemoteScript(colohelper.getProcessHelper().getQaHost(),
-        colohelper.getProcessHelper().getUsername(),
-        colohelper.getProcessHelper().getPassword(), statusCommand,
-        colohelper.getProcessHelper().getIdentityFile());
-
-      if ((expectedState.equalsIgnoreCase("NONE")) ||
-        !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
-        break;
-      } else {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.getMessage());
-        }
-      }
-    }
-
-    logger.info(jobList.get(0));
-    return jobList;
-  }
-
-  @Deprecated
-  public static List<String> getOozieFeedJobStatus(String processName, String expectedState,
-                                                   PrismHelper coloHelper)
-    throws IOException, JSchException {
-
-    String statusCommand =
-      coloHelper.getFeedHelper().getOozieLocation() + "/oozie jobs -oozie " +
-        coloHelper.getFeedHelper().getOozieURL() +
-        "  -jobtype bundle -localtime -filter \"";
-
-    if (!expectedState.equals("NONE")) {
-      statusCommand += "status=" + expectedState + ";";
-    }
-
-
-    statusCommand += "name=FALCON_FEED_" + processName + "\" | tail -2 | head -1";
-    logger.info(statusCommand);
-
-    List<String> jobList = new ArrayList<String>();
-
-    for (int seconds = 0; seconds < 20; seconds++) {
-      jobList = runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
-        coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper()
-        .getPassword(), statusCommand, coloHelper.getProcessHelper().getIdentityFile());
-
-      if ((expectedState.equalsIgnoreCase("NONE")) ||
-        !(expectedState.equals("") && jobList.get(0).contains(expectedState))) {
-        break;
-      } else {
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          logger.error(e.getMessage());
-        }
-      }
-
-    }
-
-    logger.info(jobList.get(0));
-    return jobList;
   }
 
   public static void assertSucceeded(ServiceResponse response) throws JAXBException {
@@ -768,11 +599,10 @@ public class Util {
 
   public static List<String> getMissingDependencies(PrismHelper helper, String bundleID)
     throws OozieClientException {
-    XOozieClient oozieClient =
-      new XOozieClient(readPropertiesFile(helper.getEnvFileName(), "oozie_url"));
-    BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
+        BundleJob bundleJob = helper.getClusterHelper().getOozieClient().getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo =
-      oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+                helper.getClusterHelper().getOozieClient().getCoordJobInfo(
+                  bundleJob.getCoordinators().get(0).getId());
     List<CoordinatorAction> actions = jobInfo.getActions();
 
     Util.print("conf from event: " + actions.get(0).getMissingDependencies());
@@ -784,7 +614,7 @@ public class Util {
   public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
     throws OozieClientException {
     List<String> jobIds = new ArrayList<String>();
-    XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
+        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
     BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo =
       oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
@@ -804,7 +634,7 @@ public class Util {
 
   public static String getWorkflowInfo(PrismHelper prismHelper, String workflowId)
     throws OozieClientException {
-    XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
+        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
     logger.info("fetching info for workflow with id: " + workflowId);
     WorkflowJob job = oozieClient.getJobInfo(workflowId);
     return job.getStatus().toString();
@@ -812,7 +642,7 @@ public class Util {
 
   public static Date getNominalTime(PrismHelper prismHelper, String bundleID)
     throws OozieClientException {
-    XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
+        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
     BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo =
       oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
@@ -1574,36 +1404,12 @@ public class Util {
     DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
     fmt = fmt.withZoneUTC();
 
+
    return fmt.parseDateTime(runRemoteScript(prismHelper.getClusterHelper()
       .getQaHost(), prismHelper.getClusterHelper().getUsername(),
       prismHelper.getClusterHelper().getPassword(), "date '+%Y-%m-%dT%H:%MZ'",
       prismHelper.getClusterHelper().getIdentityFile()).get(0));
 
-  }
-
-  @Deprecated
-  public static List<String> getBundles(PrismHelper coloHelper, String entityName,
-                                        String entityType) throws IOException, JSchException {
-
-    if (entityType.equalsIgnoreCase("feed")) {
-      return runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
-        coloHelper.getFeedHelper().getUsername(), coloHelper.getFeedHelper()
-        .getPassword(), coloHelper.getFeedHelper().getOozieLocation() + "/oozie " +
-        "jobs -oozie " + coloHelper.getFeedHelper().getOozieURL() + "  -jobtype " +
-        "bundle -localtime -filter name=FALCON_FEED_" + entityName + "|grep " +
-        "000|awk '{print $1}'", coloHelper.getFeedHelper().getIdentityFile());
-
-    } else {
-      return runRemoteScript(coloHelper.getFeedHelper().getQaHost(),
-        coloHelper.getFeedHelper().getUsername(),
-        coloHelper.getFeedHelper().getPassword(),
-        coloHelper.getFeedHelper().getOozieLocation() + "/oozie jobs -oozie " +
-          coloHelper.getFeedHelper().getOozieURL() +
-          "  -jobtype bundle -localtime -filter name=FALCON_PROCESS_" +
-          entityName +
-          "|grep 000|awk '{print $1}'",
-        coloHelper.getFeedHelper().getIdentityFile());
-    }
   }
 
   public static List<String> getBundles(OozieClient client, String entityName,
@@ -1634,7 +1440,7 @@ public class Util {
     throws OozieClientException {
     List<DateTime> startTimes = new ArrayList<DateTime>();
 
-    XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
+        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
     BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo;
 
@@ -1662,7 +1468,7 @@ public class Util {
 
   public static String getBundleStatus(PrismHelper prismHelper, String bundleId)
     throws OozieClientException {
-    XOozieClient oozieClient = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
+        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
     BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
     return bundleJob.getStatus().toString();
   }
@@ -1876,7 +1682,7 @@ public class Util {
   public static List<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
     throws OozieClientException {
     List<String> jobIds = new ArrayList<String>();
-    XOozieClient oozieClient = new XOozieClient(prismHelper.getFeedHelper().getOozieURL());
+        XOozieClient oozieClient = prismHelper.getFeedHelper().getOozieClient();
     BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo =
       oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
@@ -1942,9 +1748,10 @@ public class Util {
 
   }
 
-  public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId, ENTITY_TYPE type)
+    public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId,
+                                                      ENTITY_TYPE type)
     throws OozieClientException {
-    XOozieClient client = new XOozieClient(prismHelper.getClusterHelper().getOozieURL());
+        XOozieClient client = prismHelper.getClusterHelper().getOozieClient();
     BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
     for (CoordinatorJob coord : bundlejob.getCoordinators()) {
@@ -2168,25 +1975,6 @@ public class Util {
     return newList;
   }
 
-  @Deprecated
-  public static List<String> getBundles(String entityName, String entityType,
-                                        IEntityManagerHelper helper)
-    throws IOException, JSchException {
-    if (entityType.equals("FEED"))
-      return runRemoteScript(helper.getQaHost(), helper.getUsername(),
-        helper.getPassword(), helper.getOozieLocation() + "/oozie jobs -oozie " +
-        "" + helper.getOozieURL() + "  -jobtype bundle -localtime -filter " +
-        "name=FALCON_FEED_" + entityName + "|grep 000|awk '{print $1}'",
-        helper.getIdentityFile());
-    else
-      return runRemoteScript(helper.getQaHost(), helper.getUsername(),
-        helper.getPassword(), helper.getOozieLocation() + "/oozie jobs -oozie " +
-        "" + helper.getOozieURL() + "  -jobtype bundle -localtime -filter " +
-        "name=FALCON_PROCESS_" + entityName + "|grep 000|awk '{print $1}'",
-        helper.getIdentityFile());
-
-  }
-
   public static void dumpConsumerData(Consumer consumer) {
     logger.info("dumping all queue data:");
 
@@ -2232,7 +2020,7 @@ public class Util {
 
   public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
     throws OozieClientException {
-    XOozieClient client = new XOozieClient(coloHelper.getClusterHelper().getOozieURL());
+        XOozieClient client = coloHelper.getClusterHelper().getOozieClient();
 
     BundleJob bundleJob = client.getBundleJobInfo(bundleId);
 
@@ -2298,36 +2086,6 @@ public class Util {
         .submitEntity(URLS.SUBMIT_URL, aB.getClusters().get(0));
       Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-    }
-  }
-
-  @Deprecated
-  public static List<String> getBundles(PrismHelper coloHelper,
-                                        String entityName, ENTITY_TYPE entityType)
-    throws IOException, JSchException {
-
-    if (entityType.equals(ENTITY_TYPE.FEED)) {
-      return runRemoteScript(
-        coloHelper.getFeedHelper().getQaHost(),
-        coloHelper.getFeedHelper().getUsername(),
-        coloHelper.getFeedHelper().getPassword(),
-        coloHelper.getFeedHelper().getOozieLocation()
-          + "/oozie jobs -oozie "
-          + coloHelper.getFeedHelper().getOozieURL()
-          + "  -jobtype bundle -localtime -filter name=FALCON_FEED_"
-          + entityName + "|grep 000|awk '{print $1}'",
-        coloHelper.getFeedHelper().getIdentityFile());
-    } else {
-      return runRemoteScript(
-        coloHelper.getFeedHelper().getQaHost(),
-        coloHelper.getFeedHelper().getUsername(),
-        coloHelper.getFeedHelper().getPassword(),
-        coloHelper.getFeedHelper().getOozieLocation()
-          + "/oozie jobs -oozie "
-          + coloHelper.getFeedHelper().getOozieURL()
-          + "  -jobtype bundle -localtime -filter name=FALCON_PROCESS_"
-          + entityName + "|grep 000|awk '{print $1}'",
-        coloHelper.getFeedHelper().getIdentityFile());
     }
   }
 
@@ -2421,7 +2179,7 @@ public class Util {
 
     Cluster clusterObject =
       getClusterObject(cluster);
-    if (org.apache.commons.lang.StringUtils.isEmpty(prefix))
+        if ((null == prefix) || prefix.isEmpty())
       prefix = "";
     else prefix = prefix + ".";
 
@@ -2442,6 +2200,28 @@ public class Util {
 
     //set colo name:
     clusterObject.setColo(readPropertiesFile(filename, prefix + "colo"));
+
+        // get the properties object for the cluster
+        org.apache.falcon.regression.core.generated.cluster.Properties clusterProperties =
+                clusterObject.getProperties();
+        // create the property object for the namenode princpal
+        org.apache.falcon.regression.core.generated.cluster.Property namenodePrincipal = new org
+                .apache.falcon.regression.core.generated.cluster.Property();
+        namenodePrincipal.setName("dfs.namenode.kerberos.principal");
+        namenodePrincipal
+                .setValue(readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none"));
+        // add the namenode principal to the properties object
+        clusterProperties.getProperty().add(namenodePrincipal);
+
+        // create the property for the hive meta store principal
+        org.apache.falcon.regression.core.generated.cluster.Property hivePrincipal = new org
+                .apache.falcon.regression.core.generated.cluster.Property();
+        hivePrincipal.setName("hive.metastore.kerberos.principal");
+        hivePrincipal.setValue(readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
+                ".principal", "none"));
+        // add the hive meta store principal to the properties object
+        clusterProperties.getProperty().add(hivePrincipal);
+
     JAXBContext context = JAXBContext.newInstance(Cluster.class);
     Marshaller m = context.createMarshaller();
     StringWriter writer = new StringWriter();
@@ -2450,9 +2230,13 @@ public class Util {
     return writer.toString();
   }
 
-  public static void validateNumberOfWorkflowInstances(PrismHelper prismHelper, int originalCount, String oldBundleId, String updatedBundleId) throws Exception {
+    public static void validateNumberOfWorkflowInstances(PrismHelper prismHelper, int originalCount,
+                                                         String oldBundleId, String updatedBundleId)
+    throws Exception {
     //first make sure sum of all parts is same
-    Assert.assertEquals(getNumberOfWorkflowInstances(prismHelper, oldBundleId) + getNumberOfWorkflowInstances(prismHelper, updatedBundleId), originalCount, "The total number of workflow instances dont match post update! Please check.");
+        Assert.assertEquals(getNumberOfWorkflowInstances(prismHelper, oldBundleId) +
+                getNumberOfWorkflowInstances(prismHelper, updatedBundleId), originalCount,
+                "The total number of workflow instances dont match post update! Please check.");
 
   }
 
@@ -2461,7 +2245,8 @@ public class Util {
                                              int originalBundleCount,
                                              String processName, boolean shouldBeCreated)
     throws Exception {
-    String newBundleId = InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
+        String newBundleId =
+                InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
     if (shouldBeCreated) {
       Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
         "eeks! new bundle is not getting created!!!!");
@@ -2759,7 +2544,8 @@ public class Util {
     INSTANCE_SUSPEND("/api/instance/suspend"),
     PROCESS_UPDATE("/api/entities/update/process"),
     INSTANCE_RERUN("/api/instance/rerun"),
-    FEED_UPDATE("/api/entities/update/feed"), INSTANCE_SUMMARY("/api/instance/summary");
+    FEED_UPDATE("/api/entities/update/feed"), 
+    NSTANCE_SUMMARY("/api/instance/summary");
     private final String url;
 
     URLS(String url) {
