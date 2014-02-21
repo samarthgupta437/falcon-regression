@@ -57,7 +57,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         clusterFS = serverFS.get(0);
     }
 
-    @BeforeClass(alwaysRun = true)
+//    @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
@@ -65,7 +65,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
@@ -96,7 +96,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b = (Bundle) Util.readELBundles()[0][0];
+        b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
@@ -163,13 +163,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-20);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(400);
-        String startTimeData = InstanceUtil.getTimeWrtSystemTime(-150);
-        String endTimeData = InstanceUtil.getTimeWrtSystemTime(50);
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(startTimeData),
-                InstanceUtil.oozieDateToDate(endTimeData), testDir + "/", 1);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
+        String endTime = InstanceUtil.getTimeWrtSystemTime(40);
         b.setProcessValidity(startTime, endTime);
         b.setProcessPeriodicity(5, TimeUnit.minutes);
         b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -196,8 +191,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         b.setProcessConcurrency(6);
         b.submitAndScheduleBundle(prism);
         Thread.sleep(15000);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(10);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(400);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(1);
+        String endTime = InstanceUtil.getTimeWrtSystemTime(40);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
                         "?start=" + startTime + "&end=" + endTime);
@@ -289,7 +284,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     }
 
 
-    @AfterClass(alwaysRun = true)
+  //  @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
         System.setProperty("java.security.krb5.realm", "");
