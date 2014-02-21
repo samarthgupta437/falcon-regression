@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.core.bundle;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
@@ -86,7 +85,9 @@ import java.util.List;
  */
 public class Bundle {
 
-    static PrismHelper prismHelper = new PrismHelper("prism.properties", "");
+    public static final String MERLIN_PROPERTIES = "Merlin.properties";
+    public static final String PRISM_PREFIX = "prism";
+    static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
 
     public List<String> dataSets;
     String processData;
@@ -97,6 +98,59 @@ public class Bundle {
     List<String> clusters;
 
     private static String sBundleLocation;
+
+    public void submitFeed() throws Exception {
+        submitClusters(prismHelper);
+
+        Util.assertSucceeded(prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, dataSets.get(0)));
+    }
+
+    public void submitAndScheduleFeed() throws Exception {
+        submitClusters(prismHelper);
+
+        Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, dataSets.get(0)));
+    }
+
+    public void submitAndScheduleFeedUsingColoHelper(ColoHelper coloHelper) throws Exception {
+        submitFeed();
+
+        Util.assertSucceeded(coloHelper.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, dataSets.get(0)));
+    }
+
+    public void submitAndScheduleAllFeeds() throws JAXBException, IOException {
+        submitClusters(prismHelper);
+
+        for (String feed : dataSets) {
+            Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
+        }
+    }
+
+    public void submitProcess() throws Exception {
+        submitAndScheduleAllFeeds();
+
+        Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, processData));
+    }
+
+    public void submitFeedsScheduleProcess() throws Exception {
+        submitClusters(prismHelper);
+
+        submitFeeds(prismHelper);
+
+        Util.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+    }
+
+
+    public void submitAndScheduleProcess() throws Exception {
+        submitAndScheduleAllFeeds();
+
+        Util.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+    }
+
+    public void submitAndScheduleProcessUsingColoHelper(ColoHelper coloHelper) throws Exception {
+        submitProcess();
+
+        Util.assertSucceeded(coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
+    }
 
     public List<String> getClusters() {
         return clusters;
@@ -488,7 +542,7 @@ public class Bundle {
         }
         // If there is no file in hdfs , replace it anyways
         HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getPath() + "/workflow.xml"),
-                wfFile.getAbsolutePath());
+          wfFile.getAbsolutePath());
     }
 
     public String submitAndScheduleBundle(PrismHelper prismHelper) throws IOException, JAXBException, InterruptedException, URISyntaxException {
@@ -735,9 +789,8 @@ public class Bundle {
 
     public String getFeedDataPathPrefix() throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(this, Util.getInputFeedNameFromBundle(this));
-        String p = feedElement.getLocations().getLocation().get(0).getPath();
-        p = p.substring(0, p.indexOf("$"));
-        return p;
+        return Util.getPathPrefix(feedElement.getLocations().getLocation().get(0)
+          .getPath());
     }
 
     public void setProcessValidity(DateTime startDate, DateTime endDate, String clusterName) throws JAXBException {
@@ -799,8 +852,12 @@ public class Bundle {
 
     public void setProcessValidity(String startDate, String endDate) throws JAXBException, ParseException {
 
-       Process processElement = InstanceUtil.getProcessElement(this
-         .getProcessData());
+        JAXBContext jc = JAXBContext.newInstance(Process.class);
+
+
+        Unmarshaller u = jc.createUnmarshaller();
+
+        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
 
         for (Cluster cluster : processElement.getClusters().getCluster()) {
 
@@ -811,8 +868,13 @@ public class Bundle {
             cluster.setValidity(validity);
 
         }
-        this.setProcessData(InstanceUtil.processToString
-          (processElement));
+
+
+        java.io.StringWriter sw = new StringWriter();
+        Marshaller marshaller = jc.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+        marshaller.marshal(processElement, sw);
+        processData = sw.toString();
     }
 
     public void setProcessLatePolicy(LateProcess lateProcess) throws JAXBException {
@@ -974,19 +1036,22 @@ public class Bundle {
         return clusterHelper.toString(clusterObj);
     }
 
-    public void deleteBundle(PrismHelper prismHelper) throws JAXBException, IOException, URISyntaxException {
+    public void deleteBundle(PrismHelper prismHelper) {
 
-      if(!StringUtils.isEmpty(getProcessData()))
-        prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
+        try {
+            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
+        } catch (Exception e) {}
 
         for (String dataset : getDataSets()) {
-
-             prismHelper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
+            try {
+                prismHelper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
+            } catch (Exception e) {}
         }
 
         for (String cluster : this.getClusters()) {
-
-            prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+            try {
+                prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+            } catch (Exception e) {}
         }
 
 
@@ -1328,9 +1393,13 @@ public class Bundle {
 
   public void setProcessProperty(String property, String value) throws JAXBException {
 
-    ProcessMerlin process = new ProcessMerlin(this.getProcessData());
-    process.setProperty(property, value);
-    this.setProcessData(process.toString());
+       ProcessMerlin process = new ProcessMerlin(this.getProcessData());
+       process.setProperty(property, value);
+       this.setProcessData(process.toString());
+
+        }
+
+  public void generateProcessData() {
 
   }
 }

@@ -234,6 +234,16 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   }
 
+  @Override
+  public ProcessInstancesResult getInstanceSummary(String entityName,
+                                                    String params) throws IOException, URISyntaxException {
+    String url =
+      this.hostname + Util.URLS.INSTANCE_SUMMARY.getValue() + "/" + "feed/" +
+        entityName +
+        "/";
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+  }
+
   public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
     String url =
       this.hostname + Util.URLS.INSTANCE_KILL.getValue() + "/" + "feed/" + EntityName +

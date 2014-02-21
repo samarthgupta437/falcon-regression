@@ -333,6 +333,12 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
+  @Override
+  public ProcessInstancesResult getInstanceSummary(String readEntityName, String string) throws IOException, URISyntaxException {
+    System.out.println("Not Valid for Cluster Entity");
+    return null;
+  }
+
     /*@Override
     public String getProcessInstanceStatusViaCli(String EntityName,
                                                  String start, String end, String colos)

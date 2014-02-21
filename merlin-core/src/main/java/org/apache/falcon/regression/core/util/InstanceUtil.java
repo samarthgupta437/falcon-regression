@@ -492,9 +492,11 @@ public class InstanceUtil {
         return bundleInfo.getCoordinators();
     }
 
-    public static String getLatestBundleID(ColoHelper coloHelper, String processName,
-                                           ENTITY_TYPE entityType) throws OozieClientException {
-        List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType);
+    public static String getLatestBundleID(ColoHelper coloHelper,
+                                           String entityName,ENTITY_TYPE entityType )
+      throws OozieClientException {
+
+        List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), entityName, entityType);
 
         String max = "0";
         int maxID = -1;
@@ -1496,7 +1498,8 @@ public class InstanceUtil {
                 return;
             Thread.sleep(sleepTime);
         }
-        Assert.assertTrue(false, "expceted state of instance was never reached");
+        Assert.assertTrue(false, "expected state of instance was never " +
+          "reached");
     }
 
     private static List<org.apache.oozie.client.CoordinatorAction.Status>
@@ -1563,7 +1566,7 @@ public class InstanceUtil {
 
     public static void waitForBundleToReachState(
             ColoHelper coloHelper,
-            String processName,
+            String entityName,
             org.apache.oozie.client.Job.Status expectedStatus,
             int totalMinutesToWait) throws OozieClientException {
 
@@ -1571,7 +1574,7 @@ public class InstanceUtil {
 
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
 
-            String BundleID = InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
+            String BundleID = InstanceUtil.getLatestBundleID(coloHelper, entityName, ENTITY_TYPE.PROCESS);
 
             XOozieClient oozieClient =
                     new XOozieClient(coloHelper.getProcessHelper().getOozieURL());
@@ -1655,6 +1658,12 @@ public class InstanceUtil {
     }
 
     return coords ;
+  }
+
+  public static String addMinsToTime(DateTime time, int difference) throws ParseException {
+    return InstanceUtil.addMinsToTime(InstanceUtil.dateToOozieDate(time.toDate()),
+      difference
+    );
   }
 }
 

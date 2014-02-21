@@ -331,6 +331,9 @@ public abstract class IEntityManagerHelper {
                                                                   String string) throws IOException, URISyntaxException
     ;
 
+  public abstract ProcessInstancesResult getInstanceSummary(String
+                                                               readEntityName,
+                                                                String string) throws IOException, URISyntaxException;
   public String getColo() {
     return colo;
   }

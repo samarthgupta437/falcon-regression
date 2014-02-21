@@ -36,6 +36,7 @@ import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.supportClasses.HadoopFileEditor;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -1561,7 +1562,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
   public void
   updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException {
     Bundle b = Util.readELBundles()[0][0];
-
+    HadoopFileEditor  hadoopFileEditor = null;
     try {
 
       b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
@@ -1584,10 +1585,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         ENTITY_TYPE.PROCESS);
 
       //update workflow.xml
-      Util.updateWorkflowXml(server1FS, new ProcessMerlin(b
+      hadoopFileEditor = new HadoopFileEditor(server1FS);
+      hadoopFileEditor.edit(new ProcessMerlin(b
         .getProcessData()).element
-        .getWorkflow().getPath());
-
+        .getWorkflow().getPath()+"/workflow.xml","</workflow-app>","<!-- some comment -->");
 
       //update
       prism.getProcessHelper().update(b.getProcessData(),
@@ -1600,17 +1601,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     } finally {
       b.deleteBundle(prism);
-      HadoopUtil.deleteFile(server1, new Path(new ProcessMerlin(UA2Bundle
-        .getProcessData()).element
-        .getWorkflow().getPath() + "/workflow.xml"));
-
-      FileUtils.deleteQuietly(new File("workflow.xml"));
-      FileUtils.copyFile(new File("workflow.xml.bck"),
-        new File("workflow.xml"));
-
-      HadoopUtil.copyDataToFolder(server1, new Path(new ProcessMerlin(UA2Bundle
-        .getProcessData()).element
-        .getWorkflow().getPath() + "/"), "workflow.xml");
+      hadoopFileEditor.restore();
     }
 
   }

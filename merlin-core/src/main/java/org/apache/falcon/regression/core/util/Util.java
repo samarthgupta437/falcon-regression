@@ -2730,6 +2730,16 @@ public class Util {
 
   }
 
+  public static String getPathPrefix(String pathString) {
+    pathString.substring(0, pathString.indexOf("$"));
+    return pathString;
+  }
+
+  public static String getFileNameFromPath(String path) {
+
+    return path.substring(path.lastIndexOf("/")+1,path.length());
+  }
+
 
   public enum URLS {
 
@@ -2749,7 +2759,7 @@ public class Util {
     INSTANCE_SUSPEND("/api/instance/suspend"),
     PROCESS_UPDATE("/api/entities/update/process"),
     INSTANCE_RERUN("/api/instance/rerun"),
-    FEED_UPDATE("/api/entities/update/feed");
+    FEED_UPDATE("/api/entities/update/feed"), INSTANCE_SUMMARY("/api/instance/summary");
     private final String url;
 
     URLS(String url) {
