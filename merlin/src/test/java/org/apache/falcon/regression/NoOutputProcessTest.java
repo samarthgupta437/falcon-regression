@@ -20,20 +20,22 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,9 +44,20 @@ import java.util.List;
 /**
  * Null output process tests.
  */
-public class NoOutputProcessTest extends BaseSingleClusterTests {
+@Test(groups = "embedded")
+public class NoOutputProcessTest extends BaseTestClass {
 
+    ColoHelper cluster;
+    FileSystem clusterFS;
+    OozieClient clusterOC;
     private Bundle bundle;
+
+    public NoOutputProcessTest(){
+        super();
+        cluster = servers.get(0);
+        clusterFS = serverFS.get(0);
+        clusterOC = serverOC.get(0);
+    }
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -57,14 +70,14 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-03T00:00Z";
         String endDate = "2010-01-03T03:00Z";
 
         b.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -80,7 +93,7 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
 
@@ -103,14 +116,13 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
 
         Util.print("attaching consumer to:   " + "FALCON.ENTITY.TOPIC");
         Consumer consumer =
-                new Consumer("FALCON.ENTITY.TOPIC", server1.getClusterHelper().getActiveMQ());
+                new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         consumer.start();
         Thread.sleep(15000);
 
         //wait for all the instances to complete
-        InstanceUtil.waitTillInstanceReachState(server1, bundle.getProcessName(), 3,
-                CoordinatorAction.Status.SUCCEEDED,
-                20);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
+                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
         Assert.assertEquals(consumer.getMessageData().size(), 3,
                 " Message for all the 3 instance not found");
@@ -129,9 +141,9 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
         setBundleProperties();
 
         Consumer consumerInternalMsg =
-                new Consumer("FALCON.ENTITY.TOPIC", server1.getClusterHelper().getActiveMQ());
+                new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         Consumer consumerProcess =
-                new Consumer("FALCON." + bundle.getProcessName(), server1.getClusterHelper().getActiveMQ());
+                new Consumer("FALCON." + bundle.getProcessName(), cluster.getClusterHelper().getActiveMQ());
 
         consumerInternalMsg.start();
         consumerProcess.start();
@@ -140,7 +152,7 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
 
         //wait for all the instances to complete
 
-        InstanceUtil.waitTillInstanceReachState(server1OC, bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
         Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
@@ -156,7 +168,7 @@ public class NoOutputProcessTest extends BaseSingleClusterTests {
     }
 
     private void setBundleProperties() throws Exception {
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
         bundle.setProcessPeriodicity(5, TimeUnit.minutes);

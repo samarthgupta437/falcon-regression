@@ -26,7 +26,7 @@ import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -38,9 +38,16 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.Random;
 
-public class RetentionTest extends BaseSingleClusterTests {
+@Test(groups = "embedded")
+public class RetentionTest extends BaseTestClass {
 
+    ColoHelper cluster1;
     private Bundle bundle;
+
+    public RetentionTest(){
+        super();
+        cluster1 = servers.get(0);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
@@ -54,7 +61,7 @@ public class RetentionTest extends BaseSingleClusterTests {
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType) throws Exception {
-        bundle = new Bundle(b, server1);
+        bundle = new Bundle(b, cluster1);
         displayDetails(period, unit, gaps, dataType);
 
         System.setProperty("java.security.krb5.realm", "");
@@ -71,9 +78,9 @@ public class RetentionTest extends BaseSingleClusterTests {
             Util.assertSucceeded(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
 
-            replenishData(server1, dataType, gaps);
+            replenishData(cluster1, dataType, gaps);
 
-            Util.CommonDataRetentionWorkflow(server1, bundle, Integer.parseInt(period),unit);
+            Util.CommonDataRetentionWorkflow(cluster1, bundle, Integer.parseInt(period),unit);
         } else {
             Util.assertFailed(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
@@ -98,7 +105,7 @@ public class RetentionTest extends BaseSingleClusterTests {
 
     private void finalCheck(Bundle bundle) throws Exception {
         prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        Util.verifyFeedDeletion(Util.getInputFeedFromBundle(bundle), server1);
+        Util.verifyFeedDeletion(Util.getInputFeedFromBundle(bundle), cluster1);
     }
 
     private void displayDetails(String period, String unit, boolean gaps, String dataType)

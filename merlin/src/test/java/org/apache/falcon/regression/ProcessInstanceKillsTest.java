@@ -20,18 +20,18 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.*;
-
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +39,11 @@ import java.util.List;
 /**
  * Process instance kill tests.
  */
-public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
+@Test(groups = "embedded")
+public class ProcessInstanceKillsTest extends BaseTestClass {
 
+    ColoHelper cluster;
+    FileSystem clusterFS;
     String testDir = "/ProcessInstanceKillsTest";
     String baseTestHDFSDir = baseHDFSDir + testDir;
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -48,8 +51,10 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
 
     Bundle b = new Bundle();
 
-    public ProcessInstanceKillsTest() throws IOException {
+    public ProcessInstanceKillsTest() {
         super();
+        cluster = servers.get(0);
+        clusterFS = serverFS.get(0);
     }
 
     @BeforeClass(alwaysRun = true)
@@ -62,14 +67,14 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server1FS, prefix.substring(1));
+        Util.HDFSCleanup(clusterFS, prefix.substring(1));
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -85,14 +90,14 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b = Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = (Bundle) Util.readELBundles()[0][0];
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -162,7 +167,7 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
         String endTime = InstanceUtil.getTimeWrtSystemTime(400);
         String startTimeData = InstanceUtil.getTimeWrtSystemTime(-150);
         String endTimeData = InstanceUtil.getTimeWrtSystemTime(50);
-        InstanceUtil.createDataWithinDatesAndPrefix(server1,
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(startTimeData),
                 InstanceUtil.oozieDateToDate(endTimeData), testDir + "/", 1);
         b.setProcessValidity(startTime, endTime);
@@ -272,7 +277,7 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
         b.submitAndScheduleBundle(prism);
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(server1, Util.readEntityName(b.getProcessData()), 0, 0)
+                    .getInstanceStatus(cluster, Util.readEntityName(b.getProcessData()), 0, 0)
                     .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
             Thread.sleep(30000);
@@ -291,11 +296,11 @@ public class ProcessInstanceKillsTest extends BaseSingleClusterTests {
         System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
-        Util.HDFSCleanup(server1FS, prefix.substring(1));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 
 }

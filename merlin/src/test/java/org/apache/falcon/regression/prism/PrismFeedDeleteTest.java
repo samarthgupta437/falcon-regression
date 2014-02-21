@@ -22,6 +22,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
@@ -30,7 +31,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -43,29 +44,40 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class PrismFeedDeleteTest extends BaseMultiClusterTests {
+public class PrismFeedDeleteTest extends BaseTestClass {
     
     private Bundle bundle1;
     private Bundle bundle2;
     private boolean restartRequired;
+    ColoHelper cluster1;
+    ColoHelper cluster2;
+    private String cluster1Colo;
+    private String cluster2Colo;
 
+    public PrismFeedDeleteTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster1Colo = cluster1.getClusterHelper().getColo().split("=")[1];
+        cluster2Colo = cluster2.getClusterHelper().getColo().split("=")[1];
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle1 = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         bundle1.generateUniqueBundle();
 
-        bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
+        bundle2 = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
         bundle2.generateUniqueBundle();
     }
     
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         if (restartRequired) {
-            Util.restartService(server1.getFeedHelper());
+            Util.restartService(cluster1.getFeedHelper());
         }
     }
     
@@ -73,21 +85,17 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testServer1FeedDeleteInBothColos() throws Exception {
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
+        bundle1.submitFeed();
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -97,11 +105,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -124,25 +132,21 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testServer1FeedDeleteWhen1ColoIsDown() throws Exception {
         restartRequired = true;
 
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
+        bundle1.submitFeed();
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
 
         //bring down Server2 colo :P
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         //lets now delete the cluster from both colos
         Util.assertFailed(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -152,11 +156,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -173,15 +177,15 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         compareDataStoresForEquality(initialServer1Store, finalServer1Store);
         compareDataStoresForEquality(initialServer1ArchiveStore, finalServer1ArchiveStore);
 
-        Util.startService(server1.getFeedHelper());
+        Util.startService(cluster1.getFeedHelper());
 
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
-        List<String> Server2ArchivePostUp = server2.getFeedHelper().getArchiveInfo();
-        List<String> Server2StorePostUp = server2.getFeedHelper().getStoreInfo();
+        List<String> Server2ArchivePostUp = cluster2.getFeedHelper().getArchiveInfo();
+        List<String> Server2StorePostUp = cluster2.getFeedHelper().getStoreInfo();
 
-        List<String> Server1ArchivePostUp = server1.getFeedHelper().getArchiveInfo();
-        List<String> Server1StorePostUp = server1.getFeedHelper().getStoreInfo();
+        List<String> Server1ArchivePostUp = cluster1.getFeedHelper().getArchiveInfo();
+        List<String> Server1StorePostUp = cluster1.getFeedHelper().getStoreInfo();
 
         List<String> prismHelperArchivePostUp = prism.getFeedHelper().getArchiveInfo();
         List<String> prismHelperStorePostUp = prism.getFeedHelper().getStoreInfo();
@@ -200,11 +204,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"multiCluster"})
     public void testServer1FeedDeleteAlreadyDeletedFeed() throws Exception {
         restartRequired = true;
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
+        bundle1.submitFeed();
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
         //fetch the initial store and archive state for prism
@@ -212,11 +212,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
@@ -225,11 +225,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -251,13 +251,9 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testServer1FeedDeleteTwiceWhen1ColoIsDownDuring1stDelete() throws Exception {
         restartRequired = true;
 
-        for (String cluster : bundle1.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
+        bundle1.submitFeed();
 
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getDataSets().get(0)));
-
-        Util.shutDownService(server1.getClusterHelper());
+        Util.shutDownService(cluster1.getClusterHelper());
 
 
         //lets now delete the cluster from both colos
@@ -268,14 +264,14 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //start up service
-        Util.startService(server1.getFeedHelper());
+        Util.startService(cluster1.getFeedHelper());
 
         //delete again
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -285,11 +281,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -315,11 +311,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
@@ -328,11 +324,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the  cluster archives
 
@@ -353,17 +349,17 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"multiCluster"})
     public void testServer1FeedDeleteNonExistentWhen1ColoIsDownDuringDelete() throws Exception {
         restartRequired = true;
-        bundle1 = new Bundle(bundle1, server1.getEnvFileName(), server1.getPrefix());
-        bundle2 = new Bundle(bundle2, server2.getEnvFileName(), server2.getPrefix());
+        bundle1 = new Bundle(bundle1, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundle2 = new Bundle(bundle2, cluster2.getEnvFileName(), cluster2.getPrefix());
 
-        this.bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
+        bundle1.setCLusterColo(cluster1Colo);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        this.bundle2.setCLusterColo(server2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(cluster2Colo);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -388,7 +384,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
                         Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.TARGET, null,
                         baseHDFSDir + "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
         Util.assertSucceeded(response);
@@ -397,19 +393,19 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testDeleteFeedScheduledInOneColo() throws Exception {
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -419,11 +415,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -446,8 +442,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testDeleteFeedSuspendedInOneColo() throws Exception {
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //suspend Server1 colo thingy
         Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
@@ -457,11 +453,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -471,11 +467,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -498,8 +494,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     @Test(groups = {"multiCluster"})
     public void testDeleteFeedSuspendedInOneColoWhileBothFeedsAreSuspended() throws Exception {
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //suspend Server1 colo thingy
         Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
@@ -510,11 +506,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -524,11 +520,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -551,8 +547,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
 
@@ -561,14 +557,14 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //shutdown Server1
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         //lets now delete the cluster from both colos
         Util.assertFailed(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -578,11 +574,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -599,15 +595,15 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         compareDataStoresForEquality(initialServer2Store, finalServer2Store);
         compareDataStoresForEquality(finalServer2ArchiveStore, initialServer2ArchiveStore);
 
-        Util.startService(server1.getClusterHelper());
+        Util.startService(cluster1.getClusterHelper());
 
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
-        List<String> Server1StorePostUp = server1.getFeedHelper().getStoreInfo();
-        List<String> Server1ArchivePostUp = server1.getFeedHelper().getArchiveInfo();
+        List<String> Server1StorePostUp = cluster1.getFeedHelper().getStoreInfo();
+        List<String> Server1ArchivePostUp = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> Server2StorePostUp = server2.getFeedHelper().getStoreInfo();
-        List<String> Server2ArchivePostUp = server2.getFeedHelper().getArchiveInfo();
+        List<String> Server2StorePostUp = cluster2.getFeedHelper().getStoreInfo();
+        List<String> Server2ArchivePostUp = cluster2.getFeedHelper().getArchiveInfo();
 
         List<String> prismStorePostUp = prism.getFeedHelper().getStoreInfo();
         List<String> prismArchivePostUp = prism.getFeedHelper().getArchiveInfo();
@@ -628,8 +624,8 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedSuspendedInOneColoWhileThatColoIsDownAndOtherHasSuspendedFeed() throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
@@ -638,14 +634,14 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //shutdown Server1
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         //lets now delete the feed from both colos
         Util.assertFailed(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -655,11 +651,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -677,7 +673,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         compareDataStoresForEquality(initialServer2Store, finalServer2Store);
         compareDataStoresForEquality(finalServer2ArchiveStore, initialServer2ArchiveStore);
 
-        Util.startService(server1.getFeedHelper());
+        Util.startService(cluster1.getFeedHelper());
 
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
@@ -697,22 +693,22 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedScheduledInOneColoWhileThatColoIsDown() throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //shutdown Server1
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         //lets now delete the cluster from both colos
         Util.assertFailed(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
@@ -722,11 +718,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -745,7 +741,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         compareDataStoresForEquality(finalServer2ArchiveStore, initialServer2ArchiveStore);
 
 
-        Util.startService(server1.getClusterHelper());
+        Util.startService(cluster1.getClusterHelper());
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
         HashMap<String, List<String>> systemStatePostUp = getSystemState(ENTITY_TYPE.DATA);
@@ -764,13 +760,13 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedSuspendedInOneColoWhileAnotherColoIsDown() throws Exception {
         restartRequired = true;
 
-        bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
+        bundle1.setCLusterColo(cluster1Colo);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        bundle2.setCLusterColo(server2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(cluster2Colo);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -810,23 +806,23 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         r = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Thread.sleep(10000);
         Util.assertPartialSucceeded(r);                
-        Assert.assertTrue(r.getMessage().contains("Connection refused"
-                + server2.getClusterHelper().getColo().split("=")[1] + "/" + Util.getFeedName(feed)));
+        Assert.assertTrue(r.getMessage().contains(cluster1Colo + "/org.apache.falcon.FalconException")
+                && r.getMessage().contains(cluster2Colo + "/" + Util.getFeedName(feed)));
 
         ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
-        Assert.assertTrue(response.getMessage().contains("Connection refused"
-                + server2.getClusterHelper().getColo().split("=")[1] + "/" + Util.getFeedName(feed)));
+        Assert.assertTrue(response.getMessage().contains(cluster1Colo + "/org.apache.falcon.FalconException")
+                && response.getMessage().contains(cluster2Colo + "/" + Util.getFeedName(feed)));
         Util.assertPartialSucceeded(response);
 
         //now lets get the final states
@@ -834,11 +830,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -860,13 +856,13 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedSuspendedInOneColoWhileAnotherColoIsDownWithFeedSuspended() throws Exception {
         restartRequired = true;
 
-        this.bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
+        bundle1.setCLusterColo(cluster1Colo);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        this.bundle2.setCLusterColo(server2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(cluster2Colo);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -907,21 +903,22 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         r = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         TimeUnit.SECONDS.sleep(10);
         AssertUtil.assertSucceeded(r);
 
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
-        Assert.assertTrue(response.getMessage().contains("Connection refused"
-                + server2.getClusterHelper().getColo().split("=")[1] + "/" + Util.getFeedName(feed)));
+        Assert.assertTrue(response.getMessage().contains(cluster1Colo + "/org.apache.falcon" +
+                ".FalconException")
+                && response.getMessage().contains(cluster2Colo + "/" + Util.getFeedName(feed)));
         Util.assertPartialSucceeded(response);
 
         //now lets get the final states
@@ -929,11 +926,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -956,22 +953,22 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
     public void testDeleteFeedScheduledInOneColoWhileAnotherColoIsDown() throws Exception {
         restartRequired = true;
 
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //shutdown Server1
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle2.getDataSets().get(0)));
@@ -981,11 +978,11 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getFeedHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getFeedHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getFeedHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getFeedHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getFeedHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getFeedHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getFeedHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getFeedHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -1003,7 +1000,7 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
         compareDataStoreStates(initialServer2Store, finalServer2Store, clusterName);
         compareDataStoreStates(finalServer2ArchiveStore, initialServer2ArchiveStore, clusterName);
 
-        Util.startService(server1.getFeedHelper());
+        Util.startService(cluster1.getFeedHelper());
 
         Util.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundle1.getDataSets().get(0)));
 
@@ -1031,14 +1028,6 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     }
 
-    private void submitAndScheduleFeed(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle.getDataSets().get(0)));
-        Util.assertSucceeded(prism.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, bundle.getDataSets().get(0)));
-    }
-
     private void compareDataStoresForEquality(List<String> store1, List<String> store2) throws Exception {
         Assert.assertEquals(store1.size(), store2.size(), "DataStores are not equal!");
         Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]),
@@ -1047,19 +1036,19 @@ public class PrismFeedDeleteTest extends BaseMultiClusterTests {
 
     public HashMap<String, List<String>> getSystemState(ENTITY_TYPE entityType) throws Exception {
         IEntityManagerHelper prismHelper = prism.getClusterHelper();
-        IEntityManagerHelper server1Helper = server1.getClusterHelper();
-        IEntityManagerHelper server2Helper = server2.getClusterHelper();
+        IEntityManagerHelper server1Helper = cluster1.getClusterHelper();
+        IEntityManagerHelper server2Helper = cluster2.getClusterHelper();
 
         if (entityType.equals(ENTITY_TYPE.DATA)) {
             prismHelper = prism.getFeedHelper();
-            server1Helper = server1.getFeedHelper();
-            server2Helper = server2.getFeedHelper();
+            server1Helper = cluster1.getFeedHelper();
+            server2Helper = cluster2.getFeedHelper();
         }
 
         if (entityType.equals(ENTITY_TYPE.PROCESS)) {
             prismHelper = prism.getProcessHelper();
-            server1Helper = server1.getProcessHelper();
-            server2Helper = server2.getProcessHelper();
+            server1Helper = cluster1.getProcessHelper();
+            server2Helper = cluster2.getProcessHelper();
         }
 
         HashMap<String, List<String>> temp = new HashMap<String, List<String>>();

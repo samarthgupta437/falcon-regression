@@ -20,10 +20,12 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
@@ -38,9 +40,18 @@ import java.util.List;
 /**
  * Process lib path tests.
  */
-public class ProcessLibPath extends BaseSingleClusterTests {
+@Test(groups = "embedded")
+public class ProcessLibPath extends BaseTestClass {
 
+    ColoHelper cluster;
+    FileSystem clusterFS;
     private Bundle bundle;
+
+    public ProcessLibPath() {
+        super();
+        cluster = servers.get(1);
+        clusterFS = serverFS.get(1);
+    }
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -53,14 +64,14 @@ public class ProcessLibPath extends BaseSingleClusterTests {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-01T22:00Z";
         String endDate = "2010-01-02T03:00Z";
 
         b.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -76,7 +87,7 @@ public class ProcessLibPath extends BaseSingleClusterTests {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
 
@@ -84,7 +95,8 @@ public class ProcessLibPath extends BaseSingleClusterTests {
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundle.generateUniqueBundle();
         bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundle.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundle.setProcessPeriodicity(5, TimeUnit.minutes);
@@ -105,7 +117,7 @@ public class ProcessLibPath extends BaseSingleClusterTests {
         bundle.setProcessWorkflow("/examples/apps/aggregatorLib/");
         Util.print("processData: " + bundle.getProcessData());
         bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundle.getProcessName(), Status.SUCCEEDED, 20);
     }
 
     @Test(groups = {"singleCluster"})
@@ -114,6 +126,6 @@ public class ProcessLibPath extends BaseSingleClusterTests {
         bundle.setProcessWorkflow("/examples/apps/aggregatorLib02/");
         Util.print("processData: " + bundle.getProcessData());
         bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(server1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundle.getProcessName(), Status.SUCCEEDED, 20);
     }
 }

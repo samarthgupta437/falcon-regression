@@ -20,8 +20,9 @@ package org.apache.falcon.regression.prism;
 
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -31,25 +32,32 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
-public class PrismClusterDeleteTest extends BaseMultiClusterTests {
+public class PrismClusterDeleteTest extends BaseTestClass {
 
     private Bundle bundle1;
     private boolean restartRequired;
+    ColoHelper cluster1;
+    ColoHelper cluster2;
 
+    public PrismClusterDeleteTest(){
+        super();
+        cluster1 = servers.get(1);
+        cluster2 = servers.get(2);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
-        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle1 = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         bundle1.generateUniqueBundle();
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         if (restartRequired) {
-            Util.restartService(server1.getFeedHelper());
+            Util.restartService(cluster1.getFeedHelper());
         }
     }
 
@@ -57,18 +65,18 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"multiCluster"})
     public void testServer1ClusterDeleteInBothColos() throws Exception {
         Util.assertSucceeded((prism.getClusterHelper()
-                        .submitEntity(Util.URLS.SUBMIT_URL, bundle1.getClusters().get(0))));
+                .submitEntity(Util.URLS.SUBMIT_URL, bundle1.getClusters().get(0))));
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getClusterHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
@@ -78,11 +86,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -113,15 +121,15 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
 
         //bring down Server1 colo :P
-        Util.shutDownService(server1.getClusterHelper());
+        Util.shutDownService(cluster1.getClusterHelper());
 
         //lets now delete the cluster from both colos
         Util.assertPartialSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
@@ -131,11 +139,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -152,12 +160,12 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         compareDataStoresForEquality(initialServer1Store, finalServer1Store);
 
         //now bring up the service and roll forward the delete
-        Util.startService(server1.getClusterHelper());
+        Util.startService(cluster1.getClusterHelper());
         Util.assertSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
 
         //get final data states:
-        List<String> server1ArchiveFinalState2 = server1.getClusterHelper().getArchiveInfo();
-        List<String> server1StoreFinalState2 = server1.getClusterHelper().getStoreInfo();
+        List<String> server1ArchiveFinalState2 = cluster1.getClusterHelper().getArchiveInfo();
+        List<String> server1StoreFinalState2 = cluster1.getClusterHelper().getStoreInfo();
 
         List<String> prismStorePostUp = prism.getClusterHelper().getStoreInfo();
         List<String> prismArchivePostUp = prism.getClusterHelper().getArchiveInfo();
@@ -165,8 +173,8 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         compareDataStoreStates(finalServer1Store, server1StoreFinalState2, clusterName);
         compareDataStoreStates(server1ArchiveFinalState2, finalServer1ArchiveStore, clusterName);
 
-        List<String> server2ArchiveStateFinal = server2.getClusterHelper().getArchiveInfo();
-        List<String> server2StoreStateFinal = server2.getClusterHelper().getStoreInfo();
+        List<String> server2ArchiveStateFinal = cluster2.getClusterHelper().getArchiveInfo();
+        List<String> server2StoreStateFinal = cluster2.getClusterHelper().getStoreInfo();
 
         compareDataStoreStates(server2ArchiveStateFinal, initialServer2ArchiveStore, clusterName);
         compareDataStoreStates(initialServer2Store, server2StoreStateFinal, clusterName);
@@ -187,11 +195,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         Util.assertSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
 
@@ -200,11 +208,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -227,7 +235,7 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         restartRequired = true;
 
         Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle1.getClusters().get(0)));
-        Util.shutDownService(server1.getClusterHelper());
+        Util.shutDownService(cluster1.getClusterHelper());
 
         //lets now delete the cluster from both colos
         Util.assertPartialSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
@@ -237,14 +245,14 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //start up service
-        Util.startService(server1.getClusterHelper());
+        Util.startService(cluster1.getClusterHelper());
 
         //delete again
         Util.assertSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
@@ -254,11 +262,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -283,11 +291,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //delete
         Util.assertSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
@@ -297,11 +305,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -329,14 +337,14 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> initialServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> initialServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> initialServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> initialServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> initialServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> initialServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> initialServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //bring down Server1
-        Util.shutDownService(server1.getClusterHelper());
+        Util.shutDownService(cluster1.getClusterHelper());
 
         //delete
         Util.assertSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
@@ -346,11 +354,11 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getClusterHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalServer1Store = server1.getClusterHelper().getStoreInfo();
-        List<String> finalServer1ArchiveStore = server1.getClusterHelper().getArchiveInfo();
+        List<String> finalServer1Store = cluster1.getClusterHelper().getStoreInfo();
+        List<String> finalServer1ArchiveStore = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> finalServer2Store = server2.getClusterHelper().getStoreInfo();
-        List<String> finalServer2ArchiveStore = server2.getClusterHelper().getArchiveInfo();
+        List<String> finalServer2Store = cluster2.getClusterHelper().getStoreInfo();
+        List<String> finalServer2ArchiveStore = cluster2.getClusterHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the cluster archives
 
@@ -366,15 +374,15 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         compareDataStoresForEquality(initialServer1Store, finalServer1Store);
         compareDataStoresForEquality(initialServer1ArchiveStore, finalServer1ArchiveStore);
 
-        Util.startService(server1.getFeedHelper());
+        Util.startService(cluster1.getFeedHelper());
         Util.assertSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundle1.getClusters().get(0)));
 
-        List<String> server1StorePostUp = server1.getClusterHelper().getStoreInfo();
-        List<String> server1ArchivePostUp = server1.getClusterHelper().getArchiveInfo();
+        List<String> server1StorePostUp = cluster1.getClusterHelper().getStoreInfo();
+        List<String> server1ArchivePostUp = cluster1.getClusterHelper().getArchiveInfo();
 
-        List<String> server2StorePostUp = server2.getClusterHelper().getStoreInfo();
-        List<String> server2ArchivePostUp = server2.getClusterHelper().getArchiveInfo();
-        
+        List<String> server2StorePostUp = cluster2.getClusterHelper().getStoreInfo();
+        List<String> server2ArchivePostUp = cluster2.getClusterHelper().getArchiveInfo();
+
         compareDataStoresForEquality(server2StorePostUp, finalServer2Store);
         compareDataStoresForEquality(server2ArchivePostUp, finalServer2ArchiveStore);
 
@@ -382,8 +390,8 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
         compareDataStoresForEquality(server1ArchivePostUp, finalServer1ArchiveStore);
     }
 
-    private void compareDataStoreStates(List<String> initialState, List<String> finalState, String filename) 
-            throws Exception {
+    private void compareDataStoreStates(List<String> initialState, List<String> finalState, String filename)
+    throws Exception {
         initialState.removeAll(finalState);
         Assert.assertEquals(initialState.size(), 1);
         Assert.assertTrue(initialState.get(0).contains(filename));
@@ -392,7 +400,7 @@ public class PrismClusterDeleteTest extends BaseMultiClusterTests {
 
     private void compareDataStoresForEquality(List<String> store1, List<String> store2) throws Exception {
         Assert.assertEquals(store1.size(), store2.size(), "DataStores are not equal!");
-        Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]), 
+        Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]),
                 store1.toArray(new String[store1.size()])), "DataStores are not equal!");
     }
 

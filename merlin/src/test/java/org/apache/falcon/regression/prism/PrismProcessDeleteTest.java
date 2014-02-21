@@ -25,11 +25,12 @@ package org.apache.falcon.regression.prism;
 
 import junit.framework.Assert;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.TestNGException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -40,19 +41,27 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class PrismProcessDeleteTest extends BaseMultiClusterTests {
+public class PrismProcessDeleteTest extends BaseTestClass {
 
     Bundle UA1Bundle = new Bundle();
     Bundle UA2Bundle = new Bundle();
     Bundle bundle = new Bundle();
+    ColoHelper cluster1;
+    ColoHelper cluster3;
+
+    public PrismProcessDeleteTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster3 = servers.get(2);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readBundles("LateDataBundles")[0][0];
-        UA1Bundle = new Bundle(bundle, server3.getEnvFileName(), server3.getPrefix());
+        UA1Bundle = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
         UA1Bundle.generateUniqueBundle();
-        UA2Bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        UA2Bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         UA2Bundle.generateUniqueBundle();
     }
 
@@ -64,17 +73,17 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteInBothColos() throws Exception {
         //now submit the thing to prism
-        submitAndScheduleProcess(UA1Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getProcessHelper()
@@ -85,11 +94,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -112,21 +121,21 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testUA1ProcessDeleteWhen1ColoIsDown() throws Exception {
         try {
             //now submit the thing to prism
-            submitAndScheduleProcess(UA1Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
             //fetch the initial store and archive state for prism
             List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
 
             //bring down UA2 colo :P
-            Util.shutDownService(server3.getClusterHelper());
+            Util.shutDownService(cluster3.getClusterHelper());
 
             //lets now delete the cluster from both colos
             Util.assertFailed(prism.getProcessHelper()
@@ -137,11 +146,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -159,7 +168,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             compareDataStoresForEquality(initialUA1Store, finalUA1Store);
 
             //bring service up
-            Util.startService(server3.getProcessHelper());
+            Util.startService(cluster3.getProcessHelper());
             Util.assertSucceeded(
                     prism.getProcessHelper()
                             .delete(Util.URLS.DELETE_URL, UA1Bundle.getProcessData()));
@@ -180,7 +189,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             System.out.println(e.getMessage());
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getClusterHelper());
+            Util.restartService(cluster3.getClusterHelper());
         }
     }
 
@@ -190,7 +199,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 //    {
 //        try{
 //        //create a UA1 bundle
-//        Bundle UA1Bundle=new Bundle(bundle,server3.getEnvFileName());
+//        Bundle UA1Bundle=new Bundle(bundle,cluster3.getEnvFileName());
 //        UA1Bundle.generateUniqueBundle();
 //        
 //        //now submit the thing to prism
@@ -202,15 +211,15 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 //        List<String> initialPrismArchiveStore=prism.getProcessHelper().getArchiveInfo();
 //        
 //        //fetch the initial store and archive for both colos
-//        List<String> initialUA1Store=server3.getProcessHelper().getStoreInfo();
-//        List<String> initialUA1ArchiveStore=server3.getProcessHelper().getArchiveInfo();
+//        List<String> initialUA1Store=cluster3.getProcessHelper().getStoreInfo();
+//        List<String> initialUA1ArchiveStore=cluster3.getProcessHelper().getArchiveInfo();
 //        
-//        List<String> initialUA2Store=server1.getProcessHelper().getStoreInfo();
-//        List<String> initialUA2ArchiveStore=server1.getProcessHelper().getArchiveInfo();
+//        List<String> initialUA2Store=cluster1.getProcessHelper().getStoreInfo();
+//        List<String> initialUA2ArchiveStore=cluster1.getProcessHelper().getArchiveInfo();
 //        
 //        
 //        //bring down UA2 colo :P
-//        Util.shutDownService(server3.getClusterHelper());
+//        Util.shutDownService(cluster3.getClusterHelper());
 //        
 //        //lets now delete the cluster from both colos
 //        APIResult clusterDeleteResult=Util.parseResponse(prism.getFeedHelper().delete
@@ -222,11 +231,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 //        List<String> finalPrismArchiveStore=prism.getProcessHelper().getArchiveInfo();
 //        
 //        //fetch the final store and archive for both colos
-//        List<String> finalUA1Store=server3.getProcessHelper().getStoreInfo();
-//        List<String> finalUA1ArchiveStore=server3.getProcessHelper().getArchiveInfo();
+//        List<String> finalUA1Store=cluster3.getProcessHelper().getStoreInfo();
+//        List<String> finalUA1ArchiveStore=cluster3.getProcessHelper().getArchiveInfo();
 //        
-//        List<String> finalUA2Store=server1.getProcessHelper().getStoreInfo();
-//        List<String> finalUA2ArchiveStore=server1.getProcessHelper().getArchiveInfo();
+//        List<String> finalUA2Store=cluster1.getProcessHelper().getStoreInfo();
+//        List<String> finalUA2ArchiveStore=cluster1.getProcessHelper().getArchiveInfo();
 //        
 //        //now ensure that data has been deleted from all cluster store and is present in the
 // cluster archives
@@ -255,7 +264,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 //        }
 //        finally {
 //            
-//            Util.restartService(server3.getClusterHelper());
+//            Util.restartService(cluster3.getClusterHelper());
 //        }
 //
 //    }  
@@ -264,7 +273,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testUA1ProcessDeleteAlreadyDeletedProcess() throws Exception {
         try {
             //now submit the thing to prism
-            submitAndScheduleProcess(UA1Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
             Util.assertSucceeded(
                     prism.getProcessHelper()
                             .delete(Util.URLS.DELETE_URL, UA1Bundle.getProcessData())
@@ -274,11 +283,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             Util.assertSucceeded(
                     prism.getProcessHelper()
@@ -290,11 +299,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -320,9 +329,9 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testUA1ProcessDeleteTwiceWhen1ColoIsDownDuring1stDelete()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
 
-            Util.shutDownService(server3.getClusterHelper());
+            Util.shutDownService(cluster3.getClusterHelper());
 
             //lets now delete the cluster from both colos
             Util.assertFailed(prism.getProcessHelper()
@@ -333,14 +342,14 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //start up service
-            Util.startService(server3.getClusterHelper());
+            Util.startService(cluster3.getClusterHelper());
 
             //delete again
             Util.assertSucceeded(
@@ -352,11 +361,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -378,7 +387,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             System.out.println(e.getMessage());
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getClusterHelper());
+            Util.restartService(cluster3.getClusterHelper());
         }
     }
 
@@ -390,11 +399,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //delete
             Util.assertSucceeded(
@@ -406,11 +415,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -443,14 +452,14 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //bring down UA1
-            Util.shutDownService(server3.getClusterHelper());
+            Util.shutDownService(cluster3.getClusterHelper());
 
             //delete
             Util.assertSucceeded(
@@ -463,11 +472,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -485,7 +494,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             compareDataStoresForEquality(initialUA1Store, finalUA1Store);
             compareDataStoresForEquality(initialUA1ArchiveStore, finalUA1ArchiveStore);
 
-            Util.startService(server3.getClusterHelper());
+            Util.startService(cluster3.getClusterHelper());
             Util.assertSucceeded(
                     prism.getProcessHelper()
                             .delete(Util.URLS.DELETE_URL, UA1Bundle.getProcessData())
@@ -495,26 +504,26 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             System.out.println(e.getMessage());
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getClusterHelper());
+            Util.restartService(cluster3.getClusterHelper());
         }
     }
 
 
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessScheduledInOneColo() throws Exception {
-        submitAndScheduleProcess(UA1Bundle);
-        submitAndScheduleProcess(UA2Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
+        UA2Bundle.submitFeedsScheduleProcess();
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
         List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getProcessHelper()
@@ -525,11 +534,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -551,8 +560,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColo() throws Exception {
         //create a UA1 bundle
-        submitAndScheduleProcess(UA1Bundle);
-        submitAndScheduleProcess(UA2Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
+        UA2Bundle.submitFeedsScheduleProcess();
 
         //suspend UA1 colo thingy
         Util.assertSucceeded(prism.getProcessHelper()
@@ -563,11 +572,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getProcessHelper()
@@ -578,11 +587,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -605,8 +614,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileBothProcessesAreSuspended()
     throws Exception {
-        submitAndScheduleProcess(UA1Bundle);
-        submitAndScheduleProcess(UA2Bundle);
+        UA1Bundle.submitFeedsScheduleProcess();
+        UA2Bundle.submitFeedsScheduleProcess();
 
         //suspend UA1 colo thingy
         Util.assertSucceeded(prism.getProcessHelper()
@@ -619,11 +628,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
         List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the initial store and archive for both colos
-        List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //lets now delete the cluster from both colos
         Util.assertSucceeded(prism.getProcessHelper()
@@ -634,11 +643,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
         List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
         //fetch the final store and archive for both colos
-        List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-        List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+        List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+        List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-        List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-        List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+        List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+        List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
@@ -661,8 +670,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessSuspendedInOneColoWhileThatColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             Util.assertSucceeded(
                     prism.getProcessHelper()
@@ -674,14 +683,14 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //shutdown UA1
-            Util.shutDownService(server3.getFeedHelper());
+            Util.shutDownService(cluster3.getFeedHelper());
 
             //lets now delete the cluster from both colos
             Util.assertFailed(prism.getProcessHelper()
@@ -692,11 +701,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -717,7 +726,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getFeedHelper());
+            Util.restartService(cluster3.getFeedHelper());
         }
     }
 
@@ -726,22 +735,22 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessScheduledInOneColoWhileThatColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //fetch the initial store and archive state for prism
             List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //shutdown UA1
-            Util.shutDownService(server3.getFeedHelper());
+            Util.shutDownService(cluster3.getFeedHelper());
 
             //lets now delete the cluster from both colos
             Util.assertFailed(prism.getProcessHelper()
@@ -752,11 +761,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -774,7 +783,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             compareDataStoresForEquality(initialUA2Store, finalUA2Store);
             compareDataStoresForEquality(finalUA2ArchiveStore, initialUA2ArchiveStore);
 
-            Util.startService(server3.getClusterHelper());
+            Util.startService(cluster3.getClusterHelper());
             Util.assertSucceeded(
                     prism.getProcessHelper()
                             .delete(Util.URLS.DELETE_URL, UA1Bundle.getProcessData())
@@ -797,7 +806,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getFeedHelper());
+            Util.restartService(cluster3.getFeedHelper());
         }
     }
 
@@ -805,8 +814,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //now submit the thing to prism
             Util.assertSucceeded(
@@ -818,14 +827,14 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //shutdown UA1
-            Util.shutDownService(server3.getFeedHelper());
+            Util.shutDownService(cluster3.getFeedHelper());
 
             //lets now delete the cluster from both colos
             Util.assertSucceeded(
@@ -838,11 +847,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -863,7 +872,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getFeedHelper());
+            Util.restartService(cluster3.getFeedHelper());
         }
     }
 
@@ -871,8 +880,8 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDownWithFeedSuspended() throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //now submit the thing to prism
             Util.assertSucceeded(
@@ -887,14 +896,14 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //shutdown UA1
-            Util.shutDownService(server3.getFeedHelper());
+            Util.shutDownService(cluster3.getFeedHelper());
 
             //lets now delete the cluster from both colos
             Util.assertSucceeded(
@@ -907,11 +916,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -932,7 +941,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getFeedHelper());
+            Util.restartService(cluster3.getFeedHelper());
         }
     }
 
@@ -940,22 +949,22 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     public void testDeleteProcessScheduledInOneColoWhileAnotherColoIsDown()
     throws Exception {
         try {
-            submitAndScheduleProcess(UA1Bundle);
-            submitAndScheduleProcess(UA2Bundle);
+            UA1Bundle.submitFeedsScheduleProcess();
+            UA2Bundle.submitFeedsScheduleProcess();
 
             //fetch the initial store and archive state for prism
             List<String> initialPrismStore = prism.getProcessHelper().getStoreInfo();
             List<String> initialPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the initial store and archive for both colos
-            List<String> initialUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> initialUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> initialUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> initialUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> initialUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> initialUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> initialUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> initialUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //shutdown UA1
-            Util.shutDownService(server3.getFeedHelper());
+            Util.shutDownService(cluster3.getFeedHelper());
 
             //lets now delete the cluster from both colos
             Util.assertSucceeded(
@@ -968,11 +977,11 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             List<String> finalPrismArchiveStore = prism.getProcessHelper().getArchiveInfo();
 
             //fetch the final store and archive for both colos
-            List<String> finalUA1Store = server3.getProcessHelper().getStoreInfo();
-            List<String> finalUA1ArchiveStore = server3.getProcessHelper().getArchiveInfo();
+            List<String> finalUA1Store = cluster3.getProcessHelper().getStoreInfo();
+            List<String> finalUA1ArchiveStore = cluster3.getProcessHelper().getArchiveInfo();
 
-            List<String> finalUA2Store = server1.getProcessHelper().getStoreInfo();
-            List<String> finalUA2ArchiveStore = server1.getProcessHelper().getArchiveInfo();
+            List<String> finalUA2Store = cluster1.getProcessHelper().getStoreInfo();
+            List<String> finalUA2ArchiveStore = cluster1.getProcessHelper().getArchiveInfo();
 
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
@@ -991,7 +1000,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             compareDataStoreStates(finalUA2ArchiveStore, initialUA2ArchiveStore, clusterName);
 
 
-            Util.startService(server3.getClusterHelper());
+            Util.startService(cluster3.getClusterHelper());
 
             Util.assertSucceeded(
                     prism.getProcessHelper()
@@ -1017,7 +1026,7 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         } finally {
-            Util.restartService(server3.getFeedHelper());
+            Util.restartService(cluster3.getFeedHelper());
         }
     }
 
@@ -1034,22 +1043,6 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
     }
 
 
-    private void submitAndScheduleProcess(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(
-                    prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        for (String feed : bundle.getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
-        }
-
-        Util.assertSucceeded(prism.getProcessHelper()
-                .submitEntity(URLS.SUBMIT_URL, bundle.getProcessData()));
-        Util.assertSucceeded(prism.getProcessHelper()
-                .schedule(URLS.SCHEDULE_URL, bundle.getProcessData()));
-    }
-
     private void compareDataStoresForEquality(List<String> store1, List<String> store2)
     throws Exception {
         Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]),
@@ -1058,19 +1051,19 @@ public class PrismProcessDeleteTest extends BaseMultiClusterTests {
 
     public HashMap<String, List<String>> getSystemState(ENTITY_TYPE entityType) throws Exception {
         IEntityManagerHelper prizm = prism.getClusterHelper();
-        IEntityManagerHelper ua1 = server3.getClusterHelper();
-        IEntityManagerHelper ua2 = server1.getClusterHelper();
+        IEntityManagerHelper ua1 = cluster3.getClusterHelper();
+        IEntityManagerHelper ua2 = cluster1.getClusterHelper();
 
         if (entityType.equals(ENTITY_TYPE.DATA)) {
             prizm = prism.getFeedHelper();
-            ua1 = server3.getFeedHelper();
-            ua2 = server1.getFeedHelper();
+            ua1 = cluster3.getFeedHelper();
+            ua2 = cluster1.getFeedHelper();
         }
 
         if (entityType.equals(ENTITY_TYPE.PROCESS)) {
             prizm = prism.getProcessHelper();
-            ua1 = server3.getProcessHelper();
-            ua2 = server1.getProcessHelper();
+            ua1 = cluster3.getProcessHelper();
+            ua2 = cluster1.getProcessHelper();
         }
 
         HashMap<String, List<String>> temp = new HashMap<String, List<String>>();

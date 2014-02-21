@@ -19,12 +19,13 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Brother;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -33,20 +34,27 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 
 
-public class PrismConcurrentRequest extends BaseMultiClusterTests {
+@Test(groups = "embedded")
+public class PrismConcurrentRequest extends BaseTestClass {
 
+    ColoHelper cluster;
     private Bundle b = new Bundle();
     private ThreadGroup brotherGrimm = null;
     private Brother brothers[] = null;
     private int failedResponse = 0;
     private int succeedeResponse = 0;
 
+    public PrismConcurrentRequest(){
+        super();
+        cluster = servers.get(1);
+    }
+
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         brotherGrimm = new ThreadGroup("mixed");
         brothers = new Brother[10];
         failedResponse = 0;
@@ -115,7 +123,7 @@ public class PrismConcurrentRequest extends BaseMultiClusterTests {
                 brothers[i - 1] =
                         new Brother("brother" + i, "delete", ENTITY_TYPE.PROCESS, brotherGrimm, b,
                                 prism,
-                                URLS.SUBMIT_URL);
+                                URLS.DELETE_URL);
             }
             for (Brother brother : brothers) {
                 brother.start();
@@ -234,7 +242,7 @@ public class PrismConcurrentRequest extends BaseMultiClusterTests {
             Assert.assertEquals(succeedeResponse, 1);
             Assert.assertEquals(failedResponse, 9);
         } finally {
-             b.deleteBundle(prism);
+            b.deleteBundle(prism);
         }
     }
 
