@@ -2516,8 +2516,7 @@ public class Util {
   }
 
   public static String getPathPrefix(String pathString) {
-    pathString.substring(0, pathString.indexOf("$"));
-    return pathString;
+    return pathString.substring(0, pathString.indexOf("$"));
   }
 
   public static String getFileNameFromPath(String path) {
