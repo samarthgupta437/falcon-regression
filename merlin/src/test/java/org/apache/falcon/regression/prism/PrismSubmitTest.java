@@ -61,8 +61,8 @@ public class PrismSubmitTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-      //  Util.startService(prism.getFeedHelper());
-      //  Util.startService(cluster1.getFeedHelper());
+        Util.startService(prism.getFeedHelper());
+        Util.startService(cluster1.getFeedHelper());
 
         bundle.deleteBundle(prism);
     }
