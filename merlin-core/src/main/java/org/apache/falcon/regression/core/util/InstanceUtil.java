@@ -182,7 +182,7 @@ public class InstanceUtil {
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
                                        ProcessInstancesResult.WorkflowStatus ws) throws JAXBException {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
-        Assert.assertEquals(b.getProcessConcurrency(), runningInstancesInResult(r, ws));
+        Assert.assertEquals(runningInstancesInResult(r, ws), b.getProcessConcurrency());
     }
 
     public static int runningInstancesInResult(ProcessInstancesResult r,
