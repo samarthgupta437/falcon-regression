@@ -94,13 +94,13 @@ public class BaseTestClass {
     }
 
     @BeforeMethod
-    public void createBundles() {
+    public final void createBundles() {
         bundles = new Bundle[serverNames.length];
     }
 
 
     @AfterMethod
-    public void removeBundles() {
+    public final void removeBundles() {
         for (Bundle bundle : bundles) {
             if (bundle != null){
                 bundle.deleteBundle(prism);
@@ -109,7 +109,7 @@ public class BaseTestClass {
     }
 
     @AfterClass
-    public void deleteBaseDir() throws IOException {
+    public final void deleteBaseDir() throws IOException {
         for (FileSystem fs : serverFS) {
             HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
         }
