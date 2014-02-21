@@ -125,10 +125,14 @@ public class Bundle {
         }
     }
 
-    public void submitProcess() throws Exception {
+    public ServiceResponse submitProcess(boolean shouldSucceed) throws JAXBException,
+      IOException {
         submitAndScheduleAllFeeds();
-
-        Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, processData));
+      ServiceResponse r = prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
+        processData);
+      if(shouldSucceed)
+        Util.assertSucceeded(r);
+      return r;
     }
 
     public void submitFeedsScheduleProcess() throws Exception {
@@ -147,7 +151,7 @@ public class Bundle {
     }
 
     public void submitAndScheduleProcessUsingColoHelper(ColoHelper coloHelper) throws Exception {
-        submitProcess();
+        submitProcess(true);
 
         Util.assertSucceeded(coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
     }
