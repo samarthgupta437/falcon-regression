@@ -22,10 +22,12 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -36,14 +38,25 @@ import java.util.List;
 import java.util.Random;
 
 
-public class PrismFeedUpdateTest extends BaseMultiClusterTests {
+public class PrismFeedUpdateTest extends BaseTestClass {
 
-    public static final String UA1 = "ua1";
-    public static final String UA3 = "ua3";
     Bundle b1;
     Bundle b3;
+    ColoHelper cluster2;
+    ColoHelper cluster3;
+    FileSystem server2FS;
     String testDir = "/PrismFeedUpdateTest";
     String baseTestDir = baseHDFSDir + testDir;
+    public static final String UA1 = "ua1";
+    public static final String UA3 = "ua3";
+
+
+    public PrismFeedUpdateTest(){
+        super();
+        cluster2 = servers.get(1);
+        cluster3 = servers.get(2);
+        server2FS = serverFS.get(1);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
@@ -55,8 +68,8 @@ public class PrismFeedUpdateTest extends BaseMultiClusterTests {
         b3.generateUniqueBundle();
 
         //generate bundles according to config files
-        b1 = new Bundle(b1, server2.getEnvFileName(), server2.getPrefix());
-        b3 = new Bundle(b3, server3.getEnvFileName(), server3.getPrefix());
+        b1 = new Bundle(b1, cluster2.getEnvFileName(), cluster2.getPrefix());
+        b3 = new Bundle(b3, cluster3.getEnvFileName(), cluster3.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)
@@ -91,12 +104,12 @@ public class PrismFeedUpdateTest extends BaseMultiClusterTests {
                 .setFeedCluster(feed01,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null);
+                        ClusterType.SOURCE, null, null);
         outputFeed = InstanceUtil
                 .setFeedCluster(outputFeed,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null);
+                        ClusterType.SOURCE, null, null);
 
 
         //set new feed input data
@@ -106,8 +119,8 @@ public class PrismFeedUpdateTest extends BaseMultiClusterTests {
 
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
-        Util.HDFSCleanup(server2, prefix.substring(1));
-        Util.lateDataReplenish(server2, 70, 1, prefix);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), server2FS);
+        Util.lateDataReplenish(cluster2, 70, 1, prefix);
 
         String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
 
@@ -116,22 +129,22 @@ public class PrismFeedUpdateTest extends BaseMultiClusterTests {
                 .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE,
-                        null);
+                        null, null);
         feed01 = InstanceUtil
                 .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(b3.getClusters().get(0)), ClusterType.TARGET,
-                        null);
+                        null, null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                 XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE, null);
+                Util.readClusterName(b1.getClusters().get(0)), ClusterType.SOURCE, null, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                 XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(b3.getClusters().get(0)), ClusterType.TARGET, null);
+                Util.readClusterName(b3.getClusters().get(0)), ClusterType.TARGET, null, null);
 
 
         //submit and schedule feeds

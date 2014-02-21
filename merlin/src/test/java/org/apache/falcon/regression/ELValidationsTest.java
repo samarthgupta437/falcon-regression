@@ -18,9 +18,10 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -31,7 +32,15 @@ import java.lang.reflect.Method;
 /**
  * EL Validations tests.
  */
-public class ELValidationsTest extends BaseSingleClusterTests {
+@Test(groups = "embedded")
+public class ELValidationsTest extends BaseTestClass {
+
+    ColoHelper cluster;
+
+    public ELValidationsTest(){
+        super();
+        cluster = servers.get(0);
+    }
 
     //test for instance when process time line is subset of feed time
     @BeforeMethod
@@ -41,20 +50,20 @@ public class ELValidationsTest extends BaseSingleClusterTests {
 
     @Test(groups = {"0.1", "0.2"})
     public void startInstBeforeFeedStart_today02() throws Exception {
-        String response = ELUtil.testWith(prism, server1, "2009-02-02T20:00Z", "2011-12-31T00:00Z", "2009-02-02T20:00Z",
+        String response = ELUtil.testWith(prism, cluster, "2009-02-02T20:00Z", "2011-12-31T00:00Z", "2009-02-02T20:00Z",
                 "2011-12-31T00:00Z", "now(-40,0)", "currentYear(20,30,24,20)", false);
         validate(response);
     }
 
     @Test(groups = {"singleCluster"})
     public void startInstAfterFeedEnd() throws Exception {
-        String response = ELUtil.testWith(prism, server1, "currentYear(10,0,22,0)", "now(4,20)", false);
+        String response = ELUtil.testWith(prism, cluster, "currentYear(10,0,22,0)", "now(4,20)", false);
         validate(response);
     }
 
     @Test(groups = {"singleCluster"})
     public void bothInstReverse() throws Exception {
-        String response = ELUtil.testWith(prism, server1, "now(0,0)", "now(-100,0)", false);
+        String response = ELUtil.testWith(prism, cluster, "now(0,0)", "now(-100,0)", false);
         validate(response);
     }
 

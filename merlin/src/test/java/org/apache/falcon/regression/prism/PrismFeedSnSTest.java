@@ -21,6 +21,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
@@ -29,8 +30,9 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
-import org.apache.falcon.regression.testHelper.BaseMultiClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -38,20 +40,31 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-public class PrismFeedSnSTest extends BaseMultiClusterTests{
+public class PrismFeedSnSTest extends BaseTestClass {
 
+    ColoHelper cluster1;
+    ColoHelper cluster2;
+    OozieClient cluster1OC;
+    OozieClient cluster2OC;
     private Bundle bundle1;
     private Bundle bundle2;
     private boolean restartRequired;
 
+    public PrismFeedSnSTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster1OC = serverOC.get(0);
+        cluster2OC = serverOC.get(1);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readELBundles()[0][0];
-        bundle1 = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
-        bundle2 = new Bundle(bundle, server2.getEnvFileName(), server2.getPrefix());
+        bundle1 = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundle2 = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
         bundle1.generateUniqueBundle();
         bundle2.generateUniqueBundle();
     }
@@ -59,7 +72,7 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         if (restartRequired) {
-            Util.restartService(server1.getFeedHelper());
+            Util.restartService(cluster1.getFeedHelper());
         }
     }
 
@@ -67,82 +80,82 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleFeed(bundle1);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
+        bundle2.submitAndScheduleFeed();
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
     }
 
     @Test(groups = {"prism", "0.2"})
     public void testSnSAlreadyScheduledFeedOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
 
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
         //ensure only one bundle is there
-        Assert.assertEquals(Util.getBundles(server1OC,
+        Assert.assertEquals(Util.getBundles(cluster1OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
-        Assert.assertEquals(Util.getBundles(server2OC,
+        Assert.assertEquals(Util.getBundles(cluster2OC,
                 Util.readDatasetName(bundle2.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
     }
 
 
     @Test(groups = {"prism", "0.2"})
     public void testSnSSuspendedFeedOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
         //now check if they have been scheduled correctly or not
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
-        Assert.assertEquals(Util.getBundles(server1OC,
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        Assert.assertEquals(Util.getBundles(cluster1OC,
                 Util.readDatasetName(bundle1.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
 
-        Util.assertSucceeded(server1.getFeedHelper()
+        Util.assertSucceeded(cluster1.getFeedHelper()
                 .resume(URLS.RESUME_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
-        Assert.assertEquals(Util.getBundles(server2OC,
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
+        Assert.assertEquals(Util.getBundles(cluster2OC,
                 Util.readDatasetName(bundle2.getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
-        Util.assertSucceeded(server2.getFeedHelper()
+        Util.assertSucceeded(cluster2.getFeedHelper()
                 .resume(URLS.RESUME_URL, bundle2.getDataSets().get(0)));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
 
     }
@@ -150,16 +163,16 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
     @Test(groups = {"prism", "0.2"})
     public void testSnSDeletedFeedOnBothColos() throws Exception {
         //schedule both bundles
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundle2.getDataSets().get(0)));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
@@ -182,69 +195,69 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
             Util.assertSucceeded(prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
         }
 
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
     }
 
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOn1ColoWhileThatColoIsDown() throws Exception {
         restartRequired = true;
-        submitFeed(bundle1);
+        bundle1.submitFeed();
 
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         Util.assertFailed(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
     }
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasSuspendedFeed() throws Exception {
-        submitAndScheduleFeed(bundle1);
+        bundle1.submitAndScheduleFeed();
         Util.assertSucceeded(prism.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
-        submitAndScheduleFeed(bundle2);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        bundle2.submitAndScheduleFeed();
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
     }
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasKilledFeed() throws Exception {
-        submitAndScheduleFeed(bundle1);
+        bundle1.submitAndScheduleFeed();
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
-        submitAndScheduleFeed(bundle2);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        bundle2.submitAndScheduleFeed();
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
     }
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOnBothColosUsingColoHelper() throws Exception {
         //schedule both bundles
-        submitFeed(bundle1);
-        APIResult result = Util.parseResponse((server1.getFeedHelper()
+        bundle1.submitFeed();
+        APIResult result = Util.parseResponse((cluster1.getFeedHelper()
                 .submitEntity(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0))));
         Assert.assertEquals(result.getStatusCode(), 404);
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
-        submitFeed(bundle2);
-        result = Util.parseResponse(server2.getFeedHelper()
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        bundle2.submitFeed();
+        result = Util.parseResponse(cluster2.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
         Assert.assertEquals(result.getStatusCode(), 404);
 
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
     }
 
 
@@ -252,28 +265,29 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
     public void testSnSSuspendedFeedOnBothColosUsingColoHelper() throws Exception {
 
         //schedule both bundles
-        submitFeed(bundle1);
+        bundle1.submitFeed();
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
-        submitFeed(bundle2);
+        bundle2.submitFeed();
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
 
-        Util.assertSucceeded(server1.getFeedHelper()
+        Util.assertSucceeded(cluster1.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
         //now check if they have been scheduled correctly or not
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
-        Util.assertSucceeded(server1.getFeedHelper().resume(URLS.RESUME_URL, bundle1.getDataSets().get(0)));
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        Util.assertSucceeded(cluster1.getFeedHelper().resume(URLS.RESUME_URL, bundle1.getDataSets().get(0)));
 
-        Util.assertSucceeded(server2.getFeedHelper().suspend(URLS.SUSPEND_URL, bundle2.getDataSets().get(0)));
+        Util.assertSucceeded(cluster2.getFeedHelper().suspend(URLS.SUSPEND_URL,
+                bundle2.getDataSets().get(0)));
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
     }
 
 
@@ -281,16 +295,16 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
     public void testScheduleDeletedFeedOnBothColosUsingColoHelper() throws Exception {
 
         //schedule both bundles
-        submitAndScheduleFeed(bundle1);
-        submitAndScheduleFeed(bundle2);
+        bundle1.submitAndScheduleFeed();
+        bundle2.submitAndScheduleFeed();
 
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
 
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundle2.getDataSets().get(0)));
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)));
         Util.assertSucceeded(prism.getFeedHelper()
@@ -298,21 +312,21 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
 
         Assert.assertEquals(Util.parseResponse(prism.getFeedHelper()
                         .getStatus(URLS.STATUS_URL, bundle1.getDataSets().get(0))).getMessage(),
-                server1.getClusterHelper().getColo().split("=")[1] + "/RUNNING");
+                cluster1.getClusterHelper().getColo().split("=")[1] + "/RUNNING");
 
         Assert.assertEquals(Util.parseResponse(prism.getFeedHelper()
                         .getStatus(URLS.STATUS_URL, bundle2.getDataSets().get(0))).getMessage(),
-                server2.getClusterHelper().getColo().split("=")[1] + "/RUNNING");
+                cluster2.getClusterHelper().getColo().split("=")[1] + "/RUNNING");
     }
 
 
     @Test(groups = {"prism", "0.2"})
     public void testSNSNonExistentFeedOnBothColosUsingColoHelper() throws Exception {
 
-        Assert.assertEquals(Util.parseResponse(server1.getFeedHelper()
+        Assert.assertEquals(Util.parseResponse(cluster1.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle1.getDataSets().get(0)))
                 .getStatusCode(), 404);
-        Assert.assertEquals(Util.parseResponse(server2.getFeedHelper()
+        Assert.assertEquals(Util.parseResponse(cluster2.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)))
                 .getStatusCode(), 404);
     }
@@ -324,15 +338,15 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
             Util.assertSucceeded(prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
         }
 
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         Util.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle2.getDataSets().get(0)));
 
         //now check if they have been scheduled correctly or not
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
         //check if there is no criss cross
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
     }
 
 
@@ -340,13 +354,13 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
     public void testFeedSnSOn1ColoWhileThatColoIsDownUsingColoHelper() throws Exception {
         restartRequired = true;
 
-        bundle1.setCLusterColo(server1.getClusterHelper().getColo().split("=")[1]);
+        bundle1.setCLusterColo(cluster1.getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster bundle1: " + bundle1.getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle1.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        bundle2.setCLusterColo(server2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(cluster2.getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster bundle2: " + bundle2.getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -373,13 +387,13 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
 
         Util.print("feed: " + feed);
 
-        Util.shutDownService(server1.getFeedHelper());
+        Util.shutDownService(cluster1.getFeedHelper());
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Util.assertPartialSucceeded(response);
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Util.assertPartialSucceeded(response);
-        Util.startService(server1.getFeedHelper());
+        Util.startService(cluster1.getFeedHelper());
         prism.getClusterHelper().delete(URLS.DELETE_URL, bundle1.getClusters().get(0));
         prism.getClusterHelper().delete(URLS.DELETE_URL, bundle2.getClusters().get(0));
 
@@ -388,45 +402,28 @@ public class PrismFeedSnSTest extends BaseMultiClusterTests{
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasSuspendedFeedUsingColoHelper() throws Exception {
-        submitAndScheduleFeed(bundle1);
+        bundle1.submitAndScheduleFeed();
         Util.assertSucceeded(bundle1.getFeedHelper().suspend(URLS.SUSPEND_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
 
-        submitAndScheduleFeed(bundle2);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
+        bundle2.submitAndScheduleFeed();
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.SUSPENDED);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundle2, Job.Status.RUNNING);
     }
 
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasKilledFeedUsingColoHelper() throws Exception {
-        submitAndScheduleFeed(bundle1);
+        bundle1.submitAndScheduleFeed();
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundle1.getDataSets().get(0)));
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
-        submitAndScheduleFeed(bundle2);
-        AssertUtil.checkStatus(server2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(server2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
-        AssertUtil.checkNotStatus(server1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
-    }
-
-    private void submitFeed(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, bundle.getDataSets().get(0)));
-    }
-
-
-    private void submitAndScheduleFeed(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, cluster));
-        }
-        Util.assertSucceeded(prism.getFeedHelper()
-                .submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getDataSets().get(0)));
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        bundle2.submitAndScheduleFeed();
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.FEED, bundle1, Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundle1, Job.Status.KILLED);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundle2, Job.Status.RUNNING);
     }
 
 }

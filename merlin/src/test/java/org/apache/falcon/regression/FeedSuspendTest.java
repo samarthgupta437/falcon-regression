@@ -19,13 +19,15 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -36,17 +38,26 @@ import java.lang.reflect.Method;
 /**
  * Feed suspend tests.
  */
-public class FeedSuspendTest extends BaseSingleClusterTests {
-    
+@Test(groups = "embedded")
+public class FeedSuspendTest extends BaseTestClass {
+
+    ColoHelper cluster;
+    OozieClient clusterOC;
     private Bundle bundle;
     private String feed;
+
+    public FeedSuspendTest(){
+        super();
+        cluster = servers.get(0);
+        clusterOC = serverOC.get(0);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
 
         //submit the cluster
         ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
@@ -68,7 +79,7 @@ public class FeedSuspendTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Util.assertSucceeded(response);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
     @Test(groups = {"singleCluster"})
@@ -78,11 +89,11 @@ public class FeedSuspendTest extends BaseSingleClusterTests {
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Util.assertSucceeded(response);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
 
         Util.assertSucceeded(response);
-        AssertUtil.checkStatus(server1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
     @Test(groups = {"singleCluster"})

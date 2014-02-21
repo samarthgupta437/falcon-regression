@@ -20,13 +20,15 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -34,7 +36,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,11 @@ import java.util.List;
 /**
  * Process instance status tests.
  */
-public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
+@Test(groups = "embedded")
+public class ProcessInstanceStatusTest extends BaseTestClass {
 
+    ColoHelper cluster;
+    FileSystem clusterFS;
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -51,8 +55,10 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
     String feedOutputTimedOutPath = baseTestHDFSDir + "/output-data/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     Bundle b = new Bundle();
 
-    public ProcessInstanceStatusTest() throws IOException {
+    public ProcessInstanceStatusTest(){
         super();
+        cluster = servers.get(0);
+        clusterFS = serverFS.get(0);
     }
 
     @BeforeClass(alwaysRun = true)
@@ -65,7 +71,7 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -73,7 +79,7 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();
 
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -89,7 +95,7 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(server1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
 
@@ -98,7 +104,7 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
         Util.print("test name: " + method.getName());
         b = new Bundle();
         b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, server1.getEnvFileName(), server1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
     }
 
@@ -352,12 +358,12 @@ public class ProcessInstanceStatusTest extends BaseSingleClusterTests {
         Status status = null;
         while (status != Status.TIMEDOUT) {
             status = InstanceUtil
-                    .getInstanceStatus(server1, Util.readEntityName(b.getProcessData()), 0, 0);
+                    .getInstanceStatus(cluster, Util.readEntityName(b.getProcessData()), 0, 0);
             Thread.sleep(15000);
         }
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        InstanceUtil.validateSuccessWithStatusCode(r, 2);
+        InstanceUtil.validateFailedInstances(r, 3);
     }
 }

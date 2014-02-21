@@ -250,6 +250,12 @@ public class HadoopUtil {
                 + coloHelper.getProcessHelper().getHadoopURL());
 
         final FileSystem fs = FileSystem.get(conf);
+        copyDataToFolder(fs, folder.toString(), fileLocation);
+    }
+
+    public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
+                                         final String srcFileLocation)
+    throws IOException, InterruptedException {
         UserGroupInformation user = UserGroupInformation
                 .createRemoteUser("hdfs");
 
@@ -258,14 +264,18 @@ public class HadoopUtil {
 
             @Override
             public Boolean run() throws IOException {
-                //	logger.info("copying  "+file+" to "+folderPrefix+folder);
-                fs.copyFromLocalFile(new Path(fileLocation), folder);
+                fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
                 return true;
 
             }
         });
+    }
 
-
+    public static void uploadDir(final FileSystem fs, final String dstHdfsDir,
+                                 final String localLocation)
+    throws IOException, InterruptedException {
+        HadoopUtil.deleteDirIfExists(dstHdfsDir, fs);
+        HadoopUtil.copyDataToFolder(fs, dstHdfsDir, localLocation);
     }
 
     @Deprecated
@@ -393,6 +403,17 @@ public class HadoopUtil {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + fs);
         return FileSystem.get(conf);
+    }
+
+    public static List<String> getWriteLocations(ColoHelper coloHelper,
+                                                 List<String> readOnlyLocations) {
+        List<String> writeFolders = new ArrayList<String>();
+        final String clusterReadonly = coloHelper.getClusterHelper().getClusterReadonly();
+        final String clusterWrite = coloHelper.getClusterHelper().getClusterWrite();
+        for (String location : readOnlyLocations) {
+            writeFolders.add(location.trim().replaceFirst(clusterReadonly, clusterWrite));
+        }
+        return writeFolders;
     }
 
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,

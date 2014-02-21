@@ -18,9 +18,10 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.testHelper.BaseSingleClusterTests;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -30,7 +31,15 @@ import java.lang.reflect.Method;
 /**
  * ELTest.
  */
-public class ELTest extends BaseSingleClusterTests {
+@Test(groups = "embedded")
+public class ELTest extends BaseTestClass {
+
+    ColoHelper cluster;
+
+    public ELTest(){
+        super();
+        cluster = servers.get(1);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
@@ -39,7 +48,7 @@ public class ELTest extends BaseSingleClusterTests {
 
     @Test(groups = {"singleCluster"}, dataProvider = "EL-DP")
     public void ExpressionLanguageTest(String startInstance, String endInstance) throws Exception {
-        ELUtil.testWith(prism, server1, startInstance, endInstance, true);
+        ELUtil.testWith(prism, cluster, startInstance, endInstance, true);
     }
 
     @DataProvider(name = "EL-DP")
