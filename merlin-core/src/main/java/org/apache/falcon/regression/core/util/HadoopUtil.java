@@ -23,7 +23,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.testng.log4testng.Logger;
 
 import java.io.File;
@@ -256,19 +255,7 @@ public class HadoopUtil {
     public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
                                          final String srcFileLocation)
     throws IOException, InterruptedException {
-        UserGroupInformation user = UserGroupInformation
-                .createRemoteUser("hdfs");
-
-
-        user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-            @Override
-            public Boolean run() throws IOException {
-                fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
-                return true;
-
-            }
-        });
+        fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
     }
 
     public static void uploadDir(final FileSystem fs, final String dstHdfsDir,
