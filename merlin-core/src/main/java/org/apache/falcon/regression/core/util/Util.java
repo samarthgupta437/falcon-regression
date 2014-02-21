@@ -43,7 +43,6 @@ import org.apache.falcon.regression.core.supportClasses.GetBundle;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
@@ -1057,19 +1056,11 @@ public class Util {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws IOException {
-                    logger.info("/retention/testFolders/" + folder);
-                    return fs.mkdirs(new Path("/retention/testFolders/" + folder));
-                }
-            });
+            logger.info("/retention/testFolders/" + folder);
+            fs.mkdirs(new Path("/retention/testFolders/" + folder));
         }
     }
 
@@ -1161,7 +1152,8 @@ public class Util {
     @SuppressWarnings("deprecation")
     public static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
                                                    String interval)
-    throws JAXBException, OozieClientException, IOException, URISyntaxException {
+    throws JAXBException, OozieClientException, IOException, URISyntaxException,
+    InterruptedException {
         //get Data created in the cluster
         List<String> initialData = Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
 
@@ -1342,19 +1334,10 @@ public class Util {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws IOException {
-                    return fs.mkdirs(new Path("/lateDataTest/testFolders/" + folder));
-
-                }
-            });
+            fs.mkdirs(new Path("/lateDataTest/testFolders/" + folder));
         }
 
         logger.info("created all late data folders.....");
@@ -1370,23 +1353,13 @@ public class Util {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-
         for (final String folder : folderList) {
             File[] dirFiles = new File(directory).listFiles();
             assert dirFiles != null;
             for (final File file : dirFiles) {
                 if (!file.isDirectory()) {
-                    user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                        @Override
-                        public Boolean run() throws IOException {
-                            fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                    new Path("/lateDataTest/testFolders/" + folder));
-                            return true;
-                        }
-                    });
+                    fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
+                            new Path("/lateDataTest/testFolders/" + folder));
                 }
             }
         }
@@ -1519,26 +1492,14 @@ public class Util {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-
         File[] files = new File(localLocation).listFiles();
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-                    public Boolean run() throws IOException {
-
-                        String path = "/lateDataTest/testFolders/" + remoteLocation + "/" +
-                                System.currentTimeMillis() / 1000 + "/";
-                        System.out.println("inserting data@ " + path);
-                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(path));
-                        return true;
-
-                    }
-                });
+                String path = "/lateDataTest/testFolders/" + remoteLocation + "/" +
+                        System.currentTimeMillis() / 1000 + "/";
+                System.out.println("inserting data@ " + path);
+                fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(path));
             }
         }
 
@@ -1575,17 +1536,8 @@ public class Util {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
         for (final String folder : folderList) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws IOException {
-                    return fs.mkdirs(new Path(FolderPrefix + folder));
-
-                }
-            });
+            fs.mkdirs(new Path(FolderPrefix + folder));
         }
     }
 
@@ -1597,9 +1549,6 @@ public class Util {
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
 
         final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
 
         for (final String folder : folderList) {
             boolean r;
@@ -1624,16 +1573,8 @@ public class Util {
 
 
             for (final String file : fileLocations) {
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-                    public Boolean run() throws IOException {
-                        logger.info("copying  " + file + " to " + folderPrefix + folder);
-                        fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
-                        return true;
-
-                    }
-                });
+                logger.info("copying  " + file + " to " + folderPrefix + folder);
+                fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
             }
         }
     }
@@ -1675,7 +1616,7 @@ public class Util {
     }
 
     public static List<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
-    throws OozieClientException {
+    throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = prismHelper.getFeedHelper().getOozieClient();
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
@@ -1694,10 +1635,15 @@ public class Util {
         for (CoordinatorAction action : jobInfo.getActions()) {
             CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
 
-            while (!actionInfo.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
-                //keep waiting till eternity. this can be dangerous :|
+            for(int i=0; i < 180; ++i) {
                 actionInfo = oozieClient.getCoordActionInfo(action.getId());
+                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED) {
+                    break;
+                }
+                Thread.sleep(10000);
             }
+            Assert.assertEquals(actionInfo.getStatus(),CoordinatorAction.Status.SUCCEEDED,
+                    "Action did not succeed even after a long time.");
             jobIds.add(action.getId());
 
         }
