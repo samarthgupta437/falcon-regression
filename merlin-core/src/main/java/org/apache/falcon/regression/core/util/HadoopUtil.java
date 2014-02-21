@@ -395,6 +395,7 @@ public class HadoopUtil {
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
         if (fs.exists(path)) {
+          System.out.println("Deleting HDFS path: "+ path + " on "+fs.getConf().get("fs.default.name"));
             fs.delete(path, true);
         }
     }
@@ -423,8 +424,11 @@ public class HadoopUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 for (String remoteLocation : remoteLocations) {
-                    logger.info(String.format("Copy file %s to folder %s", file.getPath(),
-                            remoteLocation));
+                  logger.info("copying to: " + remoteLocation + " " +
+                    "on:" +
+                    " " + fs
+                    .getConf().get("fs.default.name")+" file: "+file.getName());
+
                     if (!fs.exists(new Path(remoteLocation)))
                         fs.mkdirs(new Path(remoteLocation));
 
