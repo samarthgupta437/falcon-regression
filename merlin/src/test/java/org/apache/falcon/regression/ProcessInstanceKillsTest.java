@@ -57,7 +57,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         clusterFS = serverFS.get(0);
     }
 
-//    @BeforeClass(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
@@ -284,7 +284,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     }
 
 
-  //  @AfterClass(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
         System.setProperty("java.security.krb5.realm", "");
