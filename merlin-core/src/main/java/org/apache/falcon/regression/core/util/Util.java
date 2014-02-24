@@ -79,8 +79,10 @@ public class Util {
 
 
     static Logger logger = Logger.getLogger(Util.class);
+    static final String MERLIN_PROPERTIES = "Merlin.properties";
+    static final String PRISM_PREFIX = "prism";
 
-    static PrismHelper prismHelper = new PrismHelper("prism.properties", "");
+    static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
 
     public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
         HttpClient client = new DefaultHttpClient();
