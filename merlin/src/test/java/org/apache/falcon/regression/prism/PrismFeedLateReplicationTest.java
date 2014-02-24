@@ -82,7 +82,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         bundle3.deleteBundle(prism);
     }
 
-    @SuppressWarnings("deprecation")
     @Test(groups = {"multiCluster"})
     public void multipleSourceOneTarget_pastData() throws Exception {
 
@@ -93,7 +92,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null);
+                ClusterType.SOURCE, null, null);
 
         String postFix = "/US/ua2";
         String prefix = bundle1.getFeedDataPathPrefix();
@@ -111,17 +110,17 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
-                        "US/${cluster.colo}");
+                        "US/${cluster.colo}", null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
-                        null);
+                        null, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
-                        "UK/${cluster.colo}");
+                        "UK/${cluster.colo}", null);
 
 
         Util.print("feed: " + feed);
