@@ -49,6 +49,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     ColoHelper cluster;
     FileSystem clusterFS;
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputTimedOutPath = baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -66,6 +67,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
 
         Util.print("in @BeforeClass");
 
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
@@ -106,6 +108,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
+        b.setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
