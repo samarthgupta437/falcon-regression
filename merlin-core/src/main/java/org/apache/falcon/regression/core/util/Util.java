@@ -1637,13 +1637,15 @@ public class Util {
 
             for(int i=0; i < 180; ++i) {
                 actionInfo = oozieClient.getCoordActionInfo(action.getId());
-                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED) {
+                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
+                        actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
+                        actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
                     break;
                 }
                 Thread.sleep(10000);
             }
             Assert.assertEquals(actionInfo.getStatus(),CoordinatorAction.Status.SUCCEEDED,
-                    "Action did not succeed even after a long time.");
+                    "Action did not succeed.");
             jobIds.add(action.getId());
 
         }
