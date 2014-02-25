@@ -24,23 +24,41 @@ import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.supportClasses.Consumer;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.oozie.client.OozieClientException;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.testng.log4testng.Logger;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 @Test(groups = "embedded")
 public class RetentionTest extends BaseTestClass {
+    static Logger logger = Logger.getLogger(RetentionTest.class);
 
     ColoHelper cluster1;
     private Bundle bundle;
@@ -62,6 +80,7 @@ public class RetentionTest extends BaseTestClass {
 
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
+        // test for https://issues.apache.org/jira/browse/FALCON-321
         final Bundle bundle = Util.getBundleData("RetentionBundles/valid/bundle1")[0];
         testRetention(bundle, "24", "hours", true, "daily", false);
     }
@@ -88,7 +107,7 @@ public class RetentionTest extends BaseTestClass {
 
             replenishData(cluster1, dataType, gaps, withData);
 
-            Util.CommonDataRetentionWorkflow(cluster1, bundle, Integer.parseInt(period),unit);
+            CommonDataRetentionWorkflow(cluster1, bundle, Integer.parseInt(period), unit);
         } else {
             Util.assertFailed(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
@@ -136,12 +155,12 @@ public class RetentionTest extends BaseTestClass {
         }
 
         if (dataType.equalsIgnoreCase("daily")) {
-            Util.replenishData(helper, Util.convertDatesToFolders(Util.getDailyDatesOnEitherSide
+            replenishData(helper, Util.convertDatesToFolders(Util.getDailyDatesOnEitherSide
                     (36, skip), skip), withData);
         } else if (dataType.equalsIgnoreCase("yearly")) {
-            Util.replenishData(helper, Util.getYearlyDatesOnEitherSide(10, skip), withData);
+            replenishData(helper, Util.getYearlyDatesOnEitherSide(10, skip), withData);
         } else if (dataType.equalsIgnoreCase("monthly")) {
-            Util.replenishData(helper, Util.getMonthlyDatesOnEitherSide(30, skip), withData);
+            replenishData(helper, Util.getMonthlyDatesOnEitherSide(30, skip), withData);
         }
     }
 
@@ -157,6 +176,121 @@ public class RetentionTest extends BaseTestClass {
         }
         return null;
     }
+
+    private static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
+                                                    String interval)
+    throws JAXBException, OozieClientException, IOException, URISyntaxException,
+    InterruptedException {
+        //get Data created in the cluster
+        List<String> initialData = Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
+
+        helper.getFeedHelper()
+                .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
+        logger.info(helper.getClusterHelper().getActiveMQ());
+        logger.info(Util.readDatasetName(Util.getInputFeedFromBundle(bundle)));
+        Consumer consumer =
+                new Consumer("FALCON." + Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
+                        helper.getClusterHelper().getActiveMQ());
+        consumer.start();
+
+        DateTime currentTime = new DateTime(DateTimeZone.UTC);
+        String bundleId = Util.getBundles(helper.getFeedHelper().getOozieClient(),
+                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
+
+        List<String> workflows = Util.getFeedRetentionJobs(helper, bundleId);
+        logger.info("got a workflow list of length:" + workflows.size());
+        Collections.sort(workflows);
+
+        for (String workflow : workflows) {
+            logger.info(workflow);
+        }
+
+        if (!workflows.isEmpty()) {
+            String workflowId = workflows.get(0);
+            String status = Util.getWorkflowInfo(helper, workflowId);
+            while (!(status.equalsIgnoreCase("KILLED") || status.equalsIgnoreCase("FAILED") ||
+                    status.equalsIgnoreCase("SUCCEEDED"))) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
+                status = Util.getWorkflowInfo(helper, workflowId);
+            }
+        }
+
+        consumer.stop();
+
+        logger.info("deleted data which has been received from messaging queue:");
+        for (HashMap<String, String> data : consumer.getMessageData()) {
+            logger.info("*************************************");
+            for (String key : data.keySet()) {
+                logger.info(key + "=" + data.get(key));
+            }
+            logger.info("*************************************");
+        }
+
+        //now look for cluster data
+        List<String> finalData =
+                Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
+
+        //now see if retention value was matched to as expected
+        List<String> expectedOutput =
+                Util.filterDataOnRetention(Util.getInputFeedFromBundle(bundle), time, interval,
+                        currentTime, initialData);
+
+        logger.info("initial data in system was:");
+        for (String line : initialData) {
+            logger.info(line);
+        }
+
+        logger.info("system output is:");
+        for (String line : finalData) {
+            logger.info(line);
+        }
+
+        logger.info("actual output is:");
+        for (String line : expectedOutput) {
+            logger.info(line);
+        }
+
+        Util.validateDataFromFeedQueue(helper,
+                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
+                consumer.getMessageData(), expectedOutput, initialData);
+
+        Assert.assertEquals(finalData.size(), expectedOutput.size(),
+                "sizes of outputs are different! please check");
+
+        Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
+                expectedOutput.toArray(new String[expectedOutput.size()])));
+    }
+
+    private static void replenishData(ColoHelper helper, List<String> folderList, boolean uploadData)
+    throws IOException, InterruptedException {
+        //purge data first
+        FileSystem fs = HadoopUtil.getFileSystem(helper.getFeedHelper().getHadoopURL());
+        HadoopUtil.deleteDirIfExists("/retention/testFolders/", fs);
+
+        createHDFSFolders(helper, folderList, uploadData);
+    }
+
+    private static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList,
+                                          boolean uploadData)
+    throws IOException, InterruptedException {
+        final FileSystem fs = prismHelper.getClusterHelper().getHadoopFS();
+
+        folderList.add("somethingRandom");
+
+        for (final String folder : folderList) {
+            final String pathString = "/retention/testFolders/" + folder;
+            logger.info(pathString);
+            fs.mkdirs(new Path(pathString));
+            if(uploadData) {
+                fs.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
+            }
+        }
+    }
+
 
     final static int[] gaps = new int[]{2, 4, 5, 1};
 
