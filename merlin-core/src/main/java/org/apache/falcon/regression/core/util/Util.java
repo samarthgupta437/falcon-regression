@@ -779,23 +779,6 @@ public class Util {
 
     }
 
-    @Deprecated
-    public static void replenishData(PrismHelper prismHelper, List<String> folderList)
-    throws IOException, JSchException, InterruptedException {
-
-        //purge data first
-        runRemoteScript(prismHelper.getClusterHelper().getQaHost(),
-                prismHelper.getClusterHelper().getUsername(),
-                prismHelper.getClusterHelper().getPassword(),
-                prismHelper.getClusterHelper().getHadoopLocation() + "  dfs -rmr  " +
-                        "hdfs://" + prismHelper.getClusterHelper().getHadoopURL()
-                        + "/retention/testFolders/",
-                prismHelper.getClusterHelper().getIdentityFile());
-        createHDFSFolders(prismHelper, folderList);
-
-
-    }
-
     public static void replenishData(ColoHelper helper, List<String> folderList)
     throws IOException, InterruptedException {
         //purge data first
