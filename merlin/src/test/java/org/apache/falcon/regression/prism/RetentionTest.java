@@ -25,7 +25,6 @@ import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -37,9 +36,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.WorkflowJob;
-import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -74,11 +73,16 @@ public class RetentionTest extends BaseTestClass {
     static Logger logger = Logger.getLogger(RetentionTest.class);
 
     ColoHelper cluster1;
+    FileSystem cluster1FS;
+    OozieClient cluster1OC;
+
     private Bundle bundle;
 
     public RetentionTest(){
         super();
         cluster1 = servers.get(0);
+        cluster1FS = serverFS.get(0);
+        cluster1OC = serverOC.get(0);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -89,7 +93,7 @@ public class RetentionTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        verifyFeedDeletion(Util.getInputFeedFromBundle(bundle), cluster1);
+        verifyFeedDeletion(Util.getInputFeedFromBundle(bundle));
     }
 
     @Test
@@ -119,9 +123,9 @@ public class RetentionTest extends BaseTestClass {
             Util.assertSucceeded(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
 
-            replenishData(cluster1, dataType, gaps, withData);
+            replenishData(dataType, gaps, withData);
 
-            commonDataRetentionWorkflow(cluster1, bundle, Integer.parseInt(period), unit);
+            commonDataRetentionWorkflow(bundle, Integer.parseInt(period), unit);
         } else {
             Util.assertFailed(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
@@ -154,7 +158,7 @@ public class RetentionTest extends BaseTestClass {
         logger.info("***********************************************");
     }
 
-    private void replenishData(ColoHelper helper, String dataType, boolean gap,
+    private void replenishData(String dataType, boolean gap,
                                boolean withData) throws Exception {
         int skip = 0;
 
@@ -164,12 +168,12 @@ public class RetentionTest extends BaseTestClass {
         }
 
         if (dataType.equalsIgnoreCase("daily")) {
-            replenishData(helper,
+            replenishData(
                     convertDatesToFolders(getDailyDatesOnEitherSide(36, skip), skip), withData);
         } else if (dataType.equalsIgnoreCase("yearly")) {
-            replenishData(helper, getYearlyDatesOnEitherSide(10, skip), withData);
+            replenishData(getYearlyDatesOnEitherSide(10, skip), withData);
         } else if (dataType.equalsIgnoreCase("monthly")) {
-            replenishData(helper, getMonthlyDatesOnEitherSide(30, skip), withData);
+            replenishData(getMonthlyDatesOnEitherSide(30, skip), withData);
         }
     }
 
@@ -186,27 +190,29 @@ public class RetentionTest extends BaseTestClass {
         return null;
     }
 
-    private static void commonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
+    private void commonDataRetentionWorkflow(Bundle bundle, int time,
                                                     String interval)
     throws JAXBException, OozieClientException, IOException, URISyntaxException,
     InterruptedException {
         //get Data created in the cluster
-        List<String> initialData = getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
+        List<String> initialData =
+                Util.getHadoopDataFromDir(cluster1, Util.getInputFeedFromBundle(bundle),
+                        "/retention/testFolders/");
 
-        helper.getFeedHelper()
+        cluster1.getFeedHelper()
                 .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
-        logger.info(helper.getClusterHelper().getActiveMQ());
+        logger.info(cluster1.getClusterHelper().getActiveMQ());
         logger.info(Util.readDatasetName(Util.getInputFeedFromBundle(bundle)));
         Consumer consumer =
                 new Consumer("FALCON." + Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
-                        helper.getClusterHelper().getActiveMQ());
+                        cluster1.getClusterHelper().getActiveMQ());
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = Util.getBundles(helper.getFeedHelper().getOozieClient(),
+        String bundleId = Util.getBundles(cluster1.getFeedHelper().getOozieClient(),
                 Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
-        List<String> workflows = getFeedRetentionJobs(helper, bundleId);
+        List<String> workflows = getFeedRetentionJobs(bundleId);
         logger.info("got a workflow list of length:" + workflows.size());
         Collections.sort(workflows);
 
@@ -216,7 +222,7 @@ public class RetentionTest extends BaseTestClass {
 
         if (!workflows.isEmpty()) {
             String workflowId = workflows.get(0);
-            String status = getWorkflowInfo(helper, workflowId);
+            String status = getWorkflowInfo(workflowId);
             while (!(status.equalsIgnoreCase("KILLED") || status.equalsIgnoreCase("FAILED") ||
                     status.equalsIgnoreCase("SUCCEEDED"))) {
                 try {
@@ -224,7 +230,7 @@ public class RetentionTest extends BaseTestClass {
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage());
                 }
-                status = getWorkflowInfo(helper, workflowId);
+                status = getWorkflowInfo(workflowId);
             }
         }
 
@@ -241,7 +247,8 @@ public class RetentionTest extends BaseTestClass {
 
         //now look for cluster data
         List<String> finalData =
-                getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
+                Util.getHadoopDataFromDir(cluster1, Util.getInputFeedFromBundle(bundle),
+                        "/retention/testFolders/");
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput =
@@ -263,7 +270,7 @@ public class RetentionTest extends BaseTestClass {
             logger.info(line);
         }
 
-        validateDataFromFeedQueue(helper,
+        validateDataFromFeedQueue(
                 Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
                 consumer.getMessageData(), expectedOutput, initialData);
 
@@ -274,33 +281,24 @@ public class RetentionTest extends BaseTestClass {
                 expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
-    private static void replenishData(ColoHelper helper, List<String> folderList, boolean uploadData)
+    private void replenishData(List<String> folderList, boolean uploadData)
     throws IOException, InterruptedException {
         //purge data first
-        FileSystem fs = HadoopUtil.getFileSystem(helper.getFeedHelper().getHadoopURL());
-        HadoopUtil.deleteDirIfExists("/retention/testFolders/", fs);
-
-        createHDFSFolders(helper, folderList, uploadData);
-    }
-
-    private static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList,
-                                          boolean uploadData)
-    throws IOException, InterruptedException {
-        final FileSystem fs = prismHelper.getClusterHelper().getHadoopFS();
+        HadoopUtil.deleteDirIfExists("/retention/testFolders/", cluster1FS);
 
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
             final String pathString = "/retention/testFolders/" + folder;
             logger.info(pathString);
-            fs.mkdirs(new Path(pathString));
+            cluster1FS.mkdirs(new Path(pathString));
             if(uploadData) {
-                fs.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
+                cluster1FS.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
             }
         }
     }
 
-    private static void validateDataFromFeedQueue(PrismHelper prismHelper, String feedName,
+    private void validateDataFromFeedQueue(String feedName,
                                                   List<HashMap<String, String>> queueData,
                                                   List<String> expectedOutput,
                                                   List<String> input) throws OozieClientException {
@@ -308,8 +306,8 @@ public class RetentionTest extends BaseTestClass {
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
-        List<String> jobIds = Util.getCoordinatorJobs(prismHelper,
-                Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+        List<String> jobIds = Util.getCoordinatorJobs(cluster1,
+                Util.getBundles(cluster1.getFeedHelper().getOozieClient(),
                         feedName, ENTITY_TYPE.FEED).get(0)
         );
 
@@ -330,7 +328,7 @@ public class RetentionTest extends BaseTestClass {
                         "org.apache.activemq.ActiveMQConnectionFactory");
                 Assert.assertEquals(data.get("status"), "SUCCEEDED");
                 Assert.assertEquals(data.get("brokerUrl"),
-                        prismHelper.getFeedHelper().getActiveMQ());
+                        cluster1.getFeedHelper().getActiveMQ());
 
             }
         }
@@ -342,11 +340,6 @@ public class RetentionTest extends BaseTestClass {
                         deletedFolders.toArray(new String[deletedFolders.size()])),
                 "It appears that the data that is received from queue and the data deleted are " +
                         "not same!");
-    }
-
-    private static List<String> getHadoopData(ColoHelper helper, String feed)
-    throws JAXBException, IOException {
-        return Util.getHadoopDataFromDir(helper, feed, "/retention/testFolders/");
     }
 
     private static String insertRetentionValueInFeed(String feed, String retentionValue)
@@ -372,17 +365,14 @@ public class RetentionTest extends BaseTestClass {
 
     }
 
-    private static void verifyFeedDeletion(String feed, ColoHelper... helpers)
+    private void verifyFeedDeletion(String feed)
     throws JAXBException, IOException {
-        for (ColoHelper helper : helpers) {
-            String directory = "/projects/ivory/staging/" + helper.getFeedHelper().getServiceUser()
-                    + "/workflows/feed/" + Util.readDatasetName(feed);
-            final FileSystem fs = helper.getProcessHelper().getHadoopFS();
-            //make sure feed bundle is not there
-            Assert.assertFalse(fs.isDirectory(new Path(directory)),
-                    "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
-        }
-
+        String directory = "/projects/ivory/staging/" + cluster1.getFeedHelper().getServiceUser()
+                + "/workflows/feed/" + Util.readDatasetName(feed);
+        final FileSystem fs = cluster1.getProcessHelper().getHadoopFS();
+        //make sure feed bundle is not there
+        Assert.assertFalse(fs.isDirectory(new Path(directory)),
+                "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
     }
 
     private static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {
@@ -467,17 +457,16 @@ public class RetentionTest extends BaseTestClass {
         return dates;
     }
 
-    private static List<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
+    private List<String> getFeedRetentionJobs(String bundleID)
     throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
-        XOozieClient oozieClient = prismHelper.getFeedHelper().getOozieClient();
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
+        BundleJob bundleJob = cluster1OC.getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
-                oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+                cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
         while (jobInfo.getActions().isEmpty()) {
             //keep dancing
-            jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+            jobInfo = cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
         }
 
         logger.info("got coordinator jobInfo array of length:" + jobInfo.getActions());
@@ -485,10 +474,10 @@ public class RetentionTest extends BaseTestClass {
             logger.info(action.getId());
         }
         for (CoordinatorAction action : jobInfo.getActions()) {
-            CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
+            CoordinatorAction actionInfo = cluster1OC.getCoordActionInfo(action.getId());
 
             for(int i=0; i < 180; ++i) {
-                actionInfo = oozieClient.getCoordActionInfo(action.getId());
+                actionInfo = cluster1OC.getCoordActionInfo(action.getId());
                 if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
                         actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
                         actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
@@ -507,11 +496,10 @@ public class RetentionTest extends BaseTestClass {
 
     }
 
-    private static String getWorkflowInfo(PrismHelper prismHelper, String workflowId)
+    private String getWorkflowInfo(String workflowId)
     throws OozieClientException {
-        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
         logger.info("fetching info for workflow with id: " + workflowId);
-        WorkflowJob job = oozieClient.getJobInfo(workflowId);
+        WorkflowJob job = cluster1OC.getJobInfo(workflowId);
         return job.getStatus().toString();
     }
 
