@@ -88,7 +88,8 @@ public class RetentionTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        finalCheck(bundle);
+        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
+        verifyFeedDeletion(Util.getInputFeedFromBundle(bundle), cluster1);
     }
 
     @Test
@@ -120,7 +121,7 @@ public class RetentionTest extends BaseTestClass {
 
             replenishData(cluster1, dataType, gaps, withData);
 
-            CommonDataRetentionWorkflow(cluster1, bundle, Integer.parseInt(period), unit);
+            commonDataRetentionWorkflow(cluster1, bundle, Integer.parseInt(period), unit);
         } else {
             Util.assertFailed(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
@@ -143,19 +144,14 @@ public class RetentionTest extends BaseTestClass {
         return feedWriter.toString();
     }
 
-    private void finalCheck(Bundle bundle) throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        verifyFeedDeletion(Util.getInputFeedFromBundle(bundle), cluster1);
-    }
-
     private void displayDetails(String period, String unit, boolean gaps, String dataType)
     throws Exception {
-        System.out.println("***********************************************");
-        System.out.println("executing for:");
-        System.out.println(unit + "(" + period + ")");
-        System.out.println("gaps=" + gaps);
-        System.out.println("dataType=" + dataType);
-        System.out.println("***********************************************");
+        logger.info("***********************************************");
+        logger.info("executing for:");
+        logger.info(unit + "(" + period + ")");
+        logger.info("gaps=" + gaps);
+        logger.info("dataType=" + dataType);
+        logger.info("***********************************************");
     }
 
     private void replenishData(ColoHelper helper, String dataType, boolean gap,
@@ -168,8 +164,8 @@ public class RetentionTest extends BaseTestClass {
         }
 
         if (dataType.equalsIgnoreCase("daily")) {
-            replenishData(helper, convertDatesToFolders(getDailyDatesOnEitherSide
-                    (36, skip), skip), withData);
+            replenishData(helper,
+                    convertDatesToFolders(getDailyDatesOnEitherSide(36, skip), skip), withData);
         } else if (dataType.equalsIgnoreCase("yearly")) {
             replenishData(helper, getYearlyDatesOnEitherSide(10, skip), withData);
         } else if (dataType.equalsIgnoreCase("monthly")) {
@@ -190,7 +186,7 @@ public class RetentionTest extends BaseTestClass {
         return null;
     }
 
-    private static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
+    private static void commonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
                                                     String interval)
     throws JAXBException, OozieClientException, IOException, URISyntaxException,
     InterruptedException {
