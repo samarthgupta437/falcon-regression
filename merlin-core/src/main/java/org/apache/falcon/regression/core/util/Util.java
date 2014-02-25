@@ -778,15 +778,6 @@ public class Util {
 
     }
 
-    public static void replenishData(ColoHelper helper, List<String> folderList, boolean uploadData)
-    throws IOException, InterruptedException {
-        //purge data first
-        FileSystem fs = HadoopUtil.getFileSystem(helper.getFeedHelper().getHadoopURL());
-        HadoopUtil.deleteDirIfExists("/retention/testFolders/", fs);
-
-        createHDFSFolders(helper, folderList, uploadData);
-    }
-
     public static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {
         logger.info("converting dates to folders....");
         List<String> folderList = new ArrayList<String>();
@@ -1031,26 +1022,6 @@ public class Util {
         return dates;
     }
 
-    public static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList,
-                                         boolean uploadData)
-    throws IOException, InterruptedException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        folderList.add("somethingRandom");
-
-        for (final String folder : folderList) {
-            final String pathString = "/retention/testFolders/" + folder;
-            logger.info(pathString);
-            fs.mkdirs(new Path(pathString));
-            if(uploadData) {
-                fs.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
-            }
-        }
-    }
-
     public static String readQueueLocationFromCluster(String cluster) throws JAXBException {
         JAXBContext clusterContext = JAXBContext.newInstance(Cluster.class);
         Unmarshaller um = clusterContext.createUnmarshaller();
@@ -1134,95 +1105,6 @@ public class Util {
                 deletedFolders.toArray(new String[deletedFolders.size()])),
                 "It appears that the data that is received from queue and the data deleted are " +
                         "not same!");
-    }
-
-    @SuppressWarnings("deprecation")
-    public static void CommonDataRetentionWorkflow(ColoHelper helper, Bundle bundle, int time,
-                                                   String interval)
-    throws JAXBException, OozieClientException, IOException, URISyntaxException,
-    InterruptedException {
-        //get Data created in the cluster
-        List<String> initialData = Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
-
-        helper.getFeedHelper()
-                .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
-        logger.info(helper.getClusterHelper().getActiveMQ());
-        logger.info(Util.readDatasetName(Util.getInputFeedFromBundle(bundle)));
-        Consumer consumer =
-                new Consumer("FALCON." + Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
-                        helper.getClusterHelper().getActiveMQ());
-        consumer.start();
-
-        DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = Util.getBundles(helper.getFeedHelper().getOozieClient(),
-                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
-
-        List<String> workflows = getFeedRetentionJobs(helper, bundleId);
-        logger.info("got a workflow list of length:" + workflows.size());
-        Collections.sort(workflows);
-
-        for (String workflow : workflows) {
-            logger.info(workflow);
-        }
-
-        if (!workflows.isEmpty()) {
-            String workflowId = workflows.get(0);
-            String status = getWorkflowInfo(helper, workflowId);
-            while (!(status.equalsIgnoreCase("KILLED") || status.equalsIgnoreCase("FAILED") ||
-                    status.equalsIgnoreCase("SUCCEEDED"))) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                }
-                status = getWorkflowInfo(helper, workflowId);
-            }
-        }
-
-        consumer.stop();
-
-        logger.info("deleted data which has been received from messaging queue:");
-        for (HashMap<String, String> data : consumer.getMessageData()) {
-            logger.info("*************************************");
-            for (String key : data.keySet()) {
-                logger.info(key + "=" + data.get(key));
-            }
-            logger.info("*************************************");
-        }
-
-        //now look for cluster data
-        List<String> finalData =
-                Util.getHadoopData(helper, Util.getInputFeedFromBundle(bundle));
-
-        //now see if retention value was matched to as expected
-        List<String> expectedOutput =
-                Util.filterDataOnRetention(Util.getInputFeedFromBundle(bundle), time, interval,
-                        currentTime, initialData);
-
-        logger.info("initial data in system was:");
-        for (String line : initialData) {
-            logger.info(line);
-        }
-
-        logger.info("system output is:");
-        for (String line : finalData) {
-            logger.info(line);
-        }
-
-        logger.info("actual output is:");
-        for (String line : expectedOutput) {
-            logger.info(line);
-        }
-
-        Util.validateDataFromFeedQueue(helper,
-                Util.readDatasetName(getInputFeedFromBundle(bundle)),
-                consumer.getMessageData(), expectedOutput, initialData);
-
-        Assert.assertEquals(finalData.size(), expectedOutput.size(),
-                "sizes of outputs are different! please check");
-
-        Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
-                expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
     public static String getFeedPath(String feed) throws JAXBException {
