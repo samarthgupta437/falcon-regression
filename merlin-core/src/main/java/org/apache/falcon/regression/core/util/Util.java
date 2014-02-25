@@ -626,14 +626,6 @@ public class Util {
 
     }
 
-    public static String getWorkflowInfo(PrismHelper prismHelper, String workflowId)
-    throws OozieClientException {
-        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
-        logger.info("fetching info for workflow with id: " + workflowId);
-        WorkflowJob job = oozieClient.getJobInfo(workflowId);
-        return job.getStatus().toString();
-    }
-
     public static Date getNominalTime(PrismHelper prismHelper, String bundleID)
     throws OozieClientException {
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
@@ -695,17 +687,12 @@ public class Util {
         return finalResult;
     }
 
-    public static List<String> getHadoopData(ColoHelper helper, String feed)
-    throws JAXBException, IOException {
-        return getHadoopDataFromDir(helper, feed, "/retention/testFolders/");
-    }
-
     public static List<String> getHadoopLateData(ColoHelper helper, String feed)
     throws JAXBException, IOException {
         return getHadoopDataFromDir(helper, feed, "/lateDataTest/testFolders/");
     }
 
-    private static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
+    public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
     throws JAXBException, IOException {
         List<String> finalResult = new ArrayList<String>();
 
@@ -755,46 +742,6 @@ public class Util {
         return finalResult;
     }
 
-    public static String insertRetentionValueInFeed(String feed, String retentionValue)
-    throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
-        //insert retentionclause
-        feedObject.getClusters().getCluster().get(0).getRetention()
-                .setLimit(new Frequency(retentionValue));
-
-        for (org.apache.falcon.regression.core.generated.feed.Cluster cluster : feedObject
-                .getClusters().getCluster()) {
-            cluster.getRetention().setLimit(new Frequency(retentionValue));
-        }
-
-        StringWriter writer = new StringWriter();
-        Marshaller m = context.createMarshaller();
-        m.marshal(feedObject, writer);
-
-        return writer.toString();
-
-    }
-
-    public static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {
-        logger.info("converting dates to folders....");
-        List<String> folderList = new ArrayList<String>();
-
-        for (String date : dateList) {
-            for (int i = 0; i < 24; i += skipInterval + 1) {
-                if (i < 10) {
-                    folderList.add(date + "/0" + i);
-                } else {
-                    folderList.add(date + "/" + i);
-                }
-            }
-        }
-
-        return folderList;
-    }
-
     public static List<String> addMinutesToCreatedFolders(List<String> folderList,
                                                           int skipMinutes) {
         logger.info("adding minutes to current folders.....");
@@ -815,124 +762,6 @@ public class Util {
         }
 
         return finalFolderList;
-    }
-
-    public static List<String> filterDataOnRetention(String feed, int time, String interval,
-                                                     DateTime endDate,
-                                                     List<String> inputData) throws JAXBException {
-        String locationType = "";
-        String appender = "";
-
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        List<String> finalData = new ArrayList<String>();
-
-        //determine what kind of data is there in the feed!
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
-
-        for (org.apache.falcon.regression.core.generated.feed.Location location : feedObject
-                .getLocations()
-                .getLocation()) {
-            if (location.getType().equals(LocationType.DATA)) {
-                locationType = location.getPath();
-            }
-        }
-
-
-        if (locationType.equalsIgnoreCase("") || locationType.equalsIgnoreCase(null)) {
-            throw new TestNGException("location type was not mentioned in your feed!");
-        }
-
-        if (locationType.equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}")) {
-            appender = "/01/00/01";
-        } else if (locationType
-                .equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}/${DAY}")) {
-            appender = "/01"; //because we already take care of that!
-        } else if (locationType
-                .equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
-            appender = "/01";
-        } else if (locationType.equalsIgnoreCase("/retention/testFolders/${YEAR}")) {
-            appender = "/01/01/00/01";
-        }
-
-        //convert the start and end date boundaries to the same format
-
-
-        //end date is today's date
-        formatter.print(endDate);
-        String startLimit = "";
-
-        if (interval.equalsIgnoreCase("minutes")) {
-            startLimit =
-                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
-        } else if (interval.equalsIgnoreCase("hours")) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
-        } else if (interval.equalsIgnoreCase("days")) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
-        } else if (interval.equalsIgnoreCase("months")) {
-            startLimit =
-                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
-
-        }
-
-
-        //now to actually check!
-        for (String testDate : inputData) {
-            if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if ((testDate + appender).compareTo(startLimit) >= 0) {
-                    finalData.add(testDate);
-                }
-            } else {
-                finalData.add(testDate);
-            }
-        }
-
-        return finalData;
-
-    }
-
-    public static List<String> getDailyDatesOnEitherSide(int interval, int skip) {
-
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(today));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(today.minusDays(backward)));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(today.plusDays(i)));
-        }
-
-        return dates;
-    }
-
-    public static List<String> getMonthlyDatesOnEitherSide(int interval, int skip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM");
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print((today)));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.minusMonths(backward))));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.plusMonths(i))));
-        }
-
-        return dates;
     }
 
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
@@ -1001,27 +830,6 @@ public class Util {
         return addMinutesToCreatedFolders(dates, minuteSkip);
     }
 
-    public static List<String> getYearlyDatesOnEitherSide(int interval, int skip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(new LocalDate(today)));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.minusYears(backward))));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.plusYears(i))));
-        }
-
-        return dates;
-    }
-
     public static String readQueueLocationFromCluster(String cluster) throws JAXBException {
         JAXBContext clusterContext = JAXBContext.newInstance(Cluster.class);
         Unmarshaller um = clusterContext.createUnmarshaller();
@@ -1062,49 +870,6 @@ public class Util {
 
         return InstanceUtil.feedElementToString(feedObject);
 
-    }
-
-    public static void validateDataFromFeedQueue(PrismHelper prismHelper, String feedName,
-                                                 List<HashMap<String, String>> queueData,
-                                                 List<String> expectedOutput,
-                                                 List<String> input) throws OozieClientException {
-
-        //just verify that each element in queue is same as deleted data!
-        input.removeAll(expectedOutput);
-
-        List<String> jobIds = getCoordinatorJobs(prismHelper,
-                Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
-                        feedName, ENTITY_TYPE.FEED).get(0));
-
-        //create queuedata folderList:
-        List<String> deletedFolders = new ArrayList<String>();
-
-        for (HashMap<String, String> data : queueData) {
-            if (data != null) {
-                Assert.assertEquals(data.get("entityName"), feedName);
-                String[] splitData = data.get("feedInstancePaths").split("testFolders/");
-                deletedFolders.add(splitData[splitData.length - 1]);
-                Assert.assertEquals(data.get("operation"), "DELETE");
-                Assert.assertEquals(data.get("workflowId"), jobIds.get(0));
-
-                //verify other data also
-                Assert.assertEquals(data.get("topicName"), "FALCON." + feedName);
-                Assert.assertEquals(data.get("brokerImplClass"),
-                        "org.apache.activemq.ActiveMQConnectionFactory");
-                Assert.assertEquals(data.get("status"), "SUCCEEDED");
-                Assert.assertEquals(data.get("brokerUrl"),
-                        prismHelper.getFeedHelper().getActiveMQ());
-
-            }
-        }
-
-        //now make sure queueData and input lists are same
-        Assert.assertEquals(deletedFolders.size(), input.size(),
-                "Output size is different than expected!");
-        Assert.assertTrue(Arrays.deepEquals(input.toArray(new String[input.size()]),
-                deletedFolders.toArray(new String[deletedFolders.size()])),
-                "It appears that the data that is received from queue and the data deleted are " +
-                        "not same!");
     }
 
     public static String getFeedPath(String feed) throws JAXBException {
@@ -1484,46 +1249,6 @@ public class Util {
         return feedWriter.toString().trim();
     }
 
-    public static List<String> getFeedRetentionJobs(PrismHelper prismHelper, String bundleID)
-    throws OozieClientException, InterruptedException {
-        List<String> jobIds = new ArrayList<String>();
-        XOozieClient oozieClient = prismHelper.getFeedHelper().getOozieClient();
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-        CoordinatorJob jobInfo =
-                oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
-
-        while (jobInfo.getActions().isEmpty()) {
-            //keep dancing
-            jobInfo = oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
-        }
-
-        logger.info("got coordinator jobInfo array of length:" + jobInfo.getActions());
-        for (CoordinatorAction action : jobInfo.getActions()) {
-            logger.info(action.getId());
-        }
-        for (CoordinatorAction action : jobInfo.getActions()) {
-            CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
-
-            for(int i=0; i < 180; ++i) {
-                actionInfo = oozieClient.getCoordActionInfo(action.getId());
-                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
-                        actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
-                        actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
-                    break;
-                }
-                Thread.sleep(10000);
-            }
-            Assert.assertEquals(actionInfo.getStatus(),CoordinatorAction.Status.SUCCEEDED,
-                    "Action did not succeed.");
-            jobIds.add(action.getId());
-
-        }
-
-
-        return jobIds;
-
-    }
-
     @Deprecated
     public static void verifyFeedDeletion(String feed, PrismHelper... prismHelper)
     throws IOException, JSchException, JAXBException {
@@ -1542,19 +1267,6 @@ public class Util {
             Assert.assertFalse(
                     feedList.contains("/projects/ivory/staging/ivory/workflows/feed/" +
                             Util.readDatasetName(feed)),
-                    "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
-        }
-
-    }
-
-    public static void verifyFeedDeletion(String feed, ColoHelper... helpers)
-    throws JAXBException, IOException {
-        for (ColoHelper helper : helpers) {
-            String directory = "/projects/ivory/staging/" + helper.getFeedHelper().getServiceUser()
-                    + "/workflows/feed/" + Util.readDatasetName(feed);
-            final FileSystem fs = helper.getProcessHelper().getHadoopFS();
-            //make sure feed bundle is not there
-            Assert.assertFalse(fs.isDirectory(new Path(directory)),
                     "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
         }
 
