@@ -33,6 +33,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import javax.xml.bind.JAXBContext;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
@@ -60,7 +61,8 @@ public class RetentionTest extends BaseTestClass {
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
-    public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType) throws Exception {
+    public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType,
+                              boolean withData) throws Exception {
         bundle = new Bundle(b, cluster1);
         displayDetails(period, unit, gaps, dataType);
 
@@ -78,7 +80,7 @@ public class RetentionTest extends BaseTestClass {
             Util.assertSucceeded(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
 
-            replenishData(cluster1, dataType, gaps);
+            replenishData(cluster1, dataType, gaps, withData);
 
             Util.CommonDataRetentionWorkflow(cluster1, bundle, Integer.parseInt(period),unit);
         } else {
@@ -118,7 +120,8 @@ public class RetentionTest extends BaseTestClass {
         System.out.println("***********************************************");
     }
 
-    private void replenishData(ColoHelper helper, String dataType, boolean gap) throws Exception {
+    private void replenishData(ColoHelper helper, String dataType, boolean gap,
+                               boolean withData) throws Exception {
         int skip = 0;
 
         if (gap) {
@@ -127,11 +130,12 @@ public class RetentionTest extends BaseTestClass {
         }
 
         if (dataType.equalsIgnoreCase("daily")) {
-            Util.replenishData(helper, Util.convertDatesToFolders(Util.getDailyDatesOnEitherSide(36, skip), skip));
+            Util.replenishData(helper, Util.convertDatesToFolders(Util.getDailyDatesOnEitherSide
+                    (36, skip), skip), withData);
         } else if (dataType.equalsIgnoreCase("yearly")) {
-            Util.replenishData(helper, Util.getYearlyDatesOnEitherSide(10, skip));
+            Util.replenishData(helper, Util.getYearlyDatesOnEitherSide(10, skip), withData);
         } else if (dataType.equalsIgnoreCase("monthly")) {
-            Util.replenishData(helper, Util.getMonthlyDatesOnEitherSide(30, skip));
+            Util.replenishData(helper, Util.getMonthlyDatesOnEitherSide(30, skip), withData);
         }
     }
 
@@ -153,11 +157,12 @@ public class RetentionTest extends BaseTestClass {
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) throws Exception {
         Bundle[] bundles = Util.getBundleData("RetentionBundles/valid/bundle1");
-        String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         String[] periods = new String[]{"0", "10080", "60", "8", "24"}; // a negative value like -4 should be covered in validation scenarios.
+        String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
         String[] dataTypes = new String[]{"daily", "yearly", "monthly"};
-        Object[][] testData = new Object[bundles.length * units.length * periods.length * gaps.length * dataTypes.length][5];
+        Object[][] testData = new Object[bundles.length * units.length * periods.length * gaps
+                .length * dataTypes.length][6];
 
         int i = 0;
 
@@ -171,6 +176,7 @@ public class RetentionTest extends BaseTestClass {
                             testData[i][2] = unit;
                             testData[i][3] = gap;
                             testData[i][4] = dataType;
+                            testData[i][5] = true;
                             i++;
                         }
                     }
