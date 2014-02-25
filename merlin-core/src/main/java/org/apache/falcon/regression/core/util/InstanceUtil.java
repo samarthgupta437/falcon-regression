@@ -1639,5 +1639,37 @@ public class InstanceUtil {
       difference
     );
   }
+
+
+  public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
+                                                 String entity,
+                                                 int bundleSeqNo,
+                                                 int totalMinutesToWait
+                                                ) throws JAXBException, OozieClientException {
+    int sleep = totalMinutesToWait * 60 / 20;
+    String entityName = Util.readEntityName(entity);
+    ENTITY_TYPE type = Util.getEntityType(entity);
+    String bundleID = getSequenceBundleID(coloHelper,entityName,type,
+      bundleSeqNo);
+    String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);
+
+    for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
+      CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient()
+        .getCoordJobInfo(coordID);
+
+      if(coordInfo.getActions().size() > 0)
+          break;
+      System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
+        "instance created" +
+        "");
+      try {
+        Thread.sleep(20000);
+      } catch (InterruptedException e) {
+        logger.error(e.getMessage());
+      }
+
+    }
+
+  }
 }
 
