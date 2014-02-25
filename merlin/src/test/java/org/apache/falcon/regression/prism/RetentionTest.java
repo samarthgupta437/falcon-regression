@@ -60,6 +60,12 @@ public class RetentionTest extends BaseTestClass {
         finalCheck(bundle);
     }
 
+    @Test
+    public void testRetentionWithEmptyDirectories() throws Exception {
+        final Bundle bundle = Util.getBundleData("RetentionBundles/valid/bundle1")[0];
+        testRetention(bundle, "24", "hours", true, "daily", false);
+    }
+
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
