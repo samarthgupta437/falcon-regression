@@ -70,7 +70,6 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -779,13 +778,13 @@ public class Util {
 
     }
 
-    public static void replenishData(ColoHelper helper, List<String> folderList)
+    public static void replenishData(ColoHelper helper, List<String> folderList, boolean uploadData)
     throws IOException, InterruptedException {
         //purge data first
         FileSystem fs = HadoopUtil.getFileSystem(helper.getFeedHelper().getHadoopURL());
         HadoopUtil.deleteDirIfExists("/retention/testFolders/", fs);
 
-        createHDFSFolders(helper, folderList);
+        createHDFSFolders(helper, folderList, uploadData);
     }
 
     public static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {
@@ -1032,7 +1031,8 @@ public class Util {
         return dates;
     }
 
-    public static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList)
+    public static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList,
+                                         boolean uploadData)
     throws IOException, InterruptedException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
@@ -1042,8 +1042,12 @@ public class Util {
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
-            logger.info("/retention/testFolders/" + folder);
-            fs.mkdirs(new Path("/retention/testFolders/" + folder));
+            final String pathString = "/retention/testFolders/" + folder;
+            logger.info(pathString);
+            fs.mkdirs(new Path(pathString));
+            if(uploadData) {
+                fs.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
+            }
         }
     }
 
