@@ -34,12 +34,7 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class ELTest extends BaseTestClass {
 
-    ColoHelper cluster;
-
-    public ELTest(){
-        super();
-        cluster = servers.get(1);
-    }
+    ColoHelper cluster = servers.get(0);
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
