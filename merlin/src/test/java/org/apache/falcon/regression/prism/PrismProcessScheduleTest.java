@@ -269,8 +269,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
         .getClusterHelper().getHadoopFS());
 
       hadoopFileEditor.edit(new ProcessMerlin(UA1Bundle
-        .getProcessData()).element
-        .getWorkflow().getPath()+"/workflow.xml","<value>${outputData}</value>",
+        .getProcessData()).getWorkflow().getPath()+"/workflow.xml","<value>${outputData}</value>",
         "<property>\n" +
         "                    <name>randomProp</name>\n" +
         "                    <value>randomValue</value>\n" +

@@ -50,6 +50,7 @@ import org.testng.annotations.*;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -1518,7 +1519,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
   @Test(groups = {"multiCluster"}, timeOut = 1200000)
   public void
-  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException {
+  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     Bundle b = Util.readELBundles()[0][0];
     HadoopFileEditor hadoopFileEditor = null;
     try {
@@ -1545,8 +1546,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
       //update workflow.xml
       hadoopFileEditor = new HadoopFileEditor(cluster1FS);
       hadoopFileEditor.edit(new ProcessMerlin(b
-        .getProcessData()).element
-        .getWorkflow().getPath()+"/workflow.xml","</workflow-app>","<!-- some comment -->");
+        .getProcessData()).getWorkflow().getPath()+"/workflow.xml","</workflow-app>","<!-- some comment -->");
 
       //update
       prism.getProcessHelper().update(b.getProcessData(),

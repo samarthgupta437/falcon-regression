@@ -71,6 +71,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -2396,7 +2397,7 @@ public class Util {
   public static void verifyPostprcessingLogMove(FileSystem fs, String entity,
                                                 String basePath,
                                                 String instanceTime
-  ) throws JAXBException, IOException {
+  ) throws JAXBException, IOException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     ENTITY_TYPE type = Util.getEntityType(entity);
     String name = Util.readEntityName(entity);
     FeedMerlin feedElement = new FeedMerlin(entity);
