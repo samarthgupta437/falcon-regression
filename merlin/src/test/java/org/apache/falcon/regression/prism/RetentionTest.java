@@ -70,6 +70,9 @@ import java.util.Random;
 
 @Test(groups = "embedded")
 public class RetentionTest extends BaseTestClass {
+    private static final String TEST_FOLDERS = "testFolders/";
+    String baseTestHDFSDir = baseHDFSDir + "/RetentionTest/";
+    String testHDFSDir = baseTestHDFSDir + TEST_FOLDERS;
     static Logger logger = Logger.getLogger(RetentionTest.class);
 
     ColoHelper cluster1;
@@ -107,6 +110,7 @@ public class RetentionTest extends BaseTestClass {
     public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
         bundle = new Bundle(b, cluster1);
+        b.setInputFeedDataPath(testHDFSDir);
         displayDetails(period, unit, gaps, dataType);
 
         System.setProperty("java.security.krb5.realm", "");
@@ -179,13 +183,13 @@ public class RetentionTest extends BaseTestClass {
 
     private String getFeedPathValue(String dataType) throws Exception {
         if (dataType.equalsIgnoreCase("monthly")) {
-            return "/retention/testFolders/${YEAR}/${MONTH}";
+            return testHDFSDir + "${YEAR}/${MONTH}";
         }
         if (dataType.equalsIgnoreCase("daily")) {
-            return "/retention/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}";
+            return testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}";
         }
         if (dataType.equalsIgnoreCase("yearly")) {
-            return "/retention/testFolders/${YEAR}";
+            return testHDFSDir + "${YEAR}";
         }
         return null;
     }
@@ -197,7 +201,7 @@ public class RetentionTest extends BaseTestClass {
         //get Data created in the cluster
         List<String> initialData =
                 Util.getHadoopDataFromDir(cluster1, Util.getInputFeedFromBundle(bundle),
-                        "/retention/testFolders/");
+                        testHDFSDir);
 
         cluster1.getFeedHelper()
                 .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
@@ -248,7 +252,7 @@ public class RetentionTest extends BaseTestClass {
         //now look for cluster data
         List<String> finalData =
                 Util.getHadoopDataFromDir(cluster1, Util.getInputFeedFromBundle(bundle),
-                        "/retention/testFolders/");
+                        testHDFSDir);
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput =
@@ -284,12 +288,12 @@ public class RetentionTest extends BaseTestClass {
     private void replenishData(List<String> folderList, boolean uploadData)
     throws IOException, InterruptedException {
         //purge data first
-        HadoopUtil.deleteDirIfExists("/retention/testFolders/", cluster1FS);
+        HadoopUtil.deleteDirIfExists(testHDFSDir, cluster1FS);
 
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
-            final String pathString = "/retention/testFolders/" + folder;
+            final String pathString = testHDFSDir + folder;
             logger.info(pathString);
             cluster1FS.mkdirs(new Path(pathString));
             if(uploadData) {
@@ -317,7 +321,7 @@ public class RetentionTest extends BaseTestClass {
         for (HashMap<String, String> data : queueData) {
             if (data != null) {
                 Assert.assertEquals(data.get("entityName"), feedName);
-                String[] splitData = data.get("feedInstancePaths").split("testFolders/");
+                String[] splitData = data.get("feedInstancePaths").split(TEST_FOLDERS);
                 deletedFolders.add(splitData[splitData.length - 1]);
                 Assert.assertEquals(data.get("operation"), "DELETE");
                 Assert.assertEquals(data.get("workflowId"), jobIds.get(0));
@@ -502,7 +506,7 @@ public class RetentionTest extends BaseTestClass {
         return job.getStatus().toString();
     }
 
-    private static List<String> filterDataOnRetention(String feed, int time, String interval,
+    private List<String> filterDataOnRetention(String feed, int time, String interval,
                                                      DateTime endDate,
                                                      List<String> inputData) throws JAXBException {
         String locationType = "";
@@ -526,15 +530,15 @@ public class RetentionTest extends BaseTestClass {
             throw new TestNGException("location type was not mentioned in your feed!");
         }
 
-        if (locationType.equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}")) {
+        if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}")) {
             appender = "/01/00/01";
         } else if (locationType
-                .equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}/${DAY}")) {
+                .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}")) {
             appender = "/01"; //because we already take care of that!
         } else if (locationType
-                .equalsIgnoreCase("/retention/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
+                .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
             appender = "/01";
-        } else if (locationType.equalsIgnoreCase("/retention/testFolders/${YEAR}")) {
+        } else if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}")) {
             appender = "/01/01/00/01";
         }
 
