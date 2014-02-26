@@ -209,7 +209,7 @@ public class RetentionTest extends BaseTestClass {
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = Util.getBundles(cluster1.getFeedHelper().getOozieClient(),
+        String bundleId = Util.getBundles(cluster1OC,
                 Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
         List<String> workflows = getFeedRetentionJobs(bundleId);
@@ -307,7 +307,7 @@ public class RetentionTest extends BaseTestClass {
         input.removeAll(expectedOutput);
 
         List<String> jobIds = Util.getCoordinatorJobs(cluster1,
-                Util.getBundles(cluster1.getFeedHelper().getOozieClient(),
+                Util.getBundles(cluster1OC,
                         feedName, ENTITY_TYPE.FEED).get(0)
         );
 
@@ -369,9 +369,8 @@ public class RetentionTest extends BaseTestClass {
     throws JAXBException, IOException {
         String directory = "/projects/ivory/staging/" + cluster1.getFeedHelper().getServiceUser()
                 + "/workflows/feed/" + Util.readDatasetName(feed);
-        final FileSystem fs = cluster1.getProcessHelper().getHadoopFS();
         //make sure feed bundle is not there
-        Assert.assertFalse(fs.isDirectory(new Path(directory)),
+        Assert.assertFalse(cluster1FS.isDirectory(new Path(directory)),
                 "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
     }
 
@@ -516,9 +515,7 @@ public class RetentionTest extends BaseTestClass {
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
-        for (Location location : feedObject
-                .getLocations()
-                .getLocation()) {
+        for (Location location : feedObject.getLocations().getLocation()) {
             if (location.getType().equals(LocationType.DATA)) {
                 locationType = location.getPath();
             }
