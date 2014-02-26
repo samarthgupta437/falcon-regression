@@ -464,13 +464,20 @@ public class RetentionTest extends BaseTestClass {
     throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
         BundleJob bundleJob = cluster1OC.getBundleJobInfo(bundleID);
+        for(int i=0; i < 60 && bundleJob.getCoordinators().isEmpty(); ++i) {
+            Thread.sleep(2000);
+        }
+        Assert.assertFalse(bundleJob.getCoordinators().isEmpty(),
+                "Coordinator job should have got created by now.");
         CoordinatorJob jobInfo =
                 cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
-        while (jobInfo.getActions().isEmpty()) {
-            //keep dancing
-            jobInfo = cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        for(int i=0; i < 120 && jobInfo.getActions().isEmpty(); ++i) {
+            Thread.sleep(2000);
         }
+        Assert.assertFalse(jobInfo.getActions().isEmpty(),
+                "Coordinator actions should have got created by now.");
+        jobInfo = cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
         logger.info("got coordinator jobInfo array of length:" + jobInfo.getActions());
         for (CoordinatorAction action : jobInfo.getActions()) {
