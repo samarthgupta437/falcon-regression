@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
@@ -87,7 +88,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster3, new Path(location), fileName);
     }
 
-    @BeforeClass(alwaysRun = true)
+//    @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         System.out.println("creating test data");
@@ -181,6 +182,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         // replication takes
         // place normally
         //partition is left blank
+
+      /*String feed = bundle1.getDataSets().get(0);
+      FeedMerlin f = new FeedMerlin(feed);
+      f.getName();*/
 
       Bundle.submitCluster(bundle1, bundle2, bundle3);
 

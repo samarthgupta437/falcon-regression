@@ -21,6 +21,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -132,9 +133,6 @@ public class InstanceSummaryTest extends BaseTestClass {
         "?start=" + InstanceUtil.addMinsToTime(startTime,
           -100) + "&end=" + InstanceUtil.addMinsToTime(endTime, 100));
 
-
-    InstanceUtil.validateSuccess(r, processBundle, ProcessInstancesResult.WorkflowStatus
-      .KILLED);
   }
 
   @Test(enabled = true, timeOut = 1200000 )

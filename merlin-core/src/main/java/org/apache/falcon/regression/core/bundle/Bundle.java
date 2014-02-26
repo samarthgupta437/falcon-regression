@@ -72,6 +72,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -1395,7 +1396,7 @@ public class Bundle {
         return InstanceUtil.processToString(p);
     }
 
-  public void setProcessProperty(String property, String value) throws JAXBException {
+  public void setProcessProperty(String property, String value) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
        ProcessMerlin process = new ProcessMerlin(this.getProcessData());
        process.setProperty(property, value);
