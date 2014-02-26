@@ -42,18 +42,10 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ELExp_FutureAndLatest extends BaseTestClass {
 
-    ColoHelper cluster;
-    FileSystem clusterFS;
-    OozieClient clusterOC;
-    private Bundle bundle;
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
+    OozieClient clusterOC = serverOC.get(0);
     private String prefix;
-
-    public ELExp_FutureAndLatest(){
-        super();
-        cluster = servers.get(0);
-        clusterFS = serverFS.get(0);
-        clusterOC = serverOC.get(0);
-    }
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -92,36 +84,31 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
-        bundle.setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setInputFeedPeriodicity(5, TimeUnit.minutes);
-        bundle.setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
         String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
         String processEnd = InstanceUtil.getTimeWrtSystemTime(8);
         Util.print("processStart: " + processStart + " processEnd: " + processEnd);
-        bundle.setProcessValidity(processStart, processEnd);
-        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
-    }
-
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        bundles[0].setProcessValidity(processStart, processEnd);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
     }
 
     @Test(groups = {"singleCluster"})
     public void latestTest() throws Exception {
-        bundle.setDatasetInstances("latest(-3)", "latest(0)");
-        bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
+        bundles[0].setDatasetInstances("latest(-3)", "latest(0)");
+        bundles[0].submitAndScheduleBundle(prism);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
     @Test(groups = {"singleCluster"})
     public void futureTest() throws Exception {
-        bundle.setDatasetInstances("future(0,10)", "future(3,10)");
-        bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
+        bundles[0].setDatasetInstances("future(0,10)", "future(3,10)");
+        bundles[0].submitAndScheduleBundle(prism);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
