@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUn
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -179,7 +180,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()), null);
-        InstanceUtil.validateSuccessWithStatusCode(r, 2);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
 
@@ -218,7 +219,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         ProcessInstancesResult r =
                 prism.getProcessHelper()
                         .getProcessInstanceSuspend("invalidName", "?start=2010-01-02T01:20Z");
-        if ((r.getStatusCode() != 777))
+        if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND))
             Assert.assertTrue(false);
     }
 
