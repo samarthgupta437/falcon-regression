@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -70,7 +71,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +80,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class InstanceUtil {
-
 
     static OozieClient oozieClient = null;
 
@@ -144,11 +143,11 @@ public class InstanceUtil {
         logger.info("The web service response is: " + string_response.toString() + "\n");
         ProcessInstancesResult r = new ProcessInstancesResult();
         if (jsonString.contains("(PROCESS) not found")) {
-            r.setStatusCode(777);
+            r.setStatusCode(ResponseKeys.PROCESS_NOT_FOUND);
             return r;
         } else if (jsonString.contains("Parameter start is empty") ||
                 jsonString.contains("Unparseable date:")) {
-            r.setStatusCode(2);
+            r.setStatusCode(ResponseKeys.UNPARSEABLE_DATE);
             return r;
         } else if (response.getStatusLine().getStatusCode() == 400 &&
                 jsonString.contains("(FEED) not found")) {

@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUn
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -175,7 +176,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
             b.submitAndScheduleBundle(prism);
             ProcessInstancesResult r = prism.getProcessHelper()
                     .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()), "");
-            InstanceUtil.validateSuccessWithStatusCode(r, 2);
+            InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
         } catch (Exception e) {
             if (!e.getMessage().contains("Expected BEGIN_OBJECT but was STRING at line 1 column"))
                 Assert.assertTrue(false);
@@ -220,7 +221,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
-        if ((r.getStatusCode() != 777))
+        if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND))
             Assert.assertTrue(false);
     }
 
@@ -309,7 +310,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         b.submitAndScheduleBundle(prism);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceStatus("invalidProcess", "?start=2010-01-01T01:00Z");
-        if (!(r.getStatusCode() == 777))
+        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
             Assert.assertTrue(false);
     }
 
@@ -344,7 +345,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         b.submitAndScheduleBundle(prism);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()), null);
-        InstanceUtil.validateSuccessWithStatusCode(r, 2);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
     @Test(groups = {"singleCluster"})
