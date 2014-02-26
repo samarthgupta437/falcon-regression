@@ -32,7 +32,6 @@ import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -42,80 +41,59 @@ import java.lang.reflect.Method;
 /**
  * Feed instance status tests.
  */
+@Test(groups = {"distributed", "embedded"} )
 public class FeedInstanceStatusTest extends BaseTestClass {
 
     private String baseTestDir = baseHDFSDir + "/FeedInstanceStatusTest";
     private String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
-    private Bundle b1 = new Bundle();
-    private Bundle b2 = new Bundle();
-    private Bundle b3 = new Bundle();
 
-    ColoHelper cluster1;
-    ColoHelper cluster2;
-    ColoHelper cluster3;
-    FileSystem cluster2FS;
-    FileSystem cluster3FS;
-
-    public FeedInstanceStatusTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster2 = servers.get(1);
-        cluster3 = servers.get(2);
-        cluster2FS = serverFS.get(1);
-        cluster3FS = serverFS.get(2);
-    }
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
+    ColoHelper cluster3 = servers.get(2);
+    FileSystem cluster2FS = serverFS.get(1);
+    FileSystem cluster3FS = serverFS.get(2);
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        Util.restartService(cluster1.getClusterHelper());
-        Util.restartService(cluster2.getClusterHelper());
-
-        b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        b3 = (Bundle) Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
-        b1 = new Bundle(b1, cluster1.getEnvFileName(), cluster1.getPrefix());
-        b2 = new Bundle(b2, cluster2.getEnvFileName(), cluster2.getPrefix());
-        b3 = new Bundle(b3, cluster3.getEnvFileName(), cluster3.getPrefix());
-    }
-
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
-        b1.deleteBundle(prism);
-        b2.deleteBundle(prism);
-        b3.deleteBundle(prism);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0].generateUniqueBundle();
+        bundles[1] = Util.readELBundles()[0][0];
+        bundles[1].generateUniqueBundle();
+        bundles[2] = Util.readELBundles()[0][0];
+        bundles[2].generateUniqueBundle();
+        bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[2] = new Bundle(bundles[2], cluster3.getEnvFileName(), cluster3.getPrefix());
     }
 
     @Test(groups = {"multiCluster"})
     public void feedInstanceStatus_running() throws Exception {
-        b1.setInputFeedDataPath(feedInputPath);
+        bundles[0].setInputFeedDataPath(feedInputPath);
 
-        b1.setCLusterColo("ua1");
-        Util.print("cluster b1: " + b1.getClusters().get(0));
+        bundles[0].setCLusterColo("ua1");
+        Util.print("cluster bundle1: " + bundles[0].getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper()
-                .submitEntity(URLS.SUBMIT_URL, b1.getClusters().get(0));
+                .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
 
-        b2.setCLusterColo("ua2");
-        Util.print("cluster b2: " + b2.getClusters().get(0));
+        bundles[1].setCLusterColo("ua2");
+        Util.print("cluster bundle2: " + bundles[1].getClusters().get(0));
         r = prism.getClusterHelper()
-                .submitEntity(URLS.SUBMIT_URL, b2.getClusters().get(0));
+                .submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
 
-        b3.setCLusterColo("ua3");
-        Util.print("cluster b3: " + b3.getClusters().get(0));
+        bundles[2].setCLusterColo("ua3");
+        Util.print("cluster bundle3: " + bundles[2].getClusters().get(0));
         r = prism.getClusterHelper()
-                .submitEntity(URLS.SUBMIT_URL, b3.getClusters().get(0));
+                .submitEntity(URLS.SUBMIT_URL, bundles[2].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
 
-        String feed = b1.getDataSets().get(0);
+        String feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
@@ -126,18 +104,18 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
                 InstanceUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE,
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                 "US/${cluster.colo}", null);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
                         InstanceUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET, null, null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null, null);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
                         InstanceUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(b3.getClusters().get(0)), ClusterType.SOURCE,
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}", null);
 
 
@@ -190,13 +168,13 @@ public class FeedInstanceStatusTest extends BaseTestClass {
 
 
         String postFix = "/US/ua2";
-        String prefix = b1.getFeedDataPathPrefix();
+        String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 80, 1, prefix, postFix);
 
 
         postFix = "/UK/ua3";
-        prefix = b1.getFeedDataPathPrefix();
+        prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 80, 1, prefix, postFix);
 
