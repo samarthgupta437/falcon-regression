@@ -18,25 +18,34 @@
 
 package org.apache.falcon.regression.Entities;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Location;
 import org.apache.falcon.regression.core.generated.cluster.Locations;
+import org.apache.falcon.regression.core.generated.process.*;
 import org.apache.falcon.regression.core.supportClasses.ClusterLocationTypes;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 
 import javax.xml.bind.JAXBException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 public class ClusterMerlin extends org.apache.falcon.regression.core.generated
   .cluster.Cluster {
 
-  public Cluster element;
+  private Cluster element;
 
-  public ClusterMerlin(String clusterData) throws JAXBException {
+  public ClusterMerlin(String clusterData) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     element = InstanceUtil.getClusterElement(clusterData);
+    Field[] fields = Cluster.class.getDeclaredFields();
+    for (Field fld : fields) {
+      PropertyUtils.setProperty(this, fld.getName(),
+        PropertyUtils.getProperty(element, fld.getName()));
+    }
   }
 
   public String getLocation(ClusterLocationTypes locationType) {
-    for(Location l : element.getLocations().getLocation()) {
+    for(Location l : getLocations().getLocation()) {
        if (locationType.getValue().equals(l.getName()))
           return l.getPath();
     }

@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.Entities;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
@@ -25,30 +26,37 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 
 import javax.xml.bind.JAXBException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 public class ProcessMerlin extends org.apache.falcon.regression.core.generated
   .process.Process {
 
-  public Process element;
+  private Process element;
 
-  public ProcessMerlin(String processData) throws JAXBException {
+  public ProcessMerlin(String processData) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     element = InstanceUtil.getProcessElement(processData);
+    Field[] fields = Process.class.getDeclaredFields();
+    for (Field fld : fields) {
+        PropertyUtils.setProperty(this, fld.getName(),
+        PropertyUtils.getProperty(element, fld.getName()));
+    }
   }
 
-  public void setProperty(String name, String value) {
+  public final void setProperty(String name, String value) {
     Property p = new Property();
     p.setName(name);
     p.setValue(value);
 
-    if (null == element.getProperties() || null == element.getProperties()
-      .getProperty() || element.getProperties().getProperty().size()
+    if (null == getProperties() || null == getProperties()
+      .getProperty() || getProperties().getProperty().size()
       <= 0) {
       Properties props = new Properties();
       props.addProperty(p);
-      element.setProperties(props);
+      setProperties(props);
       return;
     } else {
-      element.getProperties().getProperty().add(p);
+      getProperties().getProperty().add(p);
     }
   }
 
@@ -56,7 +64,7 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
   public String toString() {
 
     try {
-      return InstanceUtil.processToString(element);
+      return InstanceUtil.processToString(this);
     } catch (JAXBException e) {
       e.printStackTrace();
     }

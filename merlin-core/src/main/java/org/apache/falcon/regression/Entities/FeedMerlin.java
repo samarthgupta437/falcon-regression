@@ -18,29 +18,41 @@
 
 package org.apache.falcon.regression.Entities;
 
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.generated.feed.Cluster;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 
 import javax.xml.bind.JAXBException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 public class FeedMerlin extends org.apache.falcon.regression.core.generated
   .feed.Feed {
-  Feed element;
+  private Feed element;
 
-  public FeedMerlin(String entity) throws JAXBException {
+  public FeedMerlin(String entity) throws JAXBException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     element = InstanceUtil.getFeedElement(entity);
+
+    Field[] fields = Feed.class.getDeclaredFields();
+    for (Field fld : fields) {
+      System.out.println("current field: "+fld.getName());
+      if("acl".equals(fld.getName()))
+        continue;
+      PropertyUtils.setProperty(this, fld.getName(),
+        PropertyUtils.getProperty(element, fld.getName()));
+    }
   }
 
-  /*
+    /*
     all Merlin specific operations
      */
-  public String getTargetCluster(){
+  public String getTargetCluster() {
 
-    for(Cluster c : getClusters().getCluster()){
-       if(c.getType().equals(ClusterType.TARGET))
-         return c.getName();
+    for (Cluster c : getClusters().getCluster()) {
+      if (c.getType().equals(ClusterType.TARGET))
+        return c.getName();
     }
 
     return "";
