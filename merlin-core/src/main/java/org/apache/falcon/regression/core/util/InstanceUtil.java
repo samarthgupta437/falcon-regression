@@ -38,7 +38,6 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -611,69 +610,19 @@ public class InstanceUtil {
         final FileSystem fs = FileSystem.get(conf);
         //System.out.println("fs uri: "+fs.getUri());
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-
         File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
         //System.out.println("files: "+files);
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
                 // System.out.println("inside if block");
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-
-                    public Boolean run() throws IOException {
-
-                        Util.print("putDataInFolder: " + remoteLocation);
-                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                new Path(remoteLocation));
-                        return true;
-
-                    }
-                });
-            }
+                Util.print("putDataInFolder: " + remoteLocation);
+                fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
+                        new Path(remoteLocation));
+             }
         }
 
     }
-
-    @Deprecated
-    public static void putDataInFolder(ColoHelper colo, final String remoteLocation, String type) throws IOException, InterruptedException {
-
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name",
-                "hdfs://" + Util.readPropertiesFile(colo.getEnvFileName(), "hadoop_url"));
-        File[] files;
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-        if ("late".equals(type))
-            files = new File("src/test/resources/lateData").listFiles();
-        else
-            files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
-
-        assert files != null;
-        for (final File file : files) {
-            if (!file.isDirectory()) {
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-                    public Boolean run() throws IOException {
-                        Util.print("putDataInFolder: " + remoteLocation);
-                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                new Path(remoteLocation));
-                        return true;
-
-                    }
-                });
-            }
-        }
-
-    }
-
 
     public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type) throws IOException {
         String inputPath = "src/test/resources/OozieExampleInputData/normalInput";
@@ -730,20 +679,9 @@ public class InstanceUtil {
 
         final FileSystem fs = FileSystem.get(conf);
 
-
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("rishu");
-
         for (final String folder : folderList) {
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws IOException {
-                    return fs.mkdirs(new Path(folder));
-
-                }
-            });
+            fs.mkdirs(new Path(folder));
         }
-
         logger.info("created folders.....");
 
     }
@@ -753,26 +691,14 @@ public class InstanceUtil {
                                         final String... fileName) throws IOException, InterruptedException {
         final FileSystem fs = colo.getClusterHelper().getHadoopFS();
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("rishu");
-
-
         for (final String folder : folderList) {
-
-            user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                @Override
-                public Boolean run() throws IOException {
-                    for (String aFileName : fileName) {
-                        logger.info("copying  " + aFileName + " to " + folder);
-                        if (aFileName.equals("_SUCCESS"))
-                            fs.mkdirs(new Path(folder + "/_SUCCESS"));
-                        else
-                            fs.copyFromLocalFile(new Path(aFileName), new Path(folder));
-                    }
-                    return true;
-
-                }
-            });
+            for (String aFileName : fileName) {
+                logger.info("copying  " + aFileName + " to " + folder);
+                if (aFileName.equals("_SUCCESS"))
+                    fs.mkdirs(new Path(folder + "/_SUCCESS"));
+                else
+                    fs.copyFromLocalFile(new Path(aFileName), new Path(folder));
+            }
         }
     }
 
@@ -983,8 +909,6 @@ public class InstanceUtil {
 
         final FileSystem fs = FileSystem.get(FileSystem.getDefaultUri(conf), conf, "hdfs");
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
         if (!fs.exists(new Path(remoteLocation)))
             fs.mkdirs(new Path(remoteLocation));
 
@@ -992,20 +916,8 @@ public class InstanceUtil {
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-                    public Boolean run() throws IOException {
-                        //Util.print("file.getAbsolutePath(): "+file.getAbsolutePath());
-                        //Util.print("remoteLocation: "+remoteLocation);
-
-
-                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                new Path(remoteLocation));
-                        return true;
-
-                    }
-                });
+                fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
+                        new Path(remoteLocation));
             }
         }
 
@@ -1154,9 +1066,6 @@ public class InstanceUtil {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        UserGroupInformation user = UserGroupInformation.createRemoteUser("hdfs");
-
-
         File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
         if (lateDataFolderNumber == 2) {
             files = new File("src/test/resources/OozieExampleInputData/2ndLateData").listFiles();
@@ -1165,17 +1074,8 @@ public class InstanceUtil {
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
-                user.doAs(new PrivilegedExceptionAction<Boolean>() {
-
-                    @Override
-                    public Boolean run() throws IOException {
-                        //	Util.print("putDataInFolder: "+remoteLocation);
-                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                new Path(remoteLocation));
-                        return true;
-
-                    }
-                });
+                fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
+                        new Path(remoteLocation));
             }
         }
     }

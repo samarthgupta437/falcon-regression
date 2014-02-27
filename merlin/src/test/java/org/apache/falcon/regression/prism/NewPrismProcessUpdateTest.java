@@ -1640,7 +1640,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         b.setInputFeedDataPath(inputFeedPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(prism, 60, 1, prefix);
+        Util.lateDataReplenish(prism, 60, 1, prefix, null);
         final String START_TIME = InstanceUtil.getTimeWrtSystemTime(-2);
         String endTime = InstanceUtil.getTimeWrtSystemTime(6);
         b.setProcessPeriodicity(1, TimeUnit.minutes);
