@@ -26,6 +26,7 @@ import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -193,7 +194,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     String url = this.hostname + processRuningInstance.getValue() + "/feed/" + name + allColo;
 
-    return InstanceUtil.sendRequestProcessInstance(url);
+    return (ProcessInstancesResult)InstanceUtil.sendRequestProcessInstance
+      (url);
   }
 
   @Override
@@ -204,7 +206,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
       this.hostname + Util.URLS.INSTANCE_STATUS.getValue() + "/" + "feed/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil
+      .createAndsendRequestProcessInstance(url, params,        allColo);
   }
 
 
@@ -215,7 +218,9 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
       this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue() + "/" + "feed/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil
+      .createAndsendRequestProcessInstance(url, params,
+        allColo);
 
 
   }
@@ -230,25 +235,28 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     String url =
       this.hostname + Util.URLS.INSTANCE_RESUME.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params,
+      allColo);
 
   }
 
   @Override
-  public ProcessInstancesResult getInstanceSummary(String entityName,
+  public InstancesSummaryResult getInstanceSummary(String entityName,
                                                     String params) throws IOException, URISyntaxException {
     String url =
       this.hostname + Util.URLS.INSTANCE_SUMMARY.getValue() + "/" + "feed/" +
         entityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return ((InstancesSummaryResult)InstanceUtil
+      .createAndsendRequestProcessInstance(url, params,
+      allColo));
   }
 
   public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
     String url =
       this.hostname + Util.URLS.INSTANCE_KILL.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
   }
 
@@ -256,7 +264,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     String url =
       this.hostname + Util.URLS.INSTANCE_RERUN.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
   }
 

@@ -24,6 +24,7 @@ package org.apache.falcon.regression.core.interfaces;
 
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -326,5 +327,6 @@ public abstract class IEntityManagerHelper {
         return colo;
     }
 
-  public abstract ProcessInstancesResult getInstanceSummary(String readEntityName, String string) throws IOException, URISyntaxException;
+  public abstract InstancesSummaryResult getInstanceSummary(String readEntityName,
+                                       String string) throws IOException, URISyntaxException;
 }

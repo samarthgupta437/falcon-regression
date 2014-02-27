@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.hadoop.conf.Configuration;
@@ -92,7 +93,7 @@ public class InstanceUtil {
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
-    public static ProcessInstancesResult sendRequestProcessInstance(String
+    public static APIResult sendRequestProcessInstance(String
                                                                             url) throws IOException, URISyntaxException {
         HttpRequestBase request;
         if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
@@ -107,7 +108,7 @@ public class InstanceUtil {
         return hitUrl(url, request);
     }
 
-    public static ProcessInstancesResult sendRequestProcessInstance(String
+    public static APIResult sendRequestProcessInstance(String
                                                                             url,
                                                                     String user
     ) throws IOException, URISyntaxException {
@@ -125,7 +126,8 @@ public class InstanceUtil {
         return hitUrl(url, request);
     }
 
-    public static ProcessInstancesResult hitUrl(String url, HttpRequestBase request) throws URISyntaxException, IOException {
+    public static APIResult hitUrl(String url, HttpRequestBase request) throws
+      URISyntaxException, IOException {
         logger.info("hitting the url: " + url);
 
         request.setURI(new URI(url));
@@ -144,7 +146,7 @@ public class InstanceUtil {
         logger.info(
                 "The web service response status is " + response.getStatusLine().getStatusCode());
         logger.info("The web service response is: " + string_response.toString() + "\n");
-        ProcessInstancesResult r = new ProcessInstancesResult();
+        APIResult r = new ProcessInstancesResult();
         if (jsonString.contains("(PROCESS) not found")) {
             r.setStatusCode(777);
             return r;
@@ -168,13 +170,16 @@ public class InstanceUtil {
             r.setStatusCode(400);
             return r;
         }
+      if(url.contains("/summary/"))
+        r = new GsonBuilder().create()
+          .fromJson(jsonString, InstancesSummaryResult.class);
+      else
         r = new GsonBuilder().setPrettyPrinting().create()
                 .fromJson(jsonString, ProcessInstancesResult.class);
 
         Util.print("r.getMessage(): " + r.getMessage());
         Util.print("r.getStatusCode(): " + r.getStatusCode());
         Util.print("r.getStatus() " + r.getStatus());
-        Util.print("r.getInstances()" + Arrays.toString(r.getInstances()));
         return r;
     }
 
@@ -456,7 +461,8 @@ public class InstanceUtil {
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        return fmt.print(jodaTime);
+        DateTimeZone tz = DateTimeZone.getDefault();
+        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(),false));
     }
 
     public static String addMinsToTime(String time, int minutes) throws ParseException {
@@ -1005,7 +1011,7 @@ public class InstanceUtil {
 
     }
 
-    public static ProcessInstancesResult createAndsendRequestProcessInstance(
+    public static APIResult createAndsendRequestProcessInstance(
             String url, String params, String colo) throws IOException, URISyntaxException {
 
         if (params != null && !colo.equals("")) {

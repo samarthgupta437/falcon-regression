@@ -971,6 +971,7 @@ public class Util {
   public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                         int minuteSkip) {
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+    formatter.withZoneUTC();
     logger.info("generating data between " + formatter.print(startDate) + " and " +
       formatter.print(endDate));
 
