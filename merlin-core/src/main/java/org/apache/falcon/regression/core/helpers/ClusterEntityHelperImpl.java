@@ -26,6 +26,7 @@ import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
@@ -334,7 +335,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
   @Override
-  public ProcessInstancesResult getInstanceSummary(String readEntityName, String string) throws IOException, URISyntaxException {
+  public InstancesSummaryResult getInstanceSummary(String readEntityName, String string) throws
+    IOException, URISyntaxException {
     System.out.println("Not Valid for Cluster Entity");
     return null;
   }

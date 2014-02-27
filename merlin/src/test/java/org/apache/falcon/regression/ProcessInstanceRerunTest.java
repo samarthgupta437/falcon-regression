@@ -57,8 +57,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
     public ProcessInstanceRerunTest() throws IOException {
         super();
-        cluster = servers.get(1);
-        clusterFS = serverFS.get(1);
+        cluster = servers.get(0);
+        clusterFS = serverFS.get(0);
 
     }
 
@@ -71,7 +71,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
 
@@ -349,7 +349,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         Util.print("in @AfterClass");
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         b.setInputFeedDataPath(feedInputPath);

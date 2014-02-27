@@ -26,6 +26,7 @@ import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
@@ -231,7 +232,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     String url =
       this.hostname + URLS.INSTANCE_RUNNING.getValue() + "/" + "process/" + name + "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, null, allColo);
+    return (ProcessInstancesResult)InstanceUtil
+      .createAndsendRequestProcessInstance(url, null,
+        allColo);
   }
 
   @Override
@@ -242,7 +245,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
       this.hostname + URLS.INSTANCE_STATUS.getValue() + "/" + "process/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil
+      .createAndsendRequestProcessInstance(url, params,
+        allColo);
   }
 
 
@@ -272,7 +277,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
       this.hostname + URLS.INSTANCE_SUSPEND.getValue() + "/" + "process/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
 
   }
@@ -281,24 +286,24 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     String url =
       this.hostname + URLS.INSTANCE_RESUME.getValue() + "/" + "process/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
   }
 
   @Override
-  public ProcessInstancesResult getInstanceSummary(String entityName,
+  public InstancesSummaryResult getInstanceSummary(String entityName,
                                                     String params) throws IOException, URISyntaxException {
     String url =
       this.hostname + URLS.INSTANCE_SUMMARY.getValue() + "/" + "process/" +
         entityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (InstancesSummaryResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
   }
 
   public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
     String url =
       this.hostname + URLS.INSTANCE_KILL.getValue() + "/" + "process/" + EntityName + "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
   }
 
@@ -384,7 +389,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     String url =
       this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
   }
 
