@@ -222,7 +222,7 @@ public abstract class IEntityManagerHelper {
     throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse schedule(String url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse submitAndSchedule(String url, String data)
     throws IOException, URISyntaxException, AuthenticationException;
@@ -231,28 +231,28 @@ public abstract class IEntityManagerHelper {
     throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse delete(String url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse suspend(String url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse resume(String url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse resume(URLS url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse getStatus(String url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse getStatus(URLS url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse getEntityDefinition(String url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse getEntityDefinition(URLS url, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
 
     public abstract void validateResponse(String response, APIResult.Status expectedResponse,
@@ -260,23 +260,25 @@ public abstract class IEntityManagerHelper {
             ;
 
     public abstract ServiceResponse schedule(URLS scheduleUrl, String processData)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse delete(URLS deleteUrl, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse suspend(URLS suspendUrl, String data)
-    throws JAXBException, IOException, URISyntaxException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ProcessInstancesResult getRunningInstance(URLS processRuningInstance,
                                                               String name)
-    throws IOException, URISyntaxException;
+    throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract ProcessInstancesResult getProcessInstanceStatus(
-            String readEntityName, String params) throws IOException, URISyntaxException;
+            String readEntityName, String params)
+    throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract ProcessInstancesResult getProcessInstanceSuspend(
-            String readEntityName, String params) throws IOException, URISyntaxException;
+            String readEntityName, String params)
+    throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract String list() throws IOException, InterruptedException;
 
@@ -314,16 +316,16 @@ public abstract class IEntityManagerHelper {
 
     public abstract ProcessInstancesResult getProcessInstanceKill(String readEntityName,
                                                                   String string)
-    throws IOException, URISyntaxException;
+    throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract ProcessInstancesResult getProcessInstanceRerun(String readEntityName,
                                                                    String string)
-    throws IOException, URISyntaxException
+    throws IOException, URISyntaxException, AuthenticationException
             ;
 
     public abstract ProcessInstancesResult getProcessInstanceResume(String readEntityName,
                                                                     String string)
-    throws IOException, URISyntaxException
+    throws IOException, URISyntaxException, AuthenticationException
             ;
 
     public String getColo() {

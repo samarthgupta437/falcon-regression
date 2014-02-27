@@ -35,9 +35,11 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -90,46 +92,24 @@ public class InstanceUtil {
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
     public static ProcessInstancesResult sendRequestProcessInstance(String
-                                                                            url) throws IOException, URISyntaxException {
-        HttpRequestBase request;
-        if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Rerun")) {
-            request = new HttpPost();
-
-        } else
-            request = new HttpGet();
-        request.setHeader("Remote-User", System.getProperty("user.name"));
-        return hitUrl(url, request);
+                                                                            url)
+    throws IOException, URISyntaxException, AuthenticationException {
+        return hitUrl(url, Util.getMethodType(url));
     }
 
     public static ProcessInstancesResult sendRequestProcessInstance(String
                                                                             url,
                                                                     String user
-    ) throws IOException, URISyntaxException {
+    ) throws IOException, URISyntaxException, AuthenticationException {
 
-        HttpRequestBase request;
-        if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Rerun")) {
-            request = new HttpPost();
-
-        } else
-            request = new HttpGet();
-        request.setHeader("Remote-User", user);
-        return hitUrl(url, request);
+        return hitUrl(url, Util.getMethodType(url));
     }
 
-    public static ProcessInstancesResult hitUrl(String url, HttpRequestBase request) throws URISyntaxException, IOException {
-        logger.info("hitting the url: " + url);
-
-        request.setURI(new URI(url));
-        HttpClient client = new DefaultHttpClient();
-
-        HttpResponse response = client.execute(request);
-
+    public static ProcessInstancesResult hitUrl(String url,
+                                                String method) throws URISyntaxException,
+    IOException, AuthenticationException {
+        BaseRequest request = new BaseRequest(url, method);
+        HttpResponse response = request.run();
 
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
@@ -904,7 +884,8 @@ public class InstanceUtil {
     }
 
     public static ProcessInstancesResult createAndsendRequestProcessInstance(
-            String url, String params, String colo) throws IOException, URISyntaxException {
+            String url, String params, String colo)
+    throws IOException, URISyntaxException, AuthenticationException {
 
         if (params != null && !colo.equals("")) {
             url = url + params + "&" + colo.substring(1);
