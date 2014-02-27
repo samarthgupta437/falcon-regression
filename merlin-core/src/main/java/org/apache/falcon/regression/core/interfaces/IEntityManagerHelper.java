@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.AuthOozieClient;
 
 import javax.xml.bind.JAXBException;
@@ -214,16 +215,20 @@ public abstract class IEntityManagerHelper {
                 ".principal", "none");
     }
 
-    public abstract ServiceResponse submitEntity(String url, String data) throws IOException;
+    public abstract ServiceResponse submitEntity(String url, String data)
+    throws IOException, URISyntaxException, AuthenticationException;
 
-    public abstract ServiceResponse submitEntity(Util.URLS url, String data) throws IOException;
+    public abstract ServiceResponse submitEntity(Util.URLS url, String data)
+    throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse schedule(String url, String data)
     throws JAXBException, IOException, URISyntaxException;
 
-    public abstract ServiceResponse submitAndSchedule(String url, String data) throws IOException;
+    public abstract ServiceResponse submitAndSchedule(String url, String data)
+    throws IOException, URISyntaxException, AuthenticationException;
 
-    public abstract ServiceResponse submitAndSchedule(URLS url, String data) throws IOException;
+    public abstract ServiceResponse submitAndSchedule(URLS url, String data)
+    throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse delete(String url, String data)
     throws JAXBException, IOException, URISyntaxException;
@@ -283,17 +288,18 @@ public abstract class IEntityManagerHelper {
     public abstract List<String> getStoreInfo() throws IOException, JSchException;
 
     public abstract ServiceResponse update(String oldEntity, String newEntity)
-    throws JAXBException, IOException;
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public abstract ServiceResponse update(String oldEntity,
                                            String newEntity,
                                            String updateTime
-    ) throws IOException, JAXBException;
+    ) throws IOException, JAXBException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse updateRequestHelper(String oldEntity,
                                                String newEntity,
                                                String updateTime,
-                                               String updateUrl) throws JAXBException, IOException {
+                                               String updateUrl)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         String url = this.hostname + updateUrl + "/" +
                 Util.readEntityName(oldEntity);
 

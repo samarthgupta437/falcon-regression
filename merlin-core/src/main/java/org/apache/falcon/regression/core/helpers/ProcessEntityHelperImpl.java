@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.testng.Assert;
 import org.xml.sax.InputSource;
 
@@ -108,7 +109,8 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 //		return schedule(url.getValue(), data);
 //	}
 
-    public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
+    public ServiceResponse submitAndSchedule(String url, String data)
+    throws IOException, URISyntaxException, AuthenticationException {
 
         System.out.println("Submitting process: " + data);
         url += "/process";
@@ -122,7 +124,8 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 //		return response;
 //	}
 
-    public ServiceResponse submitEntity(String url, String data) throws IOException {
+    public ServiceResponse submitEntity(String url, String data)
+    throws IOException, URISyntaxException, AuthenticationException {
 
         //    	 if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
         //         {
@@ -571,13 +574,15 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }*/
 
   @Override
-  public ServiceResponse submitEntity(URLS url, String data) throws IOException {
+  public ServiceResponse submitEntity(URLS url, String data)
+  throws IOException, URISyntaxException, AuthenticationException {
 
     return submitEntity(this.hostname + url.getValue(), data);
   }
 
   @Override
-  public ServiceResponse submitAndSchedule(URLS url, String data) throws IOException {
+  public ServiceResponse submitAndSchedule(URLS url, String data)
+  throws IOException, URISyntaxException, AuthenticationException {
     return submitAndSchedule(this.hostname + url.getValue(), data);
   }
 
@@ -626,7 +631,8 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity) throws IOException, JAXBException {
+  public ServiceResponse update(String oldEntity, String newEntity)
+  throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 
     String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" +
       Util.readEntityName(oldEntity);
@@ -634,7 +640,8 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity, String updateTime) throws IOException, JAXBException {
+  public ServiceResponse update(String oldEntity, String newEntity, String updateTime)
+  throws IOException, JAXBException, URISyntaxException, AuthenticationException {
     return updateRequestHelper(oldEntity, newEntity,
        updateTime,URLS.PROCESS_UPDATE.getValue());
   }

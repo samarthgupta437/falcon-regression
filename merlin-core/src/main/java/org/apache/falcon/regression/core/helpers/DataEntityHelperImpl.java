@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.testng.Assert;
 import org.xml.sax.InputSource;
 
@@ -95,18 +96,21 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     return Util.sendRequest(url);
   }
 
-  public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
+  public ServiceResponse submitAndSchedule(String url, String data)
+  throws IOException, URISyntaxException, AuthenticationException {
     //throw new UnsupportedOperationException("Not supported yet.");
     System.out.println("Submitting feed: "+data);
     return Util.sendRequest(url + "/feed" + colo, data);
   }
 
-  public ServiceResponse submitAndSchedule(Util.URLS url, String data) throws IOException {
+  public ServiceResponse submitAndSchedule(Util.URLS url, String data)
+  throws IOException, URISyntaxException, AuthenticationException {
     //throw new UnsupportedOperationException("Not supported yet.");
     return submitAndSchedule(this.hostname + url.getValue(), data);
   }
 
-  public ServiceResponse submitEntity(String url, String data) throws IOException {
+  public ServiceResponse submitEntity(String url, String data)
+  throws IOException, URISyntaxException, AuthenticationException {
 
     System.out.println("Submitting feed: "+data);
     url += "/feed" + colo;
@@ -154,7 +158,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse submitEntity(Util.URLS url, String data) throws IOException {
+  public ServiceResponse submitEntity(Util.URLS url, String data)
+  throws IOException, URISyntaxException, AuthenticationException {
     return submitEntity(this.hostname + url.getValue(), data);
   }
 
@@ -364,7 +369,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity) throws JAXBException, IOException {
+  public ServiceResponse update(String oldEntity, String newEntity)
+  throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(oldEntity);
@@ -372,12 +378,14 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity, String updateTime) throws IOException, JAXBException {
+  public ServiceResponse update(String oldEntity, String newEntity, String updateTime)
+  throws IOException, JAXBException, URISyntaxException, AuthenticationException {
     return updateRequestHelper(oldEntity,  newEntity,  updateTime,
       Util.URLS.FEED_UPDATE.getValue()) ;
   }
 
-  public ServiceResponse update(String newEntity) throws JAXBException, IOException {
+  public ServiceResponse update(String newEntity)
+  throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(newEntity);
