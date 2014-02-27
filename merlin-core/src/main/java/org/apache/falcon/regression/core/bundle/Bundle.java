@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.bundle;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
@@ -1002,7 +1003,9 @@ public class Bundle {
         }
     }
 
-    public void addClusterToBundle(String clusterData, ClusterType type) throws JAXBException {
+    public void addClusterToBundle(String clusterData, ClusterType type,
+                                   String startTime, String endTime
+                                   ) throws JAXBException, ParseException {
 
         clusterData = setNewClusterName(clusterData);
 
@@ -1023,12 +1026,17 @@ public class Bundle {
 
         }
 
-
         //now to add cluster to process
         Process processObject = Util.getProcessObject(processData);
         Cluster cluster = new Cluster();
         cluster.setName(Util.getClusterObject(clusterData).getName());
-        cluster.setValidity(processObject.getClusters().getCluster().get(0).getValidity());
+        org.apache.falcon.regression.core.generated.process.Validity v =
+        processObject.getClusters().getCluster().get(0).getValidity();
+        if(StringUtils.isNotEmpty(startTime))
+          v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
+        if(StringUtils.isNotEmpty(endTime))
+          v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+        cluster.setValidity(v);
         processObject.getClusters().getCluster().add(cluster);
         this.processData = processHelper.toString(processObject);
 
