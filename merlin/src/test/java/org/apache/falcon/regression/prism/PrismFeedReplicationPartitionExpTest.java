@@ -182,11 +182,6 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         // replication takes
         // place normally
         //partition is left blank
-
-      /*String feed = bundle1.getDataSets().get(0);
-      FeedMerlin f = new FeedMerlin(feed);
-      f.getName();*/
-
       Bundle.submitCluster(bundle1, bundle2, bundle3);
 
       String startTimeUA1 = "2012-10-01T12:05Z";
