@@ -50,17 +50,17 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         super(envFileName, prefix);
     }
 
-    public ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse delete(String url, String data)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         url += "/cluster/" + Util.readClusterName(data) + colo;
-        return Util.sendRequest(url);
+        return Util.sendRequest(url, "delete");
     }
 
-    public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException,
+    IOException, URISyntaxException, AuthenticationException {
         url += "/cluster/" + Util.readClusterName(data);
-
-        return Util.sendRequest(url);
-
+        return Util.sendRequest(url, "get");
     }
 
     public ServiceResponse getStatus(String url, String data)  {
@@ -131,7 +131,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse delete(Util.URLS deleteUrl, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse delete(Util.URLS deleteUrl, String data)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         // TODO Auto-generated method stub
         return delete(this.hostname + deleteUrl.getValue(), data);
     }
@@ -281,7 +282,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse getEntityDefinition(Util.URLS url, String data)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(this.hostname + url.getValue(), data);
     }
 

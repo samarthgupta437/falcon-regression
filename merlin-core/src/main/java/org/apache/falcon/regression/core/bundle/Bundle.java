@@ -1125,7 +1125,8 @@ public class Bundle {
 
     }
 
-    public static void deleteCluster(Bundle... bundles) throws JAXBException, IOException, URISyntaxException {
+    public static void deleteCluster(Bundle... bundles)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
         for (Bundle bundle : bundles) {
             Util.print("cluster b1: " + bundle.getClusters().get(0));

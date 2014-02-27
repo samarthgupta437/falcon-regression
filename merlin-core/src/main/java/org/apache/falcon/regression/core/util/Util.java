@@ -84,7 +84,7 @@ public class Util {
 
     static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
 
-    public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
+    /*public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
         HttpClient client = new DefaultHttpClient();
         HttpRequestBase request;
         if ((Thread.currentThread().getStackTrace()[2].getMethodName().contains("delete"))) {
@@ -123,12 +123,26 @@ public class Util {
         System.out.println("The web service response is: " + string_response.toString() + "\n");
         return new ServiceResponse(string_response.toString(),
                 response.getStatusLine().getStatusCode());
-    }
+    }*/
 
     public static ServiceResponse sendPostRequest(String url, String data)
     throws IOException, URISyntaxException, AuthenticationException {
+        return sendRequest(url, "post", data);
+    }
 
-        BaseRequest request = new BaseRequest(url, "post", null, data);
+    public static ServiceResponse sendRequest(String url, String method) throws IOException, URISyntaxException, AuthenticationException{
+        return sendRequest(url, method, null, null);
+    }
+
+    public static ServiceResponse sendRequest(String url, String method,
+                                              String data) throws IOException, URISyntaxException,
+    AuthenticationException{
+        return sendRequest(url, method, null, data);
+    }
+
+    public static ServiceResponse sendRequest(String url, String method, String data,
+                                              String user) throws IOException, URISyntaxException, AuthenticationException{
+        BaseRequest request = new BaseRequest(url, method, user, data);
         request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
         HttpResponse response = request.run();
         return new ServiceResponse(response);
@@ -1201,9 +1215,10 @@ public class Util {
         int statusCode = 0;
         for (int tries = 20; tries > 0; tries--) {
             try {
-                statusCode = Util.sendRequest(helper.getHostname()).getCode();
+                statusCode = Util.sendRequest(helper.getHostname(), "get").getCode();
             } catch (IOException e) {
             } catch (URISyntaxException e) {
+            } catch (AuthenticationException e) {
             }
             if (statusCode == 200) return;
             try {
@@ -1726,5 +1741,32 @@ public class Util {
             System.out.println(Arrays.toString(e.getStackTrace()));
         }
         return null;
+    }
+
+    public static String getMethodType(String url) {
+        List<String> postList = new ArrayList<String>();
+        postList.add("/entities/validate");
+        postList.add("/entities/submit");
+        postList.add("/entities/submitAndSchedule");
+        postList.add("/entities/suspend");
+        postList.add("/entities/resume");
+        postList.add("/instance/kill");
+        postList.add("/instance/suspend");
+        postList.add("/instance/resume");
+        postList.add("/instance/rerun");
+        for (String item : postList) {
+            if (url.toLowerCase().contains(item)) {
+                return "post";
+            }
+        }
+        List<String> deleteList = new ArrayList<String>();
+        deleteList.add("/entities/delete");
+        for (String item : deleteList) {
+            if (url.toLowerCase().contains(item)) {
+                return "delete";
+            }
+        }
+
+        return "get";
     }
 }
