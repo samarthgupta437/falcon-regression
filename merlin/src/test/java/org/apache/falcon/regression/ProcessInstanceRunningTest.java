@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUn
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -159,7 +160,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         ProcessInstancesResult r =
                 prism.getProcessHelper()
                         .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
-        if (!(r.getStatusCode() == 777))
+        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
             AssertJUnit.assertTrue(false);
     }
 
@@ -172,7 +173,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
                         Util.readEntityName(b.getProcessData()));
-        if (!(r.getStatusCode() == 777))
+        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
             AssertJUnit.assertTrue(false);
     }
 

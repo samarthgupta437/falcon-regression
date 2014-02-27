@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.generated.process.Property;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -213,7 +214,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundle.getProcessData()));
-        AssertJUnit.assertTrue(r.getStatusCode() == 777);
+        AssertJUnit.assertTrue(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND);
     }
 
     @Test(groups = {"singleCluster"})
