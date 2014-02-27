@@ -189,9 +189,12 @@ public class NewRetryTest extends BaseTestClass {
             String status = Util.getBundleStatus(cluster, bundleId);
 
             boolean validation = false;
-            int attempt = 0;
-            while (!validation && attempt++ < 100) {
-                validation = validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 1);
+            for (int attempt = 0; attempt < 60; ++attempt) {
+                validation =
+                        validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 1);
+                if (validation)
+                    break;
+                Thread.sleep(10000);
             }
             Assert.assertTrue(validation, "Failure Retry validation failed");
 
