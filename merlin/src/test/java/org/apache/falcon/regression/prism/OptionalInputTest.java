@@ -49,9 +49,9 @@ public class OptionalInputTest extends BaseTestClass {
 
     public OptionalInputTest() throws IOException {
         super();
-        cluster = servers.get(1);
-        oozieClient = serverOC.get(1);
-        clusterFS = serverFS.get(1);
+        cluster = servers.get(0);
+        oozieClient = serverOC.get(0);
+        clusterFS = serverFS.get(0);
     }
 
     @BeforeClass
