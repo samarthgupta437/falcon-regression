@@ -52,10 +52,11 @@ public class RequestUtil {
                     wwwAuthHeaders[0].getValue().trim().startsWith(NEGOTIATE)) {
                 token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
                         uri.getHost(), uri.getPort(), true);
+
+                request.removeHeaders(COOKIE);
+                request.addHeader(COOKIE, AUTH_COOKIE_EQ + token);
+                response = client.execute(request);
             }
-            request.removeHeaders(COOKIE);
-            request.addHeader(COOKIE, AUTH_COOKIE_EQ + token);
-            response = client.execute(request);
         }
         return response;
     }
