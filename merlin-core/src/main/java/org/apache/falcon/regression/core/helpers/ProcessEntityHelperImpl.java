@@ -108,10 +108,11 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 //		return schedule(url.getValue(), data);
 //	}
 
-  public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
+    public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
 
-    url += "/process";
-    return Util.sendRequest(url, data);
+        System.out.println("Submitting process: " + data);
+        url += "/process";
+        return Util.sendRequest(url, data);
 
   }
 
@@ -121,19 +122,20 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 //		return response;
 //	}
 
-  public ServiceResponse submitEntity(String url, String data) throws IOException {
+    public ServiceResponse submitEntity(String url, String data) throws IOException {
 
-    //    	 if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
-    //         {
-    //            url+="/process";
-    //         }
+        //    	 if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
+        //         {
+        //            url+="/process";
+        //         }
 
-    url += "/process";
+        System.out.println("Submitting process: " + data);
+        url += "/process";
 
-    return Util.sendRequest(url, data);
+        return Util.sendRequest(url, data);
 
 
-  }
+    }
 
 //	public ServiceResponse submitEntity(Util.URLS url, String data)  {
 //

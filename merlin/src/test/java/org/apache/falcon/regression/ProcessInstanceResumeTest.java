@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUn
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -53,6 +54,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceResumeTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
 
     public ProcessInstanceResumeTest() {
         super();
@@ -68,6 +70,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
 
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
@@ -103,6 +106,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
         b.setOutputFeedLocationData(feedOutputPath);
+        b.setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -228,7 +232,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         ProcessInstancesResult r =
                 prism.getProcessHelper()
                         .getProcessInstanceResume("invalidName", "?end=2010-01-02T01:15Z");
-        InstanceUtil.validateSuccessWithStatusCode(r, 777);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
 
@@ -241,7 +245,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         Thread.sleep(15000);
         ProcessInstancesResult r =
                 prism.getProcessHelper().getProcessInstanceResume("invalidName", null);
-        InstanceUtil.validateSuccessWithStatusCode(r, 777);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
 
@@ -258,7 +262,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceResume(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:05Z");
-        InstanceUtil.validateSuccessWithStatusCode(r, 777);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
 
