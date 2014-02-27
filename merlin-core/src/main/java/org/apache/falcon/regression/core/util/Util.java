@@ -125,7 +125,7 @@ public class Util {
                 response.getStatusLine().getStatusCode());
     }
 
-    public static ServiceResponse sendRequest(String url, String data)
+    public static ServiceResponse sendPostRequest(String url, String data)
     throws IOException, URISyntaxException, AuthenticationException {
 
         BaseRequest request = new BaseRequest(url, "post", null, data);
