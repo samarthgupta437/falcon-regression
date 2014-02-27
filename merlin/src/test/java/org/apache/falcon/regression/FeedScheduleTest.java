@@ -40,32 +40,18 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class FeedScheduleTest extends BaseTestClass {
 
-    ColoHelper cluster;
-    OozieClient clusterOC;
-    private Bundle bundle;
+    ColoHelper cluster = servers.get(0);;
+    OozieClient clusterOC = serverOC.get(0);
     private String feed;
-
-    public FeedScheduleTest(){
-        super();
-        cluster = servers.get(0);
-        clusterOC = serverOC.get(0);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
-        Bundle.submitCluster(bundle);
-        feed = Util.getInputFeedFromBundle(bundle);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        Bundle.submitCluster(bundles[0]);
+        feed = Util.getInputFeedFromBundle(bundles[0]);
     }
-
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-    }
-
-
 
     @Test(groups = {"singleCluster"})
     public void scheduleAlreadyScheduledFeed() throws Exception {

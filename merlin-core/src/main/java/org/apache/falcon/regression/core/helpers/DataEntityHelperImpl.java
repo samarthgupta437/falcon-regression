@@ -97,6 +97,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
     //throw new UnsupportedOperationException("Not supported yet.");
+    System.out.println("Submitting feed: "+data);
     return Util.sendRequest(url + "/feed" + colo, data);
   }
 
@@ -107,6 +108,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   public ServiceResponse submitEntity(String url, String data) throws IOException {
 
+    System.out.println("Submitting feed: "+data);
     url += "/feed" + colo;
 
     return Util.sendRequest(url, data);
