@@ -40,9 +40,12 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.supportClasses.GetBundle;
+import org.apache.falcon.request.BaseRequest;
+import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
@@ -122,35 +125,13 @@ public class Util {
                 response.getStatusLine().getStatusCode());
     }
 
-    public static ServiceResponse sendRequest(String url, String data) throws IOException {
+    public static ServiceResponse sendRequest(String url, String data)
+    throws IOException, URISyntaxException, AuthenticationException {
 
-        HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost(url);
-        post.setHeader("Content-Type", "text/xml");
-        post.setHeader("Remote-User", System.getProperty("user.name"));
-        post.setEntity(new StringEntity(data));
-        System.out.println("hitting the URL: " + url);
-
-        long start_time = System.currentTimeMillis();
-        HttpResponse response = client.execute(post);
-        System.out.println(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        System.out.println("time taken:" + (System.currentTimeMillis() - start_time));
-        System.out.println("time taken:" + (System.currentTimeMillis() - start_time));
-
-
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-        String line;
-        String string_response = "";
-        while ((line = reader.readLine()) != null) {
-            string_response = string_response + line;
-        }
-
-        System.out.println("The web service response is " + string_response + "\n");
-
-        return new ServiceResponse(string_response, response.getStatusLine().getStatusCode());
+        BaseRequest request = new BaseRequest(url, "post", null, data);
+        request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
+        HttpResponse response = request.run();
+        return new ServiceResponse(response);
     }
 
     public static String getExpectedErrorMessage(String filename) throws IOException {
@@ -1449,7 +1430,8 @@ public class Util {
 
     }
 
-    public static void submitAllClusters(Bundle... b) throws IOException {
+    public static void submitAllClusters(Bundle... b)
+    throws IOException, URISyntaxException, AuthenticationException {
         for (Bundle aB : b) {
             Util.print("Submitting Cluster: " + aB.getClusters().get(0));
             ServiceResponse r = prismHelper.getClusterHelper()

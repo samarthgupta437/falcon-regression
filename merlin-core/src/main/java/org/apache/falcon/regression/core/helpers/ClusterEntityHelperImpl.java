@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -87,7 +88,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-    public ServiceResponse submitEntity(String url, String data) throws IOException {
+    public ServiceResponse submitEntity(String url, String data)
+    throws IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         System.out.println("Submitting cluster: "+data);
         url += "/cluster" + colo;
@@ -116,7 +118,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse submitEntity(Util.URLS url, String data) throws IOException {
+    public ServiceResponse submitEntity(Util.URLS url, String data)
+    throws IOException, URISyntaxException, AuthenticationException {
         System.out.println("Submitting cluster: "+data);
         return submitEntity(this.hostname + url.getValue(), data);
     }

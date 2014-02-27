@@ -22,10 +22,17 @@
  */
 package org.apache.falcon.regression.core.response;
 
+import org.apache.http.HttpResponse;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
 public class ServiceResponse {
 
     public String message;
     int code;
+    private HttpResponse response;
 
     public int getCode() {
         return code;
@@ -43,11 +50,34 @@ public class ServiceResponse {
         this.message = message;
     }
 
+    public HttpResponse getResponse() {
+        return response;
+    }
+
+    public void setResponse(HttpResponse response) {
+        this.response = response;
+    }
+
     public ServiceResponse(String message, int code) {
         this.message = message;
         this.code = code;
     }
 
+    public ServiceResponse(HttpResponse response) throws IOException {
+        BufferedReader reader =
+                new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+
+        String line;
+        StringBuilder string_response = new StringBuilder();
+
+        while ((line = reader.readLine()) != null) {
+            string_response.append(line);
+        }
+        this.message = string_response.toString();
+        this.code = response.getStatusLine().getStatusCode();
+        this.response = response;
+
+    }
     public ServiceResponse() {
     }
 }

@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -37,6 +38,7 @@ import org.testng.annotations.Test;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,7 +63,8 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         TimeUnit.SECONDS.sleep(5);
     }
 
-    private void submitFirstClusterScheduleFirstFeed() throws JAXBException, IOException {
+    private void submitFirstClusterScheduleFirstFeed()
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         Assert.assertEquals(Util.parseResponse(prism.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0))).getStatusCode(), 200);
         ServiceResponse response = prism.getFeedHelper()
