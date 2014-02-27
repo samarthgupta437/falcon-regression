@@ -47,6 +47,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     private Bundle b = new Bundle();
     ColoHelper cluster;
     FileSystem clusterFS;
@@ -62,6 +63,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         Util.print("in @BeforeClass");
         System.setProperty("java.security.krb5.realm", "");
         System.setProperty("java.security.krb5.kdc", "");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
@@ -88,9 +90,10 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Util.restartService(cluster.getClusterHelper());
-        b = (Bundle) Util.readELBundles()[0][0];
+        b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
+        b.setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
