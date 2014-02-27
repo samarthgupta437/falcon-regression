@@ -1666,8 +1666,8 @@ public class InstanceUtil {
       if(coordInfo.getActions().size() > 0)
           break;
       System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
-        "instance created" +
-        "");
+        "instance created on oozie: " + coloHelper.getProcessHelper()
+        .getOozieClient().getOozieUrl());
       try {
         Thread.sleep(20000);
       } catch (InterruptedException e) {
