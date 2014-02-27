@@ -290,8 +290,8 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
       Util.verifyNewBundleCreation(cluster1, oldBundleID,
         new ArrayList<String>(),
-        Util.readEntityName(UA1Bundle.getProcessData()), true,
-        ENTITY_TYPE.PROCESS, false);
+        UA1Bundle.getProcessData(), true,
+         false);
     } finally {
 
       hadoopFileEditor.restore();
