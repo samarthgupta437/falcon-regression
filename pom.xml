@@ -607,9 +607,6 @@
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <forkCount>1</forkCount>
                     <reuseForks>true</reuseForks>
-                    <argLine>-Djava.awt.headless=true -Djava.security.krb5.realm=
-                        -Djava.security.krb5.kdc=
-                    </argLine>
                     <argLine>-Denvironment=${config.file}</argLine>
                     <parallel>methods</parallel>
                     <threadCount>1</threadCount>
