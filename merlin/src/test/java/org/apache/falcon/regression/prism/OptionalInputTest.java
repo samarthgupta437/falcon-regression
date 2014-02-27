@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class OptionalInputTest extends BaseTestClass {
     OozieClient oozieClient;
     String baseTestDir = baseHDFSDir + "/OptionalInputTest";
     String inputPath = baseTestDir + "/input";
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     Bundle b = new Bundle();
 
     public OptionalInputTest() throws IOException {
@@ -52,11 +54,17 @@ public class OptionalInputTest extends BaseTestClass {
         clusterFS = serverFS.get(1);
     }
 
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+    }
+
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b = (Bundle) Util.readELBundles()[0][0];
+        b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b.setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
