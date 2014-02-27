@@ -80,7 +80,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown()  {
         bundle1.deleteBundle(prism);
         bundle2.deleteBundle(prism);
         bundle3.deleteBundle(prism);
