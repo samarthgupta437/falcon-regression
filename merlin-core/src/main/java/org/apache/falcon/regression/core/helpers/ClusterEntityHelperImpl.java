@@ -28,7 +28,6 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 
@@ -94,7 +93,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         System.out.println("Submitting cluster: "+data);
         url += "/cluster" + colo;
 
-        return Util.sendRequest(url, data);
+        return Util.sendPostRequest(url, data);
     }
 
     public ServiceResponse suspend(String url, String data)  {
@@ -108,7 +107,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 /*
     public ServiceResponse validateEntity(String url, String data)  {
 
-        return Util.sendRequest(url, data);
+        return Util.sendPostRequest(url, data);
     }
 */
 

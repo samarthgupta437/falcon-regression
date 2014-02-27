@@ -68,7 +68,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     /*public ServiceResponse updateFeed(String processName, String newProcess)  {
 
         String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" + processName;
-        return Util.sendRequest(url + colo, newProcess);
+        return Util.sendPostRequest(url + colo, newProcess);
     }*/
 
   public ServiceResponse getEntityDefinition(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
@@ -100,7 +100,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   throws IOException, URISyntaxException, AuthenticationException {
     //throw new UnsupportedOperationException("Not supported yet.");
     System.out.println("Submitting feed: "+data);
-    return Util.sendRequest(url + "/feed" + colo, data);
+    return Util.sendPostRequest(url + "/feed" + colo, data);
   }
 
   public ServiceResponse submitAndSchedule(Util.URLS url, String data)
@@ -115,7 +115,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     System.out.println("Submitting feed: "+data);
     url += "/feed" + colo;
 
-    return Util.sendRequest(url, data);
+    return Util.sendPostRequest(url, data);
   }
 
   public ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException {
@@ -132,7 +132,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
             url += "/feed";
         }
 
-        return Util.sendRequest(url + colo, data);
+        return Util.sendPostRequest(url + colo, data);
     }*/
 
   public void validateResponse(String response, APIResult.Status expectedResponse,
@@ -172,7 +172,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   public ServiceResponse delete(Util.URLS deleteUrl, String data) throws JAXBException, IOException, URISyntaxException {
 
     //String url=deleteUrl.getValue()+"/feed/"+Util.readDatasetName(data);
-    //return Util.sendRequest(url);
+    //return Util.sendPostRequest(url);
 
     return delete(this.hostname + deleteUrl.getValue(), data);
 
@@ -374,7 +374,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(oldEntity);
-    return Util.sendRequest(url + colo, newEntity);
+    return Util.sendPostRequest(url + colo, newEntity);
   }
 
   @Override
@@ -389,7 +389,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(newEntity);
-    return Util.sendRequest(url + colo, newEntity);
+    return Util.sendPostRequest(url + colo, newEntity);
   }
 
   @Override

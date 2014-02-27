@@ -28,7 +28,6 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -65,7 +64,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     url += "/process/" + readEntityName(data) + colo;
 
-    //System.out.println("printing the response: " + Util.sendRequest(url, data));
+    //System.out.println("printing the response: " + Util.sendPostRequest(url, data));
 
     return Util.sendRequest(url);
   }
@@ -114,7 +113,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
         System.out.println("Submitting process: " + data);
         url += "/process";
-        return Util.sendRequest(url, data);
+        return Util.sendPostRequest(url, data);
 
   }
 
@@ -135,7 +134,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         System.out.println("Submitting process: " + data);
         url += "/process";
 
-        return Util.sendRequest(url, data);
+        return Util.sendPostRequest(url, data);
 
 
     }
@@ -170,7 +169,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         }
 
 
-        return Util.sendRequest(url, data);
+        return Util.sendPostRequest(url, data);
     }*/
 
   public void validateResponse(String response, APIResult.Status expectedResponse,
@@ -306,7 +305,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     /*public ServiceResponse updateProcess(String processName, String newProcess)  {
 
         String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" + processName;
-        return Util.sendRequest(url + colo, newProcess);
+        return Util.sendPostRequest(url + colo, newProcess);
     }
 
     public String updateViaCLI(String processName, String newProcessFilePath)  {
@@ -636,7 +635,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" +
       Util.readEntityName(oldEntity);
-    return Util.sendRequest(url + colo, newEntity);
+    return Util.sendPostRequest(url + colo, newEntity);
   }
 
   @Override
