@@ -2266,13 +2266,14 @@ public class Util {
                                              String originalBundleId,
                                              List<String>
                                                initialNominalTimes,
-                                             String processName,
+                                             String entity,
                                              boolean shouldBeCreated,
-                                             ENTITY_TYPE type,
-                                             boolean matchInstances) throws OozieClientException, ParseException {
 
-    String newBundleId = InstanceUtil.getLatestBundleID(cluster, processName,
-      type);
+                                             boolean matchInstances) throws OozieClientException, ParseException, JAXBException {
+    String entityName = Util.readEntityName(entity);
+    ENTITY_TYPE entityType = Util.getEntityType(entity);
+    String newBundleId = InstanceUtil.getLatestBundleID(cluster, entityName,
+      entityType);
     if (shouldBeCreated) {
       Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
         "eeks! new bundle is not getting created!!!!");
@@ -2280,7 +2281,7 @@ public class Util {
       System.out.println("new bundleId=" + newBundleId);
       if(matchInstances)
         Util.validateNumberOfWorkflowInstances(cluster,
-        initialNominalTimes, originalBundleId, newBundleId, type);
+        initialNominalTimes, originalBundleId, newBundleId, entityType);
     } else {
       Assert.assertEquals(newBundleId,
         originalBundleId, "eeks! new bundle is getting created!!!!");

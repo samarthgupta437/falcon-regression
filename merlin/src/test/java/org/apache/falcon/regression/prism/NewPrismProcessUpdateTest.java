@@ -83,7 +83,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1] = new Bundle(b, cluster2);
         bundles[2] = new Bundle(b, cluster3);
         setBundleWFPath(bundles[0], bundles[1], bundles[2]);
-        bundles[1].addClusterToBundle(bundles[2].getClusters().get(0), ClusterType.TARGET);
+        bundles[1].addClusterToBundle(bundles[2].getClusters().get(0),
+          ClusterType.TARGET, null, null);
         usualGrind(cluster3, bundles[1]);
     }
 
@@ -1555,7 +1556,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
       Thread.sleep(20000);
       //verify new bundle creation
       Util.verifyNewBundleCreation(cluster1,oldBundleID,oldNominalTimes,
-        Util.readEntityName(b.getProcessData()),true,ENTITY_TYPE.PROCESS,true);
+        b.getProcessData(),true, true);
 
     } finally {
       b.deleteBundle(prism);

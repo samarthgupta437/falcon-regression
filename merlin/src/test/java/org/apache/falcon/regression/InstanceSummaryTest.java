@@ -201,8 +201,10 @@ public class InstanceSummaryTest extends BaseTestClass {
   @Test(enabled = false, timeOut = 1200000 )
   public void testSummaryMultiCluster() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
     processBundle.setProcessValidity(startTime,endTime);
-    processBundle.addClusterToBundle(bundle2.getClusters().get(0), ClusterType.SOURCE);
-    processBundle.addClusterToBundle(bundle3.getClusters().get(0), ClusterType.SOURCE);
+    processBundle.addClusterToBundle(bundle2.getClusters().get(0),
+      ClusterType.SOURCE, null, null);
+    processBundle.addClusterToBundle(bundle3.getClusters().get(0),
+      ClusterType.SOURCE, null, null);
     processBundle.submitAndScheduleBundle(prism);
     APIResult r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
