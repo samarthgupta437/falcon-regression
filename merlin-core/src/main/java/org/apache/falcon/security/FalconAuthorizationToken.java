@@ -42,16 +42,25 @@ public class FalconAuthorizationToken {
     }
 
     public static AuthenticatedURL.Token getToken(String user, String protocol, String host,
-                                                  int port)
+                                                  int port, boolean overWrite)
     throws IOException, AuthenticationException {
         String key = getKey(user, protocol, host, port);
 
         // if the tokens are null or if token is not found then we will go ahead and authenticate
-        if ((null == INSTANCE.tokens.get()) || (!INSTANCE.tokens.get().containsKey(key))) {
+        // or if we are asked to overwrite
+        if ((null == INSTANCE.tokens.get()) || (!INSTANCE.tokens.get().containsKey(key)) ||
+                overWrite) {
             authenticate(user, protocol, host, port);
         }
 
         return INSTANCE.tokens.get().get(key);
+
+    }
+
+    public static AuthenticatedURL.Token getToken(String user, String protocol, String host,
+                                                  int port)
+    throws IOException, AuthenticationException {
+        return getToken(user, protocol, host, port, false);
     }
 
     // spnego token will be unique to the user and uri its being requested for.
