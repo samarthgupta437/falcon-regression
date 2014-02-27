@@ -86,7 +86,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void invalidChar_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
     processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
@@ -100,7 +100,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void invalidChar_Feed() throws ParseException, JAXBException, IOException {
 
     String feed = submitAndScheduleFeed(processBundle);
@@ -115,7 +115,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void updateTimeInPast_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
@@ -153,7 +153,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
 
   public void updateTimeInPast_Feed() throws InterruptedException, JAXBException, ParseException, IOException, OozieClientException {
 
@@ -201,7 +201,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void inNextFewMinutesUpdate_RollForward_Process() throws JAXBException, ParseException, IOException, URISyntaxException, InterruptedException, JSchException, OozieClientException, SAXException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
     /*
     submit process on 3 clusters. Schedule on 2 clusters. Bring down one of
@@ -318,7 +318,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void inNextFewMinutesUpdate_RollForward_Feed() throws InterruptedException, JAXBException, ParseException, IOException, URISyntaxException, JSchException, OozieClientException, SAXException {
 
     String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-18);
@@ -396,7 +396,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void updateTimeAfterEndTime_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
     /*
@@ -448,7 +448,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
    }
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void updateTimeAfterEndTime_Feed() throws ParseException, JAXBException, IOException, OozieClientException, InterruptedException {
     /*
     submit and schedule feed with end time 60 mins in future and update with
@@ -501,7 +501,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
-    enabled = true)
+    enabled = false)
   public void updateTimeBeforeStartTime_Process() throws JAXBException,
     ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException {
 
@@ -536,11 +536,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void updateDiffClusterDiffValidity_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+  public void updateDiffClusterDiffValidity_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, JSchException {
 
     //set start end process time for 3 clusters
-    String startTime_cluster1 = InstanceUtil.getTimeWrtSystemTime(-60);
-    String endTime_cluster1 = InstanceUtil.getTimeWrtSystemTime(60);
+    String startTime_cluster1 = InstanceUtil.getTimeWrtSystemTime(-40);
+    String endTime_cluster1 = InstanceUtil.getTimeWrtSystemTime(6);
     String startTime_cluster2 = InstanceUtil.getTimeWrtSystemTime(120);
     String endTime_cluster2 = InstanceUtil.getTimeWrtSystemTime(240);
     String startTime_cluster3 = InstanceUtil.getTimeWrtSystemTime(-30);
@@ -561,7 +561,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     //wait for coord to be in running state
     InstanceUtil.waitTillInstancesAreCreated(cluster_1,
       processBundle.getProcessData(),0,10);
-    InstanceUtil.waitTillInstancesAreCreated(cluster_2,
+    InstanceUtil.waitTillInstancesAreCreated(cluster_3,
       processBundle.getProcessData(),0,10);
 
     //save old info
@@ -570,17 +570,19 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
     List<String> nominalTimes_cluster1 = Util.getActionsNominalTime(cluster_1, oldBundleID_cluster1,
       ENTITY_TYPE.PROCESS);
-
     String oldBundleID_cluster2 = InstanceUtil
       .getLatestBundleID(cluster_2,
         Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
-    List<String> nominalTimes_cluster2 = Util.getActionsNominalTime
-      (cluster_1, oldBundleID_cluster2,
+    String oldBundleID_cluster3 = InstanceUtil
+      .getLatestBundleID(cluster_3,
+        Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
+    List<String> nominalTimes_cluster3 = Util.getActionsNominalTime
+      (cluster_3, oldBundleID_cluster3,
       ENTITY_TYPE.PROCESS);
 
 
     //update process
-    String updateTime = endTime_cluster1;
+    String updateTime = InstanceUtil.addMinsToTime(endTime_cluster1,4);
     processBundle.setProcessProperty("someProp","someVal");
     ServiceResponse r = prism.getProcessHelper().update(processBundle.getProcessData(),
       processBundle.getProcessData(), updateTime);
@@ -589,15 +591,51 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     //check for new bundle to be created
     Util.verifyNewBundleCreation(cluster_1,oldBundleID_cluster1,nominalTimes_cluster1,
      processBundle.getProcessData(),true,false);
+    Util.verifyNewBundleCreation(cluster_3,oldBundleID_cluster3,
+      nominalTimes_cluster3,
+      processBundle.getProcessData(),true,false);
+    Util.verifyNewBundleCreation(cluster_2,oldBundleID_cluster2,
+      nominalTimes_cluster3,
+      processBundle.getProcessData(),true,false);
 
+    //wait till new coord are running on Cluster1
+    InstanceUtil.waitTillInstancesAreCreated(cluster_1,
+      processBundle.getProcessData(),1,10);
+    Util.verifyNewBundleCreation(cluster_1,oldBundleID_cluster1,nominalTimes_cluster1,
+      processBundle.getProcessData(),true,true);
 
+    //verify
+    String coordStartTime_cluster3 = Util.getCoordStartTime(cluster_3,
+      processBundle.getProcessData(),1);
+    String coordStartTime_cluster2 = Util.getCoordStartTime(cluster_2,
+      processBundle.getProcessData(),1);
+
+    if(!(InstanceUtil.oozieDateToDate(coordStartTime_cluster3).isAfter
+      (InstanceUtil.oozieDateToDate(updateTime)) || InstanceUtil
+      .oozieDateToDate(coordStartTime_cluster3).isEqual
+        (InstanceUtil.oozieDateToDate(updateTime))))
+        Assert.assertTrue(false,"new coord start time is not correct");
+
+    if(InstanceUtil.oozieDateToDate(coordStartTime_cluster2).isEqual
+      (InstanceUtil.oozieDateToDate(updateTime)))
+      Assert.assertTrue(false,"new coord start time is not correct");
+
+    InstanceUtil.sleepTill(cluster_3, updateTime);
+
+    InstanceUtil.waitTillInstancesAreCreated(cluster_3,
+      processBundle.getProcessData(),1,10);
+    
+    //verify that no instance are missing
+    Util.verifyNewBundleCreation(cluster_3,oldBundleID_cluster3,
+      nominalTimes_cluster3,
+      processBundle.getProcessData(),true,true);
   }
 
   @AfterMethod(alwaysRun = true)
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
     Util.print("tearDown " + method.getName());
     processBundle.deleteBundle(prism);
-    Util.restartService(cluster_2.getProcessHelper());
+   // Util.restartService(cluster_2.getProcessHelper());
     bundle1.deleteBundle(prism);
     processBundle.deleteBundle(prism);
   }
