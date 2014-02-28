@@ -53,6 +53,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Random;
 
+@Test(groups = "distributed")
 public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     String baseTestDir = baseHDFSDir + "/NewPrismProcessUpdateTest";
