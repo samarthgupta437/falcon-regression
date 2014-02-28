@@ -1902,6 +1902,8 @@ public class Util {
         iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
       } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
         iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
+      } else if (iface.getType().equals(Interfacetype.REGISTRY)) {
+          iface.setEndpoint(readPropertiesFile(filename, prefix + "hcat_endpoint"));
       }
     }
 
