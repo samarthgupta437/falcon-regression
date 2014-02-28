@@ -39,7 +39,6 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
-import org.apache.falcon.regression.core.supportClasses.GetBundle;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
@@ -47,13 +46,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.oozie.client.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -68,7 +60,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -83,47 +74,6 @@ public class Util {
     static final String PRISM_PREFIX = "prism";
 
     static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
-
-    /*public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
-        HttpClient client = new DefaultHttpClient();
-        HttpRequestBase request;
-        if ((Thread.currentThread().getStackTrace()[2].getMethodName().contains("delete"))) {
-            request = new HttpDelete();
-        } else if (
-                (Thread.currentThread().getStackTrace()[2].getMethodName().contains("suspend")) ||
-                        (Thread.currentThread().getStackTrace()[2].getMethodName()
-                                .contains("resume")) ||
-                        (Thread.currentThread().getStackTrace()[2].getMethodName()
-                                .contains("schedule"))) {
-            request = new HttpPost();
-        } else {
-            request = new HttpGet();
-        }
-
-        request.setHeader("Remote-User", System.getProperty("user.name"));
-        logger.info("hitting the url: " + url);
-        request.setURI(new URI(url));
-        HttpResponse response = client.execute(request);
-
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-        String line;
-        StringBuilder string_response = new StringBuilder();
-
-        while ((line = reader.readLine()) != null) {
-            string_response.append(line);
-        }
-
-        logger.info(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        System.out.println(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        logger.info("The web service response is: " + string_response.toString() + "\n");
-        System.out.println("The web service response is: " + string_response.toString() + "\n");
-        return new ServiceResponse(string_response.toString(),
-                response.getStatusLine().getStatusCode());
-    }*/
 
     public static ServiceResponse sendPostRequest(String url, String data)
     throws IOException, URISyntaxException, AuthenticationException {
