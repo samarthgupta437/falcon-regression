@@ -340,6 +340,22 @@ public class HadoopUtil {
         return returnList;
     }
 
+    public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix)throws Exception{
+        Util.HDFSCleanup(fs, prefix);
+
+        for (int i = 0; i < dataDates.size(); i++)
+            dataDates.set(i, prefix + dataDates.get(i));
+
+        ArrayList<String> dataFolder = new ArrayList<String>();
+
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
+
+        HadoopUtil.flattenAndPutDataInFolder(fs, "/home/karishma/tmp/falcon-regression/merlin/src/test/resources/OozieExampleInputData/lateData", dataFolder);
+        return dataFolder;
+    }
+
     @Deprecated
     public static boolean isDirPresent(ColoHelper prismHelper, String path) throws IOException {
         Configuration conf = new Configuration();
