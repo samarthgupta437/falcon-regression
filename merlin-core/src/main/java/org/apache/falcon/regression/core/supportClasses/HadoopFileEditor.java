@@ -22,13 +22,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.testng.log4testng.Logger;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class HadoopFileEditor {
-
+  static Logger logger = Logger.getLogger(Util.class);
   FileSystem fs;
   List<String> paths ;
   List<String> files;
@@ -81,7 +82,7 @@ public class HadoopFileEditor {
       fs.copyFromLocalFile(new Path(currentFile),file);
     }
     else {
-      System.out.println("Nothing to do, " + currentFile + " does not exists");
+      logger.info("Nothing to do, " + currentFile + " does not exists");
     }
    }
 
