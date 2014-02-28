@@ -1527,28 +1527,6 @@ public class InstanceUtil {
     return InstanceUtil.feedElementToString(feedElement);
   }
 
-  public static List<CoordinatorJob> getAllCoordIds(ColoHelper cluster, String entityData) throws JAXBException, OozieClientException {
-
-    List<String> bundleIds = Util.getBundles(cluster.getFeedHelper()
-      .getOozieClient(), Util.readEntityName(entityData),
-      Util.getEntityType(entityData));
-    List<CoordinatorJob> coords = new ArrayList<CoordinatorJob>();
-    for(String bundleID : bundleIds) {
-
-      coords.addAll(cluster.getClusterHelper().getOozieClient().getBundleJobInfo
-        (bundleID).getCoordinators());
-    }
-
-    return coords ;
-  }
-
-  public static String addMinsToTime(DateTime time, int difference) throws ParseException {
-    return InstanceUtil.addMinsToTime(InstanceUtil.dateToOozieDate(time.toDate()),
-      difference
-    );
-  }
-
-
   public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
                                                  String entity,
                                                  int bundleSeqNo,
