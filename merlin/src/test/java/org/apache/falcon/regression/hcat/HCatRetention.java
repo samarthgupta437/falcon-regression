@@ -66,7 +66,7 @@ public class HCatRetention extends BaseTestClass {
 
     public HCatRetention() throws IOException {
         super();
-        cli=HCatUtil.getHCatClient();
+        cli=HCatUtil.getHCatClient(servers.get(3));
     }
 
     @Test(enabled = true, dataProvider = "loopBelow")
@@ -116,7 +116,7 @@ public class HCatRetention extends BaseTestClass {
             DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
             //List<String> finalData =
-            //  Util.getHadoopDataFromDir2(servers.get(0), baseTestHDFSDir, "/HCatRetention/");
+            //  Util.getHadoopDataFromDir2(servers.get(3), baseTestHDFSDir, "/HCatRetention/");
 
             List<String> expectedOutput =
                     Util.filterDataOnRetentionHCat(period, unit, dataType,
@@ -195,7 +195,7 @@ public class HCatRetention extends BaseTestClass {
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
         //insert retentionclause
-        feedObject.getClusters().getCluster().get(0).getRetention()
+        feedObject.getClusters().getCluster().get(3).getRetention()
                 .setLimit(new Frequency(retentionValue));
 
         for (org.apache.falcon.regression.core.generated.feed.Cluster cluster : feedObject
