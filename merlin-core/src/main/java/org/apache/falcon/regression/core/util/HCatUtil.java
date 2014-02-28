@@ -37,11 +37,11 @@ public class HCatUtil {
 
     public static HCatClient client;
 
-    public static HCatClient getHCatClient() {
+    public static HCatClient getHCatClient(ColoHelper helper) {
         try {
             HiveConf hcatConf = new HiveConf();
             hcatConf.set("hive.metastore.local", "false");
-            hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:14000");
+            hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, helper.getProcessHelper().getHCatEndpoint());
             hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
             hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
                     HCatSemanticAnalyzer.class.getName());
