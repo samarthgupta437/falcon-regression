@@ -145,7 +145,15 @@ public class InstanceUtil {
         logger.info(
                 "The web service response status is " + response.getStatusLine().getStatusCode());
         logger.info("The web service response is: " + string_response.toString() + "\n");
-        APIResult r = new ProcessInstancesResult();
+        APIResult r ;
+
+      if(url.contains("/summary/"))
+        r = new GsonBuilder().create()
+          .fromJson(jsonString, InstancesSummaryResult.class);
+      else
+        r = new GsonBuilder().setPrettyPrinting().create()
+          .fromJson(jsonString, ProcessInstancesResult.class);
+
         if (jsonString.contains("(PROCESS) not found")) {
             r.setStatusCode(777);
             return r;
@@ -169,12 +177,6 @@ public class InstanceUtil {
             r.setStatusCode(400);
             return r;
         }
-      if(url.contains("/summary/"))
-        r = new GsonBuilder().create()
-          .fromJson(jsonString, InstancesSummaryResult.class);
-      else
-        r = new GsonBuilder().setPrettyPrinting().create()
-                .fromJson(jsonString, ProcessInstancesResult.class);
 
         Util.print("r.getMessage(): " + r.getMessage());
         Util.print("r.getStatusCode(): " + r.getStatusCode());
@@ -917,7 +919,7 @@ public class InstanceUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                        new Path(remoteLocation));
+                  new Path(remoteLocation));
             }
         }
 
@@ -1075,7 +1077,7 @@ public class InstanceUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                        new Path(remoteLocation));
+                  new Path(remoteLocation));
             }
         }
     }
