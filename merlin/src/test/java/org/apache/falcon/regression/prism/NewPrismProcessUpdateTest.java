@@ -40,13 +40,20 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.oozie.client.*;
+import org.apache.oozie.client.BundleJob;
+import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Minutes;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
-import org.testng.annotations.*;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -130,7 +137,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 .getLatestBundleID(cluster3,
                         Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
-        waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
+
+      waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         int coordCount = Util.getNumberOfWorkflowInstances(cluster3, oldBundleId);
 
         String updatedProcess = InstanceUtil
@@ -1531,6 +1539,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
       b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-10),
         InstanceUtil.getTimeWrtSystemTime(15));
       b.submitAndScheduleBundle(prism);
+
       InstanceUtil.waitTillParticularInstanceReachState(cluster1,
         Util.readEntityName(b.getProcessData()), 0,
         CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
