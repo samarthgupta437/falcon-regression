@@ -16,11 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package org.apache.falcon.regression.core.response;
 
 public class ResponseKeys {
