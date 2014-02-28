@@ -69,8 +69,6 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         Util.print("in @BeforeClass");
 
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
