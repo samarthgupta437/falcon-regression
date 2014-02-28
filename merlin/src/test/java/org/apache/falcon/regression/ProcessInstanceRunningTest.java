@@ -61,8 +61,6 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void createTestData() throws Exception {
         Util.print("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
 
         Bundle bundle = (Bundle) Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
@@ -204,8 +202,6 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);

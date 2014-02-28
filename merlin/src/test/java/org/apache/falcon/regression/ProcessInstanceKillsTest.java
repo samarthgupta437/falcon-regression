@@ -62,9 +62,6 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
         Util.print("in @BeforeClass");
 
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
@@ -292,8 +289,6 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());

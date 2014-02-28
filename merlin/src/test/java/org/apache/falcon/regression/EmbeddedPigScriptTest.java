@@ -64,9 +64,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         //copy pig script
         HadoopUtil.uploadDir(clusterFS, pigScriptDir, "src/test/resources/pig");
 
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
         Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());

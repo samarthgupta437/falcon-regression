@@ -27,7 +27,6 @@ import org.testng.log4testng.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,12 +34,6 @@ import java.util.List;
 public class HadoopUtil {
 
     static Logger logger = Logger.getLogger(HadoopUtil.class);
-
-    public static void setSystemPropertyHDFS() {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
-    }
 
     public static Configuration getHadoopConfiguration(ColoHelper prismHelper) {
         Configuration conf = new Configuration();
@@ -51,7 +44,6 @@ public class HadoopUtil {
     public static List<Path> getAllFilesRecursivelyHDFS(
             ColoHelper colcoHelper, Path location) throws IOException {
 
-        setSystemPropertyHDFS();
         List<Path> returnList = new ArrayList<Path>();
 
         Configuration conf = HadoopUtil.getHadoopConfiguration(colcoHelper);
@@ -80,7 +72,6 @@ public class HadoopUtil {
 
     public static List<String> getAllFilesHDFS(String hadoopURL, String location)
     throws IOException {
-        setSystemPropertyHDFS();
         Configuration conf = new Configuration();
         conf.set("fs.default.name", hadoopURL);
         final FileSystem fs = FileSystem.get(conf);
@@ -108,7 +99,6 @@ public class HadoopUtil {
     public static List<Path> getAllDirsRecursivelyHDFS(
             ColoHelper colcoHelper, Path location, int depth) throws IOException {
 
-        setSystemPropertyHDFS();
         Configuration conf = HadoopUtil.getHadoopConfiguration(colcoHelper);
         final FileSystem fs = FileSystem.get(conf);
 
@@ -140,7 +130,6 @@ public class HadoopUtil {
     public static List<Path> getAllFilesRecursivelyHDFS(
             ColoHelper coloHelper, Path location, String... ignoreFolders) throws IOException {
 
-        setSystemPropertyHDFS();
         List<Path> returnList = new ArrayList<Path>();
 
         Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
@@ -181,7 +170,6 @@ public class HadoopUtil {
     public static List<Path> getAllFilesRecursivelyHDFS(
             Configuration conf, Path location, String... ignoreFolders) throws IOException {
 
-        setSystemPropertyHDFS();
         List<Path> returnList = new ArrayList<Path>();
 
         final FileSystem fs = FileSystem.get(conf);
@@ -232,7 +220,6 @@ public class HadoopUtil {
 
     public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion)
     throws IOException {
-        setSystemPropertyHDFS();
         Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
 
         final FileSystem fs = FileSystem.get(conf);
@@ -268,7 +255,6 @@ public class HadoopUtil {
     @Deprecated
     public static List<String> getHDFSSubFoldersName(ColoHelper prismHelper,
                                                      String baseDir) throws IOException {
-        setSystemPropertyHDFS();
 
         List<String> returnList = new ArrayList<String>();
 
@@ -282,7 +268,6 @@ public class HadoopUtil {
 
     public static List<String> getHDFSSubFoldersName(FileSystem fs,
                                                      String baseDir) throws IOException {
-        setSystemPropertyHDFS();
 
         List<String> returnList = new ArrayList<String>();
 
@@ -323,7 +308,6 @@ public class HadoopUtil {
 
     private static List<String> getAllFileNamesFromHDFS(
             FileSystem fs, String hdfsPath) throws IOException {
-        setSystemPropertyHDFS();
 
         List<String> returnList = new ArrayList<String>();
 
@@ -350,7 +334,6 @@ public class HadoopUtil {
     }
 
     public static boolean isDirPresent(FileSystem fs, String path) throws IOException {
-        setSystemPropertyHDFS();
 
         boolean isPresent = fs.exists(new Path(path));
         if (isPresent)
