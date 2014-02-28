@@ -32,27 +32,18 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import java.io.IOException;
 import java.lang.reflect.Method;
 
 
 @Test(groups = "embedded")
 public class OptionalInputTest extends BaseTestClass {
 
-    ColoHelper cluster;
-    FileSystem clusterFS;
-    OozieClient oozieClient;
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
+    OozieClient oozieClient = serverOC.get(0);
     String baseTestDir = baseHDFSDir + "/OptionalInputTest";
     String inputPath = baseTestDir + "/input";
     String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
-    Bundle b = new Bundle();
-
-    public OptionalInputTest() throws IOException {
-        super();
-        cluster = servers.get(0);
-        oozieClient = serverOC.get(0);
-        clusterFS = serverFS.get(0);
-    }
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -62,14 +53,13 @@ public class OptionalInputTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b = Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-        b.setProcessWorkflow(aggregateWorkflowDir);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        b.deleteBundle(prism);
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
     }
 
@@ -79,18 +69,18 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        b = b.getRequiredBundle(b, 1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
 
-        for (int i = 0; i < b.getClusters().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        for (int i = 0; i < b.getDataSets().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(b.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
-        b.submitAndScheduleBundle(b, prism, false);
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
         Thread.sleep(20000);
 
@@ -100,7 +90,7 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -109,25 +99,25 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 3 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        b = b.getRequiredBundle(b, 1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
 
-        for (int i = 0; i < b.getClusters().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        for (int i = 0; i < b.getDataSets().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(b.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
-        b.submitAndScheduleBundle(b, prism, false);
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
         Thread.sleep(20000);
 
 
         Util.print("instanceShouldStillBeInWaitingState");
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 5, ENTITY_TYPE.PROCESS);
 
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
@@ -140,7 +130,7 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -150,22 +140,22 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        b = b.getRequiredBundle(b, 1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
 
-        for (int i = 0; i < b.getClusters().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        for (int i = 0; i < b.getDataSets().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(b.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
-        b.submitAndScheduleBundle(b, prism, false);
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
@@ -174,7 +164,7 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -190,15 +180,15 @@ public class OptionalInputTest extends BaseTestClass {
 
         // b = (Bundle)Util.readBundles("src/test/resources/updateBundle")[0][0];
 
-        b = b.getRequiredBundle(b, 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
-        for (int i = 0; i < b.getClusters().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        for (int i = 0; i < b.getDataSets().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(b.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
@@ -211,11 +201,11 @@ public class OptionalInputTest extends BaseTestClass {
                 inputPath + "/input0/",
                 1);
 
-        b.submitAndScheduleBundle(prism);
+        bundles[0].submitAndScheduleBundle(prism);
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
     }
 
@@ -224,21 +214,21 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        b = b.getRequiredBundle(b, 1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
 
-        b.setProcessData(b.setProcessInputNames(b.getProcessData(), "inputData"));
+        bundles[0].setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData"));
 
 
-        for (int i = 0; i < b.getClusters().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        for (int i = 0; i < b.getDataSets().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(b.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
-        b.submitAndScheduleBundle(b, prism, false);
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
         Thread.sleep(20000);
 
@@ -247,7 +237,7 @@ public class OptionalInputTest extends BaseTestClass {
         // , instanceUtil.oozieDateToDate("2010-01-02T04:00Z"), "/samarthData/input/input1/",
         // 1);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.KILLED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -261,21 +251,21 @@ public class OptionalInputTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
         String endTime = InstanceUtil.getTimeWrtSystemTime(30);
 
-        b = b.getRequiredBundle(b, 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
-        for (int i = 0; i < b.getClusters().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        for (int i = 0; i < b.getDataSets().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(b.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
-        b.submitAndScheduleBundle(b, prism, true);
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
@@ -285,22 +275,22 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
-        b.setProcessData(b.setProcessFeeds(b.getProcessData(), b.getDataSets(), 2, 0, 1));
+        bundles[0].setProcessData(bundles[0].setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
 
-        Util.print("modified process:" + b.getProcessData());
+        Util.print("modified process:" + bundles[0].getProcessData());
 
-        prism.getProcessHelper().update(b.getProcessData(), b.getProcessData());
+        prism.getProcessHelper().update(bundles[0].getProcessData(), bundles[0].getProcessData());
 
-        Util.print("modified process:" + b.getProcessData());
+        Util.print("modified process:" + bundles[0].getProcessData());
         //from now on ... it should wait of input0 also
 
         Thread.sleep(60000);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
@@ -310,7 +300,7 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -325,21 +315,21 @@ public class OptionalInputTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
         String endTime = InstanceUtil.getTimeWrtSystemTime(30);
 
-        b = b.getRequiredBundle(b, 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
-        for (int i = 0; i < b.getClusters().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        for (int i = 0; i < b.getDataSets().size(); i++)
-            Util.print(b.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(b.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
-        b.submitAndScheduleBundle(b, prism, true);
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
@@ -348,28 +338,28 @@ public class OptionalInputTest extends BaseTestClass {
                 inputPath + "/input1/",
                 1);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
-        b.setProcessData(b.setProcessFeeds(b.getProcessData(), b.getDataSets(), 2, 2, 1));
+        bundles[0].setProcessData(bundles[0].setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 2, 1));
 
         //delete all input data
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
 
-        b.setProcessData(b.setProcessInputNames(b.getProcessData(), "inputData0", "inputData"));
+        bundles[0].setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
 
-        Util.print("modified process:" + b.getProcessData());
+        Util.print("modified process:" + bundles[0].getProcessData());
 
 
-        prism.getProcessHelper().update(b.getProcessData(), b.getProcessData());
+        prism.getProcessHelper().update(bundles[0].getProcessData(), bundles[0].getProcessData());
 
-        Util.print("modified process:" + b.getProcessData());
+        Util.print("modified process:" + bundles[0].getProcessData());
         //from now on ... it should wait of input0 also
 
         Thread.sleep(30000);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(b.getProcessData()),
+                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.KILLED, 10, ENTITY_TYPE.PROCESS);
     }
 }

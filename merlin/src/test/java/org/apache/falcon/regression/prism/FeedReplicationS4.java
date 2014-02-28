@@ -27,44 +27,30 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+@Test(groups = "embedded")
 public class FeedReplicationS4 extends BaseTestClass {
 
-    ColoHelper cluster2;
-    ColoHelper cluster3;
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
     String baseTestHDFSDir = baseHDFSDir + "/FeedReplicationS4/${YEAR}/${MONTH}/${DAY}/${HOUR}";
     String s4location = "s4://inmobi-iat-data/userplatform/${YEAR}/${MONTH}/${DAY}/${HOUR}";
-    Bundle b1 = new Bundle();
-    Bundle b2 = new Bundle();
-
-    public FeedReplicationS4(){
-        super();
-        cluster2 = servers.get(1);
-        cluster3 = servers.get(2);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void setupTest() throws Exception {
-        b1 = (Bundle) Bundle.readBundle("S4Replication")[0][0];
-        b1.generateUniqueBundle();
-        b2 = (Bundle) Bundle.readBundle("S4Replication")[0][0];
-        b2.generateUniqueBundle();
-        b1 = new Bundle(b1, cluster3.getEnvFileName(), cluster3.getPrefix());
-        b2 = new Bundle(b2, cluster2.getEnvFileName(), cluster2.getPrefix());
-    }
-
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
-        b1.deleteBundle(prism);
+        Bundle bundle = (Bundle) Bundle.readBundle("S4Replication")[0][0];
+        bundles[0] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[1] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0].generateUniqueBundle();
+        bundles[1].generateUniqueBundle();
     }
 
     @Test(enabled = true, timeOut = 1200000)
     public void ReplicationFromS4() throws Exception {
-        //Bundle.submitCluster(b1,b2);
-        String feedOutput01 = b1.getDataSets().get(0);
+        //Bundle.submitCluster(bundles[0],bundles[1]);
+        String feedOutput01 = bundles[0].getDataSets().get(0);
         feedOutput01 = InstanceUtil
                 .setFeedCluster(feedOutput01,
                         XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
@@ -75,16 +61,16 @@ public class FeedReplicationS4 extends BaseTestClass {
                 .setFeedCluster(feedOutput01,
                         XmlUtil.createValidity("2012-12-06T05:00Z", "2099-10-01T12:10Z"),
                         XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                        Util.readClusterName(b2.getClusters().get(0)), ClusterType.SOURCE, "",
+                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE, "",
                         s4location);
         feedOutput01 = InstanceUtil
                 .setFeedCluster(feedOutput01,
                         XmlUtil.createValidity("2012-12-06T05:00Z", "2099-10-01T12:25Z"),
                         XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-                        Util.readClusterName(b1.getClusters().get(0)), ClusterType.TARGET, "",
+                        Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, "",
                         baseTestHDFSDir);
         System.out.println(feedOutput01);
-        Bundle.submitCluster(b1, b2);
+        Bundle.submitCluster(bundles[0], bundles[1]);
         prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedOutput01);
     }
