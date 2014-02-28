@@ -1411,8 +1411,4 @@ public class Bundle {
        this.setProcessData(process.toString());
 
         }
-
-  public void generateProcessData() {
-
-  }
 }
