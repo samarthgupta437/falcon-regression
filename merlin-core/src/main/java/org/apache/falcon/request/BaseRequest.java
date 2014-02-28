@@ -24,6 +24,7 @@ import org.testng.log4testng.Logger;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BaseRequest {
@@ -46,7 +47,7 @@ public class BaseRequest {
         this.user = CURRENT_USER;
         this.uri = new URI(url);
         target = new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme());
-        this.headers = null;
+        this.headers = new ArrayList<Header>();
     }
 
     public BaseRequest(String url, String method, String user) throws URISyntaxException {
