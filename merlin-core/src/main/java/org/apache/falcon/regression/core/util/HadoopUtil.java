@@ -354,9 +354,9 @@ public class HadoopUtil {
 
         boolean isPresent = fs.exists(new Path(path));
         if (isPresent)
-            System.out.println("dir exists");
+            logger.info("dir exists");
         else
-            System.out.println("dir does not exists");
+            logger.info("dir does not exists");
         return isPresent;
 
     }
@@ -373,7 +373,7 @@ public class HadoopUtil {
 
         for (FileSystem fs : fileSystems) {
             deleteDirIfExists(path, fs);
-            System.out.println("creating hdfs dir: " + path + " on " + fs
+            logger.info("creating hdfs dir: " + path + " on " + fs
               .getConf().get("fs.default.name"));
             fs.mkdirs(new Path(path));
         }
@@ -382,7 +382,7 @@ public class HadoopUtil {
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
         if (fs.exists(path)) {
-          System.out.println("Deleting HDFS path: "+ path + " on "+fs.getConf().get("fs.default.name"));
+          logger.info("Deleting HDFS path: "+ path + " on "+fs.getConf().get("fs.default.name"));
             fs.delete(path, true);
         }
     }
