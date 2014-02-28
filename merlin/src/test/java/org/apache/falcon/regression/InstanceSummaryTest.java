@@ -113,7 +113,6 @@ public class InstanceSummaryTest extends BaseTestClass {
 
   @Test(enabled = true,timeOut = 1200000 )
   public void testSummarySingleClusterProcess() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException {
-    processBundle.generateProcessData();
     processBundle.setProcessValidity(startTime,endTime);
     processBundle.submitAndScheduleBundle(prism);
 
@@ -243,7 +242,10 @@ public class InstanceSummaryTest extends BaseTestClass {
   }
 
   @AfterMethod
-  public void tearDown(){
+  public void tearDown() throws IOException {
     processBundle.deleteBundle(prism);
+    for(FileSystem fs : serverFS) {
+      HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
+    }
   }
 }
