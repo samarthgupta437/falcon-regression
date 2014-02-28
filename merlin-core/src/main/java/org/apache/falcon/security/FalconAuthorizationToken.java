@@ -4,6 +4,7 @@ import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
+import org.testng.log4testng.Logger;
 
 import java.io.IOException;
 import java.net.URL;
@@ -13,6 +14,7 @@ public class FalconAuthorizationToken {
     private static final String AUTH_URL = "api/options";
     private static final KerberosAuthenticator AUTHENTICATOR = new KerberosAuthenticator();
     private static final FalconAuthorizationToken INSTANCE = new FalconAuthorizationToken();
+    private static final Logger LOGGER = Logger.getLogger(FalconAuthorizationToken.class);
 
     // Use a hashmap so that we can cache the tokens.
     private final ThreadLocal<HashMap<String, AuthenticatedURL.Token>> tokens =
@@ -28,7 +30,7 @@ public class FalconAuthorizationToken {
     throws IOException, AuthenticationException {
         URL url = new URL(String.format("%s://%s:%d/%s", protocol, host, port,
                 AUTH_URL + "?" + PseudoAuthenticator.USER_NAME + "=" + user));
-
+        LOGGER.info("Authorize using url: " + url.toString());
         AuthenticatedURL.Token currentToken = new AuthenticatedURL.Token();
         // using KerberosAuthenticator which falls back to PsuedoAuthenticator
         // instead of passing authentication type from the command line - bad factory
@@ -38,6 +40,7 @@ public class FalconAuthorizationToken {
         if (null == INSTANCE.tokens.get()) {
             INSTANCE.tokens.set(new HashMap<String, AuthenticatedURL.Token>());
         }
+        LOGGER.info("Authorization Token: " + currentToken.toString());
         INSTANCE.tokens.get().put(key, currentToken);
     }
 

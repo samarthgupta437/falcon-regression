@@ -66,7 +66,6 @@ public class BaseTestClass {
         for (ColoHelper server : servers) {
             try {
                 serverFS.add(server.getClusterHelper().getHadoopFS());
-
                 serverOC.add(server.getClusterHelper().getOozieClient());
                 HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size
                   ()-1));
