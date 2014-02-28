@@ -54,7 +54,15 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.oozie.client.*;
+import org.apache.oozie.client.BundleJob;
+import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.OozieClientException;
+import org.apache.oozie.client.WorkflowAction;
+import org.apache.oozie.client.WorkflowJob;
+import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -69,15 +77,33 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class Util {
@@ -2057,7 +2083,7 @@ public class Util {
                                   ) throws JAXBException, OozieClientException {
 
     List<String> appPaths = new ArrayList<String>();
-    List<CoordinatorJob> coords = InstanceUtil.getAllCoordIds(cluster, entityData);
+    List<CoordinatorJob> coords = OozieUtil.getAllCoordIds(cluster,      entityData);
     for(CoordinatorJob coord : coords) {
       appPaths.add(Util.getAppPathFromConf(coord.getConf()));
     }
@@ -2193,7 +2219,7 @@ public class Util {
       if (xmlLocation.length == 1)
         b = (Bundle) Bundle.readBundle(xmlLocation[0])[0][0];
       else if (xmlLocation.length == 0)
-        b = (Bundle) Util.readELBundles()[0][0];
+        b = Util.readELBundles()[0][0];
       else {
         System.out.println("invalid size of xmlLocaltions return null");
         return null;
