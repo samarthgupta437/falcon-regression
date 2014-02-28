@@ -22,7 +22,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 
 import javax.xml.bind.JAXBException;
@@ -38,7 +37,7 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
     element = InstanceUtil.getProcessElement(processData);
     Field[] fields = Process.class.getDeclaredFields();
     for (Field fld : fields) {
-        PropertyUtils.setProperty(this, fld.getName(),
+      PropertyUtils.setProperty(this, fld.getName(),
         PropertyUtils.getProperty(element, fld.getName()));
     }
   }
