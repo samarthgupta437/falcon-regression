@@ -95,6 +95,9 @@ public class HadoopFileEditor {
     }
    }
 
+  /*
+  puts back the original file to HDFS that was editied by edit function
+   */
   public void restore() throws IOException {
     for(int i = 0 ; i < paths.size() ; i++) {
       fs.delete(new Path(paths.get(i)),false);
