@@ -137,7 +137,7 @@ public class Util {
     public static ServiceResponse sendRequest(String url, String method,
                                               String data) throws IOException, URISyntaxException,
     AuthenticationException{
-        return sendRequest(url, method, null, data);
+        return sendRequest(url, method, data, null);
     }
 
     public static ServiceResponse sendRequest(String url, String method, String data,
