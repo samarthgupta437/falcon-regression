@@ -41,7 +41,6 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
-import org.apache.falcon.regression.core.supportClasses.GetBundle;
 import org.apache.falcon.regression.core.supportClasses.OozieActions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
