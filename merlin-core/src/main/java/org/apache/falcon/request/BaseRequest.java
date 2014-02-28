@@ -29,9 +29,6 @@ import java.util.List;
 
 public class BaseRequest {
 
-    private static final String CURRENT_USER = System
-            .getProperty("user.name");
-
     private String method;
     private String url;
     private List<Header> headers;
@@ -41,22 +38,21 @@ public class BaseRequest {
     private HttpHost target;
 
     public BaseRequest(String url, String method) throws URISyntaxException {
-        this.method = method;
-        this.url = url;
-        this.requestData = null;
-        this.user = CURRENT_USER;
-        this.uri = new URI(url);
-        target = new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme());
-        this.headers = new ArrayList<Header>();
+        this(url, method, RequestKeys.CURRENT_USER, null);
     }
 
     public BaseRequest(String url, String method, String user) throws URISyntaxException {
-        this(url, method);
-        this.user = user;
+        this(url, method, user, null);
     }
 
     public BaseRequest(String url, String method, String user, String data) throws URISyntaxException {
-        this(url, method, user);
+        this.method = method;
+        this.url = url;
+        this.requestData = null;
+        this.user = (null == user) ? RequestKeys.CURRENT_USER : user;
+        this.uri = new URI(url);
+        target = new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme());
+        this.headers = new ArrayList<Header>();
         this.requestData = data;
     }
 
