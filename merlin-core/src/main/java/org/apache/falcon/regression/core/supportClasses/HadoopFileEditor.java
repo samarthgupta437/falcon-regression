@@ -45,7 +45,11 @@ public class HadoopFileEditor {
     files = new ArrayList<String>();
   }
 
-
+  /*
+  method to edit a file present on HDFS. Path is the location on HDFS,
+  2nd param is the first instance of string after u want ur tesxt to be
+  inserted, 3rd param is the text u want to insert
+   */
   public void edit(String path, String putAfterString, String toBeInserted) throws IOException {
     paths.add(path);
     String currentFile = Util.getFileNameFromPath(path);
