@@ -92,8 +92,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         //throw new UnsupportedOperationException("Not supported yet.");
         System.out.println("Submitting cluster: "+data);
         url += "/cluster" + colo;
-
-        return Util.sendPostRequest(url, data);
+        return Util.sendRequest(url, "post", data);
     }
 
     public ServiceResponse suspend(String url, String data)  {
