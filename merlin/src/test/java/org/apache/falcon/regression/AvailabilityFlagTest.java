@@ -54,9 +54,6 @@ package org.apache.falcon.regression;
 //
 //		try{
 //
-//			System.setProperty("java.security.krb5.realm", "");
-//			System.setProperty("java.security.krb5.kdc", "");
-//
 //			String dependency = "depends.txt" ;
 //			b = (Bundle)Util.readAvailabilityBUndle()[0][0];
 //			b = new Bundle(b,ivoryqa1.getEnvFileName());
@@ -129,9 +126,6 @@ package org.apache.falcon.regression;
 //		Bundle b = new Bundle();
 //
 //		try{
-//
-//			System.setProperty("java.security.krb5.realm", "");
-//			System.setProperty("java.security.krb5.kdc", "");
 //
 //			String dependency = "newFolder/depends.txt" ;
 //			b = (Bundle)Util.readAvailabilityBUndle()[0][0];

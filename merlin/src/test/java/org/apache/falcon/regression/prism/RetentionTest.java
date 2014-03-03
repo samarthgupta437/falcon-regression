@@ -114,8 +114,6 @@ public class RetentionTest extends BaseTestClass {
         b.setInputFeedDataPath(testHDFSDir);
         displayDetails(period, unit, gaps, dataType);
 
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String feed = setFeedPathValue(Util.getInputFeedFromBundle(bundle), getFeedPathValue(dataType));
         feed = insertRetentionValueInFeed(feed, unit + "(" + period + ")");
         bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));

@@ -49,6 +49,7 @@ public class FeedScheduleTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].generateUniqueBundle();
         Bundle.submitCluster(bundles[0]);
         feed = Util.getInputFeedFromBundle(bundles[0]);
     }
