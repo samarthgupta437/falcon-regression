@@ -76,18 +76,9 @@ public class RetentionTest extends BaseTestClass {
     String testHDFSDir = baseTestHDFSDir + TEST_FOLDERS;
     static Logger logger = Logger.getLogger(RetentionTest.class);
 
-    ColoHelper cluster1;
-    FileSystem cluster1FS;
-    OozieClient cluster1OC;
-
-    private Bundle bundle;
-
-    public RetentionTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster1FS = serverFS.get(0);
-        cluster1OC = serverOC.get(0);
-    }
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
+    OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
@@ -96,9 +87,9 @@ public class RetentionTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
-        verifyFeedDeletion(Util.getInputFeedFromBundle(bundle));
-        removeBundles(bundle);
+        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundles[0]));
+        verifyFeedDeletion(Util.getInputFeedFromBundle(bundles[0]));
+        removeBundles();
     }
 
     @Test
@@ -111,28 +102,29 @@ public class RetentionTest extends BaseTestClass {
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
-        bundle = new Bundle(b, cluster1);
+        bundles[0] = new Bundle(b, cluster);
         b.setInputFeedDataPath(testHDFSDir);
         displayDetails(period, unit, gaps, dataType);
 
-        String feed = setFeedPathValue(Util.getInputFeedFromBundle(bundle), getFeedPathValue(dataType));
+        String feed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
+                getFeedPathValue(dataType));
         feed = insertRetentionValueInFeed(feed, unit + "(" + period + ")");
-        bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
-        bundle.getDataSets().add(feed);
-        bundle.generateUniqueBundle();
+        bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
+        bundles[0].getDataSets().add(feed);
+        bundles[0].generateUniqueBundle();
 
-        bundle.submitClusters(prism);
+        bundles[0].submitClusters(prism);
 
         if (Integer.parseInt(period) > 0) {
             Util.assertSucceeded(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundles[0])));
 
             replenishData(dataType, gaps, withData);
 
-            commonDataRetentionWorkflow(bundle, Integer.parseInt(period), unit);
+            commonDataRetentionWorkflow(bundles[0], Integer.parseInt(period), unit);
         } else {
             Util.assertFailed(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundles[0])));
         }
     }
 
@@ -195,25 +187,25 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void commonDataRetentionWorkflow(Bundle bundle, int time,
-                                                    String interval)
+                                             String interval)
     throws JAXBException, OozieClientException, IOException, URISyntaxException,
     InterruptedException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
-                Util.getHadoopDataFromDir(cluster1, Util.getInputFeedFromBundle(bundle),
+                Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundle),
                         testHDFSDir);
 
-        cluster1.getFeedHelper()
+        cluster.getFeedHelper()
                 .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
-        logger.info(cluster1.getClusterHelper().getActiveMQ());
+        logger.info(cluster.getClusterHelper().getActiveMQ());
         logger.info(Util.readDatasetName(Util.getInputFeedFromBundle(bundle)));
         Consumer consumer =
                 new Consumer("FALCON." + Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
-                        cluster1.getClusterHelper().getActiveMQ());
+                        cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = Util.getBundles(cluster1OC,
+        String bundleId = Util.getBundles(clusterOC,
                 Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
 
         List<String> workflows = getFeedRetentionJobs(bundleId);
@@ -251,7 +243,7 @@ public class RetentionTest extends BaseTestClass {
 
         //now look for cluster data
         List<String> finalData =
-                Util.getHadoopDataFromDir(cluster1, Util.getInputFeedFromBundle(bundle),
+                Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundle),
                         testHDFSDir);
 
         //now see if retention value was matched to as expected
@@ -288,16 +280,16 @@ public class RetentionTest extends BaseTestClass {
     private void replenishData(List<String> folderList, boolean uploadData)
     throws IOException, InterruptedException {
         //purge data first
-        HadoopUtil.deleteDirIfExists(testHDFSDir, cluster1FS);
+        HadoopUtil.deleteDirIfExists(testHDFSDir, clusterFS);
 
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
             final String pathString = testHDFSDir + folder;
             logger.info(pathString);
-            cluster1FS.mkdirs(new Path(pathString));
+            clusterFS.mkdirs(new Path(pathString));
             if(uploadData) {
-                cluster1FS.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
+                clusterFS.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
             }
         }
     }
@@ -310,8 +302,8 @@ public class RetentionTest extends BaseTestClass {
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
-        List<String> jobIds = Util.getCoordinatorJobs(cluster1,
-                Util.getBundles(cluster1OC,
+        List<String> jobIds = Util.getCoordinatorJobs(cluster,
+                Util.getBundles(clusterOC,
                         feedName, ENTITY_TYPE.FEED).get(0)
         );
 
@@ -332,7 +324,7 @@ public class RetentionTest extends BaseTestClass {
                         "org.apache.activemq.ActiveMQConnectionFactory");
                 Assert.assertEquals(data.get("status"), "SUCCEEDED");
                 Assert.assertEquals(data.get("brokerUrl"),
-                        cluster1.getFeedHelper().getActiveMQ());
+                        cluster.getFeedHelper().getActiveMQ());
 
             }
         }
@@ -371,10 +363,10 @@ public class RetentionTest extends BaseTestClass {
 
     private void verifyFeedDeletion(String feed)
     throws JAXBException, IOException {
-        String directory = "/projects/ivory/staging/" + cluster1.getFeedHelper().getServiceUser()
+        String directory = "/projects/ivory/staging/" + cluster.getFeedHelper().getServiceUser()
                 + "/workflows/feed/" + Util.readDatasetName(feed);
         //make sure feed bundle is not there
-        Assert.assertFalse(cluster1FS.isDirectory(new Path(directory)),
+        Assert.assertFalse(clusterFS.isDirectory(new Path(directory)),
                 "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
     }
 
@@ -463,31 +455,31 @@ public class RetentionTest extends BaseTestClass {
     private List<String> getFeedRetentionJobs(String bundleID)
     throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
-        BundleJob bundleJob = cluster1OC.getBundleJobInfo(bundleID);
+        BundleJob bundleJob = clusterOC.getBundleJobInfo(bundleID);
         for(int i=0; i < 60 && bundleJob.getCoordinators().isEmpty(); ++i) {
             Thread.sleep(2000);
         }
         Assert.assertFalse(bundleJob.getCoordinators().isEmpty(),
                 "Coordinator job should have got created by now.");
         CoordinatorJob jobInfo =
-                cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+                clusterOC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
         for(int i=0; i < 120 && jobInfo.getActions().isEmpty(); ++i) {
             Thread.sleep(4000);
         }
         Assert.assertFalse(jobInfo.getActions().isEmpty(),
                 "Coordinator actions should have got created by now.");
-        jobInfo = cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        jobInfo = clusterOC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
         logger.info("got coordinator jobInfo array of length:" + jobInfo.getActions());
         for (CoordinatorAction action : jobInfo.getActions()) {
             logger.info(action.getId());
         }
         for (CoordinatorAction action : jobInfo.getActions()) {
-            CoordinatorAction actionInfo = cluster1OC.getCoordActionInfo(action.getId());
+            CoordinatorAction actionInfo = clusterOC.getCoordActionInfo(action.getId());
 
             for(int i=0; i < 180; ++i) {
-                actionInfo = cluster1OC.getCoordActionInfo(action.getId());
+                actionInfo = clusterOC.getCoordActionInfo(action.getId());
                 if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
                         actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
                         actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
@@ -509,7 +501,7 @@ public class RetentionTest extends BaseTestClass {
     private String getWorkflowInfo(String workflowId)
     throws OozieClientException {
         logger.info("fetching info for workflow with id: " + workflowId);
-        WorkflowJob job = cluster1OC.getJobInfo(workflowId);
+        WorkflowJob job = clusterOC.getJobInfo(workflowId);
         return job.getStatus().toString();
     }
 
