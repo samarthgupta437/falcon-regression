@@ -44,9 +44,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
+//import java.util.Random;
 
 public class HCatRetention extends BaseTestClass {
 
