@@ -23,15 +23,12 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.*;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.ProcessInstanceRerunTest;
 import org.apache.falcon.regression.core.util.*;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatPartition;
-import org.apache.hive.hcatalog.common.HCatException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.Assert;
@@ -56,8 +53,6 @@ public class HCatRetention extends BaseTestClass {
     static Logger logger = Logger.getLogger(HCatRetention.class);
 
     private Bundle bundle;
-    String feed01="";
-    String cluster="";
     public static HCatClient cli;
     String testDir = "/HCatRetention/";
     String baseTestHDFSDir = baseHDFSDir + testDir;
@@ -66,14 +61,14 @@ public class HCatRetention extends BaseTestClass {
 
     public HCatRetention() throws IOException {
         super();
-        cli=HCatUtil.getHCatClient(servers.get(3));
+        cli=HCatUtil.getHCatClient(servers.get(0));
     }
 
     @Test(enabled = true, dataProvider = "loopBelow")
     public void testHCatRetention(Bundle b, String period, String unit,String dataType) throws Exception {
 
         HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
-        bundle = new Bundle(b, servers.get(3));
+        bundle = new Bundle(b, servers.get(0));
         int p= Integer.parseInt(period);
         displayDetails(period, unit, dataType);
 
@@ -93,7 +88,7 @@ public class HCatRetention extends BaseTestClass {
                     .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
 
             FeedMerlin feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
-            feedElement.generateData(cli, serverFS.get(3));
+            feedElement.generateData(cli, serverFS.get(0));
 
             check(dataType, unit, p);
         } else {
@@ -105,9 +100,9 @@ public class HCatRetention extends BaseTestClass {
     public void check(String dataType, String unit, int period){
         try{
 
-            List<String> initialData = getHadoopDataFromDir(servers.get(3), baseTestHDFSDir, "/HCatRetention/", dataType);
+            List<String> initialData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, "/HCatRetention/", dataType);
 
-            List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
+            //List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
             Util.assertSucceeded(prism.getFeedHelper()
                     .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle)));
@@ -116,7 +111,7 @@ public class HCatRetention extends BaseTestClass {
             DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
             //List<String> finalData =
-            //  Util.getHadoopDataFromDir2(servers.get(3), baseTestHDFSDir, "/HCatRetention/");
+            //  Util.getHadoopDataFromDir2(servers.get(0), baseTestHDFSDir, "/HCatRetention/");
 
             List<String> expectedOutput =
                     Util.filterDataOnRetentionHCat(period, unit, dataType,
@@ -195,7 +190,7 @@ public class HCatRetention extends BaseTestClass {
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
         //insert retentionclause
-        feedObject.getClusters().getCluster().get(3).getRetention()
+        feedObject.getClusters().getCluster().get(0).getRetention()
                 .setLimit(new Frequency(retentionValue));
 
         for (org.apache.falcon.regression.core.generated.feed.Cluster cluster : feedObject
@@ -260,7 +255,7 @@ public class HCatRetention extends BaseTestClass {
     public void tearDown()throws Exception {
 
         bundle.deleteBundle(prism);
-        Util.HDFSCleanup(serverFS.get(3), baseHDFSDir);
+        Util.HDFSCleanup(serverFS.get(0), baseHDFSDir);
         HCatUtil.deleteTable(cli, dBName,tableName);
     }
 
@@ -270,7 +265,6 @@ public class HCatRetention extends BaseTestClass {
         String[] units = new String[]{"months", "days", "minutes"};// "minutes","hours","days",
         String[] periods = new String[]{"6","824","43"}; // a negative value like -4 should be covered in validation scenarios.
         String[] dataTypes = new String[]{"monthly","hourly", "daily", "yearly", "monthly"};
-        boolean[] gaps = new boolean[]{false, true};
         Object[][] testData = new Object[bundles.length * units.length * periods.length * dataTypes.length][4];
 
         int i = 0;
