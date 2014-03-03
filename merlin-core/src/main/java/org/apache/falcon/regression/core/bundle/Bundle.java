@@ -56,6 +56,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -116,7 +117,8 @@ public class Bundle {
         Util.assertSucceeded(coloHelper.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, dataSets.get(0)));
     }
 
-    public void submitAndScheduleAllFeeds() throws JAXBException, IOException {
+    public void submitAndScheduleAllFeeds()
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         submitClusters(prismHelper);
 
         for (String feed : dataSets) {
@@ -461,7 +463,8 @@ public class Bundle {
     }
 
 
-    public ServiceResponse submitBundle(PrismHelper prismHelper) throws JAXBException, IOException {
+    public ServiceResponse submitBundle(PrismHelper prismHelper)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
         //make sure bundle is unique
         generateUniqueBundle();
@@ -474,7 +477,8 @@ public class Bundle {
         return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public ServiceResponse submitBundle(boolean isUnique) throws JAXBException, IOException {
+    public ServiceResponse submitBundle(boolean isUnique)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
         //make sure bundle is unique
         if (isUnique)
@@ -493,7 +497,8 @@ public class Bundle {
         return processHelper.submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public String submitAndScheduleBundle(PrismHelper prismHelper, boolean isUnique) throws JAXBException, IOException, URISyntaxException {
+    public String submitAndScheduleBundle(PrismHelper prismHelper, boolean isUnique)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         if (isUnique) {
             ServiceResponse submitResponse = submitBundle(prismHelper);
             if (submitResponse.getCode() == 400)
@@ -544,7 +549,9 @@ public class Bundle {
                 wfFile.getAbsolutePath());
     }
 
-    public String submitAndScheduleBundle(PrismHelper prismHelper) throws IOException, JAXBException, InterruptedException, URISyntaxException {
+    public String submitAndScheduleBundle(PrismHelper prismHelper)
+    throws IOException, JAXBException, InterruptedException, URISyntaxException,
+    AuthenticationException {
 
         if (colohelper != null) {
             updateWorkFlowFile();
@@ -985,13 +992,15 @@ public class Bundle {
     }
 
 
-    public void submitClusters(PrismHelper prismHelper) throws JAXBException, IOException {
+    public void submitClusters(PrismHelper prismHelper)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String cluster : this.clusters) {
             Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
         }
     }
 
-    public void submitFeeds(PrismHelper prismHelper) throws JAXBException, IOException {
+    public void submitFeeds(PrismHelper prismHelper)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String feed : this.dataSets) {
             Util.assertSucceeded(prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
         }
@@ -1102,7 +1111,8 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public static void submitCluster(Bundle... bundles) throws IOException {
+    public static void submitCluster(Bundle... bundles)
+    throws IOException, URISyntaxException, AuthenticationException {
 
         for (Bundle bundle : bundles) {
             Util.print("cluster b1: " + bundle.getClusters().get(0));
@@ -1115,7 +1125,8 @@ public class Bundle {
 
     }
 
-    public static void deleteCluster(Bundle... bundles) throws JAXBException, IOException, URISyntaxException {
+    public static void deleteCluster(Bundle... bundles)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
         for (Bundle bundle : bundles) {
             Util.print("cluster b1: " + bundle.getClusters().get(0));
@@ -1304,7 +1315,8 @@ public class Bundle {
     }
 
     public void submitAndScheduleBundle(Bundle b, PrismHelper prismHelper,
-                                        boolean checkSuccess) throws IOException, JAXBException {
+                                        boolean checkSuccess)
+    throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 
         for (int i = 0; i < b.getClusters().size(); i++) {
             ServiceResponse r = prismHelper.getClusterHelper()

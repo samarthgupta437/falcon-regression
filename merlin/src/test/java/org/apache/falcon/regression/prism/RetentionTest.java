@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -197,7 +198,7 @@ public class RetentionTest extends BaseTestClass {
     private void commonDataRetentionWorkflow(Bundle bundle, int time,
                                                     String interval)
     throws JAXBException, OozieClientException, IOException, URISyntaxException,
-    InterruptedException {
+    InterruptedException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
                 Util.getHadoopDataFromDir(cluster1, Util.getInputFeedFromBundle(bundle),

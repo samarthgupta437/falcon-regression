@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -84,7 +85,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
-  public void invalidChar_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
+  public void invalidChar_Process()
+  throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException,
+  AuthenticationException {
     bundle1.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
     bundle1.submitAndScheduleBundle(prism);
