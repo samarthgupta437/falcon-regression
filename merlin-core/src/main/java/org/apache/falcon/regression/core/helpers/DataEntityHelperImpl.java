@@ -56,7 +56,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   public ServiceResponse delete(String url, String data)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
-    return Util.sendRequest(url, "delete");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "delete");
   }
 
   public ServiceResponse getEntityDefinition(String url, String data)
