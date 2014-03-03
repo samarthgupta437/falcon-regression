@@ -28,8 +28,8 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -50,17 +50,17 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         super(envFileName, prefix);
     }
 
-    public ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse delete(String url, String data)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         url += "/cluster/" + Util.readClusterName(data) + colo;
-        return Util.sendRequest(url);
+        return Util.sendRequest(url, "delete");
     }
 
-    public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException,
+    IOException, URISyntaxException, AuthenticationException {
         url += "/cluster/" + Util.readClusterName(data);
-
-        return Util.sendRequest(url);
-
+        return Util.sendRequest(url, "get");
     }
 
     public ServiceResponse getStatus(String url, String data)  {
@@ -87,12 +87,12 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-    public ServiceResponse submitEntity(String url, String data) throws IOException {
+    public ServiceResponse submitEntity(String url, String data)
+    throws IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         System.out.println("Submitting cluster: "+data);
         url += "/cluster" + colo;
-
-        return Util.sendRequest(url, data);
+        return Util.sendRequest(url, "post", data);
     }
 
     public ServiceResponse suspend(String url, String data)  {
@@ -106,7 +106,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 /*
     public ServiceResponse validateEntity(String url, String data)  {
 
-        return Util.sendRequest(url, data);
+        return Util.sendPostRequest(url, data);
     }
 */
 
@@ -116,7 +116,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse submitEntity(Util.URLS url, String data) throws IOException {
+    public ServiceResponse submitEntity(Util.URLS url, String data)
+    throws IOException, URISyntaxException, AuthenticationException {
         System.out.println("Submitting cluster: "+data);
         return submitEntity(this.hostname + url.getValue(), data);
     }
@@ -129,7 +130,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse delete(Util.URLS deleteUrl, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse delete(Util.URLS deleteUrl, String data)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         // TODO Auto-generated method stub
         return delete(this.hostname + deleteUrl.getValue(), data);
     }
@@ -279,7 +281,8 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse getEntityDefinition(Util.URLS url, String data)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(this.hostname + url.getValue(), data);
     }
 

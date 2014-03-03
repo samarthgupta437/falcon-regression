@@ -39,18 +39,13 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
-import org.apache.falcon.regression.core.supportClasses.GetBundle;
+import org.apache.falcon.request.BaseRequest;
+import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.oozie.client.*;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -65,7 +60,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -81,76 +75,22 @@ public class Util {
 
     static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
 
-    public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
-        HttpClient client = new DefaultHttpClient();
-        HttpRequestBase request;
-        if ((Thread.currentThread().getStackTrace()[2].getMethodName().contains("delete"))) {
-            request = new HttpDelete();
-        } else if (
-                (Thread.currentThread().getStackTrace()[2].getMethodName().contains("suspend")) ||
-                        (Thread.currentThread().getStackTrace()[2].getMethodName()
-                                .contains("resume")) ||
-                        (Thread.currentThread().getStackTrace()[2].getMethodName()
-                                .contains("schedule"))) {
-            request = new HttpPost();
-        } else {
-            request = new HttpGet();
-        }
-
-        request.setHeader("Remote-User", System.getProperty("user.name"));
-        logger.info("hitting the url: " + url);
-        request.setURI(new URI(url));
-        HttpResponse response = client.execute(request);
-
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-        String line;
-        StringBuilder string_response = new StringBuilder();
-
-        while ((line = reader.readLine()) != null) {
-            string_response.append(line);
-        }
-
-        logger.info(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        System.out.println(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        logger.info("The web service response is: " + string_response.toString() + "\n");
-        System.out.println("The web service response is: " + string_response.toString() + "\n");
-        return new ServiceResponse(string_response.toString(),
-                response.getStatusLine().getStatusCode());
+    public static ServiceResponse sendRequest(String url, String method) throws IOException, URISyntaxException, AuthenticationException{
+        return sendRequest(url, method, null, null);
     }
 
-    public static ServiceResponse sendRequest(String url, String data) throws IOException {
+    public static ServiceResponse sendRequest(String url, String method,
+                                              String data) throws IOException, URISyntaxException,
+    AuthenticationException{
+        return sendRequest(url, method, data, null);
+    }
 
-        HttpClient client = new DefaultHttpClient();
-        HttpPost post = new HttpPost(url);
-        post.setHeader("Content-Type", "text/xml");
-        post.setHeader("Remote-User", System.getProperty("user.name"));
-        post.setEntity(new StringEntity(data));
-        System.out.println("hitting the URL: " + url);
-
-        long start_time = System.currentTimeMillis();
-        HttpResponse response = client.execute(post);
-        System.out.println(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        System.out.println("time taken:" + (System.currentTimeMillis() - start_time));
-        System.out.println("time taken:" + (System.currentTimeMillis() - start_time));
-
-
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-        String line;
-        String string_response = "";
-        while ((line = reader.readLine()) != null) {
-            string_response = string_response + line;
-        }
-
-        System.out.println("The web service response is " + string_response + "\n");
-
-        return new ServiceResponse(string_response, response.getStatusLine().getStatusCode());
+    public static ServiceResponse sendRequest(String url, String method, String data,
+                                              String user) throws IOException, URISyntaxException, AuthenticationException{
+        BaseRequest request = new BaseRequest(url, method, user, data);
+        request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
+        HttpResponse response = request.run();
+        return new ServiceResponse(response);
     }
 
     public static String getExpectedErrorMessage(String filename) throws IOException {
@@ -1220,9 +1160,10 @@ public class Util {
         int statusCode = 0;
         for (int tries = 20; tries > 0; tries--) {
             try {
-                statusCode = Util.sendRequest(helper.getHostname()).getCode();
+                statusCode = Util.sendRequest(helper.getHostname(), "get").getCode();
             } catch (IOException e) {
             } catch (URISyntaxException e) {
+            } catch (AuthenticationException e) {
             }
             if (statusCode == 200) return;
             try {
@@ -1449,7 +1390,8 @@ public class Util {
 
     }
 
-    public static void submitAllClusters(Bundle... b) throws IOException {
+    public static void submitAllClusters(Bundle... b)
+    throws IOException, URISyntaxException, AuthenticationException {
         for (Bundle aB : b) {
             Util.print("Submitting Cluster: " + aB.getClusters().get(0));
             ServiceResponse r = prismHelper.getClusterHelper()
@@ -1744,5 +1686,32 @@ public class Util {
             System.out.println(Arrays.toString(e.getStackTrace()));
         }
         return null;
+    }
+
+    public static String getMethodType(String url) {
+        List<String> postList = new ArrayList<String>();
+        postList.add("/entities/validate");
+        postList.add("/entities/submit");
+        postList.add("/entities/submitAndSchedule");
+        postList.add("/entities/suspend");
+        postList.add("/entities/resume");
+        postList.add("/instance/kill");
+        postList.add("/instance/suspend");
+        postList.add("/instance/resume");
+        postList.add("/instance/rerun");
+        for (String item : postList) {
+            if (url.toLowerCase().contains(item)) {
+                return "post";
+            }
+        }
+        List<String> deleteList = new ArrayList<String>();
+        deleteList.add("/entities/delete");
+        for (String item : deleteList) {
+            if (url.toLowerCase().contains(item)) {
+                return "delete";
+            }
+        }
+
+        return "get";
     }
 }
