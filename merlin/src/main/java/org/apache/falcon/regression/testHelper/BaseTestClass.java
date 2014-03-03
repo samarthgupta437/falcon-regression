@@ -74,6 +74,7 @@ public class BaseTestClass {
                 System.exit(1);
             }
         }
+        bundles = new Bundle[serverNames.length];
     }
 
     private static void prepareProperties() throws Exception {
@@ -91,12 +92,6 @@ public class BaseTestClass {
         }
         return returnList;
     }
-
-    @BeforeMethod
-    public final void createBundles() {
-        bundles = new Bundle[serverNames.length];
-    }
-
 
     @AfterMethod
     public final void removeBundles() {

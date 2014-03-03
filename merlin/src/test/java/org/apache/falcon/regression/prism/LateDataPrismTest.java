@@ -76,8 +76,6 @@ public class LateDataPrismTest {
     public void testLateDataWithCutOffInFutureAndExponentialPolicyWithRerunBeyondLimit(Bundle
     bundle) throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="10";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -253,8 +251,6 @@ public class LateDataPrismTest {
     @Test(groups = {"0.2"},dataProvider="DP",priority=-20)
     public void testLateDataWithCutOffInFutureAndBackOffPolicy(Bundle bundle) throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="10";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -413,8 +409,6 @@ public class LateDataPrismTest {
     public void testLateDataWithCutOffInFutureAndBackOffPolicyAndAlternateDataInsertion(Bundle
     bundle) throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="10";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -583,8 +577,6 @@ public class LateDataPrismTest {
     public void testLateDataWithBackOffPolicyAndDataInsertedAfterLastCheck(Bundle bundle) throws
     Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="5";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -749,8 +741,6 @@ public class LateDataPrismTest {
     public void testLateDataWithBackOffPolicyAndInstanceRunOverlappingOverAnotherPass(Bundle
     bundle) throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="5";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -918,8 +908,6 @@ public class LateDataPrismTest {
     @Test(groups = {"0.2"},dataProvider="DP",priority=-20)
     public void testLateDataWithCutOffInFutureAndExponentialPolicy(Bundle bundle) throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="10";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -1082,8 +1070,6 @@ public class LateDataPrismTest {
     public void testLateDataWithExponentialPolicyAndDataInsertedAfterLastCheck(Bundle bundle)
     throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="5";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -1250,8 +1236,6 @@ public class LateDataPrismTest {
     bundle) throws
     Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="5";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -1415,8 +1399,6 @@ public class LateDataPrismTest {
     @Test(groups = {"0.2"},dataProvider="DP",priority=-20)
     public void testLateDataWithCutOffInFutureAndFinalPolicy(Bundle bundle) throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="10";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -1576,8 +1558,6 @@ public class LateDataPrismTest {
     public void testLateDataWithFinalPolicyAndDataInsertedAfterLastCheck(Bundle bundle) throws
     Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="5";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -1744,8 +1724,6 @@ public class LateDataPrismTest {
     public void testLateDataWithFinalPolicyAndInstanceRunOverlappingOverAnotherPass(Bundle
     bundle) throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="1";
         bundle=new Bundle(bundle,UA3ColoHelper);
         
@@ -1911,8 +1889,6 @@ public class LateDataPrismTest {
 ////    @Test(groups = {"0.2"},dataProvider="DP",priority=-20)
 ////    public void testLateDataWithCutOffInFutureAndBackOffPolicy(Bundle bundle) throws Exception
 ////    {
-////        System.setProperty("java.security.krb5.realm", "");
-////        System.setProperty("java.security.krb5.kdc", "");
 ////        String delay ="10";
 ////        bundle=new Bundle(bundle,UA3ColoHelper);
 ////        
@@ -2091,8 +2067,6 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
     public void testLateDataWithCutOffInFutureAndPeriodicToExponentialUpdatePolicy(Bundle bundle)
      throws Exception
     {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         String delay ="10";
         bundle=new Bundle(bundle,UA3ColoHelper);
         

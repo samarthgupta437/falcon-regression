@@ -1581,8 +1581,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     private Bundle usualGrind(PrismHelper prism, Bundle b) throws Exception {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         b.setInputFeedDataPath(inputFeedPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
