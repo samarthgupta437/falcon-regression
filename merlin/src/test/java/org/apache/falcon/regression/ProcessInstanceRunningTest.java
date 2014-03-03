@@ -42,27 +42,19 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceRunningTest extends BaseTestClass {
 
-    ColoHelper cluster;
-    FileSystem clusterFS;
-    private Bundle b = new Bundle();
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
     String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-
-
-    public ProcessInstanceRunningTest(){
-        super();
-        cluster = servers.get(0);
-        clusterFS = serverFS.get(0);
-    }
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         Util.print("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
 
-        Bundle bundle = (Bundle) Util.readELBundles()[0][0];
+        Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
 
@@ -91,66 +83,66 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-        b.setInputFeedDataPath(feedInputPath);
-        b.setProcessWorkflow(aggregateWorkflowDir);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setInputFeedDataPath(feedInputPath);
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        removeBundles(b);
+        removeBundles();
     }
 
     @Test(groups = {"singleCluster"})
     public void getResumedProcessInstance() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(3);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(3);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
-        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, b.getProcessData());
+        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
-        prism.getProcessHelper().resume(URLS.RESUME_URL, b.getProcessData());
+        prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(b.getProcessData()));
-        InstanceUtil.validateSuccess(r, b, WorkflowStatus.RUNNING);
+                        Util.readEntityName(bundles[0].getProcessData()));
+        InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void getSuspendedProcessInstance() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(3);
-        b.submitAndScheduleBundle(prism);
-        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, b.getProcessData());
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(3);
+        bundles[0].submitAndScheduleBundle(prism);
+        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(b.getProcessData()));
+                        Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-        b.setCLusterColo("ua2");
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.submitAndScheduleBundle(prism);
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setCLusterColo("ua2");
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(b.getProcessData()));
-        InstanceUtil.validateSuccess(r, b, WorkflowStatus.RUNNING);
+                        Util.readEntityName(bundles[0].getProcessData()));
+        InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
     @Test(groups = {"singleCluster"})
@@ -165,12 +157,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getKilledProcessInstance() throws Exception {
-        b.submitAndScheduleBundle(prism);
-        prism.getProcessHelper().delete(URLS.DELETE_URL, b.getProcessData());
+        bundles[0].submitAndScheduleBundle(prism);
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(b.getProcessData()));
+                        Util.readEntityName(bundles[0].getProcessData()));
         if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
             AssertJUnit.assertTrue(false);
     }
@@ -178,12 +170,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getSucceededProcessInstance() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
+        bundles[0].submitAndScheduleBundle(prism);
         Job.Status status = null;
         for (int i = 0; i < 45; i++) {
             status = InstanceUtil.getDefaultCoordinatorStatus(cluster,
-                    Util.getProcessName(b.getProcessData()), 0);
+                    Util.getProcessName(bundles[0].getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED || status == Job.Status.KILLED)
                 break;
             Thread.sleep(45000);
@@ -194,7 +186,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
         ProcessInstancesResult result = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(b.getProcessData()));
+                        Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(result);
     }
 
@@ -202,7 +194,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
