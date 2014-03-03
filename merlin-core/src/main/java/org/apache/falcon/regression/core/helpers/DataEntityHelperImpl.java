@@ -64,15 +64,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data), "get");
   }
 
-    /*public ServiceResponse updateFeed(String processName, String newProcess)  {
-
-        String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" + processName;
-        return Util.sendPostRequest(url + colo, newProcess);
-    }*/
-
   public ServiceResponse getEntityDefinition(Util.URLS url, String data)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    //throw new UnsupportedOperationException("Not supported yet.");
     return getEntityDefinition(this.hostname + url.getValue(), data);
   }
 
@@ -83,7 +76,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   public ServiceResponse getStatus(Util.URLS url, String data)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    //throw new UnsupportedOperationException("Not supported yet.");
     return getStatus(this.hostname + url.getValue(), data);
   }
 
@@ -101,14 +93,12 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   public ServiceResponse submitAndSchedule(String url, String data)
   throws IOException, URISyntaxException, AuthenticationException {
-    //throw new UnsupportedOperationException("Not supported yet.");
     System.out.println("Submitting feed: "+data);
     return  Util.sendRequest(url + "/feed" + colo, "post", data);
   }
 
   public ServiceResponse submitAndSchedule(Util.URLS url, String data)
   throws IOException, URISyntaxException, AuthenticationException {
-    //throw new UnsupportedOperationException("Not supported yet.");
     return submitAndSchedule(this.hostname + url.getValue(), data);
   }
 
@@ -130,18 +120,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     return suspend(this.hostname + url.getValue(), data);
   }
 
-    /*public ServiceResponse validateEntity(String url, String data)  {
-
-        if (!(Thread.currentThread().getStackTrace()[1].getMethodName().contains("Wrong"))) {
-            url += "/feed";
-        }
-
-        return Util.sendPostRequest(url + colo, data);
-    }*/
-
   public void validateResponse(String response, APIResult.Status expectedResponse,
                                String filename) throws JAXBException, IOException {
-    //throw new UnsupportedOperationException("Not supported yet.");
     JAXBContext jc = JAXBContext.newInstance(APIResult.class);
 
     Unmarshaller u = jc.createUnmarshaller();
@@ -176,12 +156,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   @Override
   public ServiceResponse delete(Util.URLS deleteUrl, String data)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-
-    //String url=deleteUrl.getValue()+"/feed/"+Util.readDatasetName(data);
-    //return Util.sendPostRequest(url);
-
-    return delete(this.hostname + deleteUrl.getValue(), data);
-
+     return delete(this.hostname + deleteUrl.getValue(), data);
   }
 
   @Override
@@ -190,16 +165,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     // TODO Auto-generated method stub
     return resume(this.hostname + url.getValue(), data);
   }
-
-
-    /*@Override
-    public ProcessInstancesResult getRunningInstance(
-            String processRuningInstance, String name)  {
-
-        String url = this.hostname + processRuningInstance + "/" + name + allColo;
-
-        return InstanceUtil.sendRequestProcessInstance(url);
-    }*/
 
   @Override
   public ProcessInstancesResult getRunningInstance(
@@ -270,96 +235,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   }
 
-
-    /*public String writeEntityToFile(String entity)  {
-        File file = new File("/tmp/" + Util.readDatasetName(entity) + ".xml");
-        BufferedWriter bf = new BufferedWriter(new FileWriter(file));
-        bf.write(entity);
-        bf.close();
-        return "/tmp/" + Util.readDatasetName(entity) + ".xml";
-    }*/
-
-    /*@Override
-    public String submitEntityViaCLI(String filePath)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -submit -url " + this.hostname + " -type feed -file " +
-                        filePath);
-    }
-
-    @Override
-    public String validateEntityViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -validate -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-    @Override
-    public String submitAndScheduleViaCLI(String filePath)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -submitAndSchedule -url " + this.hostname +
-                        " -type feed -file " + filePath);
-    }
-
-    @Override
-    public String scheduleViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -schedule -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-    @Override
-    public String resumeViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -resume -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-    @Override
-    public String getStatusViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -status -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-    @Override
-    public String getEntityDefinitionViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -definition -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-    @Override
-    public String deleteViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -delete -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-    @Override
-    public String suspendViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -suspend -url " + this.hostname + " -type feed -name " +
-                        entityName);
-    }
-
-    public String updateViaCLI(String processName, String newProcessFilePath)  {
-        return null;
-    }
-
-    public String list()  {
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -list -url " + this.hostname + " -type feed");
-    }*/
-
   @Override
   public String getDependencies(String entityName) throws IOException, InterruptedException {
 
@@ -415,20 +290,4 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     um.marshal(processObject, writer);
     return writer.toString();
   }
-
-/*
-    @Override
-    public ProcessInstancesResult getInstanceRerun(String EntityName, String params)
-     {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-*/
-
-    /*@Override
-    public String getProcessInstanceStatusViaCli(String EntityName,
-                                                 String start, String end, String colos)
-     {
-        // TODO Auto-generated method stub
-        return null;
-    }*/
 }
