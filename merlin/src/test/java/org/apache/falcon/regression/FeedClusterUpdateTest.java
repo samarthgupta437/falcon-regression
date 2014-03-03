@@ -716,7 +716,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         feed is submitted through prism so submitted to both target and
         source. Feed is scheduled through prism, so only on Cluster3 and
-        Cluster2 retention coord should exists. Nothing on Cluster1 one which
+        Cluster2 retention coord should exists. Cluster1 one which
          is target both retention and replication coord should exists. there
          will be 2 replication coord, one each for each source cluster.
 
