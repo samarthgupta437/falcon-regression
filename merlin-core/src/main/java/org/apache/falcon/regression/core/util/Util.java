@@ -75,11 +75,6 @@ public class Util {
 
     static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
 
-    public static ServiceResponse sendPostRequest(String url, String data)
-    throws IOException, URISyntaxException, AuthenticationException {
-        return sendRequest(url, "post", data);
-    }
-
     public static ServiceResponse sendRequest(String url, String method) throws IOException, URISyntaxException, AuthenticationException{
         return sendRequest(url, method, null, null);
     }

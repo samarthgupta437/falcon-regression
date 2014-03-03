@@ -103,7 +103,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   throws IOException, URISyntaxException, AuthenticationException {
     //throw new UnsupportedOperationException("Not supported yet.");
     System.out.println("Submitting feed: "+data);
-    return Util.sendPostRequest(url + "/feed" + colo, data);
+    return  Util.sendRequest(url + "/feed" + colo, "post", data);
   }
 
   public ServiceResponse submitAndSchedule(Util.URLS url, String data)
@@ -117,8 +117,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     System.out.println("Submitting feed: "+data);
     url += "/feed" + colo;
-
-    return Util.sendPostRequest(url, data);
+    return Util.sendRequest(url, "post", data);
   }
 
   public ServiceResponse suspend(String url, String data)
@@ -388,7 +387,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(oldEntity);
-    return Util.sendPostRequest(url + colo, newEntity);
+      return Util.sendRequest(url + colo, "post", newEntity);
   }
 
   @Override
@@ -403,7 +402,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(newEntity);
-    return Util.sendPostRequest(url + colo, newEntity);
+    return Util.sendRequest(url + colo, "post", newEntity);
   }
 
   @Override

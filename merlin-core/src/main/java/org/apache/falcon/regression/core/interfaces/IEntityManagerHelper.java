@@ -306,9 +306,9 @@ public abstract class IEntityManagerHelper {
                 Util.readEntityName(oldEntity);
 
         if (org.apache.commons.lang.StringUtils.isEmpty(colo))
-            return Util.sendPostRequest(url + "?end=" + updateTime, newEntity);
+            return Util.sendRequest(url + "?end=" + updateTime, "post", newEntity);
 
-        return Util.sendPostRequest(url + colo + "&end=" + updateTime, newEntity);
+        return Util.sendRequest(url + colo + "&end=" + updateTime, "post", newEntity);
 
     }
 
