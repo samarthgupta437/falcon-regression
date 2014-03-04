@@ -92,10 +92,10 @@ public class InstanceSummaryTest extends BaseTestClass {
     }
 
 
-    for(FileSystem fs : serverFS) {
+   /* for(FileSystem fs : serverFS) {
       HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath),fs);
       HadoopUtil.flattenAndPutDataInFolder(fs, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
-    }
+    }*/
   }
 
   @BeforeMethod(alwaysRun = true)
@@ -116,15 +116,15 @@ public class InstanceSummaryTest extends BaseTestClass {
     processBundle.setProcessValidity(startTime,endTime);
     processBundle.submitAndScheduleBundle(prism);
 
-    InstanceUtil.waitTillInstancesAreCreated(cluster1,
+   /* InstanceUtil.waitTillInstancesAreCreated(cluster1,
       processBundle.getProcessData(),0,10);
 
     InstanceUtil.waitTillParticularInstanceReachState(cluster1,
       Util.readEntityName(processBundle.getProcessData()),2,
-      Status.SUCCEEDED,10, ENTITY_TYPE.PROCESS);
+      Status.SUCCEEDED,10, ENTITY_TYPE.PROCESS);*/
 
-/*    // start only at start time
-    InstancesSummaryResult r = prism.getProcessHelper()
+    // start only at start time
+    /*InstancesSummaryResult r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + startTime);
 
@@ -148,8 +148,8 @@ public class InstanceSummaryTest extends BaseTestClass {
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + InstanceUtil.addMinsToTime(startTime,
-          7));*/
-
+          7));
+*/
     //start and end at start and end
     InstancesSummaryResult r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
