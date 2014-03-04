@@ -109,31 +109,17 @@ public class HCatUtil {
             cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING,"id comment"));
             cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING,"value comment"));
 
-            //Stating partition names
             if (dataType.equalsIgnoreCase("minutely")){
-                ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-                ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-                ptnCols.add(new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
-                ptnCols.add(new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+                dataType="s"+dataType;
             }
-            else if (dataType.equalsIgnoreCase("hourly")){
-                ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-                ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-                ptnCols.add(new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
-            }
-            else if (dataType.equalsIgnoreCase("daily")){
-                ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-                ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-            }
-            else if (dataType.equalsIgnoreCase("monthly")){
-                ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-                ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-            }
-            else if (dataType.equalsIgnoreCase("yearly")){
-                ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+
+            switch(dataType.charAt(0)){
+                case 's':  ptnCols.add(new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+                case 'h':  ptnCols.add(new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
+                case 'd':  ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
+                case 'm':  ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
+                case 'y':  ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+                default :  break;
             }
 
             HCatCreateTableDesc tableDesc = HCatCreateTableDesc
@@ -164,33 +150,26 @@ public class HCatUtil {
         for(int i=0; i<dataFolder.size(); ++i){
             String[] parts = dataFolder.get(i).split("/");
             int s = parts.length-1;
-            //The last element in the array will be the minute directory
+            int subtractValue = 0;
 
+            //The last element in the array will be the minute directory
             if (dataType.equalsIgnoreCase("minutely")){
-                ptn.put("year", parts[s-4]);
-                ptn.put("month", parts[s-3]);
-                ptn.put("day", parts[s-2]);
-                ptn.put("hour", parts[s-1]);
-                ptn.put("minute", parts[s]);
+                dataType="s"+dataType;
             }
-            else if (dataType.equalsIgnoreCase("hourly")){
-                ptn.put("year", parts[s-3]);
-                ptn.put("month", parts[s-2]);
-                ptn.put("day", parts[s-1]);
-                ptn.put("hour", parts[s]);
+
+            switch(dataType.charAt(0)){
+                case 's': ptn.put("minute", parts[s]);
+                          ++subtractValue;
+                case 'h': ptn.put("hour", parts[s-subtractValue]);
+                          ++subtractValue;
+                case 'd': ptn.put("day", parts[s-subtractValue]);
+                          ++subtractValue;
+                case 'm': ptn.put("month", parts[s-subtractValue]);
+                          ++subtractValue;
+                case 'y': ptn.put("year", parts[s-subtractValue]);
+                default : break;
             }
-            else if (dataType.equalsIgnoreCase("daily")){
-                ptn.put("year", parts[s-2]);
-                ptn.put("month", parts[s-1]);
-                ptn.put("day", parts[s]);
-            }
-            else if (dataType.equalsIgnoreCase("monthly")){
-                ptn.put("year", parts[s-1]);
-                ptn.put("month", parts[s]);
-            }
-            else if (dataType.equalsIgnoreCase("yearly")){
-                ptn.put("year", parts[s]);
-            }
+
             try{
                 //Each HCat partition maps to a directory, not to a file
                 HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
