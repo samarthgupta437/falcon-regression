@@ -998,6 +998,68 @@ public class Util {
 
     return dates;
   }
+
+  public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
+                                                          String dataType) {
+        int counter=0, skip=0;
+        List<String> dates = new ArrayList<String>();
+
+      while (!startDate.isAfter(endDate) && counter<1000) {
+
+          if(counter == 1 && skip == 0)
+              skip=1;
+
+          if (dataType.equalsIgnoreCase("minutely")){
+              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+              formatter.withZoneUTC();
+              logger.info("generating data between " + formatter.print(startDate) + " and " +
+                      formatter.print(endDate));
+                dates.add(formatter.print(startDate.plusMinutes(skip)));
+                startDate = startDate.plusMinutes(skip);
+                ++counter;
+
+          }else if (dataType.equalsIgnoreCase("hourly")){
+              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
+              formatter.withZoneUTC();
+              logger.info("generating data between " + formatter.print(startDate) + " and " +
+                      formatter.print(endDate));
+                dates.add(formatter.print(startDate.plusHours(skip)));
+                startDate = startDate.plusHours(skip);
+                ++counter;
+
+          }else if (dataType.equalsIgnoreCase("daily")){
+              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
+              formatter.withZoneUTC();
+              logger.info("generating data between " + formatter.print(startDate) + " and " +
+                      formatter.print(endDate));
+                dates.add(formatter.print(startDate.plusDays(skip)));
+                startDate = startDate.plusDays(skip);
+                ++counter;
+
+          }else if (dataType.equalsIgnoreCase("monthly") && counter!=1000){
+              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM");
+              formatter.withZoneUTC();
+              logger.info("generating data between " + formatter.print(startDate) + " and " +
+                      formatter.print(endDate));
+                dates.add(formatter.print(startDate.plusMonths(skip)));
+                startDate = startDate.plusMonths(skip);
+                ++counter;
+
+          }else if (dataType.equalsIgnoreCase("yearly") && counter!=1000){
+              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
+              formatter.withZoneUTC();
+              logger.info("generating data between " + formatter.print(startDate) + " and " +
+                      formatter.print(endDate));
+                  dates.add(formatter.print(startDate.plusYears(skip)));
+                  startDate = startDate.plusYears(skip);
+                  ++counter;
+          }
+      }
+
+        return dates;
+  }
+
+
   public static List<String> getYearlyDatesOnEitherSide(int interval, int skip) {
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
     DateTime today = new DateTime(DateTimeZone.UTC);
