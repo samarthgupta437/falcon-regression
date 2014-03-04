@@ -193,7 +193,6 @@ public abstract class IEntityManagerHelper {
         this.clusterWrite = prop.getProperty(prefix + "cluster_write");
         this.oozieURL = prop.getProperty(prefix + "oozie_url");
         this.activeMQ = prop.getProperty(prefix + "activemq_url");
-        this.hcatEndpoint = prop.getProperty(prefix + "hcat_endpoint");
         this.storeLocation = prop.getProperty(prefix + "storeLocation");
         this.hadoopGetCommand =
                 hadoopLocation + "  fs -cat hdfs://" + hadoopURL +
