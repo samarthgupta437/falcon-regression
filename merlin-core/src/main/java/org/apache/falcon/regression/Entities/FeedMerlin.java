@@ -36,8 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class FeedMerlin extends org.apache.falcon.regression.core.generated
-  .feed.Feed {
+public class FeedMerlin extends Feed {
   private Feed element;
 
   public FeedMerlin(String entity) throws JAXBException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
@@ -67,23 +66,23 @@ public class FeedMerlin extends org.apache.falcon.regression.core.generated
   }
 
     public void generateData(HCatClient cli, FileSystem fs)throws Exception{
-        String dataType="";
-        String loc="";
+        String dataType;
         ArrayList<String> dataFolder;
         String ur = element.getTable().getUri();
+
         if(ur.contains(";")){
             String[] parts = ur.split("#")[1].split(";");
             int len=parts.length;
-            if(len==5) dataType="minutely";
-            else if(len==4) dataType="hourly";
-            else if(len==3) dataType="daily";
-            else if(len==2) dataType="monthly";
-        }else dataType="yearly";
+            dataType=getDataType(len);
+        }else {
+            dataType="yearly";
+        }
+
 
         String dbName=ur.split("#")[0].split(":")[1];
         String tableName=ur.split("#")[0].split(":")[2];
 
-            loc = cli.getTable(dbName,tableName).getLocation();
+            String loc = cli.getTable(dbName,tableName).getLocation();
             loc=loc+"/";
 
             dataFolder = createTestData(fs , dataType, loc);
@@ -91,7 +90,7 @@ public class FeedMerlin extends org.apache.falcon.regression.core.generated
         }
 
     public void generateData(FileSystem fs)throws Exception{
-        String dataType="";
+        String dataType;
         String pathValue="";
         for (Location location : element.getLocations().getLocation()) {
             if (location.getType().equals(LocationType.DATA)) {
@@ -102,11 +101,10 @@ public class FeedMerlin extends org.apache.falcon.regression.core.generated
         if(pathValue.contains("${MONTH}")){
             String[] parts = pathValue.split("YEAR")[1].split("/");
             int len=parts.length;
-            if(len==5) dataType="minutely";
-            else if(len==4) dataType="hourly";
-            else if(len==3) dataType="daily";
-            else if(len==2) dataType="monthly";
-        }else dataType="yearly";
+            dataType=getDataType(len);
+        }else {
+            dataType="yearly";
+        }
 
         String loc = pathValue.substring(0,pathValue.indexOf("$"));
         createTestData(fs, dataType, loc);
@@ -126,6 +124,25 @@ public class FeedMerlin extends org.apache.falcon.regression.core.generated
 
         dataFolder = HadoopUtil.createTestDataInHDFS(fs, Util.getDatesOnEitherSide(startDateJoda,endDateJoda,dataType), loc);
         return dataFolder;
+    }
+
+    public String getDataType(int len){
+        String dataType="";
+
+        if(len==5) {
+            dataType="minutely";
+        }
+        else if(len==4) {
+            dataType="hourly";
+        }
+        else if(len==3){
+            dataType="daily";
+        }
+        else if(len==2) {
+            dataType="monthly";
+        }
+
+        return dataType;
     }
 
 }
