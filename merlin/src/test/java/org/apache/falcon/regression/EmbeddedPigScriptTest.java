@@ -102,6 +102,11 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].setProcessData(bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
     }
 
+    @AfterMethod
+    public void tearDown() {
+        removeBundles();
+    }
+
     @Test(groups = {"singleCluster"})
     public void getResumedProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");

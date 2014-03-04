@@ -58,6 +58,7 @@ public class PrismConcurrentRequest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         Thread.sleep(60000);
+        removeBundles();
     }
 
     @Test(groups = {"multiCluster"})

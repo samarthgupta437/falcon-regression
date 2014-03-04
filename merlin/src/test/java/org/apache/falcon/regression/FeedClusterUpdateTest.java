@@ -121,9 +121,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        b1.deleteBundle(prism);
-        b2.deleteBundle(prism);
-        b3.deleteBundle(prism);
+        removeBundles(b1, b2, b3);
     }
 
     @Test(enabled = false, groups = {"multiCluster"})

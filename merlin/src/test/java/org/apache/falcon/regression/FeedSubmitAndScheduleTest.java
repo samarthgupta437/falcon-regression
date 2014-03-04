@@ -57,6 +57,11 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
     }
 
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     @Test(groups = {"singleCluster"})
     public void snsNewFeed() throws Exception {
         submitFirstClusterScheduleFirstFeed();

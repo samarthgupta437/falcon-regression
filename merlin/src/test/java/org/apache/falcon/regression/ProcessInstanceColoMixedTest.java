@@ -113,10 +113,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
-
-        b1.deleteBundle(prism);
-        b2.deleteBundle(prism);
-        b3.deleteBundle(prism);
+        removeBundles(b1, b2, b3);
     }
 
     @Test(timeOut = 12000000)

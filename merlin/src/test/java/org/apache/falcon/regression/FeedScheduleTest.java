@@ -54,6 +54,11 @@ public class FeedScheduleTest extends BaseTestClass {
         feed = Util.getInputFeedFromBundle(bundles[0]);
     }
 
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     @Test(groups = {"singleCluster"})
     public void scheduleAlreadyScheduledFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);

@@ -105,7 +105,7 @@ public class ProcessLibPath extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        removeBundles(bundle);
     }
 
     @Test(groups = {"singleCluster"})

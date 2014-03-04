@@ -33,6 +33,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -67,6 +68,11 @@ public class PrismProcessSnSTest extends BaseTestClass {
         UA2Bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         UA1Bundle.generateUniqueBundle();
         UA2Bundle.generateUniqueBundle();
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles(UA1Bundle, UA2Bundle);
     }
 
     @Test(groups = {"prism", "0.2"})

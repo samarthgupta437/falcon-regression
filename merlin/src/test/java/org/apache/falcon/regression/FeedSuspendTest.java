@@ -60,6 +60,11 @@ public class FeedSuspendTest extends BaseTestClass {
         feed = Util.getInputFeedFromBundle(bundles[0]);
     }
 
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     @Test(groups = {"singleCluster"})
     public void suspendScheduledFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);

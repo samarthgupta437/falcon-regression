@@ -83,6 +83,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     bundle3.generateUniqueBundle();
   }
 
+  @AfterMethod(alwaysRun = true)
+  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException {
+    Util.print("tearDown " + method.getName());
+    removeBundles(bundle1, bundle2, bundle3);
+  }
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)
   public void invalidChar_Process()
@@ -238,14 +243,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
    }
 
   }
-
-
-  @AfterMethod(alwaysRun = true)
-  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException {
-    Util.print("tearDown " + method.getName());
-    bundle1.deleteBundle(prism);
-  }
-
 
   private String submitAndScheduleFeed(Bundle b) throws Exception {
     String feed = b.getDataSets().get(0);

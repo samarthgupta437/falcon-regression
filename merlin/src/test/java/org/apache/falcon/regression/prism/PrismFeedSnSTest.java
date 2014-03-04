@@ -65,6 +65,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         if (restartRequired) {
             Util.restartService(cluster1.getFeedHelper());
         }
+        removeBundles();
     }
 
 

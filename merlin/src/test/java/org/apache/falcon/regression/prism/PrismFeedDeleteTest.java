@@ -70,6 +70,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         if (restartRequired) {
             Util.restartService(cluster1.getFeedHelper());
         }
+        removeBundles();
     }
     
 /** NOTE: All test cases assume that there are two entities scheduled in each colo */

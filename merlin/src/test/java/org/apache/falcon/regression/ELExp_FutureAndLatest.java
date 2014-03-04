@@ -93,6 +93,11 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
     }
 
+    @AfterMethod
+    public void tearDown() {
+        removeBundles();
+    }
+
     @Test(groups = {"singleCluster"})
     public void latestTest() throws Exception {
         bundles[0].setDatasetInstances("latest(-3)", "latest(0)");

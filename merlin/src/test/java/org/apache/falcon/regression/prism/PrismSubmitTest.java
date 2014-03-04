@@ -60,7 +60,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Util.startService(prism.getFeedHelper());
         Util.startService(cluster1.getFeedHelper());
 
-        bundle.deleteBundle(prism);
+        removeBundles(bundle);
     }
 
     @Test

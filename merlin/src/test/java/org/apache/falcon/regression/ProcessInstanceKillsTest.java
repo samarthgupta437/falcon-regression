@@ -101,7 +101,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
-        b.deleteBundle(prism);
+        removeBundles(b);
     }
 
     @Test(groups = {"singleCluster"})
