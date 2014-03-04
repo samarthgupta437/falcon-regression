@@ -352,7 +352,7 @@ public class HadoopUtil {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(fs, "/home/karishma/tmp/falcon-regression/merlin/src/test/resources/OozieExampleInputData/lateData", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(fs, "src/test/resources/OozieExampleInputData/lateData", dataFolder);
         return dataFolder;
     }
 
