@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = "embedded")
@@ -31,6 +32,11 @@ public class SubmitClusterHcat extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
 
     // private HCatClient client;
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
 
     @Test(enabled = true, timeOut = 1800000)
     public void SubmitCluster_hcat() {

@@ -32,6 +32,7 @@ import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -87,6 +88,11 @@ public class NoOutputProcessTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
     }
 
     @Test(enabled = true, groups = {"singleCluster"})

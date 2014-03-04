@@ -69,8 +69,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         if (restartRequired) {
             Util.restartService(cluster1.getProcessHelper());
         }
-        bundle1.deleteBundle(prism);
-        bundle2.deleteBundle(prism);
+        removeBundles(bundle1, bundle2);
     }
 
 

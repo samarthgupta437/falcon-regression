@@ -31,6 +31,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -64,6 +65,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();
         bundles[2].generateUniqueBundle();
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
     }
 
     @Test(enabled = true, timeOut = 1200000)

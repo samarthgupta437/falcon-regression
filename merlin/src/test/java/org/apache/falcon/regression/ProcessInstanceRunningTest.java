@@ -99,7 +99,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        b.deleteBundle(prism);
+        removeBundles(b);
     }
 
     @Test(groups = {"singleCluster"})

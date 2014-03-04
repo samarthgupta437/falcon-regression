@@ -108,10 +108,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
-        if (bundle != null) {
-            bundle.deleteBundle(cluster);
-        }
-        b.deleteBundle(prism);
+        removeBundles(b, bundle);
     }
 
     @Test(groups = {"singleCluster"})

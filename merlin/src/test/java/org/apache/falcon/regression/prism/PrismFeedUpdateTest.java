@@ -74,8 +74,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        b1.deleteBundle(prism);
-        b3.deleteBundle(prism);
+        removeBundles(b1, b3);
     }
 
     @Test(enabled = true, timeOut = 1200000)

@@ -59,6 +59,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         if (restartRequired) {
             Util.restartService(cluster1.getFeedHelper());
         }
+        removeBundles();
     }
 
     @Test(groups = {"prism", "0.2"})

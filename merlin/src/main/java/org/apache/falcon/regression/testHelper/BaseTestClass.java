@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.testHelper;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -93,21 +94,18 @@ public class BaseTestClass {
         return returnList;
     }
 
-    @AfterMethod
-    public final void removeBundles() {
+    public final void removeBundles(Bundle... bundles) {
         for (Bundle bundle : bundles) {
-            if (bundle != null){
+            if (bundle != null) {
                 bundle.deleteBundle(prism);
             }
         }
-    }
-
-    @AfterClass
-    public final void deleteBaseDir() throws IOException {
-        for (FileSystem fs : serverFS) {
-            HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
+        if (bundles != this.bundles) {
+            for (Bundle bundle : this.bundles) {
+                if (bundle != null) {
+                    bundle.deleteBundle(prism);
+                }
+            }
         }
     }
-
-
 }

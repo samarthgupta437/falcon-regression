@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -51,6 +52,11 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
     }
 
     @Test(enabled = true, timeOut = 12000000)

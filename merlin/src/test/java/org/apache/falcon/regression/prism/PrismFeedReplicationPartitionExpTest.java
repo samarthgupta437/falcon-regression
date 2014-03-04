@@ -155,6 +155,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             HadoopUtil.deleteDirIfExists(dir, cluster1FS);
             HadoopUtil.deleteDirIfExists(dir, cluster2FS);
         }
+        removeBundles();
     }
 
 

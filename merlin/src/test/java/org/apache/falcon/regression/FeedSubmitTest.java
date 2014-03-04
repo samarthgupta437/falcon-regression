@@ -56,6 +56,11 @@ public class FeedSubmitTest extends BaseTestClass {
         feed = Util.getInputFeedFromBundle(bundles[0]);
     }
     
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     @Test(groups = {"singleCluster"})
     public void submitValidFeed() throws Exception {
 

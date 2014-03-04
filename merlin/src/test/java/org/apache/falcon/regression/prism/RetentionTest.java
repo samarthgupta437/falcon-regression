@@ -98,6 +98,7 @@ public class RetentionTest extends BaseTestClass {
     public void tearDown() throws Exception {
         prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         verifyFeedDeletion(Util.getInputFeedFromBundle(bundle));
+        removeBundles(bundle);
     }
 
     @Test

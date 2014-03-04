@@ -62,7 +62,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        removeBundles(bundle);
         HadoopUtil.deleteDirIfExists(inputPath, cluster1FS);
 
     }

@@ -74,6 +74,11 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].setProcessValidity(startDate, endDate);
     }
 
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
     public void testRetryInProcessZeroAttemptUpdate(String retryType, int delay, String delayUnits,
                                                     int retryAttempts) throws Exception {

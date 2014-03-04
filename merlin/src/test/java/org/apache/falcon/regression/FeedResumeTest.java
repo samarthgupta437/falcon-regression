@@ -57,6 +57,11 @@ public class FeedResumeTest extends BaseTestClass {
         feed = Util.getInputFeedFromBundle(bundles[0]);
     }
 
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     @Test(groups = {"singleCluster"})
     public void resumeSuspendedFeed() throws Exception {
         Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));

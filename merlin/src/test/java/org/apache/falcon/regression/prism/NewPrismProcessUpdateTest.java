@@ -92,6 +92,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Util.restartService(cluster3.getClusterHelper());
     }
 
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     public void setupOozieData(FileSystem fs, String... workflowPaths) throws IOException {
         for (String workflowPath : workflowPaths) {
             HadoopUtil.deleteDirIfExists(workflowPath, fs);

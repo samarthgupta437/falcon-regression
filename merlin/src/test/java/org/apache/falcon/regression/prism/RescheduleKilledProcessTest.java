@@ -58,7 +58,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        removeBundles(bundle);
     }
 
     @Test(enabled = false, timeOut = 1200000)

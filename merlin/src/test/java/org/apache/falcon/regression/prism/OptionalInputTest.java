@@ -61,6 +61,7 @@ public class OptionalInputTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
+        removeBundles();
     }
 
     @Test(enabled = true, groups = {"singleCluster"})

@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -51,6 +52,11 @@ public class FeedRetentionTest extends BaseTestClass {
         bundles[1] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[1].generateUniqueBundle();
         bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
     }
 
     /** submit 2 clusters
