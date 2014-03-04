@@ -343,10 +343,11 @@ public class HadoopUtil {
     public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix)throws Exception{
         Util.HDFSCleanup(fs, prefix);
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
         ArrayList<String> dataFolder = new ArrayList<String>();
+
+        for (int i = 0; i < dataDates.size(); i++){
+            dataDates.set(i, prefix + dataDates.get(i));
+        }
 
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
