@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
@@ -61,6 +62,7 @@ public class OptionalInputTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     @Test(enabled = true, groups = {"singleCluster"})

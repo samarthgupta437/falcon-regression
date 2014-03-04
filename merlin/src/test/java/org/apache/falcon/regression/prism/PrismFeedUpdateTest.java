@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -74,8 +75,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        b1.deleteBundle(prism);
-        b3.deleteBundle(prism);
+        BaseTestUtil.removeBundles(prism, b1, b3);
     }
 
     @Test(enabled = true, timeOut = 1200000)

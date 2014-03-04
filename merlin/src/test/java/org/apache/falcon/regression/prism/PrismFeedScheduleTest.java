@@ -25,8 +25,10 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -44,6 +46,11 @@ public class PrismFeedScheduleTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
         Util.print("test name: " + method.getName());
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     @Test(dataProvider = "DP", groups = {"prism", "0.2"})

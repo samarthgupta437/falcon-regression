@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -58,7 +59,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        BaseTestUtil.removeBundles(prism, bundle);
     }
 
     @Test(enabled = false, timeOut = 1200000)

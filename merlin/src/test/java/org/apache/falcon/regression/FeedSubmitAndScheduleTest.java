@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
@@ -55,6 +56,11 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     @Test(groups = {"singleCluster"})

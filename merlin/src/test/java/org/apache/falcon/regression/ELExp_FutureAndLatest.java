@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
@@ -91,6 +92,11 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
         Util.print("processStart: " + processStart + " processEnd: " + processEnd);
         bundles[0].setProcessValidity(processStart, processEnd);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+    }
+
+    @AfterMethod
+    public void tearDown() {
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     @Test(groups = {"singleCluster"})

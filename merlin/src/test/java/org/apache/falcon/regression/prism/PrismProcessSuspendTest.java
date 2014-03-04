@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -69,8 +70,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         if (restartRequired) {
             Util.restartService(cluster1.getProcessHelper());
         }
-        bundle1.deleteBundle(prism);
-        bundle2.deleteBundle(prism);
+        BaseTestUtil.removeBundles(prism, bundle1, bundle2);
     }
 
 

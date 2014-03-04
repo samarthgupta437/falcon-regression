@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -53,6 +54,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         if (restartRequired) {
             Util.restartService(cluster1.getFeedHelper());
         }
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
 

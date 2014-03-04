@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -59,6 +60,11 @@ public class FeedStatusTest extends BaseTestClass {
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
 
         feed = Util.getInputFeedFromBundle(bundles[0]);
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     @Test(groups = {"singleCluster"})

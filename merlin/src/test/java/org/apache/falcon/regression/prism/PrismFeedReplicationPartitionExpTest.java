@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.CoordinatorAction;
@@ -155,6 +156,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             HadoopUtil.deleteDirIfExists(dir, cluster1FS);
             HadoopUtil.deleteDirIfExists(dir, cluster2FS);
         }
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
 

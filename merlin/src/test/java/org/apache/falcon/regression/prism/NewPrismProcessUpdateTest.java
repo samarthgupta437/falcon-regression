@@ -35,6 +35,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -90,6 +91,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             setupOozieData(fs, WORKFLOW_PATH, WORKFLOW_PATH2, aggreagator1Path);
         }
         Util.restartService(cluster3.getClusterHelper());
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     public void setupOozieData(FileSystem fs, String... workflowPaths) throws IOException {

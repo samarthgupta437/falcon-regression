@@ -30,8 +30,10 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -65,6 +67,11 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
         bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
         bundles[2] = new Bundle(bundles[2], cluster3.getEnvFileName(), cluster3.getPrefix());
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     @Test(groups = {"multiCluster"})

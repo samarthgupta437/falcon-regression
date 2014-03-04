@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
@@ -113,10 +114,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
-
-        b1.deleteBundle(prism);
-        b2.deleteBundle(prism);
-        b3.deleteBundle(prism);
+        BaseTestUtil.removeBundles(prism, b1, b2, b3);
     }
 
     @Test(timeOut = 12000000)
