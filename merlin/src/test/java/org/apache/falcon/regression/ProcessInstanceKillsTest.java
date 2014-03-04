@@ -163,8 +163,12 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
+        /*
+        both start and end r in future with respect to process start end
+         */
+
         String startTime = InstanceUtil.getTimeWrtSystemTime(-2);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(40);
+        String endTime = InstanceUtil.getTimeWrtSystemTime(10);
         b.setProcessValidity(startTime, endTime);
         b.setProcessPeriodicity(5, TimeUnit.minutes);
         b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -184,6 +188,10 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture() throws Exception {
+        /*
+         both start and end r in future with respect to current time
+          */
+
         b.setProcessValidity("2010-01-02T01:00Z", "2099-01-02T01:21Z");
         b.setProcessPeriodicity(5, TimeUnit.minutes);
         b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
