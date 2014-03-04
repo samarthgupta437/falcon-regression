@@ -93,21 +93,4 @@ public class BaseTestClass {
         return returnList;
     }
 
-    @AfterMethod
-    public final void removeBundles() {
-        for (Bundle bundle : bundles) {
-            if (bundle != null){
-                bundle.deleteBundle(prism);
-            }
-        }
-    }
-
-    @AfterClass
-    public final void deleteBaseDir() throws IOException {
-        for (FileSystem fs : serverFS) {
-            HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
-        }
-    }
-
-
 }

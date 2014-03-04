@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
@@ -72,6 +73,11 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0] = new Bundle(Util.getBundleData("RetryTests")[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessValidity(startDate, endDate);
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        BaseTestUtil.removeBundles(prism, bundles);
     }
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)

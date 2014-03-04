@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -70,6 +71,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         if (restartRequired) {
             Util.restartService(cluster1.getFeedHelper());
         }
+        BaseTestUtil.removeBundles(prism, bundles);
     }
     
 /** NOTE: All test cases assume that there are two entities scheduled in each colo */

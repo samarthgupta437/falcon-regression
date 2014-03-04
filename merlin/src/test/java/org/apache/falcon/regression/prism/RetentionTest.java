@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -98,6 +99,7 @@ public class RetentionTest extends BaseTestClass {
     public void tearDown() throws Exception {
         prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
         verifyFeedDeletion(Util.getInputFeedFromBundle(bundle));
+        BaseTestUtil.removeBundles(prism, bundle);
     }
 
     @Test

@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
@@ -96,7 +97,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        b.deleteBundle(prism);
+        BaseTestUtil.removeBundles(prism, b);
     }
 
     @Test(groups = {"singleCluster"})
