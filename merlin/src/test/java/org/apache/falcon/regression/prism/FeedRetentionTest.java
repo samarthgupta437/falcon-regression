@@ -28,7 +28,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -57,7 +56,7 @@ public class FeedRetentionTest extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() throws Exception {
-        BaseTestUtil.removeBundles(prism, bundles);
+        removeBundles();
     }
 
     /** submit 2 clusters

@@ -29,7 +29,6 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.joda.time.DateTime;
 import org.testng.annotations.AfterClass;
@@ -109,7 +108,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
-        BaseTestUtil.removeBundles(prism, b, bundle);
+        removeBundles(b, bundle);
     }
 
     @Test(groups = {"singleCluster"})

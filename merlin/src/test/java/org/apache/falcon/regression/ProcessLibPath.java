@@ -25,7 +25,6 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
@@ -106,7 +105,7 @@ public class ProcessLibPath extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        BaseTestUtil.removeBundles(prism, bundle);
+        removeBundles(bundle);
     }
 
     @Test(groups = {"singleCluster"})

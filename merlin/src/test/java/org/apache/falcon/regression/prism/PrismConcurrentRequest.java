@@ -26,7 +26,6 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -59,7 +58,7 @@ public class PrismConcurrentRequest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         Thread.sleep(60000);
-        BaseTestUtil.removeBundles(prism, bundles);
+        removeBundles();
     }
 
     @Test(groups = {"multiCluster"})

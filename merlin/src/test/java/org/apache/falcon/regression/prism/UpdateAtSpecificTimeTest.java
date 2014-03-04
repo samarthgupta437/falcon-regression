@@ -30,7 +30,6 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.testng.Assert;
@@ -87,7 +86,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   @AfterMethod(alwaysRun = true)
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException {
     Util.print("tearDown " + method.getName());
-    BaseTestUtil.removeBundles(prism, bundle1, bundle2, bundle3);
+    removeBundles(bundle1, bundle2, bundle3);
   }
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000, enabled = false)

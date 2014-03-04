@@ -29,7 +29,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -122,7 +121,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        BaseTestUtil.removeBundles(prism, b1, b2, b3);
+        removeBundles(b1, b2, b3);
     }
 
     @Test(enabled = false, groups = {"multiCluster"})
