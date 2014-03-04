@@ -26,7 +26,6 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
@@ -96,7 +95,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() {
-        BaseTestUtil.removeBundles(prism, bundles);
+        removeBundles();
     }
 
     @Test(groups = {"singleCluster"})

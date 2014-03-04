@@ -34,7 +34,6 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
@@ -105,7 +104,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() {
-        BaseTestUtil.removeBundles(prism, bundles);
+        removeBundles();
     }
 
     @Test(groups = {"singleCluster"})

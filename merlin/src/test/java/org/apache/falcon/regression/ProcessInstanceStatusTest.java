@@ -29,7 +29,6 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.joda.time.DateTime;
@@ -113,7 +112,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        BaseTestUtil.removeBundles(prism, b);
+        removeBundles(b);
     }
 
     @Test(groups = {"singleCluster"})

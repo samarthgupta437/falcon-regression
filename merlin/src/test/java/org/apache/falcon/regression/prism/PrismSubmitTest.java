@@ -25,7 +25,6 @@ import org.apache.falcon.regression.core.util.PrismUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -61,7 +60,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Util.startService(prism.getFeedHelper());
         Util.startService(cluster1.getFeedHelper());
 
-        BaseTestUtil.removeBundles(prism, bundle);
+        removeBundles(bundle);
     }
 
     @Test

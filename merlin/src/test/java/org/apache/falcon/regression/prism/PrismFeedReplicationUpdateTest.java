@@ -28,7 +28,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
@@ -70,7 +69,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() throws Exception {
-        BaseTestUtil.removeBundles(prism, bundles);
+        removeBundles();
     }
 
     @Test(enabled = true, timeOut = 1200000)

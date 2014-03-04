@@ -24,7 +24,6 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.TestNGException;
@@ -65,7 +64,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() throws Exception {
-        BaseTestUtil.removeBundles(prism, UA1Bundle, UA2Bundle);
+        removeBundles(UA1Bundle, UA2Bundle);
     }
 
     @Test(groups = {"prism", "0.2"})

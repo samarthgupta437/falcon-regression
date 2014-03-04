@@ -31,7 +31,6 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.falcon.regression.testHelper.BaseTestUtil;
 import org.testng.TestNGException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -69,7 +68,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() throws Exception {
-        BaseTestUtil.removeBundles(prism, UA1Bundle, UA2Bundle);
+        removeBundles(UA1Bundle, UA2Bundle);
     }
 
 	/* NOTE: All test cases assume that there are two entities scheduled in each colo

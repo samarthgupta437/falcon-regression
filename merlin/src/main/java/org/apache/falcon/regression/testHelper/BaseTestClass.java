@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.testHelper;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -93,4 +94,18 @@ public class BaseTestClass {
         return returnList;
     }
 
+    public final void removeBundles(Bundle... bundles) {
+        for (Bundle bundle : bundles) {
+            if (bundle != null) {
+                bundle.deleteBundle(prism);
+            }
+        }
+        if (bundles != this.bundles) {
+            for (Bundle bundle : this.bundles) {
+                if (bundle != null) {
+                    bundle.deleteBundle(prism);
+                }
+            }
+        }
+    }
 }
