@@ -41,7 +41,7 @@ public class HCatUtil {
         try {
             HiveConf hcatConf = new HiveConf();
             hcatConf.set("hive.metastore.local", "false");
-            hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, helper.getProcessHelper().getHCatEndpoint());
+            hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS,helper.getProcessHelper().getHCatEndpoint());
             hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
             hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
                     HCatSemanticAnalyzer.class.getName());
@@ -152,7 +152,7 @@ public class HCatUtil {
         }
     }
 
-    public static void createHCatTestData(HCatClient cli, FileSystem fs, String dataType, String dbName, String tableName, ArrayList<String> dataFolder, String prefix) throws Exception {
+    public static void createHCatTestData(HCatClient cli, FileSystem fs, String dataType, String dbName, String tableName, ArrayList<String> dataFolder) throws Exception {
 
         HCatUtil.addPartitionsToExternalTable(cli, dataType, dbName, tableName, dataFolder);
     }
