@@ -26,11 +26,15 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hive.hcatalog.api.HCatClient;
+import org.joda.time.DateTime;
 
 import javax.xml.bind.JAXBException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class FeedMerlin extends org.apache.falcon.regression.core.generated
   .feed.Feed {
@@ -62,12 +66,12 @@ public class FeedMerlin extends org.apache.falcon.regression.core.generated
     return "";
   }
 
-    public void generateData(HCatClient cli, FileSystem fs){
+    public void generateData(HCatClient cli, FileSystem fs)throws Exception{
         String dataType="";
         String loc="";
         ArrayList<String> dataFolder;
         String ur = element.getTable().getUri();
-        if(ur.indexOf(";")!= -1){
+        if(ur.contains(";")){
             String[] parts = ur.split("#")[1].split(";");
             int len=parts.length;
             if(len==5) dataType="minutely";
@@ -78,21 +82,17 @@ public class FeedMerlin extends org.apache.falcon.regression.core.generated
 
         String dbName=ur.split("#")[0].split(":")[1];
         String tableName=ur.split("#")[0].split(":")[2];
-        try{
+
             loc = cli.getTable(dbName,tableName).getLocation();
             loc=loc+"/";
 
-            dataFolder=createData(fs, dataType, loc);
-            HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder, loc);
-        }catch(Exception e){
-            e.printStackTrace();
+            dataFolder = createTestData(fs , dataType, loc);
+            HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder);
         }
-    }
 
-    public void generateData(FileSystem fs){
+    public void generateData(FileSystem fs)throws Exception{
         String dataType="";
         String pathValue="";
-        String loc = "";
         for (Location location : element.getLocations().getLocation()) {
             if (location.getType().equals(LocationType.DATA)) {
                 pathValue=location.getPath();
@@ -108,29 +108,24 @@ public class FeedMerlin extends org.apache.falcon.regression.core.generated
             else if(len==2) dataType="monthly";
         }else dataType="yearly";
 
-        loc = pathValue.substring(0,pathValue.indexOf("$"));
-        createData(fs, dataType, loc);
+        String loc = pathValue.substring(0,pathValue.indexOf("$"));
+        createTestData(fs, dataType, loc);
     }
 
-    public ArrayList<String> createData(FileSystem fs, String dataType, String loc){
+    public ArrayList<String> createTestData(FileSystem fs, String dataType, String loc)throws Exception{
         ArrayList<String> dataFolder = new ArrayList<String>();
-        try{
-            if (dataType.equalsIgnoreCase("daily")) {
 
-                dataFolder = HadoopUtil.createTestDataInHDFS(fs, Util.getDailyDatesOnEitherSide(36, 0), loc);
-            } else if (dataType.equalsIgnoreCase("yearly")) {
-                dataFolder = HadoopUtil.createTestDataInHDFS(fs,Util.getYearlyDatesOnEitherSide(10, 0), loc );
-            } else if (dataType.equalsIgnoreCase("monthly")) {
-                dataFolder = HadoopUtil.createTestDataInHDFS(fs,Util.getMonthlyDatesOnEitherSide(30, 0), loc );
-            } else if (dataType.equalsIgnoreCase("hourly")) {
-                dataFolder = HadoopUtil.createTestDataInHDFS(fs,Util.getHourlyDatesOnEitherSide(40, 0), loc );
-            } else if (dataType.equalsIgnoreCase("minutely")) {
-                dataFolder = HadoopUtil.createTestDataInHDFS(fs,Util.getMinuteDatesOnEitherSide(20, 0), loc );
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+        Date start = element.getClusters().getCluster().get(0).getValidity().getStart();
+        Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        String startDate = formatter.format(start);
+        Date end = element.getClusters().getCluster().get(0).getValidity().getEnd();
+        String endDate = formatter.format(end);
+
+        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+
+        dataFolder = HadoopUtil.createTestDataInHDFS(fs, Util.getDatesOnEitherSide(startDateJoda,endDateJoda,dataType), loc);
         return dataFolder;
-
     }
+
 }
