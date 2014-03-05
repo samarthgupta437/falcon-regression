@@ -148,10 +148,10 @@ public class Util {
 
     logger.info(
       "The web service response status is " + response.getStatusLine().getStatusCode());
-    System.out.println(
+    logger.info(
       "The web service response status is " + response.getStatusLine().getStatusCode());
     logger.info("The web service response is: " + string_response.toString() + "\n");
-    System.out.println("The web service response is: " + string_response.toString() + "\n");
+    logger.info("The web service response is: " + string_response.toString() + "\n");
     return new ServiceResponse(string_response.toString(),
       response.getStatusLine().getStatusCode());
   }
@@ -163,14 +163,14 @@ public class Util {
     post.setHeader("Content-Type", "text/xml");
     post.setHeader("Remote-User", System.getProperty("user.name"));
     post.setEntity(new StringEntity(data));
-    System.out.println("hitting the URL: " + url);
+    logger.info("hitting the URL: " + url);
 
     long start_time = System.currentTimeMillis();
     HttpResponse response = client.execute(post);
-    System.out.println(
+    logger.info(
       "The web service response status is " + response.getStatusLine().getStatusCode());
-    System.out.println("time taken:" + (System.currentTimeMillis() - start_time));
-    System.out.println("time taken:" + (System.currentTimeMillis() - start_time));
+    logger.info("time taken:" + (System.currentTimeMillis() - start_time));
+    logger.info("time taken:" + (System.currentTimeMillis() - start_time));
 
 
     BufferedReader reader =
@@ -182,7 +182,7 @@ public class Util {
       string_response = string_response + line;
     }
 
-    System.out.println("The web service response is " + string_response + "\n");
+    logger.info("The web service response is " + string_response + "\n");
 
     return new ServiceResponse(string_response, response.getStatusLine().getStatusCode());
   }
@@ -313,7 +313,7 @@ public class Util {
     JSch jsch = new JSch();
     Session session = jsch.getSession(userName, hostName, 22);
 
-    System.out.println(
+    logger.info(
       "host_name: " + hostName + " user_name: " + userName + " password: " + password +
         " command: " +
         command);
@@ -381,9 +381,9 @@ public class Util {
     if (directoryPath.contains("/test-classes"))
       directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
         + "/test-classes".length() + 1, directoryPath.length());
-    System.out.println("directoryPath: " + directoryPath);
+    logger.info("directoryPath: " + directoryPath);
     URL url = Util.class.getResource("/" + directoryPath);
-    System.out.println("url" + url);
+    logger.info("url" + url);
     File dir = new File(url.toURI());
     File[] files = dir.listFiles();
     Arrays.sort(files);
@@ -524,15 +524,15 @@ public class Util {
 
           if (data.contains("uri:ivory:process:0.1") ||
             data.contains("uri:falcon:process:0.1")) {
-            System.out.println("data been added to process: " + data);
+            logger.info("data been added to process: " + data);
             processData = data;
           } else if (data.contains("uri:ivory:cluster:0.1") ||
             data.contains("uri:falcon:cluster:0.1")) {
-            System.out.println("data been added to cluster: " + data);
+            logger.info("data been added to cluster: " + data);
             clusterData = data;
           } else if (data.contains("uri:ivory:feed:0.1") ||
             data.contains("uri:falcon:feed:0.1")) {
-            System.out.println("data been added to feed: " + data);
+            logger.info("data been added to feed: " + data);
             dataSets.add(data);
           }
         }
@@ -1340,7 +1340,7 @@ public class Util {
       if (!file.isDirectory()) {
         String path = "/lateDataTest/testFolders/" + remoteLocation + "/" +
           System.currentTimeMillis() / 1000 + "/";
-        System.out.println("inserting data@ " + path);
+        logger.info("inserting data@ " + path);
         fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(path));
       }
     }
@@ -1375,7 +1375,7 @@ public class Util {
       if (!f.exists()) {
         r = f.createNewFile();
         if (!r)
-          System.out.println("file could not be created");
+          logger.info("file could not be created");
       }
 
 
@@ -1385,7 +1385,7 @@ public class Util {
       fs.copyFromLocalFile(new Path(f.getAbsolutePath()), new Path(folderPrefix + folder));
       r = f.delete();
       if (!r)
-        System.out.println("delete was not successful");
+        logger.info("delete was not successful");
 
 
       for (final String file : fileLocations) {
@@ -1444,7 +1444,7 @@ public class Util {
         .equals(type))) {
         return client.getCoordJobInfo(coord.getId());
       } else {
-        System.out.println("Desired coord does not exists");
+        logger.info("Desired coord does not exists on "+ client.getOozieUrl());
       }
     }
 
@@ -1568,7 +1568,7 @@ public class Util {
     } else {
       runCmd = String.format("sudo su - %s -c '%s'", runAs, command);
     }
-    System.out.println(
+    logger.info(
       "host_name: " + hostName + " user_name: " + userName + " password: " + password +
         " command: " +
         runCmd);
@@ -1596,7 +1596,7 @@ public class Util {
         System.out.print(new String(tmp, 0, i));
       }
       if(channel.isClosed()){
-        System.out.println("exit-status: "+channel.getExitStatus());
+        logger.info("exit-status: "+channel.getExitStatus());
         break;
       }
       try{Thread.sleep(1000);}catch(Exception ee){}
@@ -1783,7 +1783,7 @@ public class Util {
     try {
       Properties properties = new Properties();
 
-      System.out.println("filename: " + filename);
+      logger.info("filename: " + filename);
       InputStream conf_stream =
         Util.class.getResourceAsStream("/" + filename);
       properties.load(conf_stream);
@@ -1874,8 +1874,10 @@ public class Util {
     if (shouldBeCreated) {
       Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
         "eeks! new bundle is not getting created!!!!");
-      System.out.println("old bundleId=" + originalBundleId);
-      System.out.println("new bundleId=" + newBundleId);
+      logger.info("old bundleId=" + originalBundleId + " on oozie: " +
+        ""+coloHelper.getProcessHelper().getOozieClient().getOozieUrl());
+      logger.info("new bundleId=" + newBundleId + " on oozie: " +
+        ""+coloHelper.getProcessHelper().getOozieClient().getOozieUrl());
       Util.validateNumberOfWorkflowInstances(coloHelper,
         originalBundleCount, originalBundleId, newBundleId);
     } else {
@@ -1899,8 +1901,8 @@ public class Util {
     if (shouldBeCreated) {
       Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
         "eeks! new bundle is not getting created!!!!");
-      System.out.println("old bundleId=" + originalBundleId);
-      System.out.println("new bundleId=" + newBundleId);
+      logger.info("old bundleId=" + originalBundleId);
+      logger.info("new bundleId=" + newBundleId);
       if(matchInstances)
         Util.validateNumberOfWorkflowInstances(cluster,
         initialNominalTimes, originalBundleId, newBundleId, entityType);
@@ -1922,10 +1924,10 @@ public class Util {
     initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
 
     if (initialNominalTimes.size() != 0){
-      System.out.println("Missing instance are : "+ Util
+      logger.info("Missing instance are : "+ Util
         .getListElements(initialNominalTimes));
-      System.out.println("Original Bundle ID   : "+originalBundleId);
-      System.out.println("New Bundle ID        : "+newBundleId);
+      logger.info("Original Bundle ID   : "+originalBundleId);
+      logger.info("New Bundle ID        : "+newBundleId);
 
       Assert.assertFalse(true, "some instances have gone missing after " +
         "update");
@@ -2039,7 +2041,7 @@ public class Util {
         feedElement
           .getTargetCluster()+"/000/replication_SUCCEEDED.log";
 
-      System.out.println("Checing of log in: "+pathToCheck.toString());
+      logger.info("Checing of log in: "+pathToCheck.toString());
       if(!fs.exists(new Path(pathToCheck)))
         Assert.assertTrue(false);
 
@@ -2073,7 +2075,7 @@ public class Util {
       fs.copyFromLocalFile(new Path("workflow.xml"),file);
     }
     else {
-      System.out.println("Nothing to do, workflow.xml does not exists");
+      logger.info("Nothing to do, workflow.xml does not exists");
     }
 
   }
@@ -2113,13 +2115,13 @@ public class Util {
     List<WorkflowAction> workflowActions = workflowJob.getActions();
 
     for (int i=0; i < workflowActions.size(); i++) {
-      System.out.println(" outside : "+workflowActions.get(i).getName()+ " " +
+      logger.info(" outside : "+workflowActions.get(i).getName()+ " " +
         workflowActions
         .get(i)
         .getUserRetryCount());
 
       if (workflowActions.get(i).getName().contains("recordsize")) {
-        System.out.println(workflowActions.get(i).getUserRetryCount());
+        logger.info(workflowActions.get(i).getUserRetryCount());
       }
     }
     return cluster.getClusterHelper().getOozieClient().getWorkflowActionInfo
@@ -2221,14 +2223,14 @@ public class Util {
       else if (xmlLocation.length == 0)
         b = Util.readELBundles()[0][0];
       else {
-        System.out.println("invalid size of xmlLocaltions return null");
+        logger.info("invalid size of xmlLocaltions return null");
         return null;
       }
 
       b.generateUniqueBundle();
       return new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
     } catch (Exception e) {
-      System.out.println(Arrays.toString(e.getStackTrace()));
+      logger.info(Arrays.toString(e.getStackTrace()));
     }
     return null;
   }
