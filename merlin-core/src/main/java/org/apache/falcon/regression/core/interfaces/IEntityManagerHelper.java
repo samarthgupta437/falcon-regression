@@ -102,6 +102,7 @@ public abstract class IEntityManagerHelper {
     protected String envFileName;
     protected String colo;
     protected String allColo;
+    protected String coloName;
     protected String serviceStartCmd;
     protected String serviceStopCmd;
     protected String serviceRestartCmd;
@@ -195,6 +196,7 @@ public abstract class IEntityManagerHelper {
         this.allColo = "?colo=" + prop.getProperty(prefix + "colo", "*");
         this.colo = (!prop.getProperty(prefix + "colo", "").isEmpty()) ? "?colo=" + prop
                 .getProperty(prefix + "colo") : "";
+        this.coloName = this.colo.contains("=") ? this.colo.split("=")[1] : "";
         this.serviceStartCmd =
                 prop.getProperty(prefix + "service_start_cmd", "/etc/init.d/tomcat6 start");
         this.serviceStopCmd = prop.getProperty(prefix + "service_stop_cmd",
@@ -331,4 +333,6 @@ public abstract class IEntityManagerHelper {
     public String getColo() {
         return colo;
     }
+
+    public String getColoName(){ return coloName; }
 }
