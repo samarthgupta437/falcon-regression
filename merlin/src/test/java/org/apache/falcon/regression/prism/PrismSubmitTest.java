@@ -34,43 +34,41 @@ import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.util.List;
 
+@Test(groups = "distributed")
 public class PrismSubmitTest extends BaseTestClass {
 
-    ColoHelper cluster1;
-    ColoHelper cluster2;
-    private Bundle bundle;
-
-    public PrismSubmitTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster2 = servers.get(1);
-    }
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
+    String randomHDFSPath = baseHDFSDir + "/someRandomPath";
+    boolean restartRequired = false;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundle.generateUniqueBundle();
+         restartRequired = false;
+         bundles[0] = Util.readELBundles()[0][0];
+         bundles[0] = new Bundle( bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
+         bundles[0].generateUniqueBundle();
     }
 
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        Util.startService(prism.getFeedHelper());
-        Util.startService(cluster1.getFeedHelper());
-
-        removeBundles(bundle);
+        if(restartRequired){
+            Util.startService(prism.getFeedHelper());
+            Util.startService(cluster1.getFeedHelper());
+        }
+        removeBundles();
     }
 
     @Test
     public void submitCluster_1prism1coloPrismdown() throws Exception {
-
+        restartRequired = true;
         Util.shutDownService(prism.getClusterHelper());
 
         List<String> beforeSubmit = cluster1.getClusterHelper().getStoreInfo();
         try {
-            prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+            prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         } catch (ConnectException e) {
             Assert.assertTrue(e.getMessage().contains("Connection to "
                     + prism.getClusterHelper().getHostname() +" refused"), e.getMessage());
@@ -83,14 +81,14 @@ public class PrismSubmitTest extends BaseTestClass {
 
     @Test
     public void submitCluster_resubmitDiffContent() throws Exception {
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
 
-        bundle.setCLusterWorkingPath(bundle.getClusters().get(0), "/projects/ivory/someRandomPath");
-        Util.print("modified cluster Data: " + bundle.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        bundles[0].setCLusterWorkingPath( bundles[0].getClusters().get(0), randomHDFSPath);
+        Util.print("modified cluster Data: " +  bundles[0].getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         List<String> afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
@@ -101,30 +99,31 @@ public class PrismSubmitTest extends BaseTestClass {
 
     @Test
     public void submitCluster_resubmitAlreadyPARTIALWithAllUp() throws Exception {
+            restartRequired = true;
             Util.shutDownService(cluster1.getClusterHelper());
             Thread.sleep(30000);
 
-            ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+            ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
             Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
             Util.startService(cluster1.getClusterHelper());
             Thread.sleep(30000);
 
-            r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+            r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
     }
 
     @Test
     public void submitProcess_1ColoDownAfter2FeedSubmitStartAfterProcessSubmitAnsDeleteProcess() throws Exception {
-
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        restartRequired = true;
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundle.getDataSets().get(0));
+        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getDataSets().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundle.getDataSets().get(1));
+        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getDataSets().get(1));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         Util.shutDownService(cluster1.getClusterHelper());
@@ -135,9 +134,9 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> beforeSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getProcessHelper().getStoreInfo();
 
-        r = prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().delete(URLS.DELETE_URL,  bundles[0].getProcessData());
 
-        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getProcessData());
         Util.assertFailed(r);
         List<String> afterSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
         List<String> afterSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
@@ -145,7 +144,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
         PrismUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.getProcessName(bundle.getProcessData()), 1);
+                Util.getProcessName( bundles[0].getProcessData()), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
 
         Util.startService(cluster1.getClusterHelper());
@@ -155,7 +154,7 @@ public class PrismSubmitTest extends BaseTestClass {
         beforeSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
         beforeSubmitPrism = prism.getProcessHelper().getStoreInfo();
 
-        r = prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().delete(URLS.DELETE_URL,  bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         afterSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
@@ -164,24 +163,24 @@ public class PrismSubmitTest extends BaseTestClass {
 
         PrismUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.getProcessName(bundle.getProcessData()), -1);
+                Util.getProcessName( bundles[0].getProcessData()), -1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
     }
 
     @Test
     public void submitProcess_ideal() throws Exception {
 
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         List<String> beforeSubmitCluster1 = cluster1.getFeedHelper().getStoreInfo();
         List<String> beforeSubmitCluster2 = cluster2.getFeedHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getFeedHelper().getStoreInfo();
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundle.getDataSets().get(0));
+        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getDataSets().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundle.getDataSets().get(1));
+        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getDataSets().get(1));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         List<String> afterSubmitCluster1 = cluster1.getFeedHelper().getStoreInfo();
@@ -196,7 +195,7 @@ public class PrismSubmitTest extends BaseTestClass {
         beforeSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
         beforeSubmitPrism = prism.getProcessHelper().getStoreInfo();
 
-        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         afterSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
@@ -204,21 +203,22 @@ public class PrismSubmitTest extends BaseTestClass {
         afterSubmitPrism = prism.getProcessHelper().getStoreInfo();
 
         PrismUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1,
-                Util.getProcessName(bundle.getProcessData()), 1);
+                Util.getProcessName( bundles[0].getProcessData()), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.getProcessName(bundle.getProcessData()), 1);
+                Util.getProcessName( bundles[0].getProcessData()), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
 
     }
 
     @Test
     public void submitCluster_1prism1coloColoDown() throws Exception {
+        restartRequired = true;
         Util.shutDownService(cluster1.getClusterHelper());
 
         List<String> beforeSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getClusterHelper().getStoreInfo();
 
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
 
         List<String> afterSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
@@ -227,9 +227,9 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
 
         Util.startService(cluster1.getClusterHelper());
 
@@ -238,7 +238,7 @@ public class PrismSubmitTest extends BaseTestClass {
         beforeSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
         beforeSubmitPrism = prism.getClusterHelper().getStoreInfo();
 
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
         afterSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
         afterSubmitPrism = prism.getClusterHelper().getStoreInfo();
@@ -251,14 +251,14 @@ public class PrismSubmitTest extends BaseTestClass {
 
     @Test
     public void submitCluster_1prism1coloSubmitDeleted() throws Exception {
-        prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
-        prism.getClusterHelper().delete(URLS.DELETE_URL, bundle.getClusters().get(0));
+        prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
+        prism.getClusterHelper().delete(URLS.DELETE_URL,  bundles[0].getClusters().get(0));
 
         List<String> beforeSubmitCluster1 = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getClusterHelper().getStoreInfo();
 
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
         List<String> afterSubmitCluster1 = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
@@ -267,16 +267,16 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         PrismUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
     }
 
     @Test
     public void submitProcess_woClusterSubmit() throws Exception {
-        ServiceResponse r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        ServiceResponse r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getProcessData());
 
         Assert.assertTrue(r.getMessage().contains("FAILED"));
         Assert.assertTrue(r.getMessage().contains("is not registered"));
@@ -284,17 +284,18 @@ public class PrismSubmitTest extends BaseTestClass {
 
     @Test
     public void submitProcess_woFeedSubmit() throws Exception {
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("FAILED"));
         Assert.assertTrue(r.getMessage().contains("is not registered"));
     }
 
     @Test(groups = {"prism", "0.2"})
     public void submitCluster_resubmitAlreadyPARTIAL() throws Exception {
-        Bundle bundle2 = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        restartRequired = true;
+        Bundle bundle2 = new Bundle( bundles[0], cluster2.getEnvFileName(), cluster2.getPrefix());
         bundle2.generateUniqueBundle();
 
         List<String> beforeCluster1 = cluster1.getClusterHelper().getStoreInfo();
@@ -303,7 +304,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
         Util.shutDownService(cluster1.getFeedHelper());
 
-        bundle2.setCLusterColo(cluster2.getClusterHelper().getColo().split("=")[1]);
+        bundle2.setCLusterColo(cluster2.getClusterHelper().getColoName());
         Util.print("cluster b2: " + bundle2.getClusters().get(0));
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
@@ -320,9 +321,9 @@ public class PrismSubmitTest extends BaseTestClass {
 
         Util.restartService(cluster1.getFeedHelper());
 
-        bundle.setCLusterColo(cluster1.getClusterHelper().getColo().split("=")[1]);
-        Util.print("cluster b1: " + bundle.getClusters().get(0));
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+         bundles[0].setCLusterColo(cluster1.getClusterHelper().getColoName());
+        Util.print("cluster b1: " +  bundles[0].getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         List<String> afterCluster1 = cluster1.getClusterHelper().getStoreInfo();
@@ -330,7 +331,7 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> afterCluster2 = cluster2.getClusterHelper().getStoreInfo();
 
         PrismUtil.compareDataStoreStates(parCluster1, afterCluster1,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(afterPrism, parPrism, 0);
         PrismUtil.compareDataStoreStates(afterCluster2, parCluster2, 0);
         bundle2.deleteBundle(prism);
@@ -338,38 +339,39 @@ public class PrismSubmitTest extends BaseTestClass {
 
     @Test
     public void submitCluster_polarization() throws Exception {
-
+        restartRequired = true;
         //shutdown one colo and submit
         Util.shutDownService(cluster1.getClusterHelper());
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         List<String> afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
         PrismUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
 
         //resubmit PARTIAL success
         Util.startService(cluster1.getClusterHelper());
         Thread.sleep(30000);
         beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
         afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         PrismUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism, 0);
     }
 
     @Test
     public void submitCluster_resubmitDiffContentPARTIAL() throws Exception {
+        restartRequired = true;
         Util.shutDownService(cluster1.getClusterHelper());
         Thread.sleep(30000);
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
         Util.startService(cluster1.getClusterHelper());
@@ -377,42 +379,44 @@ public class PrismSubmitTest extends BaseTestClass {
 
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
-        bundle.setCLusterWorkingPath(bundle.getClusters().get(0), "/projects/ivory/someRandomPath");
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+         bundles[0].setCLusterWorkingPath( bundles[0].getClusters().get(0), randomHDFSPath);
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         List<String> afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         PrismUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism, 0);
     }
 
     @Test
     public void submitCluster_PARTIALDeletedOfPARTIALSubmit() throws Exception {
+        restartRequired = true;
         Util.shutDownService(cluster1.getClusterHelper());
         Thread.sleep(30000);
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
-        r = prism.getClusterHelper().delete(URLS.DELETE_URL, bundle.getClusters().get(0));
+        r = prism.getClusterHelper().delete(URLS.DELETE_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
         List<String> afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         PrismUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName(bundle.getClusters().get(0)), -1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), -1);
 
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
     }
 
     @Test
     public void submitCluster_submitPartialDeleted() throws Exception {
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        restartRequired = true;
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
         Thread.sleep(30000);
@@ -422,36 +426,36 @@ public class PrismSubmitTest extends BaseTestClass {
 
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
-        r = prism.getClusterHelper().delete(URLS.DELETE_URL, bundle.getClusters().get(0));
+        r = prism.getClusterHelper().delete(URLS.DELETE_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
         List<String> afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         PrismUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName(bundle.getClusters().get(0)), -1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), -1);
 
         Util.startService(cluster1.getClusterHelper());
         Thread.sleep(30000);
 
         beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
         afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         PrismUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
     }
 
     @Test
     public void submitCluster_resubmitAlreadySucceeded() throws Exception {
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
-        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         List<String> afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
@@ -466,7 +470,7 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> beforeSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getClusterHelper().getStoreInfo();
 
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
         List<String> afterSubmitCluster1 = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
@@ -474,22 +478,22 @@ public class PrismSubmitTest extends BaseTestClass {
 
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
         PrismUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2,
-                Util.readClusterName(bundle.getClusters().get(0)), 1);
+                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
     }
 
     @Test
     public void submitCluster_1prism1coloAlreadySubmitted() throws Exception {
-        prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
         List<String> beforeSubmitCluster1 = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getClusterHelper().getStoreInfo();
 
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
 
         List<String> afterSubmitCluster1 = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
@@ -503,10 +507,11 @@ public class PrismSubmitTest extends BaseTestClass {
 
     @Test
     public void submitProcess_1ColoDownAfter1FeedSubmitStartAfter2feed() throws Exception {
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        restartRequired = true;
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"), r.getMessage());
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundle.getDataSets().get(0));
+        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getDataSets().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"), r.getMessage());
 
         Util.shutDownService(cluster1.getClusterHelper());
@@ -516,7 +521,7 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> beforeSubmitCluster2 = cluster2.getFeedHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getFeedHelper().getStoreInfo();
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundle.getDataSets().get(1));
+        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getDataSets().get(1));
         Assert.assertTrue(r.getMessage().contains("FAILED"));
 
         List<String> afterSubmitCluster1 = cluster1.getFeedHelper().getStoreInfo();
@@ -525,7 +530,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
         PrismUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readDatasetName(bundle.getDataSets().get(1)), 1);
+                Util.readDatasetName( bundles[0].getDataSets().get(1)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
 
         Util.startService(cluster1.getClusterHelper());
@@ -535,7 +540,7 @@ public class PrismSubmitTest extends BaseTestClass {
         beforeSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
         beforeSubmitPrism = prism.getProcessHelper().getStoreInfo();
 
-        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("FAILED"), r.getMessage());
 
         afterSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
@@ -544,7 +549,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
         PrismUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1, 0);
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.getProcessName(bundle.getProcessData()), 1);
+                Util.getProcessName( bundles[0].getProcessData()), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
     }
 
