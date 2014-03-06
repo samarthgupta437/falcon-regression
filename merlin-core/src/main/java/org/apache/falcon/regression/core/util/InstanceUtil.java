@@ -657,38 +657,6 @@ public class InstanceUtil {
         bundle.setClusterData(sw.toString());
     }
 
-
-    @Deprecated
-    /**
-     * method has been replaced
-     */
-    public static String setFeedCluster(String feed,
-                                        org.apache.falcon.regression.core.generated.feed.Validity
-                                                v1,
-                                        Retention r1, String n1, ClusterType t1, String partition) throws JAXBException {
-
-        org.apache.falcon.regression.core.generated.feed.Cluster c1 =
-                new org.apache.falcon.regression.core.generated.feed.Cluster();
-        c1.setName(n1);
-        c1.setRetention(r1);
-        c1.setType(t1);
-        c1.setValidity(v1);
-        if (partition != null)
-            c1.setPartition(partition);
-
-        Feed f = getFeedElement(feed);
-
-        int numberOfInitialClusters = f.getClusters().getCluster().size();
-        if (n1 == null)
-            for (int i = 0; i < numberOfInitialClusters; i++)
-                f.getClusters().getCluster().set(i, null);
-        else {
-            f.getClusters().getCluster().add(c1);
-        }
-        return feedElementToString(f);
-
-    }
-
     public static String setFeedCluster(String feed,
                                         org.apache.falcon.regression.core.generated.feed.Validity
                                                 v1,
