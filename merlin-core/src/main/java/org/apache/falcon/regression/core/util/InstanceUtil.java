@@ -97,14 +97,6 @@ public class InstanceUtil {
         return hitUrl(url, Util.getMethodType(url));
     }
 
-    public static ProcessInstancesResult sendRequestProcessInstance(String
-                                                                            url,
-                                                                    String user
-    ) throws IOException, URISyntaxException, AuthenticationException {
-
-        return hitUrl(url, Util.getMethodType(url));
-    }
-
     public static ProcessInstancesResult hitUrl(String url,
                                                 String method) throws URISyntaxException,
     IOException, AuthenticationException {
@@ -763,31 +755,6 @@ public class InstanceUtil {
         return sw.toString();
     }
 
-    public static List<String> getReplicationCoordName(String bundleID,
-                                                            IEntityManagerHelper helper) throws OozieClientException {
-        List<CoordinatorJob> cords = InstanceUtil.getBundleCoordinators(bundleID, helper);
-
-        List<String> ReplicationCordName = new ArrayList<String>();
-        for (CoordinatorJob cord : cords) {
-            if (cord.getAppName().contains("FEED_REPLICATION"))
-                ReplicationCordName.add(cord.getAppName());
-        }
-
-        return ReplicationCordName;
-    }
-
-    public static String getRetentionCoordName(String bundlID,
-                                               IEntityManagerHelper helper) throws OozieClientException {
-        List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-        String RetentionCoordName = null;
-        for (CoordinatorJob coord : coords) {
-            if (coord.getAppName().contains("FEED_RETENTION"))
-                return coord.getAppName();
-        }
-
-        return RetentionCoordName;
-    }
-
     public static List<String> getReplicationCoordID(String bundlID,
                                                           IEntityManagerHelper helper) throws OozieClientException {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
@@ -798,18 +765,6 @@ public class InstanceUtil {
         }
 
         return ReplicationCoordID;
-    }
-
-    public static String getRetentionCoordID(String bundlID,
-                                             IEntityManagerHelper helper) throws OozieClientException {
-        List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-        String RetentionCoordID = null;
-        for (CoordinatorJob coord : coords) {
-            if (coord.getAppName().contains("FEED_RETENTION"))
-                return coord.getId();
-        }
-
-        return RetentionCoordID;
     }
 
     public static void putDataInFolders(PrismHelper helper,
@@ -1165,76 +1120,6 @@ public class InstanceUtil {
                 .unmarshal((new StringReader(clusterData)));
     }
 
-    @Deprecated
-    public static void waitTillInstanceReachState(ColoHelper coloHelper,
-                                                  String processName, int numberOfInstance,
-                                                  org.apache.oozie.client.CoordinatorAction
-                                                          .Status expectedStatus,
-                                                  int minutes) throws OozieClientException {
-
-
-        int sleep = minutes * 60 / 20;
-
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
-                    .getStatusAllInstanceStatusForProcess(coloHelper, processName);
-            int instanceWithStatus = 0;
-            for (CoordinatorAction.Status aStatusList : statusList) {
-
-                if (aStatusList.equals(expectedStatus))
-                    instanceWithStatus++;
-
-            }
-
-            if (instanceWithStatus == numberOfInstance)
-                break;
-
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-
-        }
-    }
-
-    @Deprecated
-    public static void waitTillInstanceReachState(ColoHelper coloHelper,
-                                                  String entityName, int numberOfInstance,
-                                                  org.apache.oozie.client.CoordinatorAction
-                                                          .Status expectedStatus,
-                                                  int totalMinutesToWait, ENTITY_TYPE entityType) throws OozieClientException {
-
-        int sleep = totalMinutesToWait * 60 / 20;
-
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
-                    .getStatusAllInstance(coloHelper, entityName, entityType);
-
-            int instanceWithStatus = 0;
-            for (CoordinatorAction.Status aStatusList : statusList) {
-
-                if (aStatusList.equals(expectedStatus))
-                    instanceWithStatus++;
-
-            }
-
-            if (instanceWithStatus >= numberOfInstance)
-                return;
-
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-
-        }
-
-        Assert.assertTrue(false, "expceted state of instance was never reached");
-    }
-
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
                                                   org.apache.oozie.client.CoordinatorAction
@@ -1302,68 +1187,6 @@ public class InstanceUtil {
         Assert.assertTrue(false, "expected state of instance was never reached");
     }
 
-    private static List<org.apache.oozie.client.CoordinatorAction.Status>
-    getStatusAllInstanceStatusForProcess(
-            ColoHelper coloHelper, String processName) throws OozieClientException {
-
-        CoordinatorJob coordInfo = InstanceUtil.getCoordJobForProcess(coloHelper, processName);
-
-        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
-                new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
-        for (int count = 0; count < coordInfo.getActions().size(); count++)
-            statusList.add(coordInfo.getActions().get(count).getStatus());
-
-        return statusList;
-    }
-
-    private static List<org.apache.oozie.client.CoordinatorAction.Status> getStatusAllInstance(
-            ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType) throws OozieClientException {
-
-        CoordinatorJob coordInfo =
-                InstanceUtil.getCoordJobForProcess(coloHelper, entityName, entityType);
-
-        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
-                new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
-        for (int count = 0; count < coordInfo.getActions().size(); count++)
-            statusList.add(coordInfo.getActions().get(count).getStatus());
-
-        return statusList;
-    }
-
-    private static CoordinatorJob getCoordJobForProcess(
-            ColoHelper coloHelper, String processName) throws OozieClientException {
-
-        String bundleID =
-                InstanceUtil.getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, 0);
-        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-        return oozieClient.getCoordJobInfo(coordID);
-    }
-
-    private static CoordinatorJob getCoordJobForProcess(
-            ColoHelper coloHelper, String processName, ENTITY_TYPE entityType) throws OozieClientException {
-
-        String bundleID = InstanceUtil.getLatestBundleID(coloHelper, processName, entityType);
-        //instanceUtil.getSequenceBundleID(coloHelper,processName,entityType, 0);
-        String coordID;
-        if (entityType.equals(ENTITY_TYPE.PROCESS))
-            coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        else
-            coordID =
-                    InstanceUtil.getReplicationCoordID(bundleID, coloHelper.getFeedHelper()).get(0);
-        OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-        return oozieClient.getCoordJobInfo(coordID);
-    }
-
-    public static String removeFeedPartitionsTag(String feed) throws JAXBException {
-        Feed f = getFeedElement(feed);
-
-        f.setPartitions(null);
-
-        return feedElementToString(f);
-
-    }
-
     public static void waitForBundleToReachState(
             ColoHelper coloHelper,
             String processName,
@@ -1391,33 +1214,6 @@ public class InstanceUtil {
                 logger.error(e.getMessage());
             }
         }
-    }
-
-    public static void waitTillParticularInstanceReachState(ColoHelper coloHelper,
-                                                            String entityName, int instanceNumber,
-                                                            org.apache.oozie.client.CoordinatorAction.Status
-                                                                    expectedStatus,
-                                                            int totalMinutesToWait,
-                                                            ENTITY_TYPE entityType) throws OozieClientException {
-
-        int sleep = totalMinutesToWait * 60 / 20;
-
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
-                    .getStatusAllInstance(coloHelper, entityName, entityType);
-
-            if (statusList.get(instanceNumber).equals(expectedStatus))
-                break;
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-
-        }
-
-
     }
 
     public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
