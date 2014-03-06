@@ -9,7 +9,5 @@ public class OSUtil {
             String.format(RESOURCES + "%sOozieExampleInputData", SEPARATOR);
     public static String NORMAL_INPUT =
             String.format(OOZIE_EXAMPLE_INPUT_DATA + "%snormalInput", SEPARATOR);
-    public static String LATE_DATA =
-            String.format(OOZIE_EXAMPLE_INPUT_DATA + "%slateData", SEPARATOR);
 
 }
