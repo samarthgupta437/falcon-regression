@@ -22,8 +22,7 @@ import org.apache.falcon.regression.core.util.Util;
 
 public enum GetBundle {
 
-    BillingFeedReplicationBundle("LocalDC_feedReplicaltion_BillingRC"), RegularBundle(
-            "src/test/resources/ELbundle");
+    BillingFeedReplicationBundle("LocalDC_feedReplicaltion_BillingRC"), RegularBundle("ELbundle");
 
     private final String value;
 
