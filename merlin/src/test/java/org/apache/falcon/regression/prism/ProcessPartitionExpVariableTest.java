@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -44,7 +45,8 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     FileSystem cluster1FS;
     OozieClient cluster1OC;
     private Bundle bundle;
-    private String inputPath = "/samarthData/input";
+    private String baseTestDir = baseHDFSDir + "/ProcessPartitionExpVariableTest";
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
 
     public ProcessPartitionExpVariableTest(){
         super();
@@ -53,17 +55,23 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         cluster1OC = serverOC.get(0);
     }
 
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, "src/test/resources/oozie");
+    }
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundle.generateUniqueBundle();
+        bundle.setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles(bundle);
-        HadoopUtil.deleteDirIfExists(inputPath, cluster1FS);
+        HadoopUtil.deleteDirIfExists(baseTestDir, cluster1FS);
 
     }
 
@@ -72,7 +80,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
         String endTime = InstanceUtil.getTimeWrtSystemTime(30);
 
-        bundle = bundle.getRequiredBundle(bundle, 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundle = bundle.getRequiredBundle(bundle, 1, 2, 1, baseTestDir, 1, startTime, endTime);
         bundle.setProcessData(bundle.setProcessInputNames(bundle.getProcessData(), "inputData0", "inputData"));
         Property p = new Property();
         p.setName("var1");
@@ -91,7 +99,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         InstanceUtil.createDataWithinDatesAndPrefix(cluster1,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
-                inputPath + "/input1/", 1);
+                baseTestDir + "/input1/", 1);
 
         bundle.submitAndScheduleBundle(bundle, prism, false);
         TimeUnit.SECONDS.sleep(20);
