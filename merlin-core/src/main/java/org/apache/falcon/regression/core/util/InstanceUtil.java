@@ -603,6 +603,7 @@ public class InstanceUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 Util.print("putDataInFolder: " + remoteLocation);
+                fs.mkdirs(new Path(remoteLocation));
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(remoteLocation));
             }
         }
