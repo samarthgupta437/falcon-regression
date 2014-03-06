@@ -104,7 +104,7 @@ public class RetentionTest extends BaseTestClass {
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
         // test for https://issues.apache.org/jira/browse/FALCON-321
-        final Bundle bundle = Util.getBundleData("RetentionBundles/valid/bundle1")[0];
+        final Bundle bundle = Util.getBundleData("RetentionBundles")[0];
         testRetention(bundle, "24", "hours", true, "daily", false);
     }
 
@@ -589,7 +589,7 @@ public class RetentionTest extends BaseTestClass {
 
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) throws Exception {
-        Bundle[] bundles = Util.getBundleData("RetentionBundles/valid/bundle1");
+        Bundle[] bundles = Util.getBundleData("RetentionBundles");
         String[] periods = new String[]{"0", "10080", "60", "8", "24"}; // a negative value like -4 should be covered in validation scenarios.
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
