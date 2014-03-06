@@ -540,24 +540,6 @@ public class InstanceUtil {
 
     }
 
-    @Deprecated
-    public static void putDataInFolders(ColoHelper colo,
-                                        final List<String> inputFoldersForInstance) throws IOException, InterruptedException {
-
-        for (String anInputFoldersForInstance : inputFoldersForInstance)
-            putDataInFolder(colo, anInputFoldersForInstance);
-
-    }
-
-    @Deprecated
-    public static void putDataInFolders(FileSystem fs,
-                                        final List<String> inputFoldersForInstance) throws IOException {
-
-        for (String anInputFoldersForInstance : inputFoldersForInstance)
-            putDataInFolder(fs, anInputFoldersForInstance, null);
-
-    }
-
     public static void putDataInFolders(ColoHelper colo,
                                         final List<String> inputFoldersForInstance,
                                         String type) throws IOException, InterruptedException {
@@ -568,30 +550,6 @@ public class InstanceUtil {
 
     }
 
-
-    public static void putDataInFolder(ColoHelper colo, final String remoteLocation) throws IOException, InterruptedException {
-
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name",
-                "hdfs://" + Util.readPropertiesFile(colo.getEnvFileName(), "hadoop_url"));
-        //System.out.println("prop: "+conf.get("fs.default.name"));
-
-        final FileSystem fs = FileSystem.get(conf);
-        //System.out.println("fs uri: "+fs.getUri());
-
-        File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
-        //System.out.println("files: "+files);
-        assert files != null;
-        for (final File file : files) {
-            if (!file.isDirectory()) {
-                // System.out.println("inside if block");
-                Util.print("putDataInFolder: " + remoteLocation);
-                fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                        new Path(remoteLocation));
-             }
-        }
-
-    }
 
     public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type) throws IOException {
         String inputPath = "src/test/resources/OozieExampleInputData/normalInput";
