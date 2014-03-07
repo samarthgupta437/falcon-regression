@@ -40,7 +40,6 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-@Test(groups = "embedded")
 public class PrismFeedSnSTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -69,7 +68,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testFeedSnSOnBothColos() throws Exception {
         //schedule both bundles
         bundles[0].submitAndScheduleFeed();
@@ -84,7 +83,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testSnSAlreadyScheduledFeedOnBothColos() throws Exception {
         //schedule both bundles
         bundles[0].submitAndScheduleFeed();
@@ -114,7 +113,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSnSSuspendedFeedOnBothColos() throws Exception {
         //schedule both bundles
         bundles[0].submitAndScheduleFeed();
@@ -152,7 +151,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
 
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testSnSDeletedFeedOnBothColos() throws Exception {
         //schedule both bundles
         bundles[0].submitAndScheduleFeed();
@@ -172,7 +171,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getDataSets().get(0)));
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testScheduleNonExistentFeedOnBothColos() throws Exception {
         Util.assertFailed(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0)));
@@ -180,7 +179,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getDataSets().get(0)));
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testFeedSnSOn1ColoWhileOtherColoIsDown() throws Exception {
         restartRequired = true;
         for (String cluster : bundles[1].getClusters()) {
@@ -199,7 +198,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testFeedSnSOn1ColoWhileThatColoIsDown() throws Exception {
         restartRequired = true;
         bundles[0].submitFeed();
@@ -211,7 +210,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasSuspendedFeed() throws Exception {
         bundles[0].submitAndScheduleFeed();
         Util.assertSucceeded(prism.getFeedHelper()
@@ -224,7 +223,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasKilledFeed() throws Exception {
         bundles[0].submitAndScheduleFeed();
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
@@ -236,7 +235,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testFeedSnSOnBothColosUsingColoHelper() throws Exception {
         //schedule both bundles
         bundles[0].submitFeed();
@@ -253,7 +252,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSnSSuspendedFeedOnBothColosUsingColoHelper() throws Exception {
 
         //schedule both bundles
@@ -283,7 +282,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testScheduleDeletedFeedOnBothColosUsingColoHelper() throws Exception {
 
         //schedule both bundles
@@ -312,7 +311,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSNSNonExistentFeedOnBothColosUsingColoHelper() throws Exception {
 
         Assert.assertEquals(Util.parseResponse(cluster1.getFeedHelper()
@@ -323,7 +322,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
                 .getStatusCode(), 404);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testFeedSnSOn1ColoWhileOtherColoIsDownUsingColoHelper() throws Exception {
         restartRequired = true;
         for (String cluster : bundles[1].getClusters()) {
@@ -342,7 +341,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testFeedSnSOn1ColoWhileThatColoIsDownUsingColoHelper() throws Exception {
         restartRequired = true;
 
@@ -392,7 +391,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasSuspendedFeedUsingColoHelper() throws Exception {
         bundles[0].submitAndScheduleFeed();
         Util.assertSucceeded(bundles[0].getFeedHelper().suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
@@ -406,7 +405,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testFeedSnSOn1ColoWhileAnotherColoHasKilledFeedUsingColoHelper() throws Exception {
         bundles[0].submitAndScheduleFeed();
         Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
