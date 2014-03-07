@@ -1134,10 +1134,11 @@ public class InstanceUtil {
             filter = "name=FALCON_PROCESS_" + entityName;
         }
         List<BundleJob> bundleJobs = new ArrayList<BundleJob>();
-        int retries = 0;
-        while ((bundleJobs.size() == 0) && (retries < 20)) {
+        for (int retries = 0; retries < 20; ++retries) {
             bundleJobs = OozieUtil.getBundles(client, filter, 0, 10);
-            retries++;
+            if (bundleJobs.size() > 0) {
+                break;
+            }
             Thread.sleep(5000);
         }
         if (bundleJobs.size() == 0) {
