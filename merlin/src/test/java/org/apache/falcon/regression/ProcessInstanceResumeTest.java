@@ -221,7 +221,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         Thread.sleep(15000);
         ProcessInstancesResult r =
                 prism.getProcessHelper()
-                        .getProcessInstanceResume("invalidName", "?end=2010-01-02T01:15Z");
+                        .getProcessInstanceResume("invalidName", "?start=2010-01-02T01:00Z&end=2010-01-02T01:15Z");
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
@@ -234,7 +234,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         b.submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r =
-                prism.getProcessHelper().getProcessInstanceResume("invalidName", null);
+                prism.getProcessHelper().getProcessInstanceResume("invalidName", "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
