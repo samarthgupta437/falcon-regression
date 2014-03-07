@@ -50,11 +50,13 @@ public class NoOutputProcessTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
@@ -91,6 +93,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
