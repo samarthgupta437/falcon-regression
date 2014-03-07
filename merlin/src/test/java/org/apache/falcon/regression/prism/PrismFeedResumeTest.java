@@ -33,7 +33,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-@Test(groups = "embedded")
+
 public class PrismFeedResumeTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -62,7 +62,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         removeBundles();
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeSuspendedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleFeedUsingColoHelper(cluster1);
@@ -99,7 +99,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         checkAndCompareStatus(cluster2, bundles[1], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeDeletedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleFeedUsingColoHelper(cluster1);
@@ -124,7 +124,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeResumedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleFeedUsingColoHelper(cluster1);
@@ -166,7 +166,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         }
     }
 
-    @Test
+    @Test(groups = "embedded")
     public void testResumeNonExistentFeedOnBothColos() throws Exception {
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[0].getDataSets().get(0)));
         Util.assertFailed(prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
@@ -175,7 +175,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         Util.assertFailed(cluster2.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[0].getDataSets().get(0)));
     }
 
-    @Test
+    @Test(groups = "embedded")
     public void testResumeSubmittedFeedOnBothColos() throws Exception {
         bundles[0].submitFeed();
         bundles[1].submitFeed();
@@ -187,7 +187,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         Util.assertFailed(cluster2.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeScheduledFeedOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
 
@@ -215,7 +215,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         checkAndCompareStatus(cluster1, bundles[0], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeDeletedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
 
@@ -251,7 +251,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testResumeNonExistentFeedOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
 
@@ -262,7 +262,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
         Util.assertFailed(cluster2.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testResumeSubmittedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
 
