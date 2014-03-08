@@ -33,7 +33,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-@Test(groups = "embedded")
+@Test(groups = "distributed")
 public class PrismFeedResumeTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);

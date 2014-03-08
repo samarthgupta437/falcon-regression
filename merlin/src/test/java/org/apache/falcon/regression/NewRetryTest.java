@@ -45,6 +45,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -60,17 +61,25 @@ public class NewRetryTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
     private String latePath = "/lateDataTest/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String lateDir = "/lateDataTest/testFolders/";
     private DateTime startDate = new DateTime(DateTimeZone.UTC).plusMinutes(1);
     private DateTime endDate = new DateTime(DateTimeZone.UTC).plusMinutes(2);
 
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+    }
+
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundles[0] = new Bundle(Util.getBundleData("RetryTests")[0], cluster);
         bundles[0].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[0].setProcessValidity(startDate, endDate);
     }
 

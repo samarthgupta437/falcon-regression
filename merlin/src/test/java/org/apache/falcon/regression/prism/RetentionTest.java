@@ -473,7 +473,7 @@ public class RetentionTest extends BaseTestClass {
                 cluster1OC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
         for(int i=0; i < 120 && jobInfo.getActions().isEmpty(); ++i) {
-            Thread.sleep(2000);
+            Thread.sleep(4000);
         }
         Assert.assertFalse(jobInfo.getActions().isEmpty(),
                 "Coordinator actions should have got created by now.");
