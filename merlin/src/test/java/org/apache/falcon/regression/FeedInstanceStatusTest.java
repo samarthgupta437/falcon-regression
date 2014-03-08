@@ -266,10 +266,11 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         prism.getFeedHelper()
                 .getProcessInstanceKill(Util.readDatasetName(feed), "?start=" + startTime);
 
+        //end time should be less than end of validity i.e startTime + 110
         prism.getFeedHelper()
                 .getProcessInstanceStatus(Util.readDatasetName(feed),
                         "?start=" + startTime + "&end=" + InstanceUtil
-                                .addMinsToTime(startTime, 120));
+                                .addMinsToTime(startTime, 110));
 
 
         //rerun killed instance
@@ -278,7 +279,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         prism.getFeedHelper()
                 .getProcessInstanceStatus(Util.readDatasetName(feed),
                         "?start=" + startTime + "&end=" + InstanceUtil
-                                .addMinsToTime(startTime, 120));
+                                .addMinsToTime(startTime, 110));
 
 
         //kill feed
@@ -286,7 +287,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         ProcessInstancesResult responseInstance = prism.getFeedHelper()
                 .getProcessInstanceStatus(Util.readDatasetName(feed),
                         "?start=" + startTime + "&end=" + InstanceUtil
-                                .addMinsToTime(startTime, 120));
+                                .addMinsToTime(startTime, 110));
 
         Util.print(responseInstance.getMessage());
     }

@@ -44,6 +44,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     ColoHelper cluster;
     FileSystem clusterFS;
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String testDir = "/ProcessInstanceKillsTest";
     String baseTestHDFSDir = baseHDFSDir + testDir;
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -61,6 +62,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
 
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b.generateUniqueBundle();
@@ -95,6 +97,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b.setProcessWorkflow(aggregateWorkflowDir);
         b.setInputFeedDataPath(feedInputPath);
     }
 

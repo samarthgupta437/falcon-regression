@@ -45,6 +45,7 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceRerunTest extends BaseTestClass {
 
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String baseTestDir = baseHDFSDir + "/ProcessInstanceRerunTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -67,7 +68,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
-
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
         Bundle b = (Bundle) Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
@@ -103,6 +104,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
         b.setInputFeedDataPath(feedInputPath);
+        b.setProcessWorkflow(aggregateWorkflowDir);
     }
 
 
