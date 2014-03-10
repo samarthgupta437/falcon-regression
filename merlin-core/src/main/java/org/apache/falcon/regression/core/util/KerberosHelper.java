@@ -27,7 +27,7 @@ import java.util.Properties;
 
 public class KerberosHelper {
 
-    public static final String CURRENT_USER_KEYTAB = "~/.ssh/";
+    public static final String CURRENT_USER_KEYTAB = "/tmp";
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
     public static final String KERBEROS_PROPERTIES = "Kerberos.properties";
 
