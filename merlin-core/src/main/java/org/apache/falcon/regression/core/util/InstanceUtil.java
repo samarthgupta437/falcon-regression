@@ -41,11 +41,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -71,7 +66,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -92,13 +86,13 @@ public class InstanceUtil {
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
     public static ProcessInstancesResult sendRequestProcessInstance(String
-                                                                            url)
+                                                                            url, String user)
     throws IOException, URISyntaxException, AuthenticationException {
-        return hitUrl(url, Util.getMethodType(url));
+        return hitUrl(url, Util.getMethodType(url), user);
     }
 
     public static ProcessInstancesResult hitUrl(String url,
-                                                String method) throws URISyntaxException,
+                                                String method, String user) throws URISyntaxException,
     IOException, AuthenticationException {
         BaseRequest request = new BaseRequest(url, method);
         HttpResponse response = request.run();
@@ -798,7 +792,7 @@ public class InstanceUtil {
     }
 
     public static ProcessInstancesResult createAndsendRequestProcessInstance(
-            String url, String params, String colo)
+            String url, String params, String colo, String user)
     throws IOException, URISyntaxException, AuthenticationException {
 
         if (params != null && !colo.equals("")) {
@@ -809,7 +803,7 @@ public class InstanceUtil {
             url = url + colo;
 
 
-        return InstanceUtil.sendRequestProcessInstance(url);
+        return InstanceUtil.sendRequestProcessInstance(url, user);
 
     }
 

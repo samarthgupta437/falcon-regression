@@ -268,16 +268,34 @@ public abstract class IEntityManagerHelper {
     public abstract ServiceResponse suspend(URLS suspendUrl, String data)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
-    public abstract ProcessInstancesResult getRunningInstance(URLS processRuningInstance,
-                                                              String name)
+    public ProcessInstancesResult getRunningInstance(URLS processRunningInstance, String name)
+            throws IOException, URISyntaxException, AuthenticationException {
+        return getRunningInstance(processRunningInstance, name, null);
+    }
+
+    public abstract ProcessInstancesResult getRunningInstance(URLS processRunningInstance,
+                                                              String name, String user)
     throws IOException, URISyntaxException, AuthenticationException;
+
+    public ProcessInstancesResult getProcessInstanceStatus(
+            String readEntityName, String params)
+            throws IOException, URISyntaxException, AuthenticationException {
+        return getProcessInstanceStatus(readEntityName, params, null);
+    }
 
     public abstract ProcessInstancesResult getProcessInstanceStatus(
-            String readEntityName, String params)
+            String readEntityName, String params, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
-    public abstract ProcessInstancesResult getProcessInstanceSuspend(
+    public ProcessInstancesResult getProcessInstanceSuspend(
             String readEntityName, String params)
+            throws IOException, URISyntaxException, AuthenticationException {
+        return getProcessInstanceSuspend(readEntityName, params, null);
+
+    }
+
+    public abstract ProcessInstancesResult getProcessInstanceSuspend(
+            String readEntityName, String params, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
     public abstract String list() throws IOException, InterruptedException;
@@ -314,17 +332,28 @@ public abstract class IEntityManagerHelper {
 
     public abstract String toString(Object object) throws JAXBException;
 
+    public ProcessInstancesResult getProcessInstanceKill(String readEntityName, String params)
+            throws IOException, URISyntaxException, AuthenticationException {
+        return getProcessInstanceKill(readEntityName, params, null);
+    }
     public abstract ProcessInstancesResult getProcessInstanceKill(String readEntityName,
-                                                                  String string)
+                                                                  String string, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
+    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
+            throws IOException, URISyntaxException, AuthenticationException {
+        return getProcessInstanceRerun(EntityName, params, null);
+    }
     public abstract ProcessInstancesResult getProcessInstanceRerun(String readEntityName,
-                                                                   String string)
+                                                                   String string, String user)
     throws IOException, URISyntaxException, AuthenticationException
             ;
 
-    public abstract ProcessInstancesResult getProcessInstanceResume(String readEntityName,
-                                                                    String string)
+    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
+            throws IOException, URISyntaxException, AuthenticationException {
+        return getProcessInstanceResume(EntityName, params, null);
+    }
+    public abstract ProcessInstancesResult getProcessInstanceResume(String readEntityName, String string, String user)
     throws IOException, URISyntaxException, AuthenticationException
             ;
 
