@@ -32,22 +32,26 @@ public class KerberosHelper {
 
     final static String user2_name;
     final static String user2_cred;
+    private static String currentUser = null;
 
     static {
         Properties prop = Util.getPropertiesObj(KERBEROS_PROPERTIES);
         user2_name = prop.getProperty("user2_name");
-        user2_cred = prop.getProperty("user2_cred");
+        user2_cred = prop.getProperty("user2_keytab");
         logger.info("user2_name: " + user2_name);
-        logger.info("user2_cred: " + user2_cred);
+        logger.info("user2_keytab: " + user2_cred);
     }
 
     public static void switchUser(String user) {
         if(user == null) {
-            user = "google.com";
+            user = System.getProperty("user.name");
         }
+        if(user.equals(currentUser))
+            return;
         final String command = String.format("ping -c 3 %s", user);
         final int exitVal = executeCommand(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
+        currentUser = user;
     }
     /* Example usage:
     String command = "ping -c 3 google.com";
