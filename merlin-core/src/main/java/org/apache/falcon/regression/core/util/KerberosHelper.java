@@ -25,9 +25,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Properties;
 
-public class KeberosHelper {
+public class KerberosHelper {
 
-    private static Logger logger = Logger.getLogger(KeberosHelper.class);
+    private static Logger logger = Logger.getLogger(KerberosHelper.class);
     public static final String KERBEROS_PROPERTIES = "Kerberos.properties";
 
     final static String user2_name;
@@ -41,11 +41,10 @@ public class KeberosHelper {
         logger.info("user2_cred: " + user2_cred);
     }
 
-    public static void main(String args[]) {
-        switchUser("falcon2");
-    }
-
     public static void switchUser(String user) {
+        if(user == null) {
+            user = "google.com";
+        }
         final String command = String.format("ping -c 3 %s", user);
         final int exitVal = executeCommand(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
