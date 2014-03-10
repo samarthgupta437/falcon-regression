@@ -59,8 +59,11 @@ public class KerberosHelper {
             Assert.assertEquals(user, user2_name, "Unexpected user.");
             keytab = user2_keytab;
         }
-        if(user.equals(currentUser))
+        if(user.equals(currentUser)) {
+            logger.info("kerberos switching is not required.");
             return;
+        }
+        logger.info(String.format("Switching kerberos keytab from %s to %s", currentUser, user));
         final String command = String.format("ls -al %s", keytab);
         final int exitVal = executeCommand(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
