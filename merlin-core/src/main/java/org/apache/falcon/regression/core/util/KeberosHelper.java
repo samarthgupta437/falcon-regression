@@ -37,13 +37,15 @@ public class KeberosHelper {
         Properties prop = Util.getPropertiesObj(KERBEROS_PROPERTIES);
         user2_name = prop.getProperty("user2_name");
         user2_cred = prop.getProperty("user2_cred");
+        logger.info("user2_name: " + user2_name);
+        logger.info("user2_cred: " + user2_cred);
     }
 
     public static void main(String args[]) {
-        switchKerberos("falcon2");
+        switchUser("falcon2");
     }
 
-    public static void switchKerberos(String user) {
+    public static void switchUser(String user) {
         final String command = String.format("ping -c 3 %s", user);
         final int exitVal = executeCommand(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
