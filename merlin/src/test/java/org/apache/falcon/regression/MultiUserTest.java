@@ -58,7 +58,7 @@ public class MultiUserTest extends BaseTestClass {
     @Test
     public void U1SubmitU2Read() throws Exception {
         bundles[0].submitClusters(prism);
-        final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusterData());
+        final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), "yahoo.com");
         logger.info("response code: " + serviceResponse.getCode());
         logger.info("response message: " + serviceResponse.getMessage());
     }
