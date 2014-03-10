@@ -142,23 +142,23 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-
+    @Override
     public ProcessInstancesResult getRunningInstance(
-            Util.URLS processRuningInstance, String name)  {
+            Util.URLS processRunningInstance, String name, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
-
+    @Override
     public ProcessInstancesResult getProcessInstanceStatus(
-            String readEntityName, String params) {
+            String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
 
 
     public ProcessInstancesResult getProcessInstanceSuspend(
-            String readEntityName, String params) {
+            String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -317,21 +317,21 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName,
-                                                         String string)  {
+                                                         String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceRerun(
-            String readEntityName, String string)  {
+            String readEntityName, String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceResume(
-            String readEntityName, String string)  {
+            String readEntityName, String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }

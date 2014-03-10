@@ -168,36 +168,36 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   @Override
   public ProcessInstancesResult getRunningInstance(
-    Util.URLS processRuningInstance, String name)
+          Util.URLS processRunningInstance, String name, String user)
   throws IOException, URISyntaxException, AuthenticationException {
 
-    String url = this.hostname + processRuningInstance.getValue() + "/feed/" + name + allColo;
+    String url = this.hostname + processRunningInstance.getValue() + "/feed/" + name + allColo;
 
-    return InstanceUtil.sendRequestProcessInstance(url);
+    return InstanceUtil.sendRequestProcessInstance(url, user);
   }
 
   @Override
   public ProcessInstancesResult getProcessInstanceStatus(
-    String EntityName, String params)
+          String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
 
     String url =
       this.hostname + Util.URLS.INSTANCE_STATUS.getValue() + "/" + "feed/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
 
   @Override
   public ProcessInstancesResult getProcessInstanceSuspend(
-    String EntityName, String params)
+    String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue() + "/" + "feed/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
 
   }
@@ -208,30 +208,30 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   }
 
 
-  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
+  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_RESUME.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
-  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params)
+  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_KILL.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
-  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
+  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_RERUN.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
