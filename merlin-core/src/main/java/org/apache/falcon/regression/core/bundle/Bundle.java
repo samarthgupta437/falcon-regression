@@ -993,9 +993,14 @@ public class Bundle {
 
 
     public void submitClusters(PrismHelper prismHelper)
+            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        submitClusters(prismHelper, null);
+    }
+
+    public void submitClusters(PrismHelper prismHelper, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String cluster : this.clusters) {
-            Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
+            Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster, user));
         }
     }
 
