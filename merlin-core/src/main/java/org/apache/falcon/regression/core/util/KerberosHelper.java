@@ -27,23 +27,32 @@ import java.util.Properties;
 
 public class KerberosHelper {
 
+    public static final String CURRENT_USER_KEYTAB = "~/.ssh/";
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
     public static final String KERBEROS_PROPERTIES = "Kerberos.properties";
 
-    final static String user2_name;
-    final static String user2_keytab;
+    static String user2_name = null;
+    static String user2_keytab = null;
+    final static boolean kerberosEnabled;
     private static String currentUser = null;
 
     static {
         Properties prop = Util.getPropertiesObj(KERBEROS_PROPERTIES);
-        user2_name = prop.getProperty("user2_name");
-        user2_keytab = prop.getProperty("user2_keytab");
-        logger.info("user2_name: " + user2_name);
-        logger.info("user2_keytab: " + user2_keytab);
+        kerberosEnabled = Boolean.parseBoolean(prop.getProperty("kerberos_enabled", "false"));
+        if(kerberosEnabled) {
+            user2_name = prop.getProperty("user2_name");
+            user2_keytab = prop.getProperty("user2_keytab");
+            logger.info("user2_name: " + user2_name);
+            logger.info("user2_keytab: " + user2_keytab);
+        }
     }
 
     public static void switchUser(String user) {
-        String keytab = "~/.ssh/";
+        if(!kerberosEnabled) {
+            return;
+        }
+
+        String keytab = CURRENT_USER_KEYTAB;
         if(user == null) {
             user = System.getProperty("user.name");
         } else {
