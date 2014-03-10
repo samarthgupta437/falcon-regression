@@ -31,24 +31,28 @@ public class KerberosHelper {
     public static final String KERBEROS_PROPERTIES = "Kerberos.properties";
 
     final static String user2_name;
-    final static String user2_cred;
+    final static String user2_keytab;
     private static String currentUser = null;
 
     static {
         Properties prop = Util.getPropertiesObj(KERBEROS_PROPERTIES);
         user2_name = prop.getProperty("user2_name");
-        user2_cred = prop.getProperty("user2_keytab");
+        user2_keytab = prop.getProperty("user2_keytab");
         logger.info("user2_name: " + user2_name);
-        logger.info("user2_keytab: " + user2_cred);
+        logger.info("user2_keytab: " + user2_keytab);
     }
 
     public static void switchUser(String user) {
+        String keytab = "~/.ssh/";
         if(user == null) {
             user = System.getProperty("user.name");
+        } else {
+            Assert.assertEquals(user, user2_name, "Unexpected user.");
+            keytab = user2_keytab;
         }
         if(user.equals(currentUser))
             return;
-        final String command = String.format("ping -c 3 %s", user);
+        final String command = String.format("ls -al %s", keytab);
         final int exitVal = executeCommand(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
         currentUser = user;
