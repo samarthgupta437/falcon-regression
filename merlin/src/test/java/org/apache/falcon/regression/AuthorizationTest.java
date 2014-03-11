@@ -36,8 +36,8 @@ import org.testng.log4testng.Logger;
 import java.lang.reflect.Method;
 
 @Test(groups = "embedded")
-public class MultiUserTest extends BaseTestClass {
-    private static final Logger logger = Logger.getLogger(MultiUserTest.class);
+public class AuthorizationTest extends BaseTestClass {
+    private static final Logger logger = Logger.getLogger(AuthorizationTest.class);
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
