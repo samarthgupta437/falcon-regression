@@ -18,33 +18,26 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.hadoop.conf.Configuration;
 import org.testng.Assert;
 import org.testng.log4testng.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.Properties;
 
 public class KerberosHelper {
 
-    public static final String CURRENT_USER_KEYTAB = "/tmp";
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
-    public static final String KERBEROS_PROPERTIES = "Kerberos.properties";
 
-    static String user2_name = null;
-    static String user2_keytab = null;
-    final static boolean kerberosEnabled;
+    private final static boolean kerberosEnabled;
     private static String currentUser = null;
+    private static HashMap<String, String> keyTabMap;
 
     static {
-        Properties prop = Util.getPropertiesObj(KERBEROS_PROPERTIES);
-        kerberosEnabled = Boolean.parseBoolean(prop.getProperty("kerberos_enabled", "false"));
-        if(kerberosEnabled) {
-            user2_name = prop.getProperty("user2_name");
-            user2_keytab = prop.getProperty("user2_keytab");
-            logger.info("user2_name: " + user2_name);
-            logger.info("user2_keytab: " + user2_keytab);
-        }
+        kerberosEnabled = isKerberosEnabled();
     }
 
     public static void switchUser(String user) {
@@ -52,19 +45,18 @@ public class KerberosHelper {
             return;
         }
 
-        String keytab = CURRENT_USER_KEYTAB;
         if(user == null) {
             user = System.getProperty("user.name");
-        } else {
-            Assert.assertEquals(user, user2_name, "Unexpected user.");
-            keytab = user2_keytab;
         }
+
+        //for the first call kerberos switching happens as the currentUser is null
         if(user.equals(currentUser)) {
             logger.info("kerberos switching is not required.");
             return;
         }
+        final String keytab = getKeytabForUser(user);
         logger.info(String.format("Switching kerberos keytab from %s to %s", currentUser, user));
-        final String command = String.format("ls -al %s", keytab);
+        final String command = String.format("kinit -kt %s %s", keytab, user);
         final int exitVal = executeCommand(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
         currentUser = user;
@@ -102,4 +94,35 @@ public class KerberosHelper {
         }
         return -1;
     }
+
+    private static boolean isKerberosEnabled() {
+        Configuration conf = new Configuration();
+        final String AUTH_SIMPLE = "simple";
+        final String AUTH_KERB = "kerberos";
+        final String authMethod = conf.get("hadoop.security.authentication", AUTH_SIMPLE);
+        Assert.assertTrue(authMethod.equals(AUTH_SIMPLE) || authMethod.equals(AUTH_KERB),
+                "Unexpected authentication method");
+        return AUTH_KERB.equals(authMethod);
+    }
+
+
+    private static String getKeytabForUser(String user) {
+        if(keyTabMap == null) {
+            Properties prop = Util.getPropertiesObj(Bundle.MERLIN_PROPERTIES);
+            final String user1_name = System.getProperty("user.name");
+            final String user1_keytab = prop.getProperty("user1_keytab");
+            final String user2_name = prop.getProperty("user2_name");
+            final String user2_keytab = prop.getProperty("user2_keytab");
+            logger.info("user1_name: " + user1_name);
+            logger.info("user1_keytab: " + user1_keytab);
+            logger.info("user2_name: " + user2_name);
+            logger.info("user2_keytab: " + user2_keytab);
+            keyTabMap = new HashMap<String, String>();
+            keyTabMap.put(user1_name, user1_keytab);
+            keyTabMap.put(user2_name, user2_keytab);
+        }
+        Assert.assertTrue(keyTabMap.containsKey(user), "Unknown user: " + user);
+        return keyTabMap.get(user);
+    }
+
 }
