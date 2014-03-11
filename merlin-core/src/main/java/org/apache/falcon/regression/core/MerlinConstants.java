@@ -30,26 +30,25 @@ public class MerlinConstants {
 
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public static final String CURRENT_USER_NAME = System.getProperty("user.name");
-    public static final String CURRENT_USER_KEYTAB = "current_user_keytab";
-    public static final String USER_2_NAME = "user2_name";
-    public static final String USER_2_KEYTAB = "user2_keytab";
+    public static final String CURRENT_USER_KEYTAB_STR = "current_user_keytab";
+    public static final String USER_2_NAME_STR = "user2_name";
+    public static final String USER_2_KEYTAB_STR = "user2_keytab";
     public static final String USER2_NAME;
     private static HashMap<String, String> keyTabMap;
 
     /* initialize keyTabMap */
     static {
         Properties prop = Util.getPropertiesObj(MERLIN_PROPERTIES);
-        final String user1_name = CURRENT_USER_NAME;
-        final String user1_keytab = prop.getProperty(CURRENT_USER_KEYTAB);
-        final String user2_name = prop.getProperty(USER_2_NAME);
-        final String user2_keytab = prop.getProperty(USER_2_KEYTAB);
-        logger.info("user1_name: " + user1_name);
-        logger.info("user1_keytab: " + user1_keytab);
+        final String current_user_keytab = prop.getProperty(CURRENT_USER_KEYTAB_STR);
+        final String user2_name = prop.getProperty(USER_2_NAME_STR);
+        final String user2_keytab = prop.getProperty(USER_2_KEYTAB_STR);
+        logger.info("current_user_name: " + CURRENT_USER_NAME);
+        logger.info("current_user_keytab: " + current_user_keytab);
         logger.info("user2_name: " + user2_name);
         logger.info("user2_keytab: " + user2_keytab);
         USER2_NAME = user2_name;
         keyTabMap = new HashMap<String, String>();
-        keyTabMap.put(user1_name, user1_keytab);
+        keyTabMap.put(CURRENT_USER_NAME, current_user_keytab);
         keyTabMap.put(user2_name, user2_keytab);
     }
 
