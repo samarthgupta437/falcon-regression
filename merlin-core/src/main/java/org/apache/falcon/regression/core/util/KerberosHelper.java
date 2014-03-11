@@ -19,27 +19,20 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.MerlinConstants;
-import org.apache.hadoop.conf.Configuration;
 import org.testng.Assert;
 import org.testng.log4testng.Logger;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 
 public class KerberosHelper {
 
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
 
-    private final static boolean kerberosEnabled;
     private static String currentUser = null;
 
-    static {
-        kerberosEnabled = isKerberosEnabled();
-    }
-
     public static void switchUser(String user) {
-        if(!kerberosEnabled) {
+        if(!MerlinConstants.IS_SECURE) {
             logger.info("Kerberos is disabled, hence no user switching.");
             return;
         }
@@ -92,16 +85,6 @@ public class KerberosHelper {
             e.printStackTrace();
         }
         return -1;
-    }
-
-    private static boolean isKerberosEnabled() {
-        Configuration conf = new Configuration();
-        final String AUTH_SIMPLE = "simple";
-        final String AUTH_KERB = "kerberos";
-        final String authMethod = conf.get("hadoop.security.authentication", AUTH_SIMPLE);
-        Assert.assertTrue(authMethod.equals(AUTH_SIMPLE) || authMethod.equals(AUTH_KERB),
-                "Unexpected authentication method");
-        return AUTH_KERB.equals(authMethod);
     }
 
 
