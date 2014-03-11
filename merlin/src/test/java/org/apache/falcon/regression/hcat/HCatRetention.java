@@ -20,33 +20,28 @@ package org.apache.falcon.regression.hcat;
 
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.*;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.*;
+import org.apache.falcon.regression.core.enums.FEED_TYPE;
+import org.apache.falcon.regression.core.enums.RETENTION_UNITS;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatPartition;
+import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import org.testng.log4testng.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-//import java.util.Arrays;
+import java.util.Arrays;
 import java.util.List;
-//import java.util.Random;
 
 public class HCatRetention extends BaseTestClass {
 
@@ -54,64 +49,83 @@ public class HCatRetention extends BaseTestClass {
 
     private Bundle bundle;
     public static HCatClient cli;
-    String testDir = "/HCatRetention/";
-    String baseTestHDFSDir = baseHDFSDir + testDir;
-    String dBName="default";
-    String tableName="mytable";
+    final String testDir = "/HCatRetention/";
+    final String baseTestHDFSDir = baseHDFSDir + testDir;
+    final String dBName="default";
 
-    public HCatRetention() throws IOException {
-        super();
+    @BeforeMethod
+    public void setUp(){
         cli=HCatUtil.getHCatClient(servers.get(0));
     }
 
-    @Test(enabled = true, dataProvider = "loopBelow")
-    public void testHCatRetention(Bundle b, String period, String unit,String dataType) throws Exception {
+    @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000)
+    public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit, FEED_TYPE dataType, boolean isEmpty) {
 
-        HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
-        bundle = new Bundle(b, servers.get(0));
-        int p= Integer.parseInt(period);
-        displayDetails(period, unit, dataType);
+        String tableName = "mytable"+unit.getValue() + period;
 
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
+        try{
+            HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
+            bundle = new Bundle(b, servers.get(0));
+            int p= Integer.parseInt(period);
+            displayDetails(period, unit.getValue(), dataType.getValue());
 
-        String feed = setTableValue(Util.getInputFeedFromBundle(bundle), getFeedPathValue(dataType));
-        feed = insertRetentionValueInFeed(feed, unit + "(" + period + ")");
-        bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
-        bundle.getDataSets().add(feed);
-        bundle.generateUniqueBundle();
-
-        bundle.submitClusters(prism);
-
-        if (p > 0) {
-            Util.assertSucceeded(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+            System.setProperty("java.security.krb5.realm", "");
+            System.setProperty("java.security.krb5.kdc", "");
 
             FeedMerlin feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
-            feedElement.generateData(cli, serverFS.get(0));
+            String feed= feedElement.setTableValue(Util.getInputFeedFromBundle(bundle), getFeedPathValue(dataType.getValue()), dBName, tableName);
+            feed = feedElement.insertRetentionValueInFeed(feed, unit.getValue() + "(" + period + ")");
+            bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
+            bundle.getDataSets().add(feed);
+            bundle.generateUniqueBundle();
 
-            check(dataType, unit, p);
-        } else {
-            Util.assertFailed(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+            bundle.submitClusters(prism);
+
+            if (p > 0) {
+                Util.assertSucceeded(prism.getFeedHelper()
+                        .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+
+                feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
+                feedElement.generateData(cli, serverFS.get(0), isEmpty);
+
+                check(dataType.getValue(), unit.getValue(), p, tableName);
+            } else {
+                Util.assertFailed(prism.getFeedHelper()
+                        .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally{
+            try{
+                bundle.deleteBundle(prism);
+                Util.HDFSCleanup(serverFS.get(0), baseHDFSDir);
+                HCatUtil.deleteTable(cli, dBName,tableName);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
-    public void check(String dataType, String unit, int period){
+    public void check(String dataType, String unit, int period, String tableName){
         try{
+
+            List <org.apache.oozie.client.CoordinatorAction.Status> expectedStatus = new ArrayList();
+            expectedStatus.add(CoordinatorAction.Status.FAILED);
+            expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
+            expectedStatus.add(CoordinatorAction.Status.KILLED);
+            expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
 
             List<String> initialData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, "/HCatRetention/", dataType);
 
-            //List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
+            List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
             Util.assertSucceeded(prism.getFeedHelper()
                     .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle)));
-            Thread.sleep(20000);
+            InstanceUtil.waitTillRetentionSucceeded(servers.get(0),bundle,expectedStatus,2,2);
 
             DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
-            //List<String> finalData =
-            //  Util.getHadoopDataFromDir2(servers.get(0), baseTestHDFSDir, "/HCatRetention/");
+            List<String> finalData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, "/HCatRetention/", dataType);
 
             List<String> expectedOutput =
                     Util.filterDataOnRetentionHCat(period, unit, dataType,
@@ -125,7 +139,7 @@ public class HCatRetention extends BaseTestClass {
             }
 
             logger.info("system output is:");
-            for (HCatPartition line : finalPtnList) {
+            for (String line : finalData) {
                 logger.info(line);
             }
 
@@ -134,24 +148,25 @@ public class HCatRetention extends BaseTestClass {
                 logger.info(line);
             }
 
-            Assert.assertEquals(expectedOutput.size(), finalPtnList.size(),
+            Assert.assertEquals(finalPtnList.size(), expectedOutput.size(),
                     "sizes of hcat outputs are different! please check");
+
+            //Checking if size of expected data and obtained data same
+            Assert.assertEquals(finalData.size(), expectedOutput.size(),
+                "sizes of hadoop outputs are different! please check");
+
+            //Checking if the values are also the same
+             Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
+                     expectedOutput.toArray(new String[expectedOutput.size()])));
+
+            //Checking if number of partitions left = size of remaining directories in HDFS
+             Assert.assertEquals(finalData.size(), finalPtnList.size(),
+              "sizes of outputs are different! please check");
 
         }catch(Exception e){
             e.printStackTrace();
         }
-        //Checking if size of expected data and obtained data same
-        // Assert.assertEquals(finalData.size(), expectedOutput.size(),
-        //     "sizes of hadoop outputs are different! please check");
 
-        //Checking if the values are also the same
-        //  Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
-        //     expectedOutput.toArray(new String[expectedOutput.size()])));
-
-        //Checking if number of partitions left = size of remaining directories in HDFS
-        //List<HCatPartition> finalPtnList = cli.getPartitions("default","mytable");
-        //Assert.assertEquals(finalData.size(), finalPtnList.size(),
-        //   "sizes of outputs are different! please check");
 
     }
 
@@ -181,29 +196,6 @@ public class HCatRetention extends BaseTestClass {
             return "year=${YEAR}";
         }
         return null;
-    }
-
-    private static String insertRetentionValueInFeed(String feed, String retentionValue)
-            throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
-        //insert retentionclause
-        feedObject.getClusters().getCluster().get(0).getRetention()
-                .setLimit(new Frequency(retentionValue));
-
-        for (org.apache.falcon.regression.core.generated.feed.Cluster cluster : feedObject
-                .getClusters().getCluster()) {
-            cluster.getRetention().setLimit(new Frequency(retentionValue));
-        }
-
-        StringWriter writer = new StringWriter();
-        Marshaller m = context.createMarshaller();
-        m.marshal(feedObject, writer);
-
-        return writer.toString();
-
     }
 
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath, String dir, String dataType)
@@ -240,44 +232,29 @@ public class HCatRetention extends BaseTestClass {
         return finalResult;
     }
 
-    private String setTableValue(String feed, String pathValue) throws Exception {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
-
-        feedObject.getTable().setUri("catalog:"+dBName+":"+tableName+"#"+pathValue);
-        //set the value
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString();
-    }
-
-    @AfterMethod(alwaysRun = true)
-    public void tearDown()throws Exception {
-
-        bundle.deleteBundle(prism);
-        Util.HDFSCleanup(serverFS.get(0), baseHDFSDir);
-        HCatUtil.deleteTable(cli, dBName,tableName);
-    }
-
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) throws Exception {
         Bundle[] bundles = Util.getBundleData("hcat_2");
-        String[] units = new String[]{"months", "days", "minutes"};// "minutes","hours","days",
-        String[] periods = new String[]{"6","824","43"}; // a negative value like -4 should be covered in validation scenarios.
-        String[] dataTypes = new String[]{"monthly","hourly", "daily", "yearly", "monthly"};
-        Object[][] testData = new Object[bundles.length * units.length * periods.length * dataTypes.length][4];
+        RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
+        String[] periods = new String[]{"7","824","43"}; // a negative value like -4 should be covered in validation scenarios.
+        boolean[] empty = new boolean[]{false,true};
+        FEED_TYPE[] dataTypes = new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
+        Object[][] testData = new Object[bundles.length * units.length * periods.length * dataTypes.length * empty.length][5];
 
         int i = 0;
 
         for (Bundle bundle : bundles) {
-            for (String unit : units) {
+            for (RETENTION_UNITS unit : units) {
                 for (String period : periods) {
-                    for (String dataType : dataTypes) {
-                        testData[i][0] = bundle;
-                        testData[i][1] = period;
-                        testData[i][2] = unit;
-                        testData[i][3] = dataType;
-                        i++;
+                    for (FEED_TYPE dataType : dataTypes) {
+                        for(boolean isEmpty : empty){
+                            testData[i][0] = bundle;
+                            testData[i][1] = period;
+                            testData[i][2] = unit;
+                            testData[i][3] = dataType;
+                            testData[i][4] = isEmpty;
+                            i++;
+                        }
                     }
                 }
             }
