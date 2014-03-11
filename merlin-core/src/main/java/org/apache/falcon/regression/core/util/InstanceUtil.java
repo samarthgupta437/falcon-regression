@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.JSchException;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
@@ -1500,6 +1501,55 @@ public class InstanceUtil {
         }
 
 
+    }
+
+    public static void waitTillRetentionSucceeded(ColoHelper coloHelper, Bundle b,
+                                                  List <org.apache.oozie.client.CoordinatorAction.Status>
+                                                           expectedStatus,
+                                                     int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
+
+        String entityName = Util.getInputFeedNameFromBundle(b);
+        boolean flag = false;
+        int sleep1 = MinutesToWaitForStatus * 60 / 20;
+        int sleep2 = MinutesToWaitForCoordAction * 60 / 20;
+
+        String bundleID = getLatestBundleID(coloHelper, entityName, ENTITY_TYPE.FEED);
+        String coordID = getRetentionCoordID(bundleID, coloHelper.getFeedHelper());
+        CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient().getCoordJobInfo(coordID);
+
+        for (int sleepCount = 0; sleepCount < sleep1; sleepCount++) {
+
+            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
+            for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
+                if(coordInfo.getActions().size() > 0)
+                    break;
+                System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
+                        "instance created on oozie: " + coloHelper.getProcessHelper()
+                        .getOozieClient().getOozieUrl());
+                try {
+                    Thread.sleep(20000);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
+            }
+            for (int count = 0; count < coordInfo.getActions().size(); count++)
+                statusList.add(coordInfo.getActions().get(count).getStatus());
+
+           for(int i=0; i<expectedStatus.size(); ++i){
+                if (statusList.get(0).equals(expectedStatus.get(i))){
+                    flag=true;
+                    break;
+                }
+            }
+            if(flag){
+                break; // breaks from outer for upon status match too
+            }
+            try {
+                Thread.sleep(20000);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
+        }
     }
 
     public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
