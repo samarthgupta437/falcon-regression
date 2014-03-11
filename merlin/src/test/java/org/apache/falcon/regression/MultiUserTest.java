@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class MultiUserTest extends BaseTestClass {
     private static final Logger logger = Logger.getLogger(MultiUserTest.class);
+    public static final String USER2 = "user2";
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
@@ -58,7 +59,7 @@ public class MultiUserTest extends BaseTestClass {
     @Test
     public void U1SubmitU2Read() throws Exception {
         bundles[0].submitClusters(prism);
-        final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), "user2");
+        final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), USER2);
         logger.info("response code: " + serviceResponse.getCode());
         logger.info("response message: " + serviceResponse.getMessage());
     }
