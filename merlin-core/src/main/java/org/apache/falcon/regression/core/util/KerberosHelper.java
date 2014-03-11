@@ -45,7 +45,7 @@ public class KerberosHelper {
         }
 
         if(user == null) {
-            user = System.getProperty("user.name");
+            user = MerlinConstants.CURRENT_USER_NAME;
         }
 
         //for the first call kerberos switching happens as the currentUser is null
