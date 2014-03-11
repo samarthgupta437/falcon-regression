@@ -24,10 +24,6 @@ import org.testng.annotations.Test;
 
 public class RetryTest extends BaseTestClass {
 
-    public RetryTest(){
-        super();
-    }
-
     @Test(timeOut = 120000, groups = "multiCluster", enabled = false)
     public void FailedFeedReplicationRetry() {
 

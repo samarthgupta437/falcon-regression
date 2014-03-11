@@ -37,7 +37,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,26 +51,18 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     String feedInputTimedOutPath =
             baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
-    Bundle b = new Bundle();
-    ColoHelper cluster;
-    FileSystem clusterFS;
-
-    public ProcessInstanceRerunTest() throws IOException {
-        super();
-        cluster = servers.get(1);
-        clusterFS = serverFS.get(1);
-
-    }
-
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
-        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+        Bundle b = Util.readELBundles()[0][0];
+
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -101,38 +92,38 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b = Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-        b.setInputFeedDataPath(feedInputPath);
-        b.setProcessWorkflow(aggregateWorkflowDir);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setInputFeedDataPath(feedInputPath);
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
         Util.print("tearDown " + method.getName());
-        removeBundles(b);
+        removeBundles();
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_someKilled02() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(5);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(5);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:16Z");
         InstanceUtil.validateResponse(r, 4, 0, 0, 0, 4);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil
-                .areWorkflowsRunning(cluster, Util.readEntityName(b.getProcessData()), 6, 5, 1,
+                .areWorkflowsRunning(cluster, Util.readEntityName(bundles[0].getProcessData()), 6, 5, 1,
                         0);
     }
 
@@ -141,23 +132,23 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
             = false)
     public void testProcessInstanceRerun_multipleSucceededDeleted() throws Exception {
         try {
-            b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
-            b.setProcessPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-            b.setOutputFeedLocationData(feedOutputPath);
-            b.setProcessConcurrency(3);
-            b.submitAndScheduleBundle(prism);
+            bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
+            bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+            bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+            bundles[0].setOutputFeedLocationData(feedOutputPath);
+            bundles[0].setProcessConcurrency(3);
+            bundles[0].submitAndScheduleBundle(prism);
             prism.getProcessHelper()
-                    .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                    .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
             Thread.sleep(15000);
         } finally {
-            b.deleteBundle(prism);
+            bundles[0].deleteBundle(prism);
             prism.getProcessHelper()
-                    .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                    .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
             prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                    .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                             "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         }
     }
@@ -165,71 +156,71 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_multipleKilled() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(5);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(5);
 
-        Util.print("process: " + b.getProcessData());
+        Util.print("process: " + bundles[0].getProcessData());
 
-        b.submitAndScheduleBundle(prism);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         Thread.sleep(5000);
         InstanceUtil
-                .areWorkflowsRunning(cluster, Util.readEntityName(b.getProcessData()), 3, 3, 0,
+                .areWorkflowsRunning(cluster, Util.readEntityName(bundles[0].getProcessData()), 3, 3, 0,
                         0);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_someKilled01() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(5);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(5);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         Thread.sleep(5000);
         InstanceUtil
-                .areWorkflowsRunning(cluster, Util.readEntityName(b.getProcessData()), 6, 6, 0,
+                .areWorkflowsRunning(cluster, Util.readEntityName(bundles[0].getProcessData()), 6, 6, 0,
                         0);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_deleted() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(1);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(1);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(
-                InstanceUtil.getWorkflows(cluster, Util.getProcessName(b.getProcessData()),
+                InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData()),
                         Status.RUNNING)
                         .get(0)));
     }
@@ -237,22 +228,22 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_singleKilled() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(1);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(1);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(25000);
         prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
         Thread.sleep(25000);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(
-                InstanceUtil.getWorkflows(cluster, Util.getProcessName(b.getProcessData()),
+                InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData()),
                         Status.RUNNING)
                         .get(0)));
     }
@@ -260,18 +251,18 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_singleSucceeded() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(6);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(6);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(180000);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(
-                InstanceUtil.getWorkflows(cluster, Util.getProcessName(b.getProcessData()),
+                InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData()),
                         Status.RUNNING)
                         .get(0)));
     }
@@ -279,63 +270,63 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_singleSuspended() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:06Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(2);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:06Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(2);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
         Assert.assertEquals(InstanceUtil
-                .getInstanceStatus(cluster, Util.getProcessName(b.getProcessData()), 0, 1),
+                .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0, 1),
                 CoordinatorAction.Status.SUSPENDED);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_multipleSucceeded() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(3);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(3);
+        bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil
-                .areWorkflowsRunning(cluster, Util.readEntityName(b.getProcessData()), 3, 3, 0,
+                .areWorkflowsRunning(cluster, Util.readEntityName(bundles[0].getProcessData()), 3, 3, 0,
                         0);
     }
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_timedOut() throws Exception {
-        b.setInputFeedDataPath(feedInputTimedOutPath);
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessTimeOut(2, TimeUnit.minutes);
-        b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(3);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setInputFeedDataPath(feedInputTimedOutPath);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessTimeOut(2, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(3);
+        bundles[0].submitAndScheduleBundle(prism);
         CoordinatorAction.Status s = null;
         while (!CoordinatorAction.Status.TIMEDOUT.equals(s)) {
             s = InstanceUtil
-                    .getInstanceStatus(cluster, Util.readEntityName(b.getProcessData()), 0, 0);
+                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
             Thread.sleep(15000);
         }
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         s = InstanceUtil
-                .getInstanceStatus(cluster, Util.readEntityName(b.getProcessData()), 0, 0);
+                .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
         Assert.assertTrue(CoordinatorAction.Status.WAITING.equals(s),
                 "instance should have been in WAITING state");
     }
@@ -344,7 +335,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
+        Bundle b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         b.setInputFeedDataPath(feedInputPath);

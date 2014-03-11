@@ -44,15 +44,8 @@ import java.util.List;
 @Test(groups = "embedded")
 public class RescheduleProcessInFinalStates extends BaseTestClass {
 
-    private Bundle bundle;
-    ColoHelper cluster1;
-    FileSystem cluster1FS;
-
-    public RescheduleProcessInFinalStates(){
-        super();
-        cluster1 = servers.get(0);
-        cluster1FS = serverFS.get(0);
-    }
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
@@ -62,14 +55,14 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, cluster1.getEnvFileName(), cluster1.getPrefix());
+        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
         b.setInputFeedDataPath(baseHDFSDir +"/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
@@ -84,73 +77,73 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
         for (int i = 0; i < dataDates.size(); i++)
             dataFolder.add(dataDates.get(i));
 
-        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
     }
 
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
-        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
-        bundle.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setProcessConcurrency(6);
-        bundle.submitAndScheduleBundle(prism);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setProcessConcurrency(6);
+        bundles[0].submitAndScheduleBundle(prism);
 
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        removeBundles(bundle);
+        removeBundles();
     }
 
 
     // DWE mean Done With Error In Oozie
     @Test(enabled = false)
     public void rescheduleSucceeded() throws Exception {
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
         Thread.sleep(20000);
 
         //delete the process
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
-                .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+                .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
         Util.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         Util.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
 
     }
 
     @Test(enabled = false)
     public void rescheduleFailed() throws Exception {
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
         Thread.sleep(20000);
 
         //delete the process
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
-                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
         Util.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         Util.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 
     @Test(enabled = false)
@@ -158,54 +151,50 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
         Thread.sleep(20000);
 
         prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundle.getProcessData()), "?start=2010-01-02T01:05Z");
+                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()), "?start=2010-01-02T01:05Z");
 
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.DONEWITHERROR, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.DONEWITHERROR, 20);
 
         Thread.sleep(20000);
 
         //delete the process
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
-                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
         Util.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         Util.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
 
     }
-
-    //TODO: rescheduleSucceededAndDWEOnSomeColo()
-    //TODO: rescheduleOnlyOnOneAndSucceeded()
-    //TODO: rescheduleOnlyOnOneAndKilled()
 
     @Test(enabled = false)
     public void rescheduleKilled() throws Exception {
         Thread.sleep(15000);
 
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
 
 
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.KILLED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.KILLED, 20);
 
         Thread.sleep(20000);
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
-                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
         Util.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundle.getProcessData());
+        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         Util.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster1, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 }
