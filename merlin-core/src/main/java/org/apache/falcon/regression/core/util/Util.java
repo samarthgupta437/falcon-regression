@@ -22,6 +22,7 @@ import com.jcraft.jsch.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enums.FEED_TYPE;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
@@ -828,8 +829,7 @@ public class Util {
     } else if (interval.equalsIgnoreCase("days")) {
       startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
     } else if (interval.equalsIgnoreCase("months")) {
-      startLimit =
-        formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
+      startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
 
     }
 
@@ -855,6 +855,7 @@ public class Util {
 
         String locationType = "";
         String appender = "";
+        DateTime today;
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         List<String> finalData = new ArrayList<String>();
@@ -874,25 +875,20 @@ public class Util {
         }
 
         //convert the start and end date boundaries to the same format
-
-
         //end date is today's date
         formatter.print(endDate);
         String startLimit = "";
+        today = new DateTime(endDate, DateTimeZone.UTC);
 
         if (interval.equalsIgnoreCase("minutes")) {
-            startLimit =
-                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
+            startLimit = formatter.print(today.minusMinutes(time));
         } else if (interval.equalsIgnoreCase("hours")) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
+            startLimit = formatter.print(today.minusHours(time));
         } else if (interval.equalsIgnoreCase("days")) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
+            startLimit = formatter.print(today.minusDays(time));
         } else if (interval.equalsIgnoreCase("months")) {
-            startLimit =
-                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
-
+            startLimit = formatter.print(today.minusDays(31 * time));
         }
-
 
         //now to actually check!
         for (String testDate : inputData) {
@@ -904,9 +900,7 @@ public class Util {
                 finalData.add(testDate);
             }
         }
-
         return finalData;
-
     }
 
 
@@ -1000,61 +994,53 @@ public class Util {
   }
 
   public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                          String dataType) {
+                                                          FEED_TYPE dataType) {
         int counter=0, skip=0;
         List<String> dates = new ArrayList<String>();
 
-      while (!startDate.isAfter(endDate) && counter<1000) {
+        while (!startDate.isAfter(endDate) && counter<200) {
 
-          if(counter == 1 && skip == 0)
-              skip=1;
+              if(counter == 1 && skip == 0){
+                  skip=1;
+              }
+              
+              switch(dataType){
+                  case MINUTELY:
+                        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusMinutes(skip)));
+                        startDate = startDate.plusMinutes(skip);
+                        break;
 
-          if (dataType.equalsIgnoreCase("minutely")){
-              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-              formatter.withZoneUTC();
-              logger.info("generating data between " + formatter.print(startDate) + " and " +
-                      formatter.print(endDate));
-                dates.add(formatter.print(startDate.plusMinutes(skip)));
-                startDate = startDate.plusMinutes(skip);
-                ++counter;
+                  case HOURLY:
+                        formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusHours(skip)));
+                        startDate = startDate.plusHours(skip);
+                        break;
 
-          }else if (dataType.equalsIgnoreCase("hourly")){
-              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
-              formatter.withZoneUTC();
-              logger.info("generating data between " + formatter.print(startDate) + " and " +
-                      formatter.print(endDate));
-                dates.add(formatter.print(startDate.plusHours(skip)));
-                startDate = startDate.plusHours(skip);
-                ++counter;
+                  case DAILY:
+                        formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusDays(skip)));
+                        startDate = startDate.plusDays(skip);
+                        break;
 
-          }else if (dataType.equalsIgnoreCase("daily")){
-              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-              formatter.withZoneUTC();
-              logger.info("generating data between " + formatter.print(startDate) + " and " +
-                      formatter.print(endDate));
-                dates.add(formatter.print(startDate.plusDays(skip)));
-                startDate = startDate.plusDays(skip);
-                ++counter;
+                  case MONTHLY:
+                        formatter = DateTimeFormat.forPattern("yyyy/MM");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusMonths(skip)));
+                        startDate = startDate.plusMonths(skip);
+                        break;
 
-          }else if (dataType.equalsIgnoreCase("monthly") && counter!=1000){
-              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM");
-              formatter.withZoneUTC();
-              logger.info("generating data between " + formatter.print(startDate) + " and " +
-                      formatter.print(endDate));
-                dates.add(formatter.print(startDate.plusMonths(skip)));
-                startDate = startDate.plusMonths(skip);
-                ++counter;
-
-          }else if (dataType.equalsIgnoreCase("yearly") && counter!=1000){
-              DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
-              formatter.withZoneUTC();
-              logger.info("generating data between " + formatter.print(startDate) + " and " +
-                      formatter.print(endDate));
-                  dates.add(formatter.print(startDate.plusYears(skip)));
-                  startDate = startDate.plusYears(skip);
-                  ++counter;
-          }
-      }
+                  case YEARLY:
+                        formatter = DateTimeFormat.forPattern("yyyy");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusYears(skip)));
+                        startDate = startDate.plusYears(skip);
+              }//end of switch
+            ++counter;
+        }//end of while
 
         return dates;
   }
@@ -1616,7 +1602,6 @@ public class Util {
       finalList.add(line.split(",")[0]);
 
     }
-
     return finalList;
   }
 
