@@ -49,38 +49,30 @@ import java.util.concurrent.TimeUnit;
 public class ProcessPartitionExpVariableTest extends BaseTestClass {
     static Logger logger = Logger.getLogger(ProcessPartitionExpVariableTest.class);
 
-    ColoHelper cluster1;
-    FileSystem cluster1FS;
-    OozieClient cluster1OC;
-    private Bundle bundle;
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
+    OozieClient clusterOC = serverOC.get(0);
     private String baseTestDir = baseHDFSDir + "/ProcessPartitionExpVariableTest";
     String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
-
-    public ProcessPartitionExpVariableTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster1FS = serverFS.get(0);
-        cluster1OC = serverOC.get(0);
-    }
-
+    
     @BeforeClass
     public void uploadWorkflow() throws Exception {
-        HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
     }
+    
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundle.generateUniqueBundle();
-        bundle.setProcessWorkflow(aggregateWorkflowDir);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        removeBundles(bundle);
-        HadoopUtil.deleteDirIfExists(baseTestDir, cluster1FS);
-
+        removeBundles();
+        HadoopUtil.deleteDirIfExists(baseTestDir, clusterFS);
     }
 
     @Test(enabled = true)
@@ -88,32 +80,35 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
         String endTime = InstanceUtil.getTimeWrtSystemTime(30);
 
-        bundle = bundle.getRequiredBundle(bundle, 1, 2, 1, baseTestDir, 1, startTime, endTime);
-        bundle.setProcessData(bundle.setProcessInputNames(bundle.getProcessData(), "inputData0", "inputData"));
+        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, baseTestDir, 1, startTime,
+                endTime);
+        bundles[0].setProcessData(bundles[0]
+                .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
         Property p = new Property();
         p.setName("var1");
         p.setValue("hardCoded");
 
-        bundle.setProcessData(bundle.addProcessProperty(bundle.getProcessData(), p));
+        bundles[0].setProcessData(bundles[0].addProcessProperty(bundles[0].getProcessData(), p));
 
-        bundle.setProcessData(bundle.setProcessInputPartition(bundle.getProcessData(), "${var1}", "${fileTime}"));
+        bundles[0].setProcessData(bundles[0]
+                .setProcessInputPartition(bundles[0].getProcessData(), "${var1}", "${fileTime}"));
 
 
-        for (int i = 0; i < bundle.getDataSets().size(); i++)
-            Util.print(bundle.getDataSets().get(i));
+        for (int i = 0; i < bundles[0].getDataSets().size(); i++)
+            Util.print(bundles[0].getDataSets().get(i));
 
-        Util.print(bundle.getProcessData());
+        Util.print(bundles[0].getProcessData());
 
-        createDataWithinDatesAndPrefix(cluster1,
+        createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
                 baseTestDir + "/input1/", 1);
 
-        bundle.submitAndScheduleBundle(bundle, prism, false);
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
         TimeUnit.SECONDS.sleep(20);
 
-        InstanceUtil.waitTillInstanceReachState(cluster1OC,
-                Util.getProcessName(bundle.getProcessData()), 1,
+        InstanceUtil.waitTillInstanceReachState(clusterOC,
+                Util.getProcessName(bundles[0].getProcessData()), 2,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
