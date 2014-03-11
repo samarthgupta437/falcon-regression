@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.MerlinConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.testng.Assert;
 import org.testng.log4testng.Logger;
@@ -26,7 +26,6 @@ import org.testng.log4testng.Logger;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Properties;
 
 public class KerberosHelper {
 
@@ -34,7 +33,6 @@ public class KerberosHelper {
 
     private final static boolean kerberosEnabled;
     private static String currentUser = null;
-    private static HashMap<String, String> keyTabMap;
 
     static {
         kerberosEnabled = isKerberosEnabled();
@@ -55,7 +53,7 @@ public class KerberosHelper {
             logger.info("kerberos switching is not required.");
             return;
         }
-        final String keytab = getKeytabForUser(user);
+        final String keytab = MerlinConstants.getKeytabForUser(user);
         logger.info(String.format("Switching kerberos keytab from %s to %s", currentUser, user));
         final String command = String.format("kinit -kt %s %s", keytab, user);
         final int exitVal = executeCommand(command);
@@ -106,24 +104,5 @@ public class KerberosHelper {
         return AUTH_KERB.equals(authMethod);
     }
 
-
-    private static String getKeytabForUser(String user) {
-        if(keyTabMap == null) {
-            Properties prop = Util.getPropertiesObj(Bundle.MERLIN_PROPERTIES);
-            final String user1_name = System.getProperty("user.name");
-            final String user1_keytab = prop.getProperty("user1_keytab");
-            final String user2_name = prop.getProperty("user2_name");
-            final String user2_keytab = prop.getProperty("user2_keytab");
-            logger.info("user1_name: " + user1_name);
-            logger.info("user1_keytab: " + user1_keytab);
-            logger.info("user2_name: " + user2_name);
-            logger.info("user2_keytab: " + user2_keytab);
-            keyTabMap = new HashMap<String, String>();
-            keyTabMap.put(user1_name, user1_keytab);
-            keyTabMap.put(user2_name, user2_keytab);
-        }
-        Assert.assertTrue(keyTabMap.containsKey(user), "Unknown user: " + user);
-        return keyTabMap.get(user);
-    }
 
 }

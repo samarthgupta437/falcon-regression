@@ -1,0 +1,60 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.falcon.regression.core;
+
+import org.apache.falcon.regression.core.util.Util;
+import org.testng.Assert;
+import org.testng.log4testng.Logger;
+
+import java.util.HashMap;
+import java.util.Properties;
+
+public class MerlinConstants {
+    private static Logger logger = Logger.getLogger(MerlinConstants.class);
+
+    public static final String MERLIN_PROPERTIES = "Merlin.properties";
+    public static final String CURRENT_USER_NAME = System.getProperty("user.name");
+    public static final String CURRENT_USER_KEYTAB = "current_user_keytab";
+    public static final String USER_2_NAME = "user2_name";
+    public static final String USER_2_KEYTAB = "user2_keytab";
+    public static final String USER2_NAME;
+    private static HashMap<String, String> keyTabMap;
+
+    /* initialize keyTabMap */
+    static {
+        Properties prop = Util.getPropertiesObj(MERLIN_PROPERTIES);
+        final String user1_name = CURRENT_USER_NAME;
+        final String user1_keytab = prop.getProperty(CURRENT_USER_KEYTAB);
+        final String user2_name = prop.getProperty(USER_2_NAME);
+        final String user2_keytab = prop.getProperty(USER_2_KEYTAB);
+        logger.info("user1_name: " + user1_name);
+        logger.info("user1_keytab: " + user1_keytab);
+        logger.info("user2_name: " + user2_name);
+        logger.info("user2_keytab: " + user2_keytab);
+        USER2_NAME = user2_name;
+        keyTabMap = new HashMap<String, String>();
+        keyTabMap.put(user1_name, user1_keytab);
+        keyTabMap.put(user2_name, user2_keytab);
+    }
+
+    public static String getKeytabForUser(String user) {
+        Assert.assertTrue(keyTabMap.containsKey(user), "Unknown user: " + user);
+        return keyTabMap.get(user);
+    }
+}

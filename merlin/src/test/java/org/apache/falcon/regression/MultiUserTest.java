@@ -20,6 +20,7 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.MerlinConstants;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -37,7 +38,6 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class MultiUserTest extends BaseTestClass {
     private static final Logger logger = Logger.getLogger(MultiUserTest.class);
-    public static final String USER2 = "user2";
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
@@ -60,7 +60,7 @@ public class MultiUserTest extends BaseTestClass {
     @Test
     public void U1SubmitU2Read() throws Exception {
         bundles[0].submitClusters(prism);
-        final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), USER2);
+        final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), MerlinConstants.USER2_NAME);
         AssertUtil.assertFailed(serviceResponse, "Entity submitted by first user should not be readable by second user");
     }
 
