@@ -21,6 +21,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -60,8 +61,7 @@ public class MultiUserTest extends BaseTestClass {
     public void U1SubmitU2Read() throws Exception {
         bundles[0].submitClusters(prism);
         final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), USER2);
-        logger.info("response code: " + serviceResponse.getCode());
-        logger.info("response message: " + serviceResponse.getMessage());
+        AssertUtil.assertFailed(serviceResponse, "Entity submitted by first user should not be readable by second user");
     }
 
     @AfterMethod(alwaysRun = true)
