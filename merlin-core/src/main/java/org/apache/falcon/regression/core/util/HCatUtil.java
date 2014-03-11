@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.core.util;
 
 
+import org.apache.falcon.regression.core.enums.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -26,11 +27,9 @@ import org.apache.hive.hcatalog.api.*;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class HCatUtil {
@@ -64,7 +63,6 @@ public class HCatUtil {
                     .ifNotExists(true).build();
             cli.createDatabase(dbDesc);
         } catch (HCatException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -98,7 +96,7 @@ public class HCatUtil {
 
 
 
-    public static void createPartitionedTable(String dataType, String dbName, String tableName, HCatClient client, String tableLoc){
+    public static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName, HCatClient client, String tableLoc){
         try{
 
             ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
@@ -109,17 +107,13 @@ public class HCatUtil {
             cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING,"id comment"));
             cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING,"value comment"));
 
-            if (dataType.equalsIgnoreCase("minutely")){
-                dataType="s"+dataType;
-            }
-
-            switch(dataType.charAt(0)){
-                case 's':  ptnCols.add(new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
-                case 'h':  ptnCols.add(new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
-                case 'd':  ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-                case 'm':  ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-                case 'y':  ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-                default :  break;
+            switch(dataType){
+                case MINUTELY:   ptnCols.add(new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+                case HOURLY:     ptnCols.add(new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
+                case DAILY:      ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
+                case MONTHLY:    ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
+                case YEARLY:     ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+                default :        break;
             }
 
             HCatCreateTableDesc tableDesc = HCatCreateTableDesc
@@ -133,17 +127,16 @@ public class HCatUtil {
             client.createTable(tableDesc);
 
         }catch(HCatException e){
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-    public static void createHCatTestData(HCatClient cli, FileSystem fs, String dataType, String dbName, String tableName, ArrayList<String> dataFolder) throws Exception {
+    public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType, String dbName, String tableName, ArrayList<String> dataFolder) throws Exception {
 
         HCatUtil.addPartitionsToExternalTable(cli, dataType, dbName, tableName, dataFolder);
     }
 
-    public static void addPartitionsToExternalTable( HCatClient client, String dataType, String dbName, String tableName, ArrayList<String> dataFolder){
+    public static void addPartitionsToExternalTable( HCatClient client, FEED_TYPE dataType, String dbName, String tableName, ArrayList<String> dataFolder){
         //Adding specific partitions that map to an external location
 
         Map<String, String> ptn = new HashMap<String, String>();
@@ -152,22 +145,17 @@ public class HCatUtil {
             int s = parts.length-1;
             int subtractValue = 0;
 
-            //The last element in the array will be the minute directory
-            if (dataType.equalsIgnoreCase("minutely")){
-                dataType="s"+dataType;
-            }
-
-            switch(dataType.charAt(0)){
-                case 's': ptn.put("minute", parts[s]);
-                          ++subtractValue;
-                case 'h': ptn.put("hour", parts[s-subtractValue]);
-                          ++subtractValue;
-                case 'd': ptn.put("day", parts[s-subtractValue]);
-                          ++subtractValue;
-                case 'm': ptn.put("month", parts[s-subtractValue]);
-                          ++subtractValue;
-                case 'y': ptn.put("year", parts[s-subtractValue]);
-                default : break;
+            switch(dataType){
+                case MINUTELY: ptn.put("minute", parts[s]);
+                               ++subtractValue;
+                case HOURLY:   ptn.put("hour", parts[s-subtractValue]);
+                               ++subtractValue;
+                case DAILY:    ptn.put("day", parts[s-subtractValue]);
+                               ++subtractValue;
+                case MONTHLY:  ptn.put("month", parts[s-subtractValue]);
+                               ++subtractValue;
+                case YEARLY:   ptn.put("year", parts[s-subtractValue]);
+                default :      break;
             }
 
             try{
@@ -178,7 +166,6 @@ public class HCatUtil {
                 ptn.clear();
             }
             catch(HCatException e){
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
