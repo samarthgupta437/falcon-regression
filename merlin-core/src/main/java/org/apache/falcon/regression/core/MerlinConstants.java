@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.core;
 
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.hadoop.conf.Configuration;
 import org.testng.Assert;
 import org.testng.log4testng.Logger;
 
@@ -29,6 +30,8 @@ public class MerlinConstants {
     private static Logger logger = Logger.getLogger(MerlinConstants.class);
 
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
+    public final static boolean IS_SECURE =
+            "kerberos".equals(new Configuration().get("hadoop.security.authentication", "simple"));
     public static final String CURRENT_USER_NAME = System.getProperty("user.name");
     public static final String CURRENT_USER_KEYTAB_STR = "current_user_keytab";
     public static final String USER_2_NAME_STR = "user2_name";
