@@ -42,6 +42,7 @@ public class KerberosHelper {
 
     public static void switchUser(String user) {
         if(!kerberosEnabled) {
+            logger.info("Kerberos is disabled, hence no user switching.");
             return;
         }
 
