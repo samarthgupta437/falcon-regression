@@ -121,7 +121,7 @@ public class HCatRetention extends BaseTestClass {
 
             Util.assertSucceeded(prism.getFeedHelper()
                     .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle)));
-            InstanceUtil.waitTillRetentionSucceeded(servers.get(0),bundle,expectedStatus,0,2,2);
+            InstanceUtil.waitTillRetentionSucceeded(servers.get(0),bundle,expectedStatus,0,2,5);
 
             DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
