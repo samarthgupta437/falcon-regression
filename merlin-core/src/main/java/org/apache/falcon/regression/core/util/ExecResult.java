@@ -18,13 +18,13 @@
 
 package org.apache.falcon.regression.core.util;
 
-class ProcessResult {
+class ExecResult {
 
     private final int exitVal;
     private final String output;
     private final String error;
 
-    public ProcessResult(final int exitVal, final String output, final String error) {
+    public ExecResult(final int exitVal, final String output, final String error) {
         this.exitVal = exitVal;
         this.output = output;
         this.error = error;
