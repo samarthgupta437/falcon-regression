@@ -517,12 +517,22 @@ public class InstanceUtil {
                                                              int bundleNumber, int instanceNumber) throws OozieClientException {
         String bundleID = InstanceUtil
                 .getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
+        if (bundleID == null) {
+            return null;
+        }
         String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
+        if (coordID == null) {
+            return null;
+        }
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        List<CoordinatorAction> actions = coordInfo.getActions();
-        if(actions.size() == 0)
+        if (coordInfo == null) {
             return null;
+        }
+        List<CoordinatorAction> actions = coordInfo.getActions();
+        if(actions.size() == 0) {
+            return null;
+        }
         return actions.get(instanceNumber).getStatus();
 
     }
