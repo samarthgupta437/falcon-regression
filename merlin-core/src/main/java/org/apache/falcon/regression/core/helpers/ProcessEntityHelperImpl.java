@@ -207,15 +207,15 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
   }
 
   public String list() throws IOException, InterruptedException {
-    return Util.executeCommand(
-      BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
+    return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
   }
 
   @Override
   public String getDependencies(String entityName) throws IOException, InterruptedException {
 
-    return Util.executeCommand(
-      BASE_COMMAND + " entity -dependency -url " + this.hostname +
+    return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -dependency -url " + this.hostname +
         " -type process -name " + entityName);
   }
 
