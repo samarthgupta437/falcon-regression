@@ -29,7 +29,7 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.testng.TestNGException;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 public class Brother extends Thread {
 

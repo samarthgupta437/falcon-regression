@@ -37,7 +37,7 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;

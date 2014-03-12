@@ -24,7 +24,7 @@ package org.apache.falcon.regression.core.supportClasses;
 
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 public class RetryAnalyzer implements IRetryAnalyzer {
 

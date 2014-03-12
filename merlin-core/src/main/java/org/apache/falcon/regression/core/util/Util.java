@@ -53,7 +53,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
