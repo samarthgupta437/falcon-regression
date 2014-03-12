@@ -66,8 +66,8 @@ public class NewRetryTest extends BaseTestClass {
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
     private String latePath = "/lateDataTest/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String lateDir = "/lateDataTest/testFolders/";
-    private DateTime startDate = new DateTime(DateTimeZone.UTC).plusMinutes(1);
-    private DateTime endDate = new DateTime(DateTimeZone.UTC).plusMinutes(2);
+    private DateTime startDate;
+    private DateTime endDate;
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -80,6 +80,8 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0] = new Bundle(Util.getBundleData("RetryTests")[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
+        startDate = new DateTime(DateTimeZone.UTC).plusMinutes(1);
+        endDate = new DateTime(DateTimeZone.UTC).plusMinutes(2);
         bundles[0].setProcessValidity(startDate, endDate);
     }
 
