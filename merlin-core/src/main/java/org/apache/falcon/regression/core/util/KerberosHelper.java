@@ -29,7 +29,7 @@ public class KerberosHelper {
 
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
 
-    private static String currentUser = null;
+    private static String currentKerberosUser = null;
 
     public static void switchUser(String user) {
         if(!MerlinConstants.IS_SECURE) {
@@ -41,17 +41,17 @@ public class KerberosHelper {
             user = MerlinConstants.CURRENT_USER_NAME;
         }
 
-        //for the first call kerberos switching happens as the currentUser is null
-        if(user.equals(currentUser)) {
+        //for the first call kerberos switching happens as the currentKerberosUser is null
+        if(user.equals(currentKerberosUser)) {
             logger.info("kerberos switching is not required.");
             return;
         }
         final String keytab = MerlinConstants.getKeytabForUser(user);
-        logger.info(String.format("Switching kerberos keytab from %s to %s", currentUser, user));
+        logger.info(String.format("Switching kerberos keytab from %s to %s", currentKerberosUser, user));
         final String command = String.format("kinit -kt %s %s", keytab, user);
         final int exitVal = executeCommand(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
-        currentUser = user;
+        currentKerberosUser = user;
     }
     /* Example usage:
     String command = "ping -c 3 google.com";
