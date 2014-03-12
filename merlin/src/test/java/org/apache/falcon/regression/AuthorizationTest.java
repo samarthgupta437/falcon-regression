@@ -37,6 +37,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.log4testng.Logger;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -50,7 +51,6 @@ public class AuthorizationTest extends BaseTestClass {
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
     String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
-    final int BAD_REQUEST = 400;
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -67,12 +67,12 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     @Test
-    public void U1SubmitU2Read() throws Exception {
+    public void U1SubmitU2Delete() throws Exception {
         bundles[0].submitClusters(prism);
         final ServiceResponse serviceResponse = cluster.getClusterHelper().delete(
                 Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), MerlinConstants.USER2_NAME);
-        AssertUtil.assertFailedWithStatus(serviceResponse, 405,
-                "Entity submitted by first user should not be readable by second user");
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpServletResponse.SC_BAD_REQUEST,
+                "Entity submitted by first user should not be deletable by second user");
     }
 
     @Test
@@ -86,7 +86,7 @@ public class AuthorizationTest extends BaseTestClass {
         //try to suspend by U2
         final ServiceResponse serviceResponse = cluster.getFeedHelper().suspend(Util.URLS
                 .SUSPEND_URL, feed, MerlinConstants.USER2_NAME);
-        AssertUtil.assertFailedWithStatus(serviceResponse, BAD_REQUEST,
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpServletResponse.SC_BAD_REQUEST,
                 "Entity scheduled by first user should not be suspended by second user");
     }
 
@@ -102,7 +102,7 @@ public class AuthorizationTest extends BaseTestClass {
         //try to resume feed by User2
         final ServiceResponse serviceResponse = cluster.getFeedHelper().resume(Util.URLS
                 .RESUME_URL, feed, MerlinConstants.USER2_NAME);
-        AssertUtil.assertFailedWithStatus(serviceResponse, BAD_REQUEST,
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpServletResponse.SC_BAD_REQUEST,
                 "Entity suspended by first user should not be resumed by second user");
     }
 
@@ -114,7 +114,7 @@ public class AuthorizationTest extends BaseTestClass {
         //try to suspend process by U2
         final ServiceResponse serviceResponse = cluster.getProcessHelper().suspend(Util.URLS
                 .SUSPEND_URL, bundles[0].getProcessData(), MerlinConstants.USER2_NAME);
-        AssertUtil.assertFailedWithStatus(serviceResponse, BAD_REQUEST,
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpServletResponse.SC_BAD_REQUEST,
                 "Entity scheduled by first user should not be suspended by second user");
     }
 
@@ -130,7 +130,7 @@ public class AuthorizationTest extends BaseTestClass {
         //try to resume process by U2
         final ServiceResponse serviceResponse = cluster.getProcessHelper().resume(Util.URLS
                 .RESUME_URL, bundles[0].getProcessData(), MerlinConstants.USER2_NAME);
-        AssertUtil.assertFailedWithStatus(serviceResponse, BAD_REQUEST,
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpServletResponse.SC_BAD_REQUEST,
                 "Entity suspended by first user should not be resumed by second user");
     }
 
