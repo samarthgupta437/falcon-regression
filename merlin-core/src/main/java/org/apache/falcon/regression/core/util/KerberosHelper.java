@@ -20,7 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.MerlinConstants;
 import org.testng.Assert;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 public class KerberosHelper {
 
