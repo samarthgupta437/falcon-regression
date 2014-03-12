@@ -718,7 +718,7 @@ public class Util {
         return null;
     }
 
-    public static ProcessResult executeCommand(String command) {
+    public static ExecResult executeCommand(String command) {
         Util.print("Command to be executed: " + command);
         StringBuilder errors = new StringBuilder();
         StringBuilder output = new StringBuilder();
@@ -741,7 +741,7 @@ public class Util {
             logger.info("exitVal: " + exitVal);
             logger.info("output: " + output);
             logger.info("errors: " + errors);
-            return new ProcessResult(exitVal, output.toString().trim(), errors.toString().trim());
+            return new ExecResult(exitVal, output.toString().trim(), errors.toString().trim());
         } catch (InterruptedException e) {
             Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
         } catch (IOException e) {
