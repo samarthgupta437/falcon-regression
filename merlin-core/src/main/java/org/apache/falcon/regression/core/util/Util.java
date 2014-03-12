@@ -79,14 +79,13 @@ public class Util {
         return sendRequest(url, method, null, null);
     }
 
-    public static ServiceResponse sendRequest(String url, String method,
-                                              String data) throws IOException, URISyntaxException,
-    AuthenticationException{
-        return sendRequest(url, method, data, null);
+    public static ServiceResponse sendRequest(String url, String method, String user) throws IOException, URISyntaxException, AuthenticationException{
+        return sendRequest(url, method, null, user);
     }
 
     public static ServiceResponse sendRequest(String url, String method, String data,
                                               String user) throws IOException, URISyntaxException, AuthenticationException{
+        KerberosHelper.switchUser(user);
         BaseRequest request = new BaseRequest(url, method, user, data);
         request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
         HttpResponse response = request.run();

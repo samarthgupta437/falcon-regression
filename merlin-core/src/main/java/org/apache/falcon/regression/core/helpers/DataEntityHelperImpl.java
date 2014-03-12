@@ -53,71 +53,71 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     super(envFileName, prefix);
   }
 
-  public ServiceResponse delete(String url, String data)
+  public ServiceResponse delete(String url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
-    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "delete");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "delete", user);
   }
 
-  public ServiceResponse getEntityDefinition(String url, String data)
+  public ServiceResponse getEntityDefinition(String url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data), "get");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data), "get", user);
   }
 
-  public ServiceResponse getEntityDefinition(Util.URLS url, String data)
+  public ServiceResponse getEntityDefinition(Util.URLS url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    return getEntityDefinition(this.hostname + url.getValue(), data);
+    return getEntityDefinition(this.hostname + url.getValue(), data, user);
   }
 
-  public ServiceResponse getStatus(String url, String data)
+  public ServiceResponse getStatus(String url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "get");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "get", user);
   }
 
-  public ServiceResponse getStatus(Util.URLS url, String data)
+  public ServiceResponse getStatus(Util.URLS url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    return getStatus(this.hostname + url.getValue(), data);
+    return getStatus(this.hostname + url.getValue(), data, user);
   }
 
-  public ServiceResponse resume(String url, String data)
+  public ServiceResponse resume(String url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
     //throw new UnsupportedOperationException("Not supported yet.");
-    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "post");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "post", user);
   }
 
-  public ServiceResponse schedule(String url, String data)
+  public ServiceResponse schedule(String url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
     url += "/feed/" + Util.readDatasetName(data) + colo;
-    return Util.sendRequest(url, "post");
+    return Util.sendRequest(url, "post", user);
   }
 
-  public ServiceResponse submitAndSchedule(String url, String data)
+  public ServiceResponse submitAndSchedule(String url, String data, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     System.out.println("Submitting feed: "+data);
-    return  Util.sendRequest(url + "/feed" + colo, "post", data);
+    return  Util.sendRequest(url + "/feed" + colo, "post", data, user);
   }
 
-  public ServiceResponse submitAndSchedule(Util.URLS url, String data)
+  public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)
   throws IOException, URISyntaxException, AuthenticationException {
-    return submitAndSchedule(this.hostname + url.getValue(), data);
+    return submitAndSchedule(this.hostname + url.getValue(), data, user);
   }
 
-  public ServiceResponse submitEntity(String url, String data)
+  public ServiceResponse submitEntity(String url, String data, String user)
   throws IOException, URISyntaxException, AuthenticationException {
 
     System.out.println("Submitting feed: "+data);
     url += "/feed" + colo;
-    return Util.sendRequest(url, "post", data);
+    return Util.sendRequest(url, "post", data, user);
   }
 
-  public ServiceResponse suspend(String url, String data)
+  public ServiceResponse suspend(String url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "post");
+    return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "post", user);
   }
 
-  public ServiceResponse suspend(Util.URLS url, String data)
+  public ServiceResponse suspend(Util.URLS url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    return suspend(this.hostname + url.getValue(), data);
+    return suspend(this.hostname + url.getValue(), data, user);
   }
 
   public void validateResponse(String response, APIResult.Status expectedResponse,
@@ -142,62 +142,62 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse submitEntity(Util.URLS url, String data)
+  public ServiceResponse submitEntity(Util.URLS url, String data, String user)
   throws IOException, URISyntaxException, AuthenticationException {
-    return submitEntity(this.hostname + url.getValue(), data);
+    return submitEntity(this.hostname + url.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse schedule(Util.URLS scheduleUrl, String processData)
+  public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-    return schedule(this.hostname + scheduleUrl.getValue(), processData);
+    return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
   }
 
   @Override
-  public ServiceResponse delete(Util.URLS deleteUrl, String data)
+  public ServiceResponse delete(Util.URLS deleteUrl, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-     return delete(this.hostname + deleteUrl.getValue(), data);
+     return delete(this.hostname + deleteUrl.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse resume(Util.URLS url, String data)
+  public ServiceResponse resume(Util.URLS url, String data, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
     // TODO Auto-generated method stub
-    return resume(this.hostname + url.getValue(), data);
+    return resume(this.hostname + url.getValue(), data, user);
   }
 
   @Override
   public ProcessInstancesResult getRunningInstance(
-    Util.URLS processRuningInstance, String name)
+          Util.URLS processRunningInstance, String name, String user)
   throws IOException, URISyntaxException, AuthenticationException {
 
-    String url = this.hostname + processRuningInstance.getValue() + "/feed/" + name + allColo;
+    String url = this.hostname + processRunningInstance.getValue() + "/feed/" + name + allColo;
 
-    return InstanceUtil.sendRequestProcessInstance(url);
+    return InstanceUtil.sendRequestProcessInstance(url, user);
   }
 
   @Override
   public ProcessInstancesResult getProcessInstanceStatus(
-    String EntityName, String params)
+          String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
 
     String url =
       this.hostname + Util.URLS.INSTANCE_STATUS.getValue() + "/" + "feed/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
 
   @Override
   public ProcessInstancesResult getProcessInstanceSuspend(
-    String EntityName, String params)
+    String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue() + "/" + "feed/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
 
   }
@@ -208,30 +208,30 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   }
 
 
-  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
+  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_RESUME.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
-  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params)
+  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_KILL.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
-  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
+  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + Util.URLS.INSTANCE_RERUN.getValue() + "/" + "feed/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
@@ -257,27 +257,27 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity)
+  public ServiceResponse update(String oldEntity, String newEntity, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(oldEntity);
-      return Util.sendRequest(url + colo, "post", newEntity);
+      return Util.sendRequest(url + colo, "post", newEntity, user);
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity, String updateTime)
+  public ServiceResponse update(String oldEntity, String newEntity, String updateTime, String user)
   throws IOException, JAXBException, URISyntaxException, AuthenticationException {
     return updateRequestHelper(oldEntity,  newEntity,  updateTime,
-      Util.URLS.FEED_UPDATE.getValue()) ;
+      Util.URLS.FEED_UPDATE.getValue(), user) ;
   }
 
-  public ServiceResponse update(String newEntity)
+  public ServiceResponse update(String newEntity, String user)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
     String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
       Util.readDatasetName(newEntity);
-    return Util.sendRequest(url + colo, "post", newEntity);
+    return Util.sendRequest(url + colo, "post", newEntity, user);
   }
 
   @Override

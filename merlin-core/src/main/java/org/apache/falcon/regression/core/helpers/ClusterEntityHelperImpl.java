@@ -50,56 +50,56 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         super(envFileName, prefix);
     }
 
-    public ServiceResponse delete(String url, String data)
+    public ServiceResponse delete(String url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         url += "/cluster/" + Util.readClusterName(data) + colo;
-        return Util.sendRequest(url, "delete");
+        return Util.sendRequest(url, "delete", user);
     }
 
-    public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException,
+    public ServiceResponse getEntityDefinition(String url, String data, String user) throws JAXBException,
     IOException, URISyntaxException, AuthenticationException {
         url += "/cluster/" + Util.readClusterName(data);
-        return Util.sendRequest(url, "get");
+        return Util.sendRequest(url, "get", user);
     }
 
-    public ServiceResponse getStatus(String url, String data)  {
+    public ServiceResponse getStatus(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse getStatus(Util.URLS url, String data)  {
+    public ServiceResponse getStatus(Util.URLS url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse resume(String url, String data)  {
+    public ServiceResponse resume(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse schedule(String url, String data)  {
+    public ServiceResponse schedule(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse submitAndSchedule(String url, String data)  {
+    public ServiceResponse submitAndSchedule(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse submitAndSchedule(Util.URLS url, String data)  {
+    public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)  {
         return null;
     }
 
-    public ServiceResponse submitEntity(String url, String data)
+    public ServiceResponse submitEntity(String url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         System.out.println("Submitting cluster: "+data);
         url += "/cluster" + colo;
-        return Util.sendRequest(url, "post", data);
+        return Util.sendRequest(url, "post", data, user);
     }
 
-    public ServiceResponse suspend(String url, String data)  {
+    public ServiceResponse suspend(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse suspend(Util.URLS url, String data)  {
+    public ServiceResponse suspend(Util.URLS url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -116,49 +116,49 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse submitEntity(Util.URLS url, String data)
+    public ServiceResponse submitEntity(Util.URLS url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException {
         System.out.println("Submitting cluster: "+data);
-        return submitEntity(this.hostname + url.getValue(), data);
+        return submitEntity(this.hostname + url.getValue(), data, user);
     }
 
     @Override
-    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData)
+    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
      {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public ServiceResponse delete(Util.URLS deleteUrl, String data)
+    public ServiceResponse delete(Util.URLS deleteUrl, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         // TODO Auto-generated method stub
-        return delete(this.hostname + deleteUrl.getValue(), data);
+        return delete(this.hostname + deleteUrl.getValue(), data, user);
     }
 
     @Override
-    public ServiceResponse resume(Util.URLS url, String data)  {
+    public ServiceResponse resume(Util.URLS url, String data, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
-
+    @Override
     public ProcessInstancesResult getRunningInstance(
-            Util.URLS processRuningInstance, String name)  {
+            Util.URLS processRunningInstance, String name, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
-
+    @Override
     public ProcessInstancesResult getProcessInstanceStatus(
-            String readEntityName, String params) {
+            String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
 
 
     public ProcessInstancesResult getProcessInstanceSuspend(
-            String readEntityName, String params) {
+            String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -281,20 +281,20 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(Util.URLS url, String data)
+    public ServiceResponse getEntityDefinition(Util.URLS url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return getEntityDefinition(this.hostname + url.getValue(), data);
+        return getEntityDefinition(this.hostname + url.getValue(), data, user);
     }
 
     @Override
-    public ServiceResponse update(String oldEntity, String newEntity)  {
+    public ServiceResponse update(String oldEntity, String newEntity, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
   @Override
   public ServiceResponse update(String oldEntity,
                                 String newEntity,
-                                String updateTime) throws IOException, JAXBException {
+                                String updateTime, String user) throws IOException, JAXBException {
     return null;
   }
 
@@ -317,21 +317,21 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName,
-                                                         String string)  {
+                                                         String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceRerun(
-            String readEntityName, String string)  {
+            String readEntityName, String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceResume(
-            String readEntityName, String string)  {
+            String readEntityName, String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
