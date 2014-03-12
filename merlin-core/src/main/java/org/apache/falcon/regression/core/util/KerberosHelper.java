@@ -22,9 +22,6 @@ import org.apache.falcon.regression.core.MerlinConstants;
 import org.testng.Assert;
 import org.testng.log4testng.Logger;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 public class KerberosHelper {
 
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
@@ -49,43 +46,9 @@ public class KerberosHelper {
         final String keytab = MerlinConstants.getKeytabForUser(user);
         logger.info(String.format("Switching kerberos keytab from %s to %s", currentKerberosUser, user));
         final String command = String.format("kinit -kt %s %s", keytab, user);
-        final int exitVal = executeCommand(command);
+        final int exitVal = Util.executeCommandGetExitCode(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
         currentKerberosUser = user;
     }
-    /* Example usage:
-    String command = "ping -c 3 google.com";
-    String output = executeCommand(command);
-    System.out.println(output);
-    */
-    private static int executeCommand(String command) {
-        StringBuilder output = new StringBuilder();
-        StringBuilder error = new StringBuilder();
-
-        Process p;
-        try {
-            p = Runtime.getRuntime().exec(command);
-            p.waitFor();
-            BufferedReader outputReader =
-                    new BufferedReader(new InputStreamReader(p.getInputStream()));
-            BufferedReader errorReader =
-                    new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            String line = "";
-            while ((line = outputReader.readLine()) != null) {
-                output.append(line + "\n");
-            }
-            while ((line = errorReader.readLine()) != null) {
-                error.append(line + "\n");
-            }
-            logger.info("output:" + output.toString());
-            logger.info("error:" + error.toString());
-            logger.info("exit status:" + p.exitValue());
-            return p.exitValue();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
 
 }

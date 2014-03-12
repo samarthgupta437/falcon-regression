@@ -176,7 +176,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
         //System.out.println(BASE_COMMAND+ " entity -submit -url "+this.hostname+" -type cluster
         // -file "+filePath);
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -submit -url " + this.hostname + " -type cluster -file " +
                         filePath);
     }*/
@@ -184,7 +184,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     /*@Override
     public String validateEntityViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -validate -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }*/
@@ -192,7 +192,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     /*@Override
     public String submitAndScheduleViaCLI(String filePath)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -submitAndSchedule -url " + this.hostname +
                         " -type cluster -file " + filePath);
     }
@@ -200,7 +200,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String scheduleViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -schedule -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -208,7 +208,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String resumeViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -resume -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -216,7 +216,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String getStatusViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -status -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -224,7 +224,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String getEntityDefinitionViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -definition -url " + this.hostname +
                         " -type cluster -name " + entityName);
     }
@@ -232,7 +232,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String deleteViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -delete -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -240,7 +240,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String suspendViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -suspend -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -250,14 +250,14 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 */
     public String list() throws IOException, InterruptedException {
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type cluster");
     }
 
     @Override
     public String getDependencies(String entityName) throws IOException, InterruptedException {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -dependency -url " + this.hostname +
                         " -type cluster -name " + entityName);
     }
