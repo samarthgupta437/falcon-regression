@@ -22,7 +22,7 @@ import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hadoop.security.authentication.client.KerberosAuthenticator;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;

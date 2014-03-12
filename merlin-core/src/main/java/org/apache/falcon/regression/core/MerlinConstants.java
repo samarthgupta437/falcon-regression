@@ -21,7 +21,7 @@ package org.apache.falcon.regression.core;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.conf.Configuration;
 import org.testng.Assert;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Properties;
