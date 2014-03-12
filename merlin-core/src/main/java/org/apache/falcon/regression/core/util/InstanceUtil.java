@@ -1505,7 +1505,7 @@ public class InstanceUtil {
 
     public static void waitTillRetentionSucceeded(ColoHelper coloHelper, Bundle b,
                                                   List <org.apache.oozie.client.CoordinatorAction.Status>
-                                                           expectedStatus,
+                                                           expectedStatus, int instanceNumber,
                                                      int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
 
         String entityName = Util.getInputFeedNameFromBundle(b);
@@ -1517,26 +1517,34 @@ public class InstanceUtil {
         String coordID = getRetentionCoordID(bundleID, coloHelper.getFeedHelper());
         CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient().getCoordJobInfo(coordID);
 
+        for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
+            if(coordInfo.getActions().size() > 0)
+                break;
+            System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
+                    "instance created on oozie: " + coloHelper.getProcessHelper()
+                    .getOozieClient().getOozieUrl());
+            try {
+                Thread.sleep(20000);
+            } catch (InterruptedException e) {
+                logger.error(e.getMessage());
+            }
+        }
+
+        if(coordInfo.getActions().size()==0){
+            logger.info("Oozie actions not created for the entire wait duration.");
+            System.exit(0);
+        }
+
         for (int sleepCount = 0; sleepCount < sleep1; sleepCount++) {
 
             List<org.apache.oozie.client.CoordinatorAction.Status> statusList = new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
-            for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
-                if(coordInfo.getActions().size() > 0)
-                    break;
-                System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
-                        "instance created on oozie: " + coloHelper.getProcessHelper()
-                        .getOozieClient().getOozieUrl());
-                try {
-                    Thread.sleep(20000);
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                }
-            }
-            for (int count = 0; count < coordInfo.getActions().size(); count++)
-                statusList.add(coordInfo.getActions().get(count).getStatus());
 
-           for(int i=0; i<expectedStatus.size(); ++i){
-                if (statusList.get(0).equals(expectedStatus.get(i))){
+            for (int count = 0; count < coordInfo.getActions().size(); count++){
+                statusList.add(coordInfo.getActions().get(count).getStatus());
+            }
+
+            for(int i=0; i<expectedStatus.size(); ++i){
+                if (statusList.get(instanceNumber).equals(expectedStatus.get(i))){
                     flag=true;
                     break;
                 }
