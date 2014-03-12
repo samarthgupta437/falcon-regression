@@ -238,8 +238,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   @Override
   public String getDependencies(String entityName) throws IOException, InterruptedException {
 
-    return Util.executeCommand(
-      BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type feed -name " +
+    return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type feed -name " +
         entityName);
   }
 

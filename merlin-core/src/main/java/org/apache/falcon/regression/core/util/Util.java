@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.core.util;
 
 import com.jcraft.jsch.*;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
@@ -717,49 +718,44 @@ public class Util {
         return null;
     }
 
-    private static BufferedReader getErrorReader(java.lang.Process process) {
-        return new BufferedReader(new InputStreamReader(process.getErrorStream()));
-    }
-
-    private static BufferedReader getOutputReader(java.lang.Process process) {
-        return new BufferedReader(new InputStreamReader(process.getInputStream()));
-    }
-
-    public static String executeCommand(String command) throws IOException, InterruptedException {
+    public static ProcessResult executeCommand(String command) {
         Util.print("Command to be executed: " + command);
         StringBuilder errors = new StringBuilder();
         StringBuilder output = new StringBuilder();
 
-        Runtime rt = Runtime.getRuntime();
-        java.lang.Process proc = rt.exec(command);
+        try {
+            java.lang.Process process = Runtime.getRuntime().exec(command);
 
-        BufferedReader errorReader = getErrorReader(proc);
-        BufferedReader consoleReader = getOutputReader(proc);
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            BufferedReader consoleReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-        String line;
-        while ((line = errorReader.readLine()) != null) {
-            logger.info(line);
-            errors.append(line);
-            errors.append("\n");
+            String line;
+            while ((line = errorReader.readLine()) != null) {
+                errors.append(line + "\n");
+            }
+
+            while ((line = consoleReader.readLine()) != null) {
+                output.append(line + "\n");
+            }
+            final int exitVal = process.waitFor();
+            logger.info("exitVal: " + exitVal);
+            logger.info("output: " + output);
+            logger.info("errors: " + errors);
+            return new ProcessResult(exitVal, output.toString().trim(), errors.toString().trim());
+        } catch (InterruptedException e) {
+            Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
+        } catch (IOException e) {
+            Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
         }
+        return null;
+    }
 
-        while ((line = consoleReader.readLine()) != null) {
-            logger.info(line);
-            output.append(line);
-            output.append("\n");
-        }
+    public static int executeCommandGetExitCode(String command) {
+        return executeCommand(command).getExitVal();
+    }
 
-        int exitVal = proc.waitFor();
-
-        if (exitVal == 0) {
-            Util.print("Exceuted command output: " + output.toString());
-            return output.toString().trim();
-        } else {
-            Util.print("Executed command error: " + errors.toString());
-            return errors.toString();
-        }
-
-
+    public static String executeCommandGetOutput(String command) throws IOException, InterruptedException {
+        return executeCommand(command).getOutput();
     }
 
     public static String insertLateFeedValue(String feed, String delay, String delayUnit)
