@@ -998,7 +998,7 @@ public class Util {
         int counter=0, skip=0;
         List<String> dates = new ArrayList<String>();
 
-        while (!startDate.isAfter(endDate) && counter<200) {
+        while (!startDate.isAfter(endDate) && counter<1000) {
 
               if(counter == 1 && skip == 0){
                   skip=1;
