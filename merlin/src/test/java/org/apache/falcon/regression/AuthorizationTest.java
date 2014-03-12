@@ -50,7 +50,7 @@ public class AuthorizationTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].generateUniqueBundle();
@@ -60,8 +60,10 @@ public class AuthorizationTest extends BaseTestClass {
     @Test
     public void U1SubmitU2Read() throws Exception {
         bundles[0].submitClusters(prism);
-        final ServiceResponse serviceResponse = cluster.getClusterHelper().getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), MerlinConstants.USER2_NAME);
-        AssertUtil.assertFailed(serviceResponse, "Entity submitted by first user should not be readable by second user");
+        final ServiceResponse serviceResponse = cluster.getClusterHelper().delete(
+                Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), MerlinConstants.USER2_NAME);
+        AssertUtil.assertFailedWithStatus(serviceResponse, 405,
+                "Entity submitted by first user should not be readable by second user");
     }
 
     @AfterMethod(alwaysRun = true)
