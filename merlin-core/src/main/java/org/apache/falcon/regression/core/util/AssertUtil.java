@@ -59,13 +59,17 @@ public class AssertUtil {
 
     }
 
-    public static void assertFailed(ServiceResponse response, String message) throws JAXBException {
+    public static void assertFailed(final ServiceResponse response, final String message) throws JAXBException {
+        assertFailedWithStatus(response, 400, message);
+    }
+
+    public static void assertFailedWithStatus(final ServiceResponse response, final int statusCode, final String message) throws JAXBException {
         if (response.message.equals("null"))
             Assert.assertTrue(false, "response message should not be null");
 
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
                 APIResult.Status.FAILED, message);
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400,
+        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), statusCode,
                 message);
         Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
