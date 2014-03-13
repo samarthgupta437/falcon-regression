@@ -59,6 +59,13 @@ public class AssertUtil {
 
     }
 
+  public static void assertSucceeded(APIResult response) throws JAXBException {
+    Assert.assertEquals(response.getStatus(), APIResult.Status.SUCCEEDED);
+    Assert.assertEquals(response.getStatusCode(), 200);
+    Assert.assertNotNull(response.getMessage());
+
+  }
+
     public static void assertFailed(ServiceResponse response, String message) throws JAXBException {
         if (response.message.equals("null"))
             Assert.assertTrue(false, "response message should not be null");
@@ -69,6 +76,17 @@ public class AssertUtil {
                 message);
         Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
+
+  public static void assertFailed(APIResult response, String message) throws JAXBException {
+    if (response.getMessage().equals("null"))
+      Assert.assertTrue(false, "response message should not be null");
+
+    Assert.assertEquals(response.getStatus(),
+      APIResult.Status.FAILED, message);
+    Assert.assertEquals(response.getStatus(), 400,
+      message);
+    Assert.assertNotNull(response.getRequestId());
+  }
 
   public static void assertPartial(ServiceResponse response) throws JAXBException {
     Assert.assertEquals(Util.parseResponse(response).getStatus(),APIResult.Status.PARTIAL);
