@@ -52,17 +52,14 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     private final String feedPath = baseTestHDFSDir + "/feed0%d" + datePattern;
     private String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     ColoHelper cluster1 = servers.get(0);
-    ColoHelper cluster2 = servers.get(1);
     ColoHelper cluster3 = servers.get(2);
     FileSystem cluster1FS = serverFS.get(0);
-    FileSystem cluster2FS = serverFS.get(1);
     FileSystem cluster3FS = serverFS.get(2);
 
     @BeforeClass(alwaysRun = true)
     public void prepareClusters() throws Exception {
         Util.print("in @BeforeClass");
         HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, "src/test/resources/oozie");
-        HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, "src/test/resources/oozie");
         HadoopUtil.uploadDir(cluster3FS, aggregateWorkflowDir, "src/test/resources/oozie");
     }
 
@@ -73,29 +70,23 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         //get 3 unique bundles
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
-        bundles[1] = Util.readELBundles()[0][0];
-        bundles[1].generateUniqueBundle();
         bundles[2] = Util.readELBundles()[0][0];
         bundles[2].generateUniqueBundle();
 
         //generate bundles according to config files
         bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
         bundles[2] = new Bundle(bundles[2], cluster3.getEnvFileName(), cluster3.getPrefix());
 
         //set cluster colos
         bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster b1: " + bundles[0].getClusters().get(0));
-        bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColo().split("=")[1]);
-        Util.print("cluster b2: " + bundles[1].getClusters().get(0));
         bundles[2].setCLusterColo(bundles[2].getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster b3: " + bundles[2].getClusters().get(0));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
-        bundles[1].setProcessWorkflow(aggregateWorkflowDir);
         bundles[2].setProcessWorkflow(aggregateWorkflowDir);
         //submit 3 clusters
-        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
+        Bundle.submitCluster(bundles[0], bundles[2]);
     }
 
     @AfterMethod(alwaysRun = true)
