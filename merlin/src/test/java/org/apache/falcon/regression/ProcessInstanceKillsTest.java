@@ -161,20 +161,19 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         String endTimeData = InstanceUtil.getTimeWrtSystemTime(50);
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(startTimeData),
-                InstanceUtil.oozieDateToDate(endTimeData), testDir + "/", 1);
+                InstanceUtil.oozieDateToDate(endTimeData), baseTestHDFSDir + "/", 1);
         bundles[0].setProcessValidity(startTime, endTime);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
+        Thread.sleep(60000);
         String startTimeRequest = InstanceUtil.getTimeWrtSystemTime(-17);
         String endTimeRequest = InstanceUtil.getTimeWrtSystemTime(23);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + startTimeRequest + "&end=" + endTimeRequest);
-        Thread.sleep(15000);
         Util.print(r.toString());
     }
 
