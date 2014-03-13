@@ -106,10 +106,10 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
     @Test(timeOut = 12000000)
     public void mixed01_C1sC2sC1eC2e() throws Exception {
-        //ua1 and ua3 are source. ua2 target.   feed01 on ua1 , feed02 on ua3
+        //ua1 and ua3 are source. ua2 target.   feed01 on ua1 , feed03 on ua3
         //get 2 unique feeds
         String feed01 = Util.getInputFeedFromBundle(bundles[0]);
-        String feed02 = Util.getInputFeedFromBundle(bundles[1]);
+        String feed03 = Util.getInputFeedFromBundle(bundles[2]);
         String outputFeed = Util.getOutputFeedFromBundle(bundles[0]);
         //set source and target for the 2 feeds
 
@@ -119,8 +119,8 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
                         ClusterType.SOURCE, null, null);
-        feed02 = InstanceUtil
-                .setFeedCluster(feed02,
+        feed03 = InstanceUtil
+                .setFeedCluster(feed03,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
                         ClusterType.SOURCE, null, null);
@@ -133,7 +133,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         //set new feed input data
         feed01 = Util.setFeedPathValue(feed01, String.format(feedPath, 1));
-        feed02 = Util.setFeedPathValue(feed02, String.format(feedPath, 2));
+        feed03 = Util.setFeedPathValue(feed03, String.format(feedPath, 3));
 
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
@@ -144,7 +144,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                 1);
 
 
-        prefix = InstanceUtil.getFeedPrefix(feed02);
+        prefix = InstanceUtil.getFeedPrefix(feed03);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         InstanceUtil.createDataWithinDatesAndPrefix(cluster3,
                     InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-100)),
@@ -165,14 +165,14 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                         Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET,
                         null, null);
 
-        //set clusters for feed02
-        feed02 = InstanceUtil
-                .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+        //set clusters for feed03
+        feed03 = InstanceUtil
+                .setFeedCluster(feed03, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
                         Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                         null, null);
-        feed02 = InstanceUtil
-                .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+        feed03 = InstanceUtil
+                .setFeedCluster(feed03, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
                         Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                         null, null);
@@ -189,13 +189,13 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         //submit and schedule feeds
         Util.print("feed01: " + feed01);
-        Util.print("feed02: " + feed02);
+        Util.print("feed03: " + feed03);
         Util.print("outputFeed: " + outputFeed);
 
         ServiceResponse r = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         AssertUtil.assertSucceeded(r);
-        r = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
+        r = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed03);
         AssertUtil.assertSucceeded(r);
         r = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, outputFeed);
@@ -224,8 +224,8 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                                 InstanceUtil.addMinsToTime(processStartTime, 16),
                                 InstanceUtil.addMinsToTime(processStartTime, 45)));
         process = InstanceUtil
-                .addProcessInputFeed(process, Util.readDatasetName(feed02),
-                        Util.readDatasetName(feed02));
+                .addProcessInputFeed(process, Util.readDatasetName(feed03),
+                        Util.readDatasetName(feed03));
 
 
         //submit and schedule process
