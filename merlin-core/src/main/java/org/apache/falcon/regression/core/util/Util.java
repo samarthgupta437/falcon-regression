@@ -1396,7 +1396,6 @@ public class Util {
     public static void submitAllClusters(Bundle... b)
     throws IOException, URISyntaxException, AuthenticationException {
         for (Bundle aB : b) {
-            Util.print("Submitting Cluster: " + aB.getClusters().get(0));
             ServiceResponse r = prismHelper.getClusterHelper()
                     .submitEntity(URLS.SUBMIT_URL, aB.getClusters().get(0));
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -1718,7 +1717,7 @@ public class Util {
         return "get";
     }
 
-    public static String formatXml(String xmlString) {
+    public static String prettyPrintXml(String xmlString) {
         try {
             Source xmlInput = new StreamSource(new StringReader(xmlString));
             StringWriter stringWriter = new StringWriter();
