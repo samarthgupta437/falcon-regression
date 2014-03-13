@@ -65,8 +65,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     "/UpdateAtSpecificTimeTest-data";
 
 
-
-
   @BeforeMethod(alwaysRun = true)
   public void setup(Method method) throws IOException, JAXBException {
     Util.print("test name: " + method.getName());
@@ -230,11 +228,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     cluster_2.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL,
       processBundle.getProcessData());
 
-    InstanceUtil.waitTillInstancesAreCreated(cluster_2,      processBundle.getProcessData(), 0, 10);
+    InstanceUtil.waitTillInstancesAreCreated(cluster_2,
+      processBundle.getProcessData(), 0, 10);
 
     //shut down cluster_2
     Util.shutDownService(cluster_2.getProcessHelper());
-    Thread.sleep(5000);
 
     // save old data before update
     String oldProcess = processBundle.getProcessData();
@@ -299,7 +297,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     System.out.println("def_cluster_2 : "+def_cluster_2);
 
     // verify new bundle in cluster_2 and no new bundle in cluster_1  and
-    // start time of new coord
     Util.verifyNewBundleCreation(cluster_1, newBundleID_cluster1, oldNominalTimes_cluster1,
       oldProcess, false, false);
 
@@ -498,7 +495,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     //verify new bundle creation
     Util.verifyNewBundleCreation(cluster_1,oldBundleID,null,
-      feed,true,true);
+      feed,true,false);
   }
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
@@ -632,17 +629,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       processBundle.getProcessData(),true,true);
   }
 
-  @AfterMethod(alwaysRun = true)
-  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
-    Util.print("tearDown " + method.getName());
-    processBundle.deleteBundle(prism);
-    Util.restartService(cluster_2.getProcessHelper());
-    bundle1.deleteBundle(prism);
-    processBundle.deleteBundle(prism);
-  }
-
-
-  private String submitAndScheduleFeed(Bundle b) throws ParseException, JAXBException, IOException {
+   private String submitAndScheduleFeed(Bundle b) throws ParseException, JAXBException, IOException {
     String feed = b.getDataSets().get(0);
     feed = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
@@ -703,5 +690,14 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       testDataDir, 1);
 
     return feed;
+  }
+
+  @AfterMethod(alwaysRun = true)
+  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
+    Util.print("tearDown " + method.getName());
+    processBundle.deleteBundle(prism);
+    Util.restartService(cluster_2.getProcessHelper());
+    bundle1.deleteBundle(prism);
+    processBundle.deleteBundle(prism);
   }
 }
