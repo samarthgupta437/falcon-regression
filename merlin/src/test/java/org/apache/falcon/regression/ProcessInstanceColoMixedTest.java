@@ -55,12 +55,14 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     ColoHelper cluster2 = servers.get(1);
     ColoHelper cluster3 = servers.get(2);
     FileSystem cluster1FS = serverFS.get(0);
+    FileSystem cluster2FS = serverFS.get(1);
     FileSystem cluster3FS = serverFS.get(2);
 
     @BeforeClass(alwaysRun = true)
     public void prepareClusters() throws Exception {
         Util.print("in @BeforeClass");
         HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, "src/test/resources/oozie");
         HadoopUtil.uploadDir(cluster3FS, aggregateWorkflowDir, "src/test/resources/oozie");
     }
 
@@ -89,6 +91,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         bundles[2].setCLusterColo(bundles[2].getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster b3: " + bundles[2].getClusters().get(0));
 
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[1].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[2].setProcessWorkflow(aggregateWorkflowDir);
         //submit 3 clusters
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
     }
