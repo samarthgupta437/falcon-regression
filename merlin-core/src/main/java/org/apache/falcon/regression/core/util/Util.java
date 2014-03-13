@@ -18,7 +18,12 @@
 
 package org.apache.falcon.regression.core.util;
 
-import com.jcraft.jsch.*;
+
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.UserInfo;
 import org.apache.commons.io.FileUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
@@ -1389,7 +1394,8 @@ public class Util {
 
 
       for (final String file : fileLocations) {
-        logger.info("copying  " + file + " to " + folderPrefix + folder);
+        logger.info("copying  " + file + " to " + folderPrefix + folder + " " +
+          "on "+ fs.getConf().get("fs.default.name"));
         fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
       }
     }
@@ -1901,8 +1907,10 @@ public class Util {
     if (shouldBeCreated) {
       Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
         "eeks! new bundle is not getting created!!!!");
-      logger.info("old bundleId=" + originalBundleId);
-      logger.info("new bundleId=" + newBundleId);
+      logger.info("old bundleId=" + originalBundleId + " on oozie: " +
+        ""+cluster.getProcessHelper().getOozieClient().getOozieUrl());
+      logger.info("new bundleId=" + newBundleId + " on oozie: " +
+        ""+cluster.getProcessHelper().getOozieClient().getOozieUrl());
       if(matchInstances)
         Util.validateNumberOfWorkflowInstances(cluster,
         initialNominalTimes, originalBundleId, newBundleId, entityType);
