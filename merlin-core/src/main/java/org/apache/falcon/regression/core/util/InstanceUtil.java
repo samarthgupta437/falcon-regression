@@ -107,10 +107,7 @@ public class InstanceUtil {
         return hitUrl(url, request);
     }
 
-    public static APIResult sendRequestProcessInstance(String
-                                                                            url,
-                                                                    String user
-    ) throws IOException, URISyntaxException {
+    public static APIResult sendRequestProcessInstance(String url,String user) throws IOException, URISyntaxException {
 
         HttpRequestBase request;
         if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
@@ -146,15 +143,17 @@ public class InstanceUtil {
                 "The web service response status is " + response.getStatusLine().getStatusCode());
         logger.info("The web service response is: " + string_response.toString() + "\n");
         APIResult r ;
-
+      final String ISRTemplate =
+          "{\"status\":\"SUCCEEDED\",\"message\":\"ua1/SUMMARY\\n\",\"requestId\":\"ua1/f7a5c18c-3ffa-42da-9498-63793a58d040\\n\",\"instancesSummary\":[{\"cluster\":\"corp-00c92f13-82e9-46f3-a24c-ac857fcd2eec\",\"map\":{\"entry\":{\"key\":\"RUNNING\",\"value\":\"1\"}}}]}";
+      final String PIRTemplate = "{\"status\":\"SUCCEEDED\",\"message\":\"ua1/KILL\\n\",\"requestId\":\"ua1/5d263145-7542-44b1-a594-9696e303f39a\\n\",\"instances\":[{\"instance\":\"2010-01-02T01:00Z\",\"status\":\"SUCCEEDED\",\"logFile\":\"http://mk-qa-63:11000/oozie?job=0001265-140219105739909-oozie-oozi-W\",\"cluster\":\"corp-9b92e79d-6ad0-4c40-89a9-1cc11f0e9f5d\",\"startTime\":\"2014-03-04T09:56:19Z\",\"endTime\":\"2014-03-04T09:58:01Z\",\"details\":\"\"}]}";
       if(url.contains("/summary/"))
-        r = new GsonBuilder().create()
-          .fromJson(jsonString, InstancesSummaryResult.class);
+          r = new GsonBuilder().create()
+            .fromJson(ISRTemplate, InstancesSummaryResult.class);
       else
-        r = new GsonBuilder().setPrettyPrinting().create()
-          .fromJson(jsonString, ProcessInstancesResult.class);
+        r = new GsonBuilder().create()
+          .fromJson(PIRTemplate, ProcessInstancesResult.class);
 
-        if (jsonString.contains("(PROCESS) not found")) {
+         if (jsonString.contains("(PROCESS) not found")) {
             r.setStatusCode(777);
             return r;
         } else if (jsonString.contains("Parameter start is empty") ||
@@ -175,8 +174,16 @@ public class InstanceUtil {
                         (response.getStatusLine().getStatusCode() == 400 &&
                                 jsonString.contains("is before PROCESS's  start"))) {
             r.setStatusCode(400);
+            r.setStatus(APIResult.Status.FAILED);
             return r;
         }
+
+      if(url.contains("/summary/"))
+        r = new GsonBuilder().create()
+          .fromJson(jsonString, InstancesSummaryResult.class);
+      else
+        r = new GsonBuilder().setPrettyPrinting().create()
+          .fromJson(jsonString, ProcessInstancesResult.class);
 
         Util.print("r.getMessage(): " + r.getMessage());
         Util.print("r.getStatusCode(): " + r.getStatusCode());
