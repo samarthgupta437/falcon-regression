@@ -109,6 +109,7 @@
         <internal.maven.repo>file:///tmp/falcontemprepo</internal.maven.repo>
         <hortonworks.repo.url>http://repo.hortonworks.com/content/repositories/releases</hortonworks.repo.url>
         <skipCheck>false</skipCheck>
+        <hive.version>0.12.0</hive.version>
     </properties>
 
     <modules>
@@ -152,13 +153,14 @@
             <id>hadoop-2</id>
             <properties>
                 <hadoop2.version>2.2.0</hadoop2.version>
+                <inmobiHadoop.version>2.0.0-cdh4.5.0</inmobiHadoop.version>
             </properties>
             <dependencyManagement>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-client</artifactId>
-                        <version>${hadoop2.version}</version>
+                        <version>${inmobiHadoop.version}</version>
                         <exclusions>
                             <exclusion>
                                 <groupId>org.glassfish</groupId>
@@ -170,27 +172,27 @@
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-hdfs</artifactId>
-                        <version>${hadoop2.version}</version>
+                        <version>${inmobiHadoop.version}</version>
                         <classifier>tests</classifier>
                     </dependency>
 
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-common</artifactId>
-                        <version>${hadoop2.version}</version>
+                        <version>${inmobiHadoop.version}</version>
                         <classifier>tests</classifier>
                     </dependency>
 
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-yarn-server-resourcemanager</artifactId>
-                        <version>${hadoop2.version}</version>
+                        <version>${inmobiHadoop.version}</version>
                     </dependency>
 
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-yarn-server-nodemanager</artifactId>
-                        <version>${hadoop2.version}</version>
+                        <version>${inmobiHadoop.version}</version>
                     </dependency>
                 </dependencies>
             </dependencyManagement>
@@ -510,6 +512,55 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>0.11.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive.hcatalog</groupId>
+                <artifactId>webhcat-java-client</artifactId>
+                <version>${hive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-metastore</artifactId>
+                <version>${hive.version}</version>
+                <exclusions>
+                    <exclusion> <!--Oozie already imports this-->
+                        <groupId>org.apache.derby</groupId>
+                        <artifactId>derby</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-common</artifactId>
+                <version>${hive.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hadoop</groupId>
+                        <artifactId>hadoop-client</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!--  this is needed for embedded oozie -->
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-exec</artifactId>
+                <version>${hive.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-server</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-common</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.hbase</groupId>
+                        <artifactId>hbase-client</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

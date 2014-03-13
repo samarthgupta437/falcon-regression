@@ -81,6 +81,10 @@ public abstract class IEntityManagerHelper {
         return username;
     }
 
+    public String getHCatEndpoint() {return hcatEndpoint; }
+
+
+
     //basic properties
     protected String qaHost;
 
@@ -106,6 +110,7 @@ public abstract class IEntityManagerHelper {
     protected String serviceStopCmd;
     protected String serviceRestartCmd;
     protected String serviceStatusCmd;
+    protected String hcatEndpoint = "";
 
     public String getNamenodePrincipal() {
         return namenodePrincipal;
@@ -183,6 +188,7 @@ public abstract class IEntityManagerHelper {
         this.password = prop.getProperty(prefix + "password", "");
         this.hadoopLocation = prop.getProperty(prefix + "hadoop_location");
         this.hadoopURL = prop.getProperty(prefix + "hadoop_url");
+        this.hcatEndpoint = prop.getProperty(prefix + "hcat_endpoint");
         this.clusterReadonly = prop.getProperty(prefix + "cluster_readonly");
         this.clusterWrite = prop.getProperty(prefix + "cluster_write");
         this.oozieURL = prop.getProperty(prefix + "oozie_url");
