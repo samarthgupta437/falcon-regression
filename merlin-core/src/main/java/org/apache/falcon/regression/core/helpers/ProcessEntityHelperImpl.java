@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.xml.sax.InputSource;
 
@@ -47,7 +48,9 @@ import java.util.List;
 
 public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
-  public ProcessEntityHelperImpl() {
+    private static Logger logger = Logger.getLogger(ProcessEntityHelperImpl.class);
+
+    public ProcessEntityHelperImpl() {
 
   }
 
@@ -86,14 +89,14 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     public ServiceResponse submitAndSchedule(String url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException {
 
-        System.out.println("Submitting process: " + data);
+        logger.info("Submitting process: " + Util.prettyPrintXml(data));
         url += "/process";
         return Util.sendRequest(url, "post", data, user);
     }
 
     public ServiceResponse submitEntity(String url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException {
-        System.out.println("Submitting process: " + data);
+        logger.info("Submitting process: " + Util.prettyPrintXml(data));
         url += "/process";
         return Util.sendRequest(url, "post", data, user);
     }
