@@ -19,15 +19,20 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
@@ -45,7 +50,10 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-
+  /*
+  this test currently provide minimum verification. More detailed test should
+   be added
+   */
 public class InstanceSummaryTest extends BaseTestClass {
 
   //1. process : test summary single cluster few instance some future some past
@@ -75,12 +83,14 @@ public class InstanceSummaryTest extends BaseTestClass {
   @BeforeClass(alwaysRun = true)
   public void createTestData() throws Exception {
 
-    startTime = InstanceUtil.getTimeWrtSystemTime(-40);
+    startTime = TimeUtil.get20roundedTime(InstanceUtil
+      .getTimeWrtSystemTime
+        (-20));
     endTime = InstanceUtil.getTimeWrtSystemTime(60);
     String startTimeData = InstanceUtil.addMinsToTime(startTime,-100);
     List<String> dataDates = Util.getMinuteDatesOnEitherSide(InstanceUtil
       .oozieDateToDate(startTimeData),InstanceUtil.oozieDateToDate(endTime),
-      1);
+      20);
 
     for (int i = 0; i < dataDates.size(); i++)
       dataDates.set(i, Util.getPathPrefix(feedInputPath) + dataDates.get(i));
@@ -91,19 +101,18 @@ public class InstanceSummaryTest extends BaseTestClass {
       dataFolder.add(dataDate);
     }
 
-
-   /* for(FileSystem fs : serverFS) {
+    for(FileSystem fs : serverFS) {
       HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath),fs);
       HadoopUtil.flattenAndPutDataInFolder(fs, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
-    }*/
+    }
   }
 
   @BeforeMethod(alwaysRun = true)
   public void setup(Method method) throws Exception {
     Util.print("test name: " + method.getName());
     processBundle = Util.readELBundles()[0][0];
-    processBundle = new Bundle(processBundle, cluster1.getEnvFileName(),
-      cluster1.getPrefix());
+    processBundle = new Bundle(processBundle, cluster3.getEnvFileName(),
+      cluster3.getPrefix());
     processBundle.setInputFeedDataPath(feedInputPath);
 
     bundle1 = new Bundle(processBundle, cluster1.getEnvFileName(), cluster1.getPrefix());
@@ -116,27 +125,30 @@ public class InstanceSummaryTest extends BaseTestClass {
     processBundle.setProcessValidity(startTime,endTime);
     processBundle.submitAndScheduleBundle(prism);
 
-   /* InstanceUtil.waitTillInstancesAreCreated(cluster1,
+    InstanceUtil.waitTillInstancesAreCreated(cluster3,
       processBundle.getProcessData(),0,10);
 
-    InstanceUtil.waitTillParticularInstanceReachState(cluster1,
+    InstanceUtil.waitTillParticularInstanceReachState(cluster3,
       Util.readEntityName(processBundle.getProcessData()),2,
-      Status.SUCCEEDED,10, ENTITY_TYPE.PROCESS);*/
+      Status.SUCCEEDED,10, ENTITY_TYPE.PROCESS);
 
     // start only at start time
-    /*InstancesSummaryResult r = prism.getProcessHelper()
+    InstancesSummaryResult r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + startTime);
+    //AssertUtil.assertSucceeded(r);
 
     //start only before process start
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + InstanceUtil.addMinsToTime(startTime, -100));
+    //AssertUtil.assertFailed(r,"response should have failed");
 
     //start only after process end
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + InstanceUtil.addMinsToTime(startTime,120));
+
 
     //start only at mid specific instance
     r = prism.getProcessHelper()
@@ -149,9 +161,9 @@ public class InstanceSummaryTest extends BaseTestClass {
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + InstanceUtil.addMinsToTime(startTime,
           7));
-*/
+
     //start and end at start and end
-    InstancesSummaryResult r = prism.getProcessHelper()
+     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" +startTime + "&end=" +endTime);
 
@@ -197,15 +209,16 @@ public class InstanceSummaryTest extends BaseTestClass {
         "?end=" + InstanceUtil.addMinsToTime(endTime, -30));
   }
 
-  @Test(enabled = false, timeOut = 1200000 )
-  public void testSummaryMultiCluster() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException {
+  @Test(enabled = true, timeOut = 1200000 )
+  public void testSummaryMultiClusterProcess() throws JAXBException,
+    ParseException, InterruptedException, IOException, URISyntaxException {
     processBundle.setProcessValidity(startTime,endTime);
     processBundle.addClusterToBundle(bundle2.getClusters().get(0),
       ClusterType.SOURCE, null, null);
     processBundle.addClusterToBundle(bundle3.getClusters().get(0),
       ClusterType.SOURCE, null, null);
     processBundle.submitAndScheduleBundle(prism);
-    APIResult r = prism.getProcessHelper()
+    InstancesSummaryResult r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + startTime);
 
@@ -240,6 +253,64 @@ public class InstanceSummaryTest extends BaseTestClass {
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
         "?start=" + startTime + "&end=" + endTime);
   }
+
+    @Test(enabled = true, timeOut = 1200000 )
+    public void testSummaryMultiClusterFeed() throws JAXBException,
+      ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException {
+      bundle1.generateUniqueBundle();
+      bundle2.generateUniqueBundle();
+      bundle3.generateUniqueBundle();
+
+      //create desired feed
+      String feed = bundle1.getDataSets().get(0);
+
+      //cluster_1 is target, cluster_2 is source and cluster_3 is neutral
+
+      feed = InstanceUtil.setFeedCluster(feed,
+        XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+        XmlUtil.createRtention("days(100000)", ActionType.DELETE), null,
+        ClusterType.SOURCE, null, null);
+
+      feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-10-01T12:10Z"),
+        XmlUtil.createRtention("days(100000)", ActionType.DELETE),
+        Util.readClusterName(bundle3.getClusters().get(0)), null, null, null);
+
+      feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-10-01T12:25Z"),
+        XmlUtil.createRtention("days(100000)", ActionType.DELETE),
+        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+        null,
+        feedInputPath);
+
+      feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+        XmlUtil.createRtention("days(100000)", ActionType.DELETE),
+        Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+        null, feedInputPath);
+
+      //submit clusters
+      Bundle.submitCluster(bundle1, bundle2, bundle3);
+
+      //create test data on cluster_2
+      /*InstanceUtil.createDataWithinDatesAndPrefix(cluster2,
+        InstanceUtil.oozieDateToDate(startTime),
+        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(60)),
+        feedInputPath, 1);*/
+
+      //submit and schedule feed
+       prism.getFeedHelper().submitAndSchedule(Util.URLS
+        .SUBMIT_AND_SCHEDULE_URL, feed);
+
+      InstancesSummaryResult r = prism.getFeedHelper()
+        .getInstanceSummary(Util.readEntityName(feed),
+          "?start=" + startTime);
+
+      r = prism.getFeedHelper()
+        .getInstanceSummary(Util.readEntityName(feed),
+          "?start=" + startTime + "&end=" + InstanceUtil.addMinsToTime(endTime,
+            -20));
+
+    }
+
+
 
   @AfterMethod
   public void tearDown() throws IOException {
