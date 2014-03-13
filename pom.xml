@@ -153,14 +153,13 @@
             <id>hadoop-2</id>
             <properties>
                 <hadoop2.version>2.2.0</hadoop2.version>
-                <inmobiHadoop.version>2.0.0-cdh4.5.0</inmobiHadoop.version>
             </properties>
             <dependencyManagement>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-client</artifactId>
-                        <version>${inmobiHadoop.version}</version>
+                        <version>${hadoop2.version}</version>
                         <exclusions>
                             <exclusion>
                                 <groupId>org.glassfish</groupId>
@@ -172,27 +171,27 @@
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-hdfs</artifactId>
-                        <version>${inmobiHadoop.version}</version>
+                        <version>${hadoop2.version}</version>
                         <classifier>tests</classifier>
                     </dependency>
 
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-common</artifactId>
-                        <version>${inmobiHadoop.version}</version>
+                        <version>${hadoop2.version}</version>
                         <classifier>tests</classifier>
                     </dependency>
 
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-yarn-server-resourcemanager</artifactId>
-                        <version>${inmobiHadoop.version}</version>
+                        <version>${hadoop2.version}</version>
                     </dependency>
 
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-yarn-server-nodemanager</artifactId>
-                        <version>${inmobiHadoop.version}</version>
+                        <version>${hadoop2.version}</version>
                     </dependency>
                 </dependencies>
             </dependencyManagement>
