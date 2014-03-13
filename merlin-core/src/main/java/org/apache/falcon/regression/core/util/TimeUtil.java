@@ -18,5 +18,29 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+
+import java.text.ParseException;
+
+
+/*
+all time / date related util methods for merlin . need to move methods from
+instanceUtil to here , pending item.
+ */
+
 public class TimeUtil {
+  public static String get20roundedTime(String oozieBaseTime) throws ParseException {
+    DateTime startTime =
+      new DateTime(InstanceUtil.oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
+
+    if (startTime.getMinuteOfHour() < 20)
+      startTime = startTime.minusMinutes(startTime.getMinuteOfHour());
+    else if (startTime.getMinuteOfHour() < 40)
+      startTime = startTime.minusMinutes(startTime.getMinuteOfHour()+20);
+    else
+      startTime = startTime.minusMinutes(startTime.getMinuteOfHour()+40);
+    return InstanceUtil.dateToOozieDate(startTime.toDate());
+
+  }
 }
