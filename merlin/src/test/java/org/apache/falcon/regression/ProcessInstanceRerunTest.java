@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -124,7 +125,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         b.setOutputFeedLocationData(feedOutputPath);
         b.setProcessConcurrency(5);
         b.submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
+        InstanceUtil.waitTillInstancesAreCreated(cluster,b.getProcessData(),
+          0,10);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(b.getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:16Z");
@@ -139,19 +141,28 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
 
     @Test(groups = {"singleCluster"}, enabled
-            = false)
+            = true)
     public void testProcessInstanceRerun_multipleSucceededDeleted() throws Exception {
         try {
+
+            /*
+            wait for 2 instance to succeed . Kill them and try to rerun them
+             */
             b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
             b.setProcessPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedPeriodicity(5, TimeUnit.minutes);
             b.setOutputFeedLocationData(feedOutputPath);
             b.setProcessConcurrency(3);
             b.submitAndScheduleBundle(prism);
+            InstanceUtil.waitTillInstancesAreCreated(cluster, b.getProcessData(),
+              0, 10);
+            InstanceUtil.waitTillParticularInstanceReachState(cluster,
+              b.getProcessData(), 1, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+            prism.getProcessHelper().getProcessInstanceKill(b.getProcessData(),
+              "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
             prism.getProcessHelper()
                     .getProcessInstanceRerun(Util.readEntityName(b.getProcessData()),
-                            "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-            Thread.sleep(15000);
+                      "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         } finally {
             b.deleteBundle(prism);
             prism.getProcessHelper()
