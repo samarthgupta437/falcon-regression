@@ -22,6 +22,7 @@ import com.jcraft.jsch.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enums.FEED_TYPE;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
@@ -828,8 +829,7 @@ public class Util {
     } else if (interval.equalsIgnoreCase("days")) {
       startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
     } else if (interval.equalsIgnoreCase("months")) {
-      startLimit =
-        formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
+      startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
 
     }
 
@@ -849,7 +849,62 @@ public class Util {
 
   }
 
-  public static List<String> getDailyDatesOnEitherSide(int interval, int skip) {
+    public static List<String> filterDataOnRetentionHCat(int time, String interval, String dataType,
+                                                      DateTime endDate,
+                                                      List<String> inputData) throws JAXBException {
+
+        String locationType = "";
+        String appender = "";
+        DateTime today;
+
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        List<String> finalData = new ArrayList<String>();
+
+        //determine what kind of data is there in the feed!
+
+        if (dataType.equalsIgnoreCase("monthly")) {
+            appender = "/01/00/01";
+        } else if (locationType
+                .equalsIgnoreCase("daily")) {
+            appender = "/01"; //because we already take care of that!
+        } else if (locationType
+                .equalsIgnoreCase("hourly")) {
+            appender = "/01";
+        } else if (locationType.equalsIgnoreCase("yearly")) {
+            appender = "/01/01/00/01";
+        }
+
+        //convert the start and end date boundaries to the same format
+        //end date is today's date
+        formatter.print(endDate);
+        String startLimit = "";
+        today = new DateTime(endDate, DateTimeZone.UTC);
+
+        if (interval.equalsIgnoreCase("minutes")) {
+            startLimit = formatter.print(today.minusMinutes(time));
+        } else if (interval.equalsIgnoreCase("hours")) {
+            startLimit = formatter.print(today.minusHours(time));
+        } else if (interval.equalsIgnoreCase("days")) {
+            startLimit = formatter.print(today.minusDays(time));
+        } else if (interval.equalsIgnoreCase("months")) {
+            startLimit = formatter.print(today.minusDays(31 * time));
+        }
+
+        //now to actually check!
+        for (String testDate : inputData) {
+            if (!testDate.equalsIgnoreCase("somethingRandom")) {
+                if ((testDate + appender).compareTo(startLimit) > 0) {
+                    finalData.add(testDate);
+                }
+            } else {
+                finalData.add(testDate);
+            }
+        }
+        return finalData;
+    }
+
+
+    public static List<String> getDailyDatesOnEitherSide(int interval, int skip) {
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
 
@@ -937,6 +992,60 @@ public class Util {
 
     return dates;
   }
+
+  public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
+                                                          FEED_TYPE dataType) {
+        int counter=0, skip=0;
+        List<String> dates = new ArrayList<String>();
+
+        while (!startDate.isAfter(endDate) && counter<1000) {
+
+              if(counter == 1 && skip == 0){
+                  skip=1;
+              }
+              
+              switch(dataType){
+                  case MINUTELY:
+                        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusMinutes(skip)));
+                        startDate = startDate.plusMinutes(skip);
+                        break;
+
+                  case HOURLY:
+                        formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusHours(skip)));
+                        startDate = startDate.plusHours(skip);
+                        break;
+
+                  case DAILY:
+                        formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusDays(skip)));
+                        startDate = startDate.plusDays(skip);
+                        break;
+
+                  case MONTHLY:
+                        formatter = DateTimeFormat.forPattern("yyyy/MM");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusMonths(skip)));
+                        startDate = startDate.plusMonths(skip);
+                        break;
+
+                  case YEARLY:
+                        formatter = DateTimeFormat.forPattern("yyyy");
+                        formatter.withZoneUTC();
+                        dates.add(formatter.print(startDate.plusYears(skip)));
+                        startDate = startDate.plusYears(skip);
+              }//end of switch
+            ++counter;
+        }//end of while
+
+        return dates;
+  }
+
+
   public static List<String> getYearlyDatesOnEitherSide(int interval, int skip) {
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
     DateTime today = new DateTime(DateTimeZone.UTC);
@@ -957,6 +1066,28 @@ public class Util {
 
     return dates;
   }
+
+    public static List<String> getHourlyDatesOnEitherSide(int interval, int skip) {
+
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        logger.info("today is: " + today.toString());
+
+        List<String> dates = new ArrayList<String>();
+        dates.add(formatter.print((today)));
+
+        //first lets get all dates before today
+        for (int backward = 1; backward <= interval; backward += skip+1) {
+            dates.add(formatter.print(today.minusHours(backward)));
+        }
+
+        //now the forward dates
+        for (int i = 1; i <= interval; i += skip+1) {
+            dates.add(formatter.print(today.plusHours(i)));
+        }
+
+        return dates;
+    }
 
   public static void createHDFSFolders(PrismHelper prismHelper, List<String> folderList)
     throws IOException, InterruptedException {
@@ -1471,7 +1602,6 @@ public class Util {
       finalList.add(line.split(",")[0]);
 
     }
-
     return finalList;
   }
 
@@ -1819,6 +1949,8 @@ public class Util {
         iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
       } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
         iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
+      } else if (iface.getType().equals(Interfacetype.REGISTRY)) {
+          iface.setEndpoint(readPropertiesFile(filename, prefix + "hcat_endpoint"));
       }
     }
 

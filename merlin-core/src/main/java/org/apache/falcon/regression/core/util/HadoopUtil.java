@@ -340,6 +340,22 @@ public class HadoopUtil {
         return returnList;
     }
 
+    public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix, boolean isEmpty)throws Exception{
+        Util.HDFSCleanup(fs, prefix);
+
+        ArrayList<String> dataFolder = new ArrayList<String>();
+        for (int i = 0; i < dataDates.size(); i++){
+            dataDates.set(i, prefix + dataDates.get(i));
+        }
+
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
+
+        HadoopUtil.flattenDataInFolders(fs, "src/test/resources/OozieExampleInputData/lateData", dataFolder, isEmpty);
+        return dataFolder;
+    }
+
     @Deprecated
     public static boolean isDirPresent(ColoHelper prismHelper, String path) throws IOException {
         Configuration conf = new Configuration();
@@ -423,5 +439,41 @@ public class HadoopUtil {
                 }
             }
         }
+    }
+
+    public static void flattenDataInFolders(FileSystem fs, String inputPath,
+                                            List<String> remoteLocations, boolean isEmpty)throws Exception{
+
+        if(!isEmpty){
+            File[] files = new File(inputPath).listFiles();
+            assert files != null;
+            for (final File file : files) {
+                if (!file.isDirectory()) {
+                    for (String remoteLocation : remoteLocations) {
+                        logger.info("copying to: " + remoteLocation + " " +
+                                "on:" +
+                                " " + fs
+                                .getConf().get("fs.default.name")+" file: "+file.getName());
+
+                        if (!fs.exists(new Path(remoteLocation)))
+                            fs.mkdirs(new Path(remoteLocation));
+
+                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
+                                new Path(remoteLocation));
+                    }
+                }
+            }
+        }
+        else{
+
+            for (String remoteLocation : remoteLocations) {
+                logger.info("generating empty folder: " + remoteLocation);
+
+                if (!fs.exists(new Path(remoteLocation)))
+                    fs.mkdirs(new Path(remoteLocation));
+            }
+
+        }
+
     }
 }
