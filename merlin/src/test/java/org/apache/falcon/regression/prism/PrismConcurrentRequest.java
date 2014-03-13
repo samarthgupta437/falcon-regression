@@ -80,8 +80,8 @@ public class PrismConcurrentRequest extends BaseTestClass {
             else if (brother.getOutput().getMessage().contains("FAILED"))
                 failedResponse++;
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        Assert.assertEquals(succeedeResponse, 10);
+        Assert.assertEquals(failedResponse, 0);
     }
 
     @Test(groups = {"multiCluster"})
@@ -105,8 +105,8 @@ public class PrismConcurrentRequest extends BaseTestClass {
             else if (brother.getOutput().getMessage().contains("FAILED"))
                 failedResponse++;
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        Assert.assertEquals(succeedeResponse, 0);
+        Assert.assertEquals(failedResponse, 10);
     }
 
 
@@ -129,8 +129,8 @@ public class PrismConcurrentRequest extends BaseTestClass {
             else if (brother.getOutput().getMessage().contains("FAILED"))
                 failedResponse++;
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        Assert.assertEquals(succeedeResponse, 10);
+        Assert.assertEquals(failedResponse, 0);
     }
 
 
@@ -153,8 +153,8 @@ public class PrismConcurrentRequest extends BaseTestClass {
             else if (brother.getOutput().getMessage().contains("FAILED"))
                 failedResponse++;
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        Assert.assertEquals(succeedeResponse, 0);
+        Assert.assertEquals(failedResponse, 10);
     }
 
 
@@ -190,8 +190,8 @@ public class PrismConcurrentRequest extends BaseTestClass {
             else if (brother.getOutput().getMessage().contains("FAILED"))
                 failedResponse++;
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 3);
+        Assert.assertEquals(succeedeResponse, 4);
+        Assert.assertEquals(failedResponse, 0);
     }
 
     @Test(groups = {"multiCluster"})
@@ -221,8 +221,8 @@ public class PrismConcurrentRequest extends BaseTestClass {
             else if (brother.getOutput().getMessage().contains("FAILED"))
                 failedResponse++;
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        Assert.assertEquals(succeedeResponse >= 1, true);
+        Assert.assertEquals(failedResponse, 10 - succeedeResponse);
     }
 
 
@@ -244,8 +244,8 @@ public class PrismConcurrentRequest extends BaseTestClass {
             else if (brother.getOutput().getMessage().contains("FAILED"))
                 failedResponse++;
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        Assert.assertEquals(succeedeResponse, 10);
+        Assert.assertEquals(failedResponse, 0);
     }
 
 }
