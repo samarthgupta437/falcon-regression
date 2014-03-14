@@ -67,7 +67,7 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     @Test
-    public void U1SubmitU2Delete() throws Exception {
+    public void U1SubmitU2DeleteCluster() throws Exception {
         bundles[0].submitClusters(prism);
         final ServiceResponse serviceResponse = cluster.getClusterHelper().delete(
                 Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), MerlinConstants.USER2_NAME);

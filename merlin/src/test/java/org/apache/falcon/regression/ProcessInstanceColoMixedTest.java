@@ -53,17 +53,14 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     private String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
-    ColoHelper cluster3 = servers.get(2);
     FileSystem cluster1FS = serverFS.get(0);
     FileSystem cluster2FS = serverFS.get(1);
-    FileSystem cluster3FS = serverFS.get(2);
 
     @BeforeClass(alwaysRun = true)
     public void prepareClusters() throws Exception {
         Util.print("in @BeforeClass");
         HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, "src/test/resources/oozie");
         HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, "src/test/resources/oozie");
-        HadoopUtil.uploadDir(cluster3FS, aggregateWorkflowDir, "src/test/resources/oozie");
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -75,27 +72,21 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         bundles[0].generateUniqueBundle();
         bundles[1] = Util.readELBundles()[0][0];
         bundles[1].generateUniqueBundle();
-        bundles[2] = Util.readELBundles()[0][0];
-        bundles[2].generateUniqueBundle();
 
         //generate bundles according to config files
         bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
         bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundles[2], cluster3.getEnvFileName(), cluster3.getPrefix());
 
         //set cluster colos
         bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster b1: " + bundles[0].getClusters().get(0));
         bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColo().split("=")[1]);
         Util.print("cluster b2: " + bundles[1].getClusters().get(0));
-        bundles[2].setCLusterColo(bundles[2].getClusterHelper().getColo().split("=")[1]);
-        Util.print("cluster b3: " + bundles[2].getClusters().get(0));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
-        bundles[2].setProcessWorkflow(aggregateWorkflowDir);
-        //submit 3 clusters
-        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
+        //submit 2 clusters
+        Bundle.submitCluster(bundles[0], bundles[1]);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -139,16 +130,16 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
         InstanceUtil.createDataWithinDatesAndPrefix(cluster1,
-                    InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-100)),
-                    InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(100)), prefix,
+                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-100)),
+                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(100)), prefix,
                 1);
 
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster3,
-                    InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-100)),
-                    InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(100)), prefix,
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
+        InstanceUtil.createDataWithinDatesAndPrefix(cluster2,
+                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-100)),
+                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(100)), prefix,
                 1);
 
         String startTime = InstanceUtil.getTimeWrtSystemTime(-70);
@@ -162,7 +153,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         feed01 = InstanceUtil
                 .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                        Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET,
+                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                         null, null);
 
         //set clusters for feed02
@@ -174,7 +165,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         feed02 = InstanceUtil
                 .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                        Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null, null);
 
         //set clusters for output feed
@@ -185,7 +176,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                 XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null, null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null, null);
 
         //submit and schedule feeds
         Util.print("feed01: " + feed01);
@@ -219,7 +210,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                         XmlUtil.createProcessValidity(processStartTime,
                                 InstanceUtil.addMinsToTime(processStartTime, 35)));
         process = InstanceUtil
-                .setProcessCluster(process, Util.readClusterName(bundles[2].getClusters().get(0)),
+                .setProcessCluster(process, Util.readClusterName(bundles[1].getClusters().get(0)),
                         XmlUtil.createProcessValidity(
                                 InstanceUtil.addMinsToTime(processStartTime, 16),
                                 InstanceUtil.addMinsToTime(processStartTime, 45)));
@@ -241,7 +232,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         Status sUa1 = null, sUa2 = null;
         for (i = 0; i < 30; i++) {
             sUa1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
-            sUa2 = InstanceUtil.getInstanceStatus(cluster3, Util.getProcessName(process), 0, 0);
+            sUa2 = InstanceUtil.getInstanceStatus(cluster2, Util.getProcessName(process), 0, 0);
             if (sUa1 != null && sUa2 != null &&
                     (sUa1.toString().equals("RUNNING") || sUa1.toString().equals("SUCCEEDED") ||
                             sUa1.toString().equals("KILLED")) &&

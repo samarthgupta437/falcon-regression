@@ -60,6 +60,14 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -1388,7 +1396,6 @@ public class Util {
     public static void submitAllClusters(Bundle... b)
     throws IOException, URISyntaxException, AuthenticationException {
         for (Bundle aB : b) {
-            Util.print("Submitting Cluster: " + aB.getClusters().get(0));
             ServiceResponse r = prismHelper.getClusterHelper()
                     .submitEntity(URLS.SUBMIT_URL, aB.getClusters().get(0));
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -1708,5 +1715,24 @@ public class Util {
         }
 
         return "get";
+    }
+
+    public static String prettyPrintXml(String xmlString) {
+        try {
+            Source xmlInput = new StreamSource(new StringReader(xmlString));
+            StringWriter stringWriter = new StringWriter();
+            StreamResult xmlOutput = new StreamResult(stringWriter);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", "2");
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.transform(xmlInput, xmlOutput);
+            return xmlOutput.getWriter().toString();
+        } catch (TransformerConfigurationException e) {
+            return xmlString;
+        } catch (TransformerException e) {
+            return xmlString;
+        }
+
     }
 }
