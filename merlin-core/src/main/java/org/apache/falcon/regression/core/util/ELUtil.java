@@ -66,7 +66,7 @@ public class ELUtil {
             return submitResponse;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new TestNGException(e.getMessage());
+            throw new TestNGException(e);
         } finally {
             logger.info("deleting entity:");
             bundle.deleteBundle(prismHelper);
@@ -91,7 +91,7 @@ public class ELUtil {
             return submitResponse;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new TestNGException(e.getMessage());
+            throw new TestNGException(e);
         } finally {
             logger.info("deleting entity:");
             bundle.deleteBundle(prismHelper);
