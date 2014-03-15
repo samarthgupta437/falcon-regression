@@ -94,7 +94,6 @@ public class Util {
 
     public static ServiceResponse sendRequest(String url, String method, String data,
                                               String user) throws IOException, URISyntaxException, AuthenticationException{
-        KerberosHelper.switchUser(user);
         BaseRequest request = new BaseRequest(url, method, user, data);
         request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
         HttpResponse response = request.run();

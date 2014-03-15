@@ -33,9 +33,10 @@ public class MerlinConstants {
     public final static boolean IS_SECURE =
             "kerberos".equals(new Configuration().get("hadoop.security.authentication", "simple"));
     public static final String CURRENT_USER_NAME = System.getProperty("user.name");
-    public static final String CURRENT_USER_KEYTAB_STR = "current_user_keytab";
-    public static final String USER_2_NAME_STR = "user2_name";
-    public static final String USER_2_KEYTAB_STR = "user2_keytab";
+    private static final String CURRENT_USER_KEYTAB_STR =
+      "current_user_keytab";
+    private static final String USER_2_NAME_STR = "user2_name";
+    private static final String USER_2_KEYTAB_STR = "user2_keytab";
     public static final String USER2_NAME;
     private static HashMap<String, String> keyTabMap;
 

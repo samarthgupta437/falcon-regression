@@ -18,17 +18,15 @@
 
 package org.apache.falcon.regression.testHelper;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.regression.core.MerlinConstants;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.KerberosHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.OozieClient;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,7 +57,8 @@ public class BaseTestClass {
 
 
     public BaseTestClass() {
-
+        // loginFromKeytab as the current user
+        KerberosHelper.loginFromKeytab(MerlinConstants.CURRENT_USER_NAME);
         prism = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
         servers = getServers();
         serverFS = new ArrayList<FileSystem>();
