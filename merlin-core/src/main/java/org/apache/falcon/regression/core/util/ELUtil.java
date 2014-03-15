@@ -105,8 +105,12 @@ public class ELUtil {
             String coordID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                     Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             Util.print("coord id: " + coordID);
-            Thread.sleep(30000);
             List<String> missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
+            for(int i=0; i < 10 && missingDependencies == null; ++i) {
+                Thread.sleep(30000);
+                missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
+            }
+
             for (String dependency : missingDependencies) {
                 Util.print("dependency from job: " + dependency);
             }
