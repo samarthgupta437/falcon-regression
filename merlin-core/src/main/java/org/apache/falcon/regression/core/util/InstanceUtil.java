@@ -94,7 +94,6 @@ public class InstanceUtil {
     public static ProcessInstancesResult hitUrl(String url,
                                                 String method, String user) throws URISyntaxException,
     IOException, AuthenticationException {
-        KerberosHelper.switchUser(user);
         BaseRequest request = new BaseRequest(url, method);
         HttpResponse response = request.run();
 
