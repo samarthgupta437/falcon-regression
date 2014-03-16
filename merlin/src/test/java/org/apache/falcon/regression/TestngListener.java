@@ -26,8 +26,8 @@ import org.testng.ITestResult;
 
 import java.util.Arrays;
 
-public class TestngHelper implements ITestListener {
-    private Logger logger = Logger.getLogger(TestngHelper.class);
+public class TestngListener implements ITestListener {
+    private Logger logger = Logger.getLogger(TestngListener.class);
 
     @Override
     public void onTestStart(ITestResult result) {

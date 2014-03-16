@@ -623,7 +623,7 @@
                     <properties>
                         <property>
                             <name>listener</name>
-                            <value>org.apache.falcon.regression.TestngHelper</value>
+                            <value>org.apache.falcon.regression.TestngListener</value>
                         </property>
                     </properties>
                     <!--<skipTests>true</skipTests>-->

@@ -119,7 +119,7 @@ public class ELUtil {
                 Thread.sleep(30000);
                 missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
             }
-            Assert.assertNotNull(missingDependencies, "Bundle job not created.");
+            Assert.assertNotNull(missingDependencies, "Missing dependencies not found.");
             for (String dependency : missingDependencies) {
                 Util.print("dependency from job: " + dependency);
             }
