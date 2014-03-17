@@ -23,7 +23,7 @@ import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -64,6 +64,25 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     private String testBaseDir4 = baseHDFSDir + "/data/fetlrc/billing";
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String testFile1 =
+      "src/test/resources/ReplicationResources/feed-s4Replication.xml" ;
+    private String testFile2 =  "src/test/resources/ReplicationResources/id.pig" ;
+    private String testFile3 =
+      "src/test/resources/ReplicationResources/cluster-0.1.xml" ;
+    private String testFile4 =
+      "src/test/resources/ReplicationResources/log4testng.properties" ;
+  
+    public PrismFeedReplicationPartitionExpTest(){
+        super();
+        cluster1 = servers.get(0);
+        cluster2 = servers.get(1);
+        cluster3 = servers.get(2);
+        cluster1FS = serverFS.get(0);
+        cluster2FS = serverFS.get(1);
+        cluster3FS = serverFS.get(2);
+        cluster1OC = serverOC.get(0);
+        cluster2OC = serverOC.get(1);
+    }
 
 
 // pt : partition in target
@@ -81,55 +100,55 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
         System.out.println("creating test data");
 
-        uploadDataToServer3(testDirWithDate + "00/ua2/", "feed-s4Replication.xml");
-        uploadDataToServer3(testDirWithDate + "05/ua2/", "log_01.txt");
-        uploadDataToServer3(testDirWithDate + "10/ua2/", "src/main/resources/gs1001.config.properties");
+        uploadDataToServer3(testDirWithDate + "00/ua2/", testFile1);
+        uploadDataToServer3(testDirWithDate + "05/ua2/", testFile2);
+        uploadDataToServer3(testDirWithDate + "10/ua2/", testFile3);
         uploadDataToServer3(testDirWithDate + "15/ua2/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
 
-        uploadDataToServer3(testDirWithDate + "00/ua1/", "feed-s4Replication.xml");
-        uploadDataToServer3(testDirWithDate + "05/ua1/", "log_01.txt");
+        uploadDataToServer3(testDirWithDate + "00/ua1/", testFile1);
+        uploadDataToServer3(testDirWithDate + "05/ua1/", testFile2);
         uploadDataToServer3(testDirWithDate + "10/ua1/",
-                "src/main/resources/gs1001.config.properties");
+                testFile3);
         uploadDataToServer3(testDirWithDate + "15/ua1/",
                 "src/main/resources/log4testng.properties");
 
-        uploadDataToServer3(testDirWithDate + "00/ua3/", "feed-s4Replication.xml");
-        uploadDataToServer3(testDirWithDate + "05/ua3/", "log_01.txt");
+        uploadDataToServer3(testDirWithDate + "00/ua3/", testFile1);
+        uploadDataToServer3(testDirWithDate + "05/ua3/", testFile2);
         uploadDataToServer3(testDirWithDate + "10/ua3/",
-                "src/main/resources/gs1001.config.properties");
+                testFile3);
         uploadDataToServer3(testDirWithDate + "15/ua3/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
 
 
-        uploadDataToServer3(testBaseDir3 + testDate + "00/ua2/", "feed-s4Replication.xml");
-        uploadDataToServer3(testBaseDir3 + testDate + "05/ua2/", "log_01.txt");
+        uploadDataToServer3(testBaseDir3 + testDate + "00/ua2/", testFile1);
+        uploadDataToServer3(testBaseDir3 + testDate + "05/ua2/", testFile2);
         uploadDataToServer3(testBaseDir3 + testDate + "10/ua2/",
-                "src/main/resources/gs1001.config.properties");
+                testFile3);
         uploadDataToServer3(testBaseDir3 + testDate + "15/ua2/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
         uploadDataToServer3(testBaseDir3 + testDate + "20/ua2/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
 
 
-        uploadDataToServer3(testBaseDir3 + testDate + "00/ua1/", "feed-s4Replication.xml");
-        uploadDataToServer3(testBaseDir3 + testDate + "05/ua1/", "log_01.txt");
+        uploadDataToServer3(testBaseDir3 + testDate + "00/ua1/", testFile1);
+        uploadDataToServer3(testBaseDir3 + testDate + "05/ua1/", testFile2);
         uploadDataToServer3(testBaseDir3 + testDate + "10/ua1/",
-                "src/main/resources/gs1001.config.properties");
+                testFile3);
         uploadDataToServer3(testBaseDir3 + testDate + "15/ua1/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
         uploadDataToServer3(testBaseDir3 + testDate + "20/ua1/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
 
 
-        uploadDataToServer3(testBaseDir3 + testDate + "00/ua3/", "feed-s4Replication.xml");
-        uploadDataToServer3(testBaseDir3 + testDate + "05/ua3/", "log_01.txt");
+        uploadDataToServer3(testBaseDir3 + testDate + "00/ua3/", testFile1);
+        uploadDataToServer3(testBaseDir3 + testDate + "05/ua3/", testFile2);
         uploadDataToServer3(testBaseDir3 + testDate + "10/ua3/",
-                "src/main/resources/gs1001.config.properties");
+                testFile3);
         uploadDataToServer3(testBaseDir3 + testDate + "15/ua3/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
         uploadDataToServer3(testBaseDir3 + testDate + "20/ua3/",
-                "src/main/resources/log4testng.properties");
+                testFile4);
 
         Util.print("completed creating test data");
 

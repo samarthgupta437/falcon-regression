@@ -24,6 +24,7 @@ package org.apache.falcon.regression.core.interfaces;
 
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -81,6 +82,10 @@ public abstract class IEntityManagerHelper {
         return username;
     }
 
+    public String getHCatEndpoint() {return hcatEndpoint; }
+
+
+
     //basic properties
     protected String qaHost;
 
@@ -107,6 +112,7 @@ public abstract class IEntityManagerHelper {
     protected String serviceStopCmd;
     protected String serviceRestartCmd;
     protected String serviceStatusCmd;
+    protected String hcatEndpoint = "";
 
     public String getNamenodePrincipal() {
         return namenodePrincipal;
@@ -184,6 +190,7 @@ public abstract class IEntityManagerHelper {
         this.password = prop.getProperty(prefix + "password", "");
         this.hadoopLocation = prop.getProperty(prefix + "hadoop_location");
         this.hadoopURL = prop.getProperty(prefix + "hadoop_url");
+        this.hcatEndpoint = prop.getProperty(prefix + "hcat_endpoint");
         this.clusterReadonly = prop.getProperty(prefix + "cluster_readonly");
         this.clusterWrite = prop.getProperty(prefix + "cluster_write");
         this.oozieURL = prop.getProperty(prefix + "oozie_url");
@@ -398,10 +405,11 @@ public abstract class IEntityManagerHelper {
                 Util.readEntityName(oldEntity);
 
         if (org.apache.commons.lang.StringUtils.isEmpty(colo))
-            return Util.sendRequest(url + "?end=" + updateTime, "post", newEntity, user);
+            return Util.sendRequest(url + "?effective=" + updateTime,
+              newEntity);
 
-        return Util.sendRequest(url + colo + "&end=" + updateTime, "post", newEntity, user);
-
+        return Util.sendRequest(url + colo + "&effective=" + updateTime,
+          newEntity);
     }
 
     public abstract String toString(Object object) throws JAXBException;
@@ -431,9 +439,13 @@ public abstract class IEntityManagerHelper {
     throws IOException, URISyntaxException, AuthenticationException
             ;
 
-    public String getColo() {
-        return colo;
-    }
+  public abstract InstancesSummaryResult getInstanceSummary(String readEntityName,
+                                       String string) throws IOException, AuthenticationException,
+    URISyntaxException;
 
-    public String getColoName(){ return coloName; }
+  public String getColo() {
+    return colo;
+  }
+
+  public String getColoName(){ return coloName; }
 }

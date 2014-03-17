@@ -18,6 +18,7 @@
 package org.apache.falcon.regression.prism;
 
 
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
@@ -28,7 +29,8 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.supportClasses.HadoopFileEditor;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -38,19 +40,31 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.BundleJob;
+import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Minutes;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 @Test(groups = "distributed")
@@ -79,7 +93,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1] = new Bundle(b, cluster2);
         bundles[2] = new Bundle(b, cluster3);
         setBundleWFPath(bundles[0], bundles[1], bundles[2]);
-        bundles[1].addClusterToBundle(bundles[2].getClusters().get(0), ClusterType.TARGET);
+        bundles[1].addClusterToBundle(bundles[2].getClusters().get(0),
+          ClusterType.TARGET, null, null);
         usualGrind(cluster3, bundles[1]);
     }
 
@@ -130,7 +145,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 .getLatestBundleID(cluster3,
                         Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
-        waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
+
+      waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         int coordCount = Util.getNumberOfWorkflowInstances(cluster3, oldBundleId);
 
         String updatedProcess = InstanceUtil
@@ -1516,7 +1532,56 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
-    private String setProcessTimeOut(String process, int mag, TimeUnit unit) throws Exception {
+
+
+  @Test(timeOut = 1200000)
+  public void
+  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
+    Bundle b = Util.readELBundles()[0][0];
+    HadoopFileEditor hadoopFileEditor = null;
+    try {
+
+      b = new Bundle(b, cluster1.getEnvFileName(), cluster1.getPrefix());
+      b.submitBundle(prism);
+
+      b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-10),
+        InstanceUtil.getTimeWrtSystemTime(15));
+      b.submitAndScheduleBundle(prism);
+
+      InstanceUtil.waitTillInstanceReachState(serverOC.get(1),
+        Util.readEntityName(b.getProcessData()),0,CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+
+      //save old data
+      String oldBundleID = InstanceUtil
+        .getLatestBundleID(cluster1,
+          Util.readEntityName(b.getProcessData()), ENTITY_TYPE.PROCESS);
+
+      List<String> oldNominalTimes = Util.getActionsNominalTime(cluster1,
+        oldBundleID,
+        ENTITY_TYPE.PROCESS);
+
+      //update workflow.xml
+      hadoopFileEditor = new HadoopFileEditor(cluster1FS);
+      hadoopFileEditor.edit(new ProcessMerlin(b
+        .getProcessData()).getWorkflow().getPath()+"/workflow.xml","</workflow-app>","<!-- some comment -->");
+
+      //update
+      prism.getProcessHelper().update(b.getProcessData(),
+        b.getProcessData());
+
+      Thread.sleep(20000);
+      //verify new bundle creation
+      Util.verifyNewBundleCreation(cluster1,oldBundleID,oldNominalTimes,
+        b.getProcessData(),true, true);
+
+    } finally {
+      b.deleteBundle(prism);
+      hadoopFileEditor.restore();
+    }
+
+  }
+
+  private String setProcessTimeOut(String process, int mag, TimeUnit unit) throws Exception {
         Process p = InstanceUtil.getProcessElement(process);
         Frequency f = new Frequency(mag, unit);
         p.setTimeout(f);
@@ -1589,7 +1654,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         b.setInputFeedDataPath(inputFeedPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(prism, 60, 1, prefix);
+        Util.lateDataReplenish(prism, 60, 1, prefix, null);
         final String START_TIME = InstanceUtil.getTimeWrtSystemTime(-2);
         String endTime = InstanceUtil.getTimeWrtSystemTime(6);
         b.setProcessPeriodicity(1, TimeUnit.minutes);

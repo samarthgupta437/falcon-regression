@@ -193,11 +193,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(cluster1, 70, 1, prefix);
+        Util.lateDataReplenish(cluster1, 70, 1, prefix, null);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 70, 1, prefix);
+        Util.lateDataReplenish(cluster3, 70, 1, prefix, null);
 
         String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
 

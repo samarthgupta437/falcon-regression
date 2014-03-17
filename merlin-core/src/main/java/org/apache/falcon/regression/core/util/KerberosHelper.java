@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.MerlinConstants;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
 

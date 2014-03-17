@@ -43,3 +43,6 @@ bin/
 #Mac OS X
 .DS_Store
 */DS_Store
+
+#prop files
+merlin/src/main/resources/Merlin.properties

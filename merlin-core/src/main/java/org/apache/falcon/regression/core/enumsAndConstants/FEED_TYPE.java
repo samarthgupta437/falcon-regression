@@ -16,10 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.supportClasses;
+package org.apache.falcon.regression.core.enumsAndConstants;
 
-public enum ENTITY_TYPE {
+public enum FEED_TYPE {
+   MINUTELY("minutely"), HOURLY("hourly"), DAILY("daily"), MONTHLY("monthly"), YEARLY("yearly");
 
-    PROCESS, DATA, CLUSTER, FEED;
+   private String value;
 
+   private FEED_TYPE(String value){
+       this.value = value;
+   }
+
+   public String getValue(){
+       return value;
+   }
 }

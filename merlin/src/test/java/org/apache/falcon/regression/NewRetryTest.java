@@ -27,7 +27,7 @@ import org.apache.falcon.regression.core.generated.process.Retry;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -51,7 +51,9 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -87,6 +89,7 @@ public class NewRetryTest extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() throws Exception {
+
         removeBundles();
     }
 
@@ -313,7 +316,8 @@ public class NewRetryTest extends BaseTestClass {
 
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             while (!validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 2)) {
@@ -375,7 +379,8 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
@@ -434,7 +439,8 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
@@ -495,7 +501,8 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
@@ -557,7 +564,8 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
@@ -617,7 +625,8 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             //now to validate all failed instances to check if they were retried or not.
@@ -664,7 +673,8 @@ public class NewRetryTest extends BaseTestClass {
 
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             while (!validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 1)) {
@@ -721,7 +731,8 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+            Util.readEntityName(bundles[0].getProcessData()),
+              ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             //now to validate all failed instances to check if they were retried or not.
@@ -776,7 +787,8 @@ public class NewRetryTest extends BaseTestClass {
             List<String> initialData = Util.getHadoopLateData(cluster, Util.getInputFeedFromBundle(bundles[0]));
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             List<DateTime> dates = null;
 
             do {
@@ -872,7 +884,8 @@ public class NewRetryTest extends BaseTestClass {
             List<String> initialData = Util.getHadoopLateData(cluster, Util.getInputFeedFromBundle(bundles[0]));
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             List<DateTime> dates = null;
 
             do {
@@ -954,7 +967,8 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+
+            Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             validateRetry(cluster, bundleId, (bundles[0].getProcessObject().getRetry().getAttempts()) / 2);
@@ -1336,6 +1350,12 @@ public class NewRetryTest extends BaseTestClass {
             return Math.abs(delay * attempts);
         }
 
+    }
+
+    private void submitClusters(Bundle bundle) throws Exception {
+        for (String cluster : bundle.getClusters()) {
+            Util.assertSucceeded(prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
+        }
     }
 
 }

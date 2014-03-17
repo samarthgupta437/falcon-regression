@@ -21,20 +21,21 @@ package org.apache.falcon.regression.core.util;
 import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ResponseKeys;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -66,6 +67,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -85,62 +88,90 @@ public class InstanceUtil {
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
-    public static ProcessInstancesResult sendRequestProcessInstance(String
-                                                                            url, String user)
+  public static APIResult sendRequestProcessInstance(String
+                                                                    url, String user)
     throws IOException, URISyntaxException, AuthenticationException {
-        return hitUrl(url, Util.getMethodType(url), user);
-    }
+    return hitUrl(url, Util.getMethodType(url), user);
+  }
 
-    public static ProcessInstancesResult hitUrl(String url,
-                                                String method, String user) throws URISyntaxException,
+  public static APIResult hitUrl(String url,
+                                              String method, String user) throws URISyntaxException,
     IOException, AuthenticationException {
         BaseRequest request = new BaseRequest(url, method);
         HttpResponse response = request.run();
 
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-        StringBuilder string_response = new StringBuilder();
-        for (String line; (line = reader.readLine()) != null; ) {
-            string_response.append(line).append("\n");
-        }
-        String jsonString = string_response.toString();
-        logger.info(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        logger.info("The web service response is: " + string_response.toString() + "\n");
-        ProcessInstancesResult r = new ProcessInstancesResult();
-        if (jsonString.contains("(PROCESS) not found")) {
-            r.setStatusCode(ResponseKeys.PROCESS_NOT_FOUND);
-            return r;
-        } else if (jsonString.contains("Parameter start is empty") ||
-                jsonString.contains("Unparseable date:")) {
-            r.setStatusCode(ResponseKeys.UNPARSEABLE_DATE);
-            return r;
-        } else if (response.getStatusLine().getStatusCode() == 400 &&
-                jsonString.contains("(FEED) not found")) {
-            r.setStatusCode(400);
-            return r;
-        } else if (
-                (response.getStatusLine().getStatusCode() == 400 &&
-                        jsonString.contains("is beforePROCESS  start")) ||
-                        response.getStatusLine().getStatusCode() == 400 &&
-                                jsonString.contains("is after end date")
-                        || (response.getStatusLine().getStatusCode() == 400 &&
-                        jsonString.contains("is after PROCESS's end")) ||
-                        (response.getStatusLine().getStatusCode() == 400 &&
-                                jsonString.contains("is before PROCESS's  start"))) {
-            r.setStatusCode(400);
-            return r;
-        }
-        r = new GsonBuilder().setPrettyPrinting().create()
-                .fromJson(jsonString, ProcessInstancesResult.class);
-
-        Util.print("r.getMessage(): " + r.getMessage());
-        Util.print("r.getStatusCode(): " + r.getStatusCode());
-        Util.print("r.getStatus() " + r.getStatus());
-        Util.print("r.getInstances()" + Arrays.toString(r.getInstances()));
-        return r;
+    BufferedReader reader = new BufferedReader(
+      new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+    StringBuilder string_response = new StringBuilder();
+    for (String line; (line = reader.readLine()) != null; ) {
+      string_response.append(line).append("\n");
+    }
+    String jsonString = string_response.toString();
+    logger.info(
+      "The web service response status is " + response.getStatusLine().getStatusCode());
+    logger.info("The web service response is: " + string_response.toString() + "\n");
+    APIResult r = null;
+    try {
+    if(url.contains("/summary/")) {
+     Constructor<?> constructor = InstancesSummaryResult.class
+     .getDeclaredConstructors()[0];
+     constructor.setAccessible(true);
+     r = (InstancesSummaryResult)constructor.newInstance();
+    }
+    else  {
+      Constructor<?> constructor = ProcessInstancesResult.class
+       .getDeclaredConstructors()[0];
+     constructor.setAccessible(true);
+     r = (ProcessInstancesResult)constructor.newInstance();
+    }
+    } catch (InstantiationException e) {
+      e.printStackTrace();
+      logger.info("Could not create InstancesSummaryResult or " +
+        "ProcessInstancesResult constructor");
+      System.exit(1);
+    } catch (InvocationTargetException e) {
+      e.printStackTrace();
+      logger.info("Could not create InstancesSummaryResult or " +
+        "ProcessInstancesResult constructor");
+      System.exit(1);
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+      logger.info("Could not create InstancesSummaryResult or " +
+        "ProcessInstancesResult constructor");
+      System.exit(1);
     }
 
+    if (jsonString.contains("(PROCESS) not found")) {
+      r.setStatusCode(ResponseKeys.PROCESS_NOT_FOUND);
+      return r;
+    } else if (jsonString.contains("Parameter start is empty") ||
+      jsonString.contains("Unparseable date:")) {
+      r.setStatusCode(ResponseKeys.UNPARSEABLE_DATE);
+      return r;
+    } else if (response.getStatusLine().getStatusCode() == 400 &&
+      jsonString.contains("(FEED) not found")) {
+      r.setStatusCode(400);
+      return r;
+    } else if (
+      (response.getStatusLine().getStatusCode() == 400 &&
+        jsonString.contains("is beforePROCESS  start")) ||
+        response.getStatusLine().getStatusCode() == 400 &&
+          jsonString.contains("is after end date")
+        || (response.getStatusLine().getStatusCode() == 400 &&
+        jsonString.contains("is after PROCESS's end")) ||
+        (response.getStatusLine().getStatusCode() == 400 &&
+          jsonString.contains("is before PROCESS's  start"))) {
+      r.setStatusCode(400);
+      return r;
+    }
+    r = new GsonBuilder().setPrettyPrinting().create()
+      .fromJson(jsonString, ProcessInstancesResult.class);
+
+    Util.print("r.getMessage(): " + r.getMessage());
+    Util.print("r.getStatusCode(): " + r.getStatusCode());
+    Util.print("r.getStatus() " + r.getStatus());
+    return r;
+  }
 
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
                                        ProcessInstancesResult.WorkflowStatus ws) throws JAXBException {
@@ -419,7 +450,8 @@ public class InstanceUtil {
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        return fmt.print(jodaTime);
+        DateTimeZone tz = DateTimeZone.getDefault();
+        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(),false));
     }
 
     public static String addMinsToTime(String time, int minutes) throws ParseException {
@@ -461,11 +493,13 @@ public class InstanceUtil {
         return bundleInfo.getCoordinators();
     }
 
-    public static String getLatestBundleID(ColoHelper coloHelper, String processName,
-                                           ENTITY_TYPE entityType) throws OozieClientException {
-        List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType);
+    public static String getLatestBundleID(ColoHelper coloHelper,
+                                           String entityName,ENTITY_TYPE entityType )
+      throws OozieClientException {
 
-        String max = "";
+        List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), entityName, entityType);
+
+        String max = "0";
         int maxID = -1;
         for (String strID : bundleIds) {
             if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
@@ -479,6 +513,7 @@ public class InstanceUtil {
     public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber) throws OozieClientException {
 
+        //sequence start from 0
         List<String> bundleIds = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(), entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
         String bundleID;
@@ -505,7 +540,7 @@ public class InstanceUtil {
     public static String dateToOozieDate(Date dt) throws ParseException {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        Util.print("jadaSystemTime: " + jodaTime);
+        Util.print("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         return fmt.print(jodaTime);
     }
@@ -554,6 +589,11 @@ public class InstanceUtil {
         }
         File[] files = new File(inputPath).listFiles();
         assert files != null;
+
+        Path remotePath = new Path(remoteLocation);
+        if(!fs.exists(remotePath))
+          fs.mkdirs(remotePath);
+
         for (final File file : files) {
             if (!file.isDirectory()) {
                 Util.print("putDataInFolder: " + remoteLocation);
@@ -569,6 +609,7 @@ public class InstanceUtil {
 
         while (true) {
             DateTime sysDate = new DateTime(Util.getSystemDate(prismHelper));
+            sysDate.withZoneRetainFields(DateTimeZone.UTC);
             Util.print("sysDate: " + sysDate + "  finalDate: " + finalDate);
             if (sysDate.compareTo(finalDate) > 0)
                 break;
@@ -625,6 +666,9 @@ public class InstanceUtil {
                                                       int interval) throws IOException, InterruptedException {
         List<String> dataDates =
                 Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+
+        if(!prefix.endsWith("/"))
+          prefix = prefix+"/";
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -763,27 +807,26 @@ public class InstanceUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                        new Path(remoteLocation));
+                  new Path(remoteLocation));
             }
         }
 
     }
 
-    public static ProcessInstancesResult createAndsendRequestProcessInstance(
-            String url, String params, String colo, String user)
+  public static APIResult createAndsendRequestProcessInstance(
+    String url, String params, String colo, String user)
     throws IOException, URISyntaxException, AuthenticationException {
 
-        if (params != null && !colo.equals("")) {
-            url = url + params + "&" + colo.substring(1);
-        } else if (params != null) {
-            url = url + params;
-        } else
-            url = url + colo;
+    if (params != null && !colo.equals("")) {
+      url = url + params + "&" + colo.substring(1);
+    } else if (params != null) {
+      url = url + params;
+    } else
+      url = url + colo;
 
+    return InstanceUtil.sendRequestProcessInstance(url, user);
 
-        return InstanceUtil.sendRequestProcessInstance(url, user);
-
-    }
+  }
 
     public static String getFeedPrefix(String feed) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
@@ -922,7 +965,7 @@ public class InstanceUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                        new Path(remoteLocation));
+                  new Path(remoteLocation));
             }
         }
     }
@@ -1000,19 +1043,19 @@ public class InstanceUtil {
 
         List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
 
-        System.out.println("bundle size for process is " +
+        logger.info("bundle size for process is " +
                 Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType).size());
 
         for (String bundleId : Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType)) {
             BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
             List<CoordinatorJob> coords = bundleInfo.getCoordinators();
 
-            System.out.println("number of coords in bundle " + bundleId + "=" + coords.size());
+            logger.info("number of coords in bundle " + bundleId + "=" + coords.size());
 
             for (CoordinatorJob coord : coords) {
                 List<CoordinatorAction> actions =
                         oozieClient.getCoordJobInfo(coord.getId()).getActions();
-                System.out.println("number of actions in coordinator " + coord.getId() + " is " +
+                logger.info("number of actions in coordinator " + coord.getId() + " is " +
                         actions.size());
                 list.addAll(actions);
             }
@@ -1189,29 +1232,131 @@ public class InstanceUtil {
         }
     }
 
-    public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
-                                                                       DateTime startDateJoda,
-                                                                       DateTime endDateJoda,
-                                                                       String prefix,
-                                                                       int interval) throws IOException, InterruptedException {
-        List<String> dataDates =
-                Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+  public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
+                                                                DateTime startDateJoda,
+                                                                DateTime endDateJoda,
+                                                                String prefix,
+                                                                int interval) throws IOException, InterruptedException {
+    List<String> dataDates =
+      Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
+    for (int i = 0; i < dataDates.size(); i++)
+      dataDates.set(i, prefix + dataDates.get(i));
 
-        List<String> dataFolder = new ArrayList<String>();
+    List<String> dataFolder = new ArrayList<String>();
 
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
+    for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-        InstanceUtil.createHDFSFolders(colo, dataFolder);
-        return dataFolder;
-    }
+    InstanceUtil.createHDFSFolders(colo, dataFolder);
+    return dataFolder;
+  }
 
   public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
     Feed feedElement = InstanceUtil.getFeedElement(feed);
     feedElement.setFrequency(f);
     return InstanceUtil.feedElementToString(feedElement);
   }
+
+  public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
+                                                 String entity,
+                                                 int bundleSeqNo,
+                                                 int totalMinutesToWait
+                                                ) throws JAXBException, OozieClientException {
+    int sleep = totalMinutesToWait * 60 / 20;
+    String entityName = Util.readEntityName(entity);
+    ENTITY_TYPE type = Util.getEntityType(entity);
+    String bundleID = getSequenceBundleID(coloHelper,entityName,type,
+      bundleSeqNo);
+    String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);
+
+    for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
+      CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient()
+        .getCoordJobInfo(coordID);
+
+      if(coordInfo.getActions().size() > 0)
+          break;
+      logger.info("Coord "+ coordInfo.getId() + " still dosent have " +
+        "instance created on oozie: " + coloHelper.getProcessHelper()
+        .getOozieClient().getOozieUrl());
+      try {
+        Thread.sleep(20000);
+      } catch (InterruptedException e) {
+        logger.error(e.getMessage());
+      }
+
+    }
+
+  }
+
+
+  public static void waitTillRetentionSucceeded(ColoHelper coloHelper, Bundle b,
+                                                List <org.apache.oozie.client.CoordinatorAction.Status>
+                                                  expectedStatus, int instanceNumber,
+                                                int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
+
+    String entityName = Util.getInputFeedNameFromBundle(b);
+    boolean flag = false;
+    int sleep1 = MinutesToWaitForStatus * 60 / 20;
+    int sleep2 = MinutesToWaitForCoordAction * 60 / 20;
+
+    String bundleID = getLatestBundleID(coloHelper, entityName, ENTITY_TYPE.FEED);
+    String coordID = getRetentionCoordID(bundleID, coloHelper.getFeedHelper());
+    CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient().getCoordJobInfo(coordID);
+
+    for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
+      if(coordInfo.getActions().size() > 0)
+        break;
+      logger.info("Coord "+ coordInfo.getId() + " still dosent have " +
+        "instance created on oozie: " + coloHelper.getProcessHelper()
+        .getOozieClient().getOozieUrl());
+      try {
+        Thread.sleep(20000);
+      } catch (InterruptedException e) {
+        logger.error(e.getMessage());
+      }
+    }
+
+    if(coordInfo.getActions().size()==0){
+      logger.info("Oozie actions not created for the entire wait duration.");
+      System.exit(0);
+    }
+
+    for (int sleepCount = 0; sleepCount < sleep1; sleepCount++) {
+
+      List<org.apache.oozie.client.CoordinatorAction.Status> statusList = new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
+
+      for (int count = 0; count < coordInfo.getActions().size(); count++){
+        statusList.add(coordInfo.getActions().get(count).getStatus());
+      }
+
+      for(int i=0; i<expectedStatus.size(); ++i){
+        if (statusList.get(instanceNumber).equals(expectedStatus.get(i))){
+          flag=true;
+          break;
+        }
+      }
+      if(flag){
+        break; // breaks from outer for upon status match too
+      }
+      try {
+        Thread.sleep(20000);
+      } catch (InterruptedException e) {
+        logger.error(e.getMessage());
+      }
+    }
+  }
+
+  public static String getRetentionCoordID(String bundlID,
+                                           IEntityManagerHelper helper) throws OozieClientException {
+    List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
+    String RetentionCoordID = null;
+    for (CoordinatorJob coord : coords) {
+      if (coord.getAppName().contains("FEED_RETENTION"))
+        return coord.getId();
+    }
+
+    return RetentionCoordID;
+  }
+
 }
 

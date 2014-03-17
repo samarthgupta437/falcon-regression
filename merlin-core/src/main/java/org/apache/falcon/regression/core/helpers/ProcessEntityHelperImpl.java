@@ -26,6 +26,7 @@ import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -57,6 +58,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
   public ProcessEntityHelperImpl(String envFileName, String prefix) {
     super(envFileName, prefix);
   }
+
 
   public ServiceResponse delete(String url, String data, String user)
   throws IOException, URISyntaxException, JAXBException, AuthenticationException {
@@ -154,8 +156,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     String url =
       this.hostname + URLS.INSTANCE_RUNNING.getValue() + "/" + "process/" + name + "/";
-
-    return InstanceUtil.createAndsendRequestProcessInstance(url, null, allColo, user);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, null, allColo, user);
   }
 
   @Override
@@ -167,7 +168,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
       this.hostname + URLS.INSTANCE_STATUS.getValue() + "/" + "process/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
   @Override
@@ -178,9 +179,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
       this.hostname + URLS.INSTANCE_SUSPEND.getValue() + "/" + "process/" + EntityName +
         "/";
 
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
-
-
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
   public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params, String user)
@@ -188,15 +187,28 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     String url =
       this.hostname + URLS.INSTANCE_RESUME.getValue() + "/" + "process/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
+  }
+
+  @Override
+  public InstancesSummaryResult getInstanceSummary(String entityName,
+                                                    String params
+                                                    ) throws IOException, URISyntaxException, AuthenticationException {
+    String url =
+      this.hostname + URLS.INSTANCE_SUMMARY.getValue() + "/" + "process/" +
+        entityName +
+        "/";
+    return (InstancesSummaryResult)InstanceUtil
+      .createAndsendRequestProcessInstance(url, params, allColo, null);
   }
 
   public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params, String user)
   throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + URLS.INSTANCE_KILL.getValue() + "/" + "process/" + EntityName + "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
+
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
@@ -205,8 +217,8 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     String url =
       this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
         "/";
-    return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
   public String list() throws IOException, InterruptedException {

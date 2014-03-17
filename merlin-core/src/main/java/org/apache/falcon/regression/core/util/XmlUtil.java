@@ -22,11 +22,19 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.testng.log4testng.Logger;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.text.ParseException;
 
 public class XmlUtil {
 
-    public static Validity createValidity(String start, String end) throws ParseException {
+  static Logger logger = Logger.getLogger(XmlUtil.class);
+
+  public static Validity createValidity(String start, String end) throws ParseException {
         Validity v = new Validity();
         v.setStart(InstanceUtil.oozieDateToDate(start).toDate());
         v.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
@@ -54,4 +62,12 @@ public class XmlUtil {
         return v;
 
     }
+
+  public static boolean isIdentical(String expected, String actual) throws IOException, SAXException {
+    XMLUnit.setIgnoreWhitespace(true);
+    XMLUnit.setIgnoreAttributeOrder(true);
+    Diff diff = XMLUnit.compareXML(expected, actual);
+    logger.info(diff);
+    return diff.identical();
+  }
 }

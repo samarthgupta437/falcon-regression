@@ -378,5 +378,4 @@ public class Process {
     public void setName(String value) {
         this.name = value;
     }
-
 }

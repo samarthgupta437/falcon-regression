@@ -44,7 +44,7 @@
        <property name="user" value="${user()}"/>
    
 	</properties>
-	<workflow path="/examples/apps/aggregator" />
+	<workflow path="/examples/apps/aggregator"/>
 	<retry policy="periodic" delay="minutes(3)" attempts="3" />
 
 </process>
