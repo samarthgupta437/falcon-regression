@@ -943,7 +943,7 @@ public class Util {
 
         Util.createLateDataFolders(prismHelper, folderData);
         Util.copyDataToFolders(prismHelper, folderData,
-                "src/test/resources/OozieExampleInputData/normalInput");
+                OSUtil.NORMAL_INPUT);
     }
 
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
@@ -995,8 +995,8 @@ public class Util {
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
         Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS",
-                "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
+                OSUtil.NORMAL_INPUT + "_SUCCESS",
+                OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
     public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
@@ -1025,7 +1025,7 @@ public class Util {
             boolean r;
             String folder_space = folder.replaceAll("/", "_");
             File f = new File(
-                    "src/test/resources/OozieExampleInputData/normalInput/" + folder_space +
+                    OSUtil.NORMAL_INPUT + folder_space +
                             ".txt");
             if (!f.exists()) {
                 r = f.createNewFile();
@@ -1321,8 +1321,8 @@ public class Util {
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
         Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS",
-                "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
+                OSUtil.NORMAL_INPUT + "_SUCCESS",
+                OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
     public static void assertSucceeded(ProcessInstancesResult response) {
@@ -1374,7 +1374,7 @@ public class Util {
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
         Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
+                OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
     public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
@@ -1387,11 +1387,11 @@ public class Util {
 
         if (fileToBePut.equals("_SUCCESS"))
             Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                    "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS");
+                    OSUtil.NORMAL_INPUT + "_SUCCESS");
 
         else
             Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                    "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
+                    OSUtil.NORMAL_INPUT + "log_01.txt");
 
     }
 
