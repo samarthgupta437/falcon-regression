@@ -166,6 +166,6 @@ public class Consumer extends Thread {
     }
 
     public void activateKillSwitch() {
-        this.stop();
+        this.interrupt();
     }
 }

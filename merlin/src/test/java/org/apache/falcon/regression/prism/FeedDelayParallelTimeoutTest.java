@@ -73,8 +73,7 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
                 .setFeedCluster(feedOutput01,
                         XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null,
-                        null);
+                        ClusterType.SOURCE, null);
 
         // uncomment below 2 line when falcon in sync with ivory
 

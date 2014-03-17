@@ -177,7 +177,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
@@ -192,7 +192,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "", null);
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
         Util.print("feed: " + feed);
 
@@ -222,11 +222,11 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), null, null, null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), null, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
@@ -310,11 +310,11 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), null, null, null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), null, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
@@ -394,22 +394,22 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
-                "${cluster.colo}", null);
+                "${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
-                "${cluster.colo}", null);
+                "${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null, null);
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
 
         Util.print("feed: " + feed);
@@ -491,7 +491,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
@@ -507,7 +507,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null, null);
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
         //clean target if old data exists
         Util.print("feed: " + feed);
@@ -546,7 +546,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:11Z"),
                         XmlUtil.createRtention("days(10000000)", ActionType.DELETE),
@@ -562,7 +562,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000000)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "${cluster.colo}", null);
+                "${cluster.colo}");
 
         Util.print("feed: " + feed);
 
@@ -639,7 +639,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                         XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
@@ -720,7 +720,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                         XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
@@ -736,7 +736,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z")
                 , XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "${cluster.colo}", null);
+                "${cluster.colo}");
 
         Util.print("feed: " + feed);
 
@@ -804,7 +804,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
@@ -819,7 +819,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "", null);
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
         Util.print("feed: " + feed);
 

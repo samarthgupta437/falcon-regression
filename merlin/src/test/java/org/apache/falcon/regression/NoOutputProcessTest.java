@@ -120,7 +120,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         Assert.assertEquals(consumer.getMessageData().size(), 3,
                 " Message for all the 3 instance not found");
 
-        consumer.stop();
+        consumer.interrupt();
 
         Util.dumpConsumerData(consumer);
 
@@ -149,8 +149,8 @@ public class NoOutputProcessTest extends BaseTestClass {
         Assert.assertEquals(consumerProcess.getMessageData().size(), 3,
                 " Message for all the 3 instance not found");
 
-        consumerInternalMsg.stop();
-        consumerProcess.stop();
+        consumerInternalMsg.interrupt();
+        consumerProcess.interrupt();
 
         Util.dumpConsumerData(consumerInternalMsg);
         Util.dumpConsumerData(consumerProcess);
