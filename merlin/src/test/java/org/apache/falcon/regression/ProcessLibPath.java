@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUn
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,14 +48,13 @@ public class ProcessLibPath extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     String testLibDir = baseWorkflowDir + "/TestLib";
-    String resources = "src/test/resources/oozie/";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
         //common lib for both test cases
-        HadoopUtil.uploadDir(clusterFS, testLibDir, resources + "/lib");
+        HadoopUtil.uploadDir(clusterFS, testLibDir, OSUtil.RESOURCES_OOZIE + "lib");
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
@@ -81,7 +81,7 @@ public class ProcessLibPath extends BaseTestClass {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
 
 
@@ -108,7 +108,7 @@ public class ProcessLibPath extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithNoLibFolderInWorkflowfLocaltion() throws Exception {
         String workflowDir = testLibDir + "/aggregatorLib1/";
-        HadoopUtil.uploadDir(clusterFS, workflowDir, resources);
+        HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.deleteDirIfExists(workflowDir + "/lib", clusterFS);
         Util.print("processData: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
@@ -118,9 +118,9 @@ public class ProcessLibPath extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
         String workflowDir = testLibDir + "/aggregatorLib2/";
-        HadoopUtil.uploadDir(clusterFS, workflowDir, resources);
+        HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.deleteFile(cluster, new Path(workflowDir + "/lib/oozie-examples-3.1.5.jar"));
-        HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib", "src/test/resources/ivory-oozie-lib-0.1.jar");
+        HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib", OSUtil.RESOURCES + "ivory-oozie-lib-0.1.jar");
         Util.print("processData: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
