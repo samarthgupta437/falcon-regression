@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.xml.sax.InputSource;
 
@@ -46,6 +47,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 public class DataEntityHelperImpl extends IEntityManagerHelper {
+
+  private static Logger logger = Logger.getLogger(DataEntityHelperImpl.class);
 
   public DataEntityHelperImpl() {
   }
@@ -94,7 +97,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
   public ServiceResponse submitAndSchedule(String url, String data, String user)
   throws IOException, URISyntaxException, AuthenticationException {
-    System.out.println("Submitting feed: "+data);
+    logger.info("Submitting feed: \n" + Util.prettyPrintXml(data));
     return  Util.sendRequest(url + "/feed" + colo, "post", data, user);
   }
 
@@ -106,7 +109,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
   public ServiceResponse submitEntity(String url, String data, String user)
   throws IOException, URISyntaxException, AuthenticationException {
 
-    System.out.println("Submitting feed: "+data);
+    logger.info("Submitting feed: \n" + Util.prettyPrintXml(data));
     url += "/feed" + colo;
     return Util.sendRequest(url, "post", data, user);
   }

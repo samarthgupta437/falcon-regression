@@ -96,6 +96,15 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
@@ -128,14 +137,13 @@ public class Util {
     return sendRequest(url, method, null, user);
   }
 
-  public static ServiceResponse sendRequest(String url, String method, String data,
-                                            String user) throws IOException, URISyntaxException, AuthenticationException{
-    KerberosHelper.switchUser(user);
-    BaseRequest request = new BaseRequest(url, method, user, data);
-    request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
-    HttpResponse response = request.run();
-    return new ServiceResponse(response);
-  }
+    public static ServiceResponse sendRequest(String url, String method, String data,
+                                              String user) throws IOException, URISyntaxException, AuthenticationException{
+        BaseRequest request = new BaseRequest(url, method, user, data);
+        request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
+        HttpResponse response = request.run();
+        return new ServiceResponse(response);
+    }
 
   public static String getExpectedErrorMessage(String filename) throws IOException {
 
@@ -1849,11 +1857,10 @@ public class Util {
 
   public static void submitAllClusters(Bundle... b)
     throws IOException, URISyntaxException, AuthenticationException {
-    for (Bundle aB : b) {
-      Util.print("Submitting Cluster: " + aB.getClusters().get(0));
-      ServiceResponse r = prismHelper.getClusterHelper()
-        .submitEntity(URLS.SUBMIT_URL, aB.getClusters().get(0));
-      Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+        for (Bundle aB : b) {
+            ServiceResponse r = prismHelper.getClusterHelper()
+                    .submitEntity(URLS.SUBMIT_URL, aB.getClusters().get(0));
+            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
     }
   }
@@ -2330,6 +2337,25 @@ public class Util {
         }
 
         return "get";
+    }
+
+    public static String prettyPrintXml(String xmlString) {
+        try {
+            Source xmlInput = new StreamSource(new StringReader(xmlString));
+            StringWriter stringWriter = new StringWriter();
+            StreamResult xmlOutput = new StreamResult(stringWriter);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", "2");
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.transform(xmlInput, xmlOutput);
+            return xmlOutput.getWriter().toString();
+        } catch (TransformerConfigurationException e) {
+            return xmlString;
+        } catch (TransformerException e) {
+            return xmlString;
+        }
+
     }
 
   public static String getEntityDefinition(PrismHelper cluster,

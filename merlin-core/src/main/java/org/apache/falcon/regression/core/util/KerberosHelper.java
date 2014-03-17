@@ -26,9 +26,7 @@ public class KerberosHelper {
 
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
 
-    private static String currentKerberosUser = null;
-
-    public static void switchUser(String user) {
+    public static void loginFromKeytab(String user) {
         if(!MerlinConstants.IS_SECURE) {
             logger.info("Kerberos is disabled, hence no user switching.");
             return;
@@ -38,17 +36,10 @@ public class KerberosHelper {
             user = MerlinConstants.CURRENT_USER_NAME;
         }
 
-        //for the first call kerberos switching happens as the currentKerberosUser is null
-        if(user.equals(currentKerberosUser)) {
-            logger.info("kerberos switching is not required.");
-            return;
-        }
         final String keytab = MerlinConstants.getKeytabForUser(user);
-        logger.info(String.format("Switching kerberos keytab from %s to %s", currentKerberosUser, user));
         final String command = String.format("kinit -kt %s %s", keytab, user);
         final int exitVal = Util.executeCommandGetExitCode(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
-        currentKerberosUser = user;
     }
 
 }
