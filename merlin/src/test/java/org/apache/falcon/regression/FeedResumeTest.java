@@ -24,7 +24,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -43,30 +43,23 @@ import java.lang.reflect.Method;
 public class FeedResumeTest extends BaseTestClass {
 
     private final IEntityManagerHelper feedHelper = prism.getFeedHelper();
-    private Bundle bundle = new Bundle();
     private String feed;
-    ColoHelper cluster;
-    OozieClient clusterOC;
-
-    public FeedResumeTest(){
-        super();
-        cluster = servers.get(0);
-        clusterOC = serverOC.get(0);
-    }
+    ColoHelper cluster = servers.get(0);
+    OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = (Bundle) Util.readELBundles()[0][0];
-        bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
-        bundle.submitClusters(prism);
-        feed = Util.getInputFeedFromBundle(bundle);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0].generateUniqueBundle();
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].submitClusters(prism);
+        feed = Util.getInputFeedFromBundle(bundles[0]);
     }
 
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod
     public void tearDown() throws Exception {
-        feedHelper.delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
+        removeBundles();
     }
 
     @Test(groups = {"singleCluster"})

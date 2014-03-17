@@ -26,7 +26,7 @@ import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.CoordinatorJob;
 import org.joda.time.DateTime;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBException;
 import java.text.ParseException;

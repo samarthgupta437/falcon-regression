@@ -38,33 +38,27 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class FeedSubmitTest extends BaseTestClass {
 
-    ColoHelper cluster;
-    private Bundle bundle;
+    ColoHelper cluster = servers.get(0);
     private String feed;
-
-    public FeedSubmitTest(){
-        super();
-        cluster = servers.get(0);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0].generateUniqueBundle();
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
 
         //submit the cluster
-        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
+        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
 
-        feed = Util.getInputFeedFromBundle(bundle);
+        feed = Util.getInputFeedFromBundle(bundles[0]);
     }
     
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod
     public void tearDown() throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
+        removeBundles();
     }
 
     @Test(groups = {"singleCluster"})

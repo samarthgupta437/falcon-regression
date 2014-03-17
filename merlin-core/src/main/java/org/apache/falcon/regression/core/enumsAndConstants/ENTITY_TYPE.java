@@ -16,24 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.supportClasses;
+package org.apache.falcon.regression.core.enumsAndConstants;
 
-import org.apache.falcon.regression.core.util.Util;
+public enum ENTITY_TYPE {
 
-public enum GetBundle {
-
-    BillingFeedReplicationBundle("LocalDC_feedReplicaltion_BillingRC"), RegularBundle("ELbundle");
-
-    private final String value;
-
-    private GetBundle(String value) {
-        Util.print("GetBundle of enum bundle path is: " + value);
-        this.value = value;
-    }
-
-    public String getValue() {
-        Util.print("getValue of enum bundle path is: " + value);
-        return value;
-    }
+    PROCESS, DATA, CLUSTER, FEED;
 
 }

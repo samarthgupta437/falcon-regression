@@ -21,9 +21,7 @@ package org.apache.falcon.regression.Entities;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Location;
-import org.apache.falcon.regression.core.generated.cluster.Locations;
-import org.apache.falcon.regression.core.generated.process.*;
-import org.apache.falcon.regression.core.supportClasses.ClusterLocationTypes;
+import org.apache.falcon.regression.core.enumsAndConstants.ClusterLocationTypes;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 
 import javax.xml.bind.JAXBException;

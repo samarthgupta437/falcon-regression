@@ -46,10 +46,6 @@ package org.apache.falcon.regression;
 //
 //	Util.print("in @BeforeClass");
 //	
-//	System.setProperty("java.security.krb5.realm", "");
-//	System.setProperty("java.security.krb5.kdc", "");
-//	
-//	
 //	Bundle b = new Bundle();
 //	b = (Bundle)Util.readELBundles()[0][0];
 //	b.generateUniqueBundle();

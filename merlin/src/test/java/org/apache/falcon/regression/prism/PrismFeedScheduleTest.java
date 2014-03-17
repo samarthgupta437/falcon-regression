@@ -20,67 +20,59 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
-import org.testng.TestNGException;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
+@Test(groups = "embedded")
 public class PrismFeedScheduleTest extends BaseTestClass {
 
-    ColoHelper cluster1;
-    ColoHelper cluster2;
-    OozieClient cluster1OC;
-    OozieClient cluster2OC;
-
-    public PrismFeedScheduleTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster2 = servers.get(1);
-        cluster1OC = serverOC.get(0);
-        cluster2OC = serverOC.get(1);
-    }
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
+    OozieClient cluster1OC = serverOC.get(0);
+    OozieClient cluster2OC = serverOC.get(1);
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
         Util.print("test name: " + method.getName());
     }
 
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
+
     @Test(dataProvider = "DP", groups = {"prism", "0.2"})
     public void testFeedScheduleOn1ColoWhileAnotherColoHasSuspendedFeed(Bundle bundle)
     throws Exception {
-        try {
-            Bundle UA1Bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-            Bundle UA2Bundle = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
 
-            UA1Bundle.generateUniqueBundle();
-            UA2Bundle.generateUniqueBundle();
+        bundles[0].generateUniqueBundle();
+        bundles[1].generateUniqueBundle();
 
-            System.out.println("cluster: " + UA1Bundle.getClusters().get(0));
-            System.out.println("feed: " + UA1Bundle.getDataSets().get(0));
+        Util.print("cluster: " + bundles[0].getClusters().get(0));
+        Util.print("feed: " + bundles[0].getDataSets().get(0));
 
-            UA1Bundle.submitAndScheduleFeed();
-            Util.assertSucceeded(prism.getFeedHelper()
-                    .suspend(URLS.SUSPEND_URL, UA1Bundle.getDataSets().get(0)));
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, UA1Bundle, Job.Status.SUSPENDED);
-            UA2Bundle.submitAndScheduleFeed();
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, UA2Bundle, Job.Status.RUNNING);
-            AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, UA1Bundle, Job.Status.RUNNING);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, UA1Bundle, Job.Status.SUSPENDED);
-            AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, UA2Bundle, Job.Status.RUNNING);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new TestNGException(e.getMessage());
-        }
-
+        bundles[0].submitAndScheduleFeed();
+        Util.assertSucceeded(prism.getFeedHelper()
+                .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
+        bundles[1].submitAndScheduleFeed();
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
 

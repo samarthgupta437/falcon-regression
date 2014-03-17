@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUn
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -46,23 +47,16 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private Bundle b = new Bundle();
-    ColoHelper cluster;
-    FileSystem clusterFS;
-
-    public ProcessInstanceSuspendTest() {
-        super();
-        cluster = servers.get(0);
-        clusterFS = serverFS.get(0);
-    }
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         Util.print("in @BeforeClass");
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
 
-        Bundle bundle = (Bundle) Util.readELBundles()[0][0];
+        Bundle bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -86,35 +80,35 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        Util.restartService(cluster.getClusterHelper());
-        b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-        b.setInputFeedDataPath(feedInputPath);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setInputFeedDataPath(feedInputPath);
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        b.deleteBundle(prism);
+        removeBundles();
     }
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_largeRange() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(5);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(5);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:21Z");
         InstanceUtil.validateResponse(result, 5, 5, 0, 0, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
         InstanceUtil.validateSuccessWithStatusCode(result, 400);
     }
@@ -122,16 +116,16 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_succeeded() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(1);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(1);
+        bundles[0].submitAndScheduleBundle(prism);
         //wait for instance to succeed
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(cluster, Util.getProcessName(b.getProcessData()), 0, 0)
+                    .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0, 0)
                     .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
 
@@ -139,7 +133,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
             Thread.sleep(20000);
         }
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 0);
     }
@@ -147,22 +141,22 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_all() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(5);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(5);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 5, 0, 0, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 0, 5, 0, 0);
     }
@@ -170,37 +164,37 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_woParams() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(2);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(2);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()), null);
-        InstanceUtil.validateSuccessWithStatusCode(r, 2);
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()), null);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_StartAndEnd() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(3);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(3);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
         InstanceUtil.validateResponse(result, 5, 3, 0, 2, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:15Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
         InstanceUtil.validateResponse(result, 5, 0, 3, 2, 0);
     }
@@ -208,60 +202,60 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_nonExistent() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(5);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(5);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r =
                 prism.getProcessHelper()
                         .getProcessInstanceSuspend("invalidName", "?start=2010-01-02T01:20Z");
-        if ((r.getStatusCode() != 777))
+        if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND))
             Assert.assertTrue(false);
     }
 
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_onlyStart() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(3);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(3);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(b.getProcessData()));
+                        Util.readEntityName(bundles[0].getProcessData()));
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.SUSPENDED);
         prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(b.getProcessData()));
+                        Util.readEntityName(bundles[0].getProcessData()));
     }
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_suspendLast() throws Exception {
-        b.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setProcessPeriodicity(5, TimeUnit.minutes);
-        b.setOutputFeedLocationData(feedOutputPath);
-        b.setProcessConcurrency(5);
-        b.submitAndScheduleBundle(prism);
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(feedOutputPath);
+        bundles[0].setProcessConcurrency(5);
+        bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 5, 0, 0, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:20Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(b.getProcessData()),
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 4, 1, 0, 0);
     }
@@ -269,13 +263,10 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
-        Bundle b = (Bundle) Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-        b.setInputFeedDataPath(feedInputPath);
-        String prefix = b.getFeedDataPathPrefix();
+        Bundle bundle = Util.readELBundles()[0][0];
+        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundle.setInputFeedDataPath(feedInputPath);
+        String prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 }

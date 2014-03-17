@@ -29,10 +29,10 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.testng.Assert;
 import org.xml.sax.InputSource;
 
@@ -56,114 +56,60 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     super(envFileName, prefix);
   }
 
-  public ServiceResponse delete(String url, String data) throws IOException, URISyntaxException, JAXBException {
 
-    //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
-    //        {
-    //           url+="/process/"+readEntityName(data);
-    //        }
-
-    url += "/process/" + Util.readEntityName(data) + colo;
-
-
-    return Util.sendRequest(url);
+  public ServiceResponse delete(String url, String data, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
+    url += "/process/" + readEntityName(data) + colo;
+    return Util.sendRequest(url, "delete", user);
   }
 
-  public ServiceResponse getEntityDefinition(String url, String data) throws IOException, URISyntaxException, JAXBException {
-
-    //        if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
-    //        {
-    //           url+="/"+"process/"+readEntityName(data);
-    //        }
-
+  public ServiceResponse getEntityDefinition(String url, String data, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
     url += "/process/" + readEntityName(data);
 
-    return Util.sendRequest(url);
+    return Util.sendRequest(url, "get", user);
 
   }
 
-  public ServiceResponse getStatus(String url, String data) throws IOException, URISyntaxException, JAXBException {
+  public ServiceResponse getStatus(String url, String data, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
     //throw new UnsupportedOperationException("Not supported yet.");
     url += "/process/" + readEntityName(data) + colo;
-    return Util.sendRequest(url);
+    return Util.sendRequest(url, "get", user);
   }
 
-//	public ServiceResponse getStatus(URLS url, String data)  {
-//		//throw new UnsupportedOperationException("Not supported yet.");
-//		return getStatus(url.getValue(), data);
-//	}
-
-  public ServiceResponse schedule(String url, String data) throws IOException, URISyntaxException, JAXBException {
+  public ServiceResponse schedule(String url, String data, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
 
     url += "/process/" + readEntityName(data) + colo;
-    return Util.sendRequest(url);
+    return Util.sendRequest(url, "post", user);
   }
 
-//	public ServiceResponse schedule(Util.URLS url, String data)  {
-//		return schedule(url.getValue(), data);
-//	}
-
-    public ServiceResponse submitAndSchedule(String url, String data) throws IOException {
+    public ServiceResponse submitAndSchedule(String url, String data, String user)
+    throws IOException, URISyntaxException, AuthenticationException {
 
         System.out.println("Submitting process: " + data);
         url += "/process";
-        return Util.sendRequest(url, data);
-
-  }
-
-//	public ServiceResponse submitAndSchedule(URLS url, String data)  {
-//
-//		ServiceResponse response = submitAndSchedule(url.getValue(), data);
-//		return response;
-//	}
-
-    public ServiceResponse submitEntity(String url, String data) throws IOException {
-
-        //    	 if(!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong")))
-        //         {
-        //            url+="/process";
-        //         }
-
-        System.out.println("Submitting process: " + data);
-        url += "/process";
-
-        return Util.sendRequest(url, data);
-
-
+        return Util.sendRequest(url, "post", data, user);
     }
 
-//	public ServiceResponse submitEntity(Util.URLS url, String data)  {
-//
-//		return submitEntity(url.getValue(), data);
-//	}
+    public ServiceResponse submitEntity(String url, String data, String user)
+    throws IOException, URISyntaxException, AuthenticationException {
+        System.out.println("Submitting process: " + data);
+        url += "/process";
+        return Util.sendRequest(url, "post", data, user);
+    }
 
-  public ServiceResponse suspend(String url, String data) throws JAXBException, IOException, URISyntaxException {
+  public ServiceResponse suspend(String url, String data, String user)
+  throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
-    return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
+    return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo, "post", user);
   }
 
-//	public ServiceResponse suspend(URLS url, String data)  {
-//		return suspend(url.getValue(), data);
-//	}
-
-  public ServiceResponse resume(String url, String data) throws JAXBException, IOException, URISyntaxException {
-    return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo);
+  public ServiceResponse resume(String url, String data, String user)
+  throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    return Util.sendRequest(url + "/process/" + Util.readEntityName(data) + colo, "post", user);
   }
-
-//	public ServiceResponse resume(Util.URLS url, String data)  {
-//		return resume(url.getValue(), data);
-//	}
-
-    /*public ServiceResponse validateEntity(String url, String data)  {
-
-        //System.out.println(Thread.currentThread().getStackTrace()[2].getMethodName());
-        if (!(Thread.currentThread().getStackTrace()[3].getMethodName().contains("Wrong"))) {
-            url += "/process";
-        }
-
-
-        return Util.sendRequest(url, data);
-    }*/
 
   public void validateResponse(String response, APIResult.Status expectedResponse,
                                String filename) throws JAXBException, IOException {
@@ -185,23 +131,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
       Assert.assertEquals(result.getMessage(), "Validate successful",
         "validation success message does not match in valid case!");
     }
-
-    //System.out.println(result.getMessage());
-
-
-    //       SchemaFactory factory=SchemaFactory.newInstance("http://www.w3
-    // .org/2001/XMLSchema");
-    //
-    //       File schemaLocation = new File("src/test/resources/xsd/process.xsd");
-    //       Schema schema = factory.newSchema(schemaLocation);
-    //
-    //       Validator validator = schema.newValidator();
-    //
-    //       SAXSource source=new SAXSource(new InputSource(new StringReader(response)));
-    //
-    //       validator.validate(source);
-
-
   }
 
   public String readEntityName(String data) throws JAXBException {
@@ -217,404 +146,134 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
   }
 
-
-    /*@Override
-    public ProcessInstancesResult getRunningInstance(
-            String processRuningInstance, String name)  {
-
-        String url = this.hostname + processRuningInstance + "/" + name + allColo;
-
-        return InstanceUtil.sendRequestProcessInstance(url);
-    }*/
-
   @Override
   public ProcessInstancesResult getRunningInstance(
-    URLS processRuningInstance, String name) throws IOException, URISyntaxException {
+          URLS processRunningInstance, String name, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
 
     String url =
       this.hostname + URLS.INSTANCE_RUNNING.getValue() + "/" + "process/" + name + "/";
-
-    return (ProcessInstancesResult)InstanceUtil
-      .createAndsendRequestProcessInstance(url, null,
-        allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, null, allColo, user);
   }
 
   @Override
-  public ProcessInstancesResult getProcessInstanceStatus(String EntityName, String params) throws IOException, URISyntaxException {
+  public ProcessInstancesResult getProcessInstanceStatus(String EntityName, String params, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
 
 
     String url =
       this.hostname + URLS.INSTANCE_STATUS.getValue() + "/" + "process/" + EntityName +
         "/";
 
-    return (ProcessInstancesResult)InstanceUtil
-      .createAndsendRequestProcessInstance(url, params,
-        allColo);
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
-
-
-    /*@Override
-    public String getProcessInstanceStatusViaCli(
-            String EntityName, String start, String end, String colos)
-     {
-        String command = "";
-        if (end != null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    EntityName +
-                    " -type process " + " -start " + start + " -end " + end;
-        else
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    EntityName +
-                    " -type process " + " -start " + start;
-
-
-        return Util.executeCommand(command);
-    }*/
-
 
   @Override
   public ProcessInstancesResult getProcessInstanceSuspend(
-    String EntityName, String params) throws IOException, URISyntaxException {
+          String EntityName, String params, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + URLS.INSTANCE_SUSPEND.getValue() + "/" + "process/" + EntityName +
         "/";
 
-    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
-
-
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
-  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params) throws IOException, URISyntaxException {
+  public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + URLS.INSTANCE_RESUME.getValue() + "/" + "process/" + EntityName +
         "/";
-    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
   @Override
   public InstancesSummaryResult getInstanceSummary(String entityName,
-                                                    String params) throws IOException, URISyntaxException {
+                                                    String params
+                                                    ) throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + URLS.INSTANCE_SUMMARY.getValue() + "/" + "process/" +
         entityName +
         "/";
-    return (InstancesSummaryResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+    return (InstancesSummaryResult)InstanceUtil
+      .createAndsendRequestProcessInstance(url, params, allColo, null);
   }
 
-  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params) throws IOException, URISyntaxException {
+  public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + URLS.INSTANCE_KILL.getValue() + "/" + "process/" + EntityName + "/";
-    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
+
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
 
   }
 
-    /*public ServiceResponse updateProcess(String processName, String newProcess)  {
-
-        String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" + processName;
-        return Util.sendRequest(url + colo, newProcess);
-    }
-
-    public String updateViaCLI(String processName, String newProcessFilePath)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -update -url " + this.hostname + " -type process -name " +
-                        processName +
-                        " -file " + newProcessFilePath);
-    }
-
-    @Override
-    public String validateEntityViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -validate -url " + this.hostname + " -type process -name " +
-                        entityName);
-    }
-
-    @Override
-    public String submitAndScheduleViaCLI(String filePath)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -submitAndSchedule -url " + this.hostname +
-                        " -type process -file " + filePath);
-    }
-
-    @Override
-    public String scheduleViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -schedule -url " + this.hostname + " -type process -name " +
-                        entityName);
-    }
-
-    @Override
-    public String resumeViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -resume -url " + this.hostname + " -type process -name " +
-                        entityName);
-    }
-
-    @Override
-    public String getStatusViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -status -url " + this.hostname + " -type process -name " +
-                        entityName);
-    }
-
-    @Override
-    public String getEntityDefinitionViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -definition -url " + this.hostname +
-                        " -type process -name " + entityName);
-    }
-
-    @Override
-    public String deleteViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -delete -url " + this.hostname + " -type process -name " +
-                        entityName);
-    }
-
-    @Override
-    public String suspendViaCLI(String entityName)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -suspend -url " + this.hostname + " -type process -name " +
-                        entityName);
-    }  */
-
-  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params) throws IOException, URISyntaxException {
+  public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
     String url =
       this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
         "/";
-    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
 
+    return (ProcessInstancesResult)InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo, user);
   }
 
-    /*@Override
-    public ProcessInstancesResult getInstanceRerun(String EntityName, String params)
-     {
-        String url =
-                this.hostname + URLS.INSTANCE_RERUN.getValue() + "/" + "process/" + EntityName +
-                        "/";
-        return InstanceUtil.createAndsendRequestProcessInstance(url, params, allColo);
-
-    }
-
-
-    @Override
-    public String submitEntityViaCLI(String filePath)  {
-
-        return Util.executeCommand(
-                BASE_COMMAND + " entity -submit -url " + this.hostname + " -type process -file " +
-                        filePath);
-    }
-
-    public String writeEntityToFile(String entity)  {
-        File file = new File("/tmp/" + Util.readEntityName(entity) + ".xml");
-        BufferedWriter bf = new BufferedWriter(new FileWriter(file));
-        bf.write(entity);
-        bf.close();
-        return "/tmp/" + Util.readEntityName(entity) + ".xml";
-    } */
-
-    /*public String getProcessInstanceStatusCLI(
-            String processName, String start, String end)  {
-        String command = "";
-        if (end != null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end;
-        else
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start;
-
-        return Util.executeCommand(command);
-
-    }*/
-
-    /*public String CLIHelp()  {
-        return Util.executeCommand(BASE_COMMAND + " help");
-    }*/
-
-    /*public String getProcessInstanceRunningCLI(String processName)  {
-        String command =
-                BASE_COMMAND + " instance -running -url " + this.hostname + " -processName " +
-                        processName;
-        return Util.executeCommand(command);
-    }*/
-
-    /*public String getProcessInstanceSuspendCLI(String processName,
-                                               String start, String end)  {
-        String command = "";
-        if (end != null)
-            command = BASE_COMMAND + " instance -suspend -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end;
-        else
-            command = BASE_COMMAND + " instance -suspend -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start;
-
-        return Util.executeCommand(command);
-    }*/
-
-    /*public String processInstanceRerunCLI(String processName,
-                                          String start, String end)  {
-        String command = "";
-        if (end != null)
-            command = BASE_COMMAND + " instance -rerun -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end;
-        else
-            command = BASE_COMMAND + " instance -rerun -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start;
-
-        return Util.executeCommand(command);
-    }*/
-
-    /*public String processInstanceResumeCLI(String processName,
-                                           String start, String end)  {
-        String command = "";
-        if (end != null)
-            command = BASE_COMMAND + " instance -resume -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end;
-        else
-            command = BASE_COMMAND + " instance -resume -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start;
-
-        return Util.executeCommand(command);
-    }*/
-
-    /*public String processInstanceKillCLI(String processName, String start,
-                                         String end)  {
-        String command = "";
-        if (end != null)
-            command = BASE_COMMAND + " instance -kill -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end;
-        else
-            command = BASE_COMMAND + " instance -kill -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start;
-
-        return Util.executeCommand(command);
-    }*/
-
-    /*public String processInstanceSuspendCLI(String processName,
-                                            String start, String end)  {
-        String command = "";
-        if (end != null)
-            command = BASE_COMMAND + " instance -suspend -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end;
-        else
-            command = BASE_COMMAND + " instance -suspend -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start;
-
-        return Util.executeCommand(command);
-    }*/
-
   public String list() throws IOException, InterruptedException {
-    return Util.executeCommand(
-      BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
+    return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
   }
 
   @Override
   public String getDependencies(String entityName) throws IOException, InterruptedException {
 
-    return Util.executeCommand(
-      BASE_COMMAND + " entity -dependency -url " + this.hostname +
+    return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -dependency -url " + this.hostname +
         " -type process -name " + entityName);
   }
 
-    /*public String getProcessInstanceStatusCLI(String processName,
-                                              String start, String end, int runid, String type)
-     {
-        String command = "";
-        if (end != null && runid >= 0 && type != null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end + " -runid " + runid + " -type " + type;
-        else if (end != null && runid >= 0 && type == null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end + " -runid " + runid;
-        else if (end != null && runid < 0 && type == null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end;
-        else if (end != null && runid > 0 && type != null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -end " + end + " -type " + type;
-        else if (end == null && runid >= 0 && type != null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -runid " + runid + " -type " + type;
-        else if (end == null && runid >= 0 && type == null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -runid " + runid;
-        else if (end == null && runid < 0 && type == null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start;
-        else if (end == null && runid > 0 && type != null)
-            command = BASE_COMMAND + " instance -status -url " + this.hostname + " -processName " +
-                    processName +
-                    " -start " + start + " -type " + type;
-
-
-        return Util.executeCommand(command);
-
-    }*/
-
   @Override
-  public ServiceResponse submitEntity(URLS url, String data) throws IOException {
+  public ServiceResponse submitEntity(URLS url, String data, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
 
-    return submitEntity(this.hostname + url.getValue(), data);
+    return submitEntity(this.hostname + url.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse submitAndSchedule(URLS url, String data) throws IOException {
-    return submitAndSchedule(this.hostname + url.getValue(), data);
+  public ServiceResponse submitAndSchedule(URLS url, String data, String user)
+  throws IOException, URISyntaxException, AuthenticationException {
+    return submitAndSchedule(this.hostname + url.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse resume(URLS url, String data) throws JAXBException, IOException, URISyntaxException {
-    return resume(this.hostname + url.getValue(), data);
+  public ServiceResponse resume(URLS url, String data, String user)
+  throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    return resume(this.hostname + url.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse getStatus(URLS url, String data) throws IOException, URISyntaxException, JAXBException {
-    return getStatus(this.hostname + url.getValue(), data);
+  public ServiceResponse getStatus(URLS url, String data, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
+    return getStatus(this.hostname + url.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse schedule(URLS scheduleUrl, String processData) throws IOException, URISyntaxException, JAXBException {
-    return schedule(this.hostname + scheduleUrl.getValue(), processData);
+  public ServiceResponse schedule(URLS scheduleUrl, String processData, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
+    return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
   }
 
   @Override
-  public ServiceResponse delete(URLS deleteUrl, String data) throws IOException, URISyntaxException, JAXBException {
+  public ServiceResponse delete(URLS deleteUrl, String data, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
 
-    return delete(this.hostname + deleteUrl.getValue(), data);
+    return delete(this.hostname + deleteUrl.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse suspend(URLS suspendUrl, String data) throws JAXBException, IOException, URISyntaxException {
+  public ServiceResponse suspend(URLS suspendUrl, String data, String user)
+  throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
-    return suspend(this.hostname + suspendUrl.getValue(), data);
+    return suspend(this.hostname + suspendUrl.getValue(), data, user);
   }
 
   @Override
@@ -630,22 +289,25 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
   }
 
   @Override
-  public ServiceResponse getEntityDefinition(URLS getUrl, String data) throws IOException, URISyntaxException, JAXBException {
-    return getEntityDefinition(this.hostname + getUrl.getValue(), data);
+  public ServiceResponse getEntityDefinition(URLS getUrl, String data, String user)
+  throws IOException, URISyntaxException, JAXBException, AuthenticationException {
+    return getEntityDefinition(this.hostname + getUrl.getValue(), data, user);
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity) throws IOException, JAXBException {
+  public ServiceResponse update(String oldEntity, String newEntity, String user)
+  throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 
     String url = this.hostname + URLS.PROCESS_UPDATE.getValue() + "/" +
       Util.readEntityName(oldEntity);
-    return Util.sendRequest(url + colo, newEntity);
+    return Util.sendRequest(url + colo, "post", newEntity, user);
   }
 
   @Override
-  public ServiceResponse update(String oldEntity, String newEntity, String updateTime) throws IOException, JAXBException {
+  public ServiceResponse update(String oldEntity, String newEntity, String updateTime, String user)
+  throws IOException, JAXBException, URISyntaxException, AuthenticationException {
     return updateRequestHelper(oldEntity, newEntity,
-       updateTime,URLS.PROCESS_UPDATE.getValue());
+       updateTime,URLS.PROCESS_UPDATE.getValue(), user);
   }
 
   @Override

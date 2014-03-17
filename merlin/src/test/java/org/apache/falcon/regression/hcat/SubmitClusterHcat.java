@@ -18,27 +18,25 @@
 
 package org.apache.falcon.regression.hcat;
 
-import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
 
 @Test(groups = "embedded")
 public class SubmitClusterHcat extends BaseTestClass {
 
-    ColoHelper cluster;
-
-    public SubmitClusterHcat() throws IOException {
-        super();
-        cluster = servers.get(1);
-    }
+    ColoHelper cluster = servers.get(0);
 
     // private HCatClient client;
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
+    }
 
     @Test(enabled = true, timeOut = 1800000)
     public void SubmitCluster_hcat() {
@@ -47,13 +45,13 @@ public class SubmitClusterHcat extends BaseTestClass {
         String feedData02 = "";
         String processData = "";
 
-        Bundle b = Util.getBundle(cluster, "");
+        bundles[0] = Util.getBundle(cluster, "");
         try {
 
-            clusterData = b.getClusters().get(0);
-            feedData01 = b.getDataSets().get(0);
-            feedData02 = b.getDataSets().get(1);
-            processData = b.getProcessData();
+            clusterData = bundles[0].getClusters().get(0);
+            feedData01 = bundles[0].getDataSets().get(0);
+            feedData02 = bundles[0].getDataSets().get(1);
+            processData = bundles[0].getProcessData();
 
             //client = getHcatClient();
 

@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.testHelper;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -66,7 +67,6 @@ public class BaseTestClass {
         for (ColoHelper server : servers) {
             try {
                 serverFS.add(server.getClusterHelper().getHadoopFS());
-
                 serverOC.add(server.getClusterHelper().getOozieClient());
                 HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size
                   ()-1));
@@ -75,6 +75,7 @@ public class BaseTestClass {
                 System.exit(1);
             }
         }
+        bundles = new Bundle[serverNames.length];
     }
 
     private static void prepareProperties() throws Exception {
@@ -93,27 +94,18 @@ public class BaseTestClass {
         return returnList;
     }
 
-    @BeforeMethod
-    public final void createBundles() {
-        bundles = new Bundle[serverNames.length];
-    }
-
-
-    @AfterMethod
-    public final void removeBundles() {
+    public final void removeBundles(Bundle... bundles) {
         for (Bundle bundle : bundles) {
-            if (bundle != null){
+            if (bundle != null) {
                 bundle.deleteBundle(prism);
             }
         }
-    }
-
-    @AfterClass
-    public final void deleteBaseDir() throws IOException {
-        for (FileSystem fs : serverFS) {
-            HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
+        if (bundles != this.bundles) {
+            for (Bundle bundle : this.bundles) {
+                if (bundle != null) {
+                    bundle.deleteBundle(prism);
+                }
+            }
         }
     }
-
-
 }

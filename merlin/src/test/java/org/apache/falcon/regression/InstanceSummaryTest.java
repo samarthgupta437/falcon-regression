@@ -22,12 +22,8 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
-import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
-import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
@@ -35,9 +31,9 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.apache.oozie.client.OozieClientException;
-import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -121,16 +117,16 @@ public class InstanceSummaryTest extends BaseTestClass {
   }
 
   @Test(enabled = true,timeOut = 1200000 )
-  public void testSummarySingleClusterProcess() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException {
+  public void testSummarySingleClusterProcess() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException, AuthenticationException {
     processBundle.setProcessValidity(startTime,endTime);
     processBundle.submitAndScheduleBundle(prism);
 
     InstanceUtil.waitTillInstancesAreCreated(cluster3,
       processBundle.getProcessData(),0,10);
 
-    InstanceUtil.waitTillParticularInstanceReachState(cluster3,
-      Util.readEntityName(processBundle.getProcessData()),2,
-      Status.SUCCEEDED,10, ENTITY_TYPE.PROCESS);
+    InstanceUtil.waitTillInstanceReachState(serverOC.get(2),
+      Util.readEntityName(processBundle.getProcessData()), 2,
+      Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
 
     // start only at start time
     InstancesSummaryResult r = prism.getProcessHelper()
@@ -211,7 +207,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
   @Test(enabled = true, timeOut = 1200000 )
   public void testSummaryMultiClusterProcess() throws JAXBException,
-    ParseException, InterruptedException, IOException, URISyntaxException {
+    ParseException, InterruptedException, IOException, URISyntaxException, AuthenticationException {
     processBundle.setProcessValidity(startTime,endTime);
     processBundle.addClusterToBundle(bundle2.getClusters().get(0),
       ClusterType.SOURCE, null, null);
@@ -256,7 +252,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
     @Test(enabled = true, timeOut = 1200000 )
     public void testSummaryMultiClusterFeed() throws JAXBException,
-      ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException {
+      ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, AuthenticationException {
       bundle1.generateUniqueBundle();
       bundle2.generateUniqueBundle();
       bundle3.generateUniqueBundle();

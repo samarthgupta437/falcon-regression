@@ -20,7 +20,6 @@ package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.JSchException;
-import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
@@ -35,16 +34,14 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.response.ResponseKeys;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -53,13 +50,12 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
-import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -71,9 +67,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URI;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.security.PrivilegedExceptionAction;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,7 +80,6 @@ import java.util.TreeMap;
 
 public class InstanceUtil {
 
-
     static OozieClient oozieClient = null;
 
     public InstanceUtil(OozieClient oozieClient)  {
@@ -93,105 +88,91 @@ public class InstanceUtil {
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
-    public static APIResult sendRequestProcessInstance(String
-                                                                            url) throws IOException, URISyntaxException {
-        HttpRequestBase request;
-        if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Rerun")) {
-            request = new HttpPost();
+  public static APIResult sendRequestProcessInstance(String
+                                                                    url, String user)
+    throws IOException, URISyntaxException, AuthenticationException {
+    return hitUrl(url, Util.getMethodType(url), user);
+  }
 
-        } else
-            request = new HttpGet();
-        request.setHeader("Remote-User", System.getProperty("user.name"));
-        return hitUrl(url, request);
+  public static APIResult hitUrl(String url,
+                                              String method, String user) throws URISyntaxException,
+    IOException, AuthenticationException {
+    KerberosHelper.switchUser(user);
+    BaseRequest request = new BaseRequest(url, method);
+    HttpResponse response = request.run();
+
+    BufferedReader reader = new BufferedReader(
+      new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+    StringBuilder string_response = new StringBuilder();
+    for (String line; (line = reader.readLine()) != null; ) {
+      string_response.append(line).append("\n");
+    }
+    String jsonString = string_response.toString();
+    logger.info(
+      "The web service response status is " + response.getStatusLine().getStatusCode());
+    logger.info("The web service response is: " + string_response.toString() + "\n");
+    APIResult r = null;
+    try {
+    if(url.contains("/summary/")) {
+     Constructor<?> constructor = InstancesSummaryResult.class
+     .getDeclaredConstructors()[0];
+     constructor.setAccessible(true);
+     r = (InstancesSummaryResult)constructor.newInstance();
+    }
+    else  {
+      Constructor<?> constructor = ProcessInstancesResult.class
+       .getDeclaredConstructors()[0];
+     constructor.setAccessible(true);
+     r = (ProcessInstancesResult)constructor.newInstance();
+    }
+    } catch (InstantiationException e) {
+      e.printStackTrace();
+      logger.info("Could not create InstancesSummaryResult or " +
+        "ProcessInstancesResult constructor");
+      System.exit(1);
+    } catch (InvocationTargetException e) {
+      e.printStackTrace();
+      logger.info("Could not create InstancesSummaryResult or " +
+        "ProcessInstancesResult constructor");
+      System.exit(1);
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+      logger.info("Could not create InstancesSummaryResult or " +
+        "ProcessInstancesResult constructor");
+      System.exit(1);
     }
 
-    public static APIResult sendRequestProcessInstance(String url,String user) throws IOException, URISyntaxException {
-
-        HttpRequestBase request;
-        if (Thread.currentThread().getStackTrace()[3].getMethodName().contains("Suspend") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Resume") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Kill") ||
-                Thread.currentThread().getStackTrace()[3].getMethodName().contains("Rerun")) {
-            request = new HttpPost();
-
-        } else
-            request = new HttpGet();
-        request.setHeader("Remote-User", user);
-        return hitUrl(url, request);
+    if (jsonString.contains("(PROCESS) not found")) {
+      r.setStatusCode(ResponseKeys.PROCESS_NOT_FOUND);
+      return r;
+    } else if (jsonString.contains("Parameter start is empty") ||
+      jsonString.contains("Unparseable date:")) {
+      r.setStatusCode(ResponseKeys.UNPARSEABLE_DATE);
+      return r;
+    } else if (response.getStatusLine().getStatusCode() == 400 &&
+      jsonString.contains("(FEED) not found")) {
+      r.setStatusCode(400);
+      return r;
+    } else if (
+      (response.getStatusLine().getStatusCode() == 400 &&
+        jsonString.contains("is beforePROCESS  start")) ||
+        response.getStatusLine().getStatusCode() == 400 &&
+          jsonString.contains("is after end date")
+        || (response.getStatusLine().getStatusCode() == 400 &&
+        jsonString.contains("is after PROCESS's end")) ||
+        (response.getStatusLine().getStatusCode() == 400 &&
+          jsonString.contains("is before PROCESS's  start"))) {
+      r.setStatusCode(400);
+      return r;
     }
+    r = new GsonBuilder().setPrettyPrinting().create()
+      .fromJson(jsonString, ProcessInstancesResult.class);
 
-    public static APIResult hitUrl(String url, HttpRequestBase request) throws
-      URISyntaxException, IOException {
-        logger.info("hitting the url: " + url);
-
-        request.setURI(new URI(url));
-        HttpClient client = new DefaultHttpClient();
-
-        HttpResponse response = client.execute(request);
-
-
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-        StringBuilder string_response = new StringBuilder();
-        for (String line; (line = reader.readLine()) != null; ) {
-            string_response.append(line).append("\n");
-        }
-        String jsonString = string_response.toString();
-        logger.info(
-                "The web service response status is " + response.getStatusLine().getStatusCode());
-        logger.info("The web service response is: " + string_response.toString() + "\n");
-        APIResult r ;
-      final String ISRTemplate =
-          "{\"status\":\"SUCCEEDED\",\"message\":\"ua1/SUMMARY\\n\",\"requestId\":\"ua1/f7a5c18c-3ffa-42da-9498-63793a58d040\\n\",\"instancesSummary\":[{\"cluster\":\"corp-00c92f13-82e9-46f3-a24c-ac857fcd2eec\",\"map\":{\"entry\":{\"key\":\"RUNNING\",\"value\":\"1\"}}}]}";
-      final String PIRTemplate = "{\"status\":\"SUCCEEDED\",\"message\":\"ua1/KILL\\n\",\"requestId\":\"ua1/5d263145-7542-44b1-a594-9696e303f39a\\n\",\"instances\":[{\"instance\":\"2010-01-02T01:00Z\",\"status\":\"SUCCEEDED\",\"logFile\":\"http://mk-qa-63:11000/oozie?job=0001265-140219105739909-oozie-oozi-W\",\"cluster\":\"corp-9b92e79d-6ad0-4c40-89a9-1cc11f0e9f5d\",\"startTime\":\"2014-03-04T09:56:19Z\",\"endTime\":\"2014-03-04T09:58:01Z\",\"details\":\"\"}]}";
-      if(url.contains("/summary/"))
-          r = new GsonBuilder().create()
-            .fromJson(ISRTemplate, InstancesSummaryResult.class);
-      else
-        r = new GsonBuilder().create()
-          .fromJson(PIRTemplate, ProcessInstancesResult.class);
-
-         if (jsonString.contains("(PROCESS) not found")) {
-            r.setStatusCode(777);
-            return r;
-        } else if (jsonString.contains("Parameter start is empty") ||
-                jsonString.contains("Unparseable date:")) {
-            r.setStatusCode(2);
-            return r;
-        } else if (response.getStatusLine().getStatusCode() == 400 &&
-                jsonString.contains("(FEED) not found")) {
-            r.setStatusCode(400);
-            return r;
-        } else if (
-                (response.getStatusLine().getStatusCode() == 400 &&
-                        jsonString.contains("is beforePROCESS  start")) ||
-                        response.getStatusLine().getStatusCode() == 400 &&
-                                jsonString.contains("is after end date")
-                        || (response.getStatusLine().getStatusCode() == 400 &&
-                        jsonString.contains("is after PROCESS's end")) ||
-                        (response.getStatusLine().getStatusCode() == 400 &&
-                                jsonString.contains("is before PROCESS's  start"))) {
-            r.setStatusCode(400);
-            r.setStatus(APIResult.Status.FAILED);
-            return r;
-        }
-
-      if(url.contains("/summary/"))
-        r = new GsonBuilder().create()
-          .fromJson(jsonString, InstancesSummaryResult.class);
-      else
-        r = new GsonBuilder().setPrettyPrinting().create()
-          .fromJson(jsonString, ProcessInstancesResult.class);
-
-        Util.print("r.getMessage(): " + r.getMessage());
-        Util.print("r.getStatusCode(): " + r.getStatusCode());
-        Util.print("r.getStatus() " + r.getStatus());
-        return r;
-    }
-
+    Util.print("r.getMessage(): " + r.getMessage());
+    Util.print("r.getStatusCode(): " + r.getStatusCode());
+    Util.print("r.getStatus() " + r.getStatus());
+    return r;
+  }
 
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
                                        ProcessInstancesResult.WorkflowStatus ws) throws JAXBException {
@@ -571,31 +552,23 @@ public class InstanceUtil {
                                                              int bundleNumber, int instanceNumber) throws OozieClientException {
         String bundleID = InstanceUtil
                 .getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
+        if (bundleID == null) {
+            return null;
+        }
         String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
+        if (coordID == null) {
+            return null;
+        }
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-        List<CoordinatorAction> actions = coordInfo.getActions();
-        if(actions.size() == 0)
+        if (coordInfo == null) {
             return null;
+        }
+        List<CoordinatorAction> actions = coordInfo.getActions();
+        if(actions.size() == 0) {
+            return null;
+        }
         return actions.get(instanceNumber).getStatus();
-
-    }
-
-    @Deprecated
-    public static void putDataInFolders(ColoHelper colo,
-                                        final List<String> inputFoldersForInstance) throws IOException, InterruptedException {
-
-        for (String anInputFoldersForInstance : inputFoldersForInstance)
-            putDataInFolder(colo, anInputFoldersForInstance);
-
-    }
-
-    @Deprecated
-    public static void putDataInFolders(FileSystem fs,
-                                        final List<String> inputFoldersForInstance) throws IOException {
-
-        for (String anInputFoldersForInstance : inputFoldersForInstance)
-            putDataInFolder(fs, anInputFoldersForInstance, null);
 
     }
 
@@ -609,30 +582,6 @@ public class InstanceUtil {
 
     }
 
-
-    public static void putDataInFolder(ColoHelper colo, final String remoteLocation) throws IOException, InterruptedException {
-
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name",
-                "hdfs://" + Util.readPropertiesFile(colo.getEnvFileName(), "hadoop_url"));
-        //System.out.println("prop: "+conf.get("fs.default.name"));
-
-        final FileSystem fs = FileSystem.get(conf);
-        //System.out.println("fs uri: "+fs.getUri());
-
-        File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
-        //System.out.println("files: "+files);
-        assert files != null;
-        for (final File file : files) {
-            if (!file.isDirectory()) {
-                // System.out.println("inside if block");
-                Util.print("putDataInFolder: " + remoteLocation);
-                fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                        new Path(remoteLocation));
-             }
-        }
-
-    }
 
     public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type) throws IOException {
         String inputPath = "src/test/resources/OozieExampleInputData/normalInput";
@@ -649,6 +598,7 @@ public class InstanceUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 Util.print("putDataInFolder: " + remoteLocation);
+                fs.mkdirs(new Path(remoteLocation));
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(remoteLocation));
             }
         }
@@ -756,38 +706,6 @@ public class InstanceUtil {
         bundle.setClusterData(sw.toString());
     }
 
-
-    @Deprecated
-    /**
-     * method has been replaced
-     */
-    public static String setFeedCluster(String feed,
-                                        org.apache.falcon.regression.core.generated.feed.Validity
-                                                v1,
-                                        Retention r1, String n1, ClusterType t1, String partition) throws JAXBException {
-
-        org.apache.falcon.regression.core.generated.feed.Cluster c1 =
-                new org.apache.falcon.regression.core.generated.feed.Cluster();
-        c1.setName(n1);
-        c1.setRetention(r1);
-        c1.setType(t1);
-        c1.setValidity(v1);
-        if (partition != null)
-            c1.setPartition(partition);
-
-        Feed f = getFeedElement(feed);
-
-        int numberOfInitialClusters = f.getClusters().getCluster().size();
-        if (n1 == null)
-            for (int i = 0; i < numberOfInitialClusters; i++)
-                f.getClusters().getCluster().set(i, null);
-        else {
-            f.getClusters().getCluster().add(c1);
-        }
-        return feedElementToString(f);
-
-    }
-
     public static String setFeedCluster(String feed,
                                         org.apache.falcon.regression.core.generated.feed.Validity
                                                 v1,
@@ -854,31 +772,6 @@ public class InstanceUtil {
         return sw.toString();
     }
 
-    public static List<String> getReplicationCoordName(String bundleID,
-                                                            IEntityManagerHelper helper) throws OozieClientException {
-        List<CoordinatorJob> cords = InstanceUtil.getBundleCoordinators(bundleID, helper);
-
-        List<String> ReplicationCordName = new ArrayList<String>();
-        for (CoordinatorJob cord : cords) {
-            if (cord.getAppName().contains("FEED_REPLICATION"))
-                ReplicationCordName.add(cord.getAppName());
-        }
-
-        return ReplicationCordName;
-    }
-
-    public static String getRetentionCoordName(String bundlID,
-                                               IEntityManagerHelper helper) throws OozieClientException {
-        List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-        String RetentionCoordName = null;
-        for (CoordinatorJob coord : coords) {
-            if (coord.getAppName().contains("FEED_RETENTION"))
-                return coord.getAppName();
-        }
-
-        return RetentionCoordName;
-    }
-
     public static List<String> getReplicationCoordID(String bundlID,
                                                           IEntityManagerHelper helper) throws OozieClientException {
         List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
@@ -889,18 +782,6 @@ public class InstanceUtil {
         }
 
         return ReplicationCoordID;
-    }
-
-    public static String getRetentionCoordID(String bundlID,
-                                             IEntityManagerHelper helper) throws OozieClientException {
-        List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-        String RetentionCoordID = null;
-        for (CoordinatorJob coord : coords) {
-            if (coord.getAppName().contains("FEED_RETENTION"))
-                return coord.getId();
-        }
-
-        return RetentionCoordID;
     }
 
     public static void putDataInFolders(PrismHelper helper,
@@ -933,20 +814,20 @@ public class InstanceUtil {
 
     }
 
-    public static APIResult createAndsendRequestProcessInstance(
-            String url, String params, String colo) throws IOException, URISyntaxException {
+  public static APIResult createAndsendRequestProcessInstance(
+    String url, String params, String colo, String user)
+    throws IOException, URISyntaxException, AuthenticationException {
 
-        if (params != null && !colo.equals("")) {
-            url = url + params + "&" + colo.substring(1);
-        } else if (params != null) {
-            url = url + params;
-        } else
-            url = url + colo;
+    if (params != null && !colo.equals("")) {
+      url = url + params + "&" + colo.substring(1);
+    } else if (params != null) {
+      url = url + params;
+    } else
+      url = url + colo;
 
+    return InstanceUtil.sendRequestProcessInstance(url, user);
 
-        return InstanceUtil.sendRequestProcessInstance(url);
-
-    }
+  }
 
     public static String getFeedPrefix(String feed) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
@@ -1255,76 +1136,6 @@ public class InstanceUtil {
                 .unmarshal((new StringReader(clusterData)));
     }
 
-    @Deprecated
-    public static void waitTillInstanceReachState(ColoHelper coloHelper,
-                                                  String processName, int numberOfInstance,
-                                                  org.apache.oozie.client.CoordinatorAction
-                                                          .Status expectedStatus,
-                                                  int minutes) throws OozieClientException {
-
-
-        int sleep = minutes * 60 / 20;
-
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
-                    .getStatusAllInstanceStatusForProcess(coloHelper, processName);
-            int instanceWithStatus = 0;
-            for (CoordinatorAction.Status aStatusList : statusList) {
-
-                if (aStatusList.equals(expectedStatus))
-                    instanceWithStatus++;
-
-            }
-
-            if (instanceWithStatus == numberOfInstance)
-                break;
-
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-
-        }
-    }
-
-    @Deprecated
-    public static void waitTillInstanceReachState(ColoHelper coloHelper,
-                                                  String entityName, int numberOfInstance,
-                                                  org.apache.oozie.client.CoordinatorAction
-                                                          .Status expectedStatus,
-                                                  int totalMinutesToWait, ENTITY_TYPE entityType) throws OozieClientException {
-
-        int sleep = totalMinutesToWait * 60 / 20;
-
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
-                    .getStatusAllInstance(coloHelper, entityName, entityType);
-
-            int instanceWithStatus = 0;
-            for (CoordinatorAction.Status aStatusList : statusList) {
-
-                if (aStatusList.equals(expectedStatus))
-                    instanceWithStatus++;
-
-            }
-
-            if (instanceWithStatus >= numberOfInstance)
-                return;
-
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-
-        }
-
-        Assert.assertTrue(false, "expceted state of instance was never reached");
-    }
-
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
                                                   org.apache.oozie.client.CoordinatorAction
@@ -1339,10 +1150,11 @@ public class InstanceUtil {
             filter = "name=FALCON_PROCESS_" + entityName;
         }
         List<BundleJob> bundleJobs = new ArrayList<BundleJob>();
-        int retries = 0;
-        while ((bundleJobs.size() == 0) && (retries < 20)) {
+        for (int retries = 0; retries < 20; ++retries) {
             bundleJobs = OozieUtil.getBundles(client, filter, 0, 10);
-            retries++;
+            if (bundleJobs.size() > 0) {
+                break;
+            }
             Thread.sleep(5000);
         }
         if (bundleJobs.size() == 0) {
@@ -1392,68 +1204,6 @@ public class InstanceUtil {
         Assert.assertTrue(false, "expected state of instance was never reached");
     }
 
-    private static List<org.apache.oozie.client.CoordinatorAction.Status>
-    getStatusAllInstanceStatusForProcess(
-            ColoHelper coloHelper, String processName) throws OozieClientException {
-
-        CoordinatorJob coordInfo = InstanceUtil.getCoordJobForProcess(coloHelper, processName);
-
-        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
-                new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
-        for (int count = 0; count < coordInfo.getActions().size(); count++)
-            statusList.add(coordInfo.getActions().get(count).getStatus());
-
-        return statusList;
-    }
-
-    private static List<org.apache.oozie.client.CoordinatorAction.Status> getStatusAllInstance(
-            ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType) throws OozieClientException {
-
-        CoordinatorJob coordInfo =
-                InstanceUtil.getCoordJobForProcess(coloHelper, entityName, entityType);
-
-        List<org.apache.oozie.client.CoordinatorAction.Status> statusList =
-                new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
-        for (int count = 0; count < coordInfo.getActions().size(); count++)
-            statusList.add(coordInfo.getActions().get(count).getStatus());
-
-        return statusList;
-    }
-
-    private static CoordinatorJob getCoordJobForProcess(
-            ColoHelper coloHelper, String processName) throws OozieClientException {
-
-        String bundleID =
-                InstanceUtil.getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, 0);
-        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-        return oozieClient.getCoordJobInfo(coordID);
-    }
-
-    private static CoordinatorJob getCoordJobForProcess(
-            ColoHelper coloHelper, String processName, ENTITY_TYPE entityType) throws OozieClientException {
-
-        String bundleID = InstanceUtil.getLatestBundleID(coloHelper, processName, entityType);
-        //instanceUtil.getSequenceBundleID(coloHelper,processName,entityType, 0);
-        String coordID;
-        if (entityType.equals(ENTITY_TYPE.PROCESS))
-            coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        else
-            coordID =
-                    InstanceUtil.getReplicationCoordID(bundleID, coloHelper.getFeedHelper()).get(0);
-        OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-        return oozieClient.getCoordJobInfo(coordID);
-    }
-
-    public static String removeFeedPartitionsTag(String feed) throws JAXBException {
-        Feed f = getFeedElement(feed);
-
-        f.setPartitions(null);
-
-        return feedElementToString(f);
-
-    }
-
     public static void waitForBundleToReachState(
             ColoHelper coloHelper,
             String processName,
@@ -1483,108 +1233,24 @@ public class InstanceUtil {
         }
     }
 
-    public static void waitTillParticularInstanceReachState(ColoHelper coloHelper,
-                                                            String entityName, int instanceNumber,
-                                                            org.apache.oozie.client.CoordinatorAction.Status
-                                                                    expectedStatus,
-                                                            int totalMinutesToWait,
-                                                            ENTITY_TYPE entityType) throws OozieClientException {
+  public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
+                                                                DateTime startDateJoda,
+                                                                DateTime endDateJoda,
+                                                                String prefix,
+                                                                int interval) throws IOException, InterruptedException {
+    List<String> dataDates =
+      Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
-        int sleep = totalMinutesToWait * 60 / 20;
+    for (int i = 0; i < dataDates.size(); i++)
+      dataDates.set(i, prefix + dataDates.get(i));
 
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
+    List<String> dataFolder = new ArrayList<String>();
 
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = InstanceUtil
-                    .getStatusAllInstance(coloHelper, entityName, entityType);
+    for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-            if (statusList.get(instanceNumber).equals(expectedStatus))
-                break;
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-
-        }
-
-
-    }
-
-    public static void waitTillRetentionSucceeded(ColoHelper coloHelper, Bundle b,
-                                                  List <org.apache.oozie.client.CoordinatorAction.Status>
-                                                           expectedStatus, int instanceNumber,
-                                                     int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
-
-        String entityName = Util.getInputFeedNameFromBundle(b);
-        boolean flag = false;
-        int sleep1 = MinutesToWaitForStatus * 60 / 20;
-        int sleep2 = MinutesToWaitForCoordAction * 60 / 20;
-
-        String bundleID = getLatestBundleID(coloHelper, entityName, ENTITY_TYPE.FEED);
-        String coordID = getRetentionCoordID(bundleID, coloHelper.getFeedHelper());
-        CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient().getCoordJobInfo(coordID);
-
-        for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
-            if(coordInfo.getActions().size() > 0)
-                break;
-            System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
-                    "instance created on oozie: " + coloHelper.getProcessHelper()
-                    .getOozieClient().getOozieUrl());
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-        }
-
-        if(coordInfo.getActions().size()==0){
-            logger.info("Oozie actions not created for the entire wait duration.");
-            System.exit(0);
-        }
-
-        for (int sleepCount = 0; sleepCount < sleep1; sleepCount++) {
-
-            List<org.apache.oozie.client.CoordinatorAction.Status> statusList = new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
-
-            for (int count = 0; count < coordInfo.getActions().size(); count++){
-                statusList.add(coordInfo.getActions().get(count).getStatus());
-            }
-
-            for(int i=0; i<expectedStatus.size(); ++i){
-                if (statusList.get(instanceNumber).equals(expectedStatus.get(i))){
-                    flag=true;
-                    break;
-                }
-            }
-            if(flag){
-                break; // breaks from outer for upon status match too
-            }
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-        }
-    }
-
-    public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
-                                                                       DateTime startDateJoda,
-                                                                       DateTime endDateJoda,
-                                                                       String prefix,
-                                                                       int interval) throws IOException, InterruptedException {
-        List<String> dataDates =
-                Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.createHDFSFolders(colo, dataFolder);
-        return dataFolder;
-    }
+    InstanceUtil.createHDFSFolders(colo, dataFolder);
+    return dataFolder;
+  }
 
   public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
     Feed feedElement = InstanceUtil.getFeedElement(feed);
@@ -1622,5 +1288,76 @@ public class InstanceUtil {
     }
 
   }
+
+
+  public static void waitTillRetentionSucceeded(ColoHelper coloHelper, Bundle b,
+                                                List <org.apache.oozie.client.CoordinatorAction.Status>
+                                                  expectedStatus, int instanceNumber,
+                                                int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
+
+    String entityName = Util.getInputFeedNameFromBundle(b);
+    boolean flag = false;
+    int sleep1 = MinutesToWaitForStatus * 60 / 20;
+    int sleep2 = MinutesToWaitForCoordAction * 60 / 20;
+
+    String bundleID = getLatestBundleID(coloHelper, entityName, ENTITY_TYPE.FEED);
+    String coordID = getRetentionCoordID(bundleID, coloHelper.getFeedHelper());
+    CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient().getCoordJobInfo(coordID);
+
+    for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
+      if(coordInfo.getActions().size() > 0)
+        break;
+      System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
+        "instance created on oozie: " + coloHelper.getProcessHelper()
+        .getOozieClient().getOozieUrl());
+      try {
+        Thread.sleep(20000);
+      } catch (InterruptedException e) {
+        logger.error(e.getMessage());
+      }
+    }
+
+    if(coordInfo.getActions().size()==0){
+      logger.info("Oozie actions not created for the entire wait duration.");
+      System.exit(0);
+    }
+
+    for (int sleepCount = 0; sleepCount < sleep1; sleepCount++) {
+
+      List<org.apache.oozie.client.CoordinatorAction.Status> statusList = new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
+
+      for (int count = 0; count < coordInfo.getActions().size(); count++){
+        statusList.add(coordInfo.getActions().get(count).getStatus());
+      }
+
+      for(int i=0; i<expectedStatus.size(); ++i){
+        if (statusList.get(instanceNumber).equals(expectedStatus.get(i))){
+          flag=true;
+          break;
+        }
+      }
+      if(flag){
+        break; // breaks from outer for upon status match too
+      }
+      try {
+        Thread.sleep(20000);
+      } catch (InterruptedException e) {
+        logger.error(e.getMessage());
+      }
+    }
+  }
+
+  public static String getRetentionCoordID(String bundlID,
+                                           IEntityManagerHelper helper) throws OozieClientException {
+    List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
+    String RetentionCoordID = null;
+    for (CoordinatorJob coord : coords) {
+      if (coord.getAppName().contains("FEED_RETENTION"))
+        return coord.getId();
+    }
+
+    return RetentionCoordID;
+  }
+
 }
 

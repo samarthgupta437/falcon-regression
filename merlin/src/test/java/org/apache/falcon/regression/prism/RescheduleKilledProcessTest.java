@@ -39,26 +39,19 @@ import java.util.Random;
 @Test(groups = "embedded")
 public class RescheduleKilledProcessTest extends BaseTestClass {
 
-    private Bundle bundle;
-    ColoHelper cluster1;
-    FileSystem cluster1FS;
-
-    public RescheduleKilledProcessTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster1FS = serverFS.get(0);
-    }
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        removeBundles();
     }
 
     @Test(enabled = false, timeOut = 1200000)
@@ -68,23 +61,23 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         //generate bundles according to config files
         String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
         String processEndTime = InstanceUtil.getTimeWrtSystemTime(06);
-        String process = bundle.getProcessData();
+        String process = bundles[0].getProcessData();
         process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
-        feed.add(Util.getOutputFeedFromBundle(bundle));
-        process = bundle.setProcessFeeds(process, feed, 0, 0, 1);
+        feed.add(Util.getOutputFeedFromBundle(bundles[0]));
+        process = bundles[0].setProcessFeeds(process, feed, 0, 0, 1);
 
         process = InstanceUtil.setProcessCluster(process, null,
                 XmlUtil.createProcessValidity(processStartTime, "2099-01-01T00:00Z"));
-        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundle.getClusters().get(0)),
+        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
-        bundle.setProcessData(process);
+        bundles[0].setProcessData(process);
 
-        bundle.submitAndScheduleBundle(prism);
+        bundles[0].submitAndScheduleBundle(prism);
 
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
-        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
-        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
+        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
+        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData());
 
     }
 
@@ -93,25 +86,27 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
     public void recheduleKilledProcess02() throws Exception {
         // submit and schedule a process with error in workflow .
         //it will get killed
-        bundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-11),
+        bundles[0].setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-11),
                 InstanceUtil.getTimeWrtSystemTime(06));
 
-        bundle.setInputFeedDataPath(baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedDataPath(
+                baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
-        String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(bundle));
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(cluster1, 40, 1, prefix, null);
 
-        System.out.println("process: " + bundle.getProcessData());
+        String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(bundles[0]));
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
+        Util.lateDataReplenish(cluster, 40, 1, prefix, null);
 
-        bundle.submitAndScheduleBundle(prism);
+        System.out.println("process: " + bundles[0].getProcessData());
 
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
-        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
-        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData());
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundle.getProcessData());
-        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundle.getProcessData());
-        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundle.getProcessData());
+        bundles[0].submitAndScheduleBundle(prism);
+
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
+        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
+        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData());
+        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
+        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
+        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData());
 
     }
 }

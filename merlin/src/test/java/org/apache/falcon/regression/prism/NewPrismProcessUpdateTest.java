@@ -29,7 +29,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.supportClasses.HadoopFileEditor;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -40,6 +40,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -51,6 +52,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Minutes;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -65,6 +67,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+@Test(groups = "distributed")
 public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     String baseTestDir = baseHDFSDir + "/NewPrismProcessUpdateTest";
@@ -102,6 +105,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             setupOozieData(fs, WORKFLOW_PATH, WORKFLOW_PATH2, aggreagator1Path);
         }
         Util.restartService(cluster3.getClusterHelper());
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        removeBundles();
     }
 
     public void setupOozieData(FileSystem fs, String... workflowPaths) throws IOException {
@@ -1528,7 +1536,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
   @Test(groups = {"multiCluster"}, timeOut = 1200000)
   public void
-  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
     Bundle b = Util.readELBundles()[0][0];
     HadoopFileEditor hadoopFileEditor = null;
     try {
@@ -1540,9 +1548,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         InstanceUtil.getTimeWrtSystemTime(15));
       b.submitAndScheduleBundle(prism);
 
-      InstanceUtil.waitTillParticularInstanceReachState(cluster1,
-        Util.readEntityName(b.getProcessData()), 0,
-        CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+      InstanceUtil.waitTillInstanceReachState(serverOC.get(1),
+        Util.readEntityName(b.getProcessData()),0,CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
 
       //save old data
       String oldBundleID = InstanceUtil
@@ -1644,8 +1651,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     private Bundle usualGrind(PrismHelper prism, Bundle b) throws Exception {
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
         b.setInputFeedDataPath(inputFeedPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);

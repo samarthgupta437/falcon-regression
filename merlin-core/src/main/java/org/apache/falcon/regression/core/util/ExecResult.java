@@ -16,18 +16,29 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.enums;
+package org.apache.falcon.regression.core.util;
 
-public enum FEED_TYPE {
-   MINUTELY("minutely"), HOURLY("hourly"), DAILY("daily"), MONTHLY("monthly"), YEARLY("yearly");
+class ExecResult {
 
-   private String value;
+    private final int exitVal;
+    private final String output;
+    private final String error;
 
-   private FEED_TYPE(String value){
-       this.value = value;
-   }
+    public ExecResult(final int exitVal, final String output, final String error) {
+        this.exitVal = exitVal;
+        this.output = output;
+        this.error = error;
+    }
 
-   public String getValue(){
-       return value;
-   }
+    public int getExitVal() {
+        return exitVal;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public String getError() {
+        return error;
+    }
 }

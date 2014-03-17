@@ -23,7 +23,7 @@
 package org.apache.falcon.regression.core.supportClasses;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
