@@ -1043,19 +1043,19 @@ public class InstanceUtil {
 
         List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
 
-        System.out.println("bundle size for process is " +
+        logger.info("bundle size for process is " +
                 Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType).size());
 
         for (String bundleId : Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType)) {
             BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
             List<CoordinatorJob> coords = bundleInfo.getCoordinators();
 
-            System.out.println("number of coords in bundle " + bundleId + "=" + coords.size());
+            logger.info("number of coords in bundle " + bundleId + "=" + coords.size());
 
             for (CoordinatorJob coord : coords) {
                 List<CoordinatorAction> actions =
                         oozieClient.getCoordJobInfo(coord.getId()).getActions();
-                System.out.println("number of actions in coordinator " + coord.getId() + " is " +
+                logger.info("number of actions in coordinator " + coord.getId() + " is " +
                         actions.size());
                 list.addAll(actions);
             }
@@ -1275,7 +1275,7 @@ public class InstanceUtil {
 
       if(coordInfo.getActions().size() > 0)
           break;
-      System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
+      logger.info("Coord "+ coordInfo.getId() + " still dosent have " +
         "instance created on oozie: " + coloHelper.getProcessHelper()
         .getOozieClient().getOozieUrl());
       try {
@@ -1306,7 +1306,7 @@ public class InstanceUtil {
     for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
       if(coordInfo.getActions().size() > 0)
         break;
-      System.out.println("Coord "+ coordInfo.getId() + " still dosent have " +
+      logger.info("Coord "+ coordInfo.getId() + " still dosent have " +
         "instance created on oozie: " + coloHelper.getProcessHelper()
         .getOozieClient().getOozieUrl());
       try {

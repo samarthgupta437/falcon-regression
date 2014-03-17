@@ -1534,7 +1534,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
 
 
-  @Test(groups = {"multiCluster"}, timeOut = 1200000)
+  @Test(timeOut = 1200000)
   public void
   updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
     Bundle b = Util.readELBundles()[0][0];
