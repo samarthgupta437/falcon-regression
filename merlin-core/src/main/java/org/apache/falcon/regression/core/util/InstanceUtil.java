@@ -97,9 +97,8 @@ public class InstanceUtil {
   public static APIResult hitUrl(String url,
                                               String method, String user) throws URISyntaxException,
     IOException, AuthenticationException {
-    KerberosHelper.switchUser(user);
-    BaseRequest request = new BaseRequest(url, method);
-    HttpResponse response = request.run();
+        BaseRequest request = new BaseRequest(url, method);
+        HttpResponse response = request.run();
 
     BufferedReader reader = new BufferedReader(
       new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
