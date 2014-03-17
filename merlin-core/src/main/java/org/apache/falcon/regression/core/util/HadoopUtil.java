@@ -41,6 +41,7 @@ public class HadoopUtil {
         return conf;
     }
 
+    @SuppressWarnings("deprecation")
     public static List<Path> getAllFilesRecursivelyHDFS(
             ColoHelper colcoHelper, Path location) throws IOException {
 
@@ -80,6 +81,7 @@ public class HadoopUtil {
 
     }
 
+    @SuppressWarnings("deprecation")
     public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 
         List<String> files = new ArrayList<String>();
@@ -105,7 +107,7 @@ public class HadoopUtil {
         return getAllDirsRecursivelyHDFS(fs, location, depth);
     }
 
-
+    @SuppressWarnings("deprecation")
     private static List<Path> getAllDirsRecursivelyHDFS(
             FileSystem fs, Path location, int depth) throws IOException {
 
@@ -126,7 +128,7 @@ public class HadoopUtil {
         return returnList;
     }
 
-
+    @SuppressWarnings("deprecation")
     public static List<Path> getAllFilesRecursivelyHDFS(
             ColoHelper coloHelper, Path location, String... ignoreFolders) throws IOException {
 
@@ -166,7 +168,7 @@ public class HadoopUtil {
 
     }
 
-
+    @SuppressWarnings("deprecation")
     public static List<Path> getAllFilesRecursivelyHDFS(
             Configuration conf, Path location, String... ignoreFolders) throws IOException {
 
@@ -266,6 +268,7 @@ public class HadoopUtil {
         return getHDFSSubFoldersName(fs, baseDir);
     }
 
+    @SuppressWarnings("deprecation")
     public static List<String> getHDFSSubFoldersName(FileSystem fs,
                                                      String baseDir) throws IOException {
 
@@ -306,6 +309,7 @@ public class HadoopUtil {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     private static List<String> getAllFileNamesFromHDFS(
             FileSystem fs, String hdfsPath) throws IOException {
 

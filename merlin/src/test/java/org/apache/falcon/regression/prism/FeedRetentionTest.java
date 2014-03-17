@@ -88,7 +88,7 @@ public class FeedRetentionTest extends BaseTestClass {
         feedOutput01 = InstanceUtil.setFeedCluster(feedOutput01,
                 XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feedOutput01 = InstanceUtil.setFeedCluster(feedOutput01,
                 XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
@@ -118,7 +118,7 @@ public class FeedRetentionTest extends BaseTestClass {
         feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
                 XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
                 XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
@@ -149,7 +149,7 @@ public class FeedRetentionTest extends BaseTestClass {
                 .setFeedCluster(feedInput,
                         XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null, null);
+                        ClusterType.SOURCE, null);
 
         feedInput = InstanceUtil.setFeedCluster(feedInput,
                 XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),

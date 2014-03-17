@@ -82,7 +82,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
 
         String postFix = "/US/ua2";
         String prefix = bundles[0].getFeedDataPathPrefix();
@@ -102,20 +102,20 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
                         InstanceUtil.addMinsToTime(startTime, 85)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        "US/${cluster.colo}", null);
+                        "US/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
                         InstanceUtil.addMinsToTime(startTime, 105)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null, null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
 
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
                         InstanceUtil.addMinsToTime(startTime, 130)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}", null);
+                "UK/${cluster.colo}");
 
         Util.print("feed: " + feed);
 
@@ -174,17 +174,17 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         feed01 = InstanceUtil.setFeedCluster(feed01,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null, null);
+                        ClusterType.SOURCE, null);
 
         feed02 = InstanceUtil.setFeedCluster(feed02,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null, null);
+                        ClusterType.SOURCE, null);
 
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null, null);
+                        ClusterType.SOURCE, null);
 
         //set new feed input data
         feed01 = Util.setFeedPathValue(feed01, baseHDFSDir + "/feed01/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
@@ -205,34 +205,34 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         feed01 = InstanceUtil.setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
-                        null, null);
+                        null);
 
         feed01 = InstanceUtil.setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET,
-                        null, null);
+                        null);
 
         //set clusters for feed02
         feed02 = InstanceUtil.setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
-                        null, null);
+                        null);
 
         feed02 = InstanceUtil.setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                        null, null);
+                        null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                 XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null, null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
 
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                 XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null, null);
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
 
         //submit and schedule feeds
