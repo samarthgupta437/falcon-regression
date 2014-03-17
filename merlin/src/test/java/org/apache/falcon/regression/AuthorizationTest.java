@@ -72,7 +72,29 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = cluster.getClusterHelper().delete(
-                Util.URLS.GET_ENTITY_DEFINITION, bundles[0].getClusters().get(0), MerlinConstants.USER2_NAME);
+                Util.URLS.DELETE_URL, bundles[0].getClusters().get(0), MerlinConstants.USER2_NAME);
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpStatus.SC_BAD_REQUEST,
+                "Entity submitted by first user should not be deletable by second user");
+    }
+
+    @Test
+    public void U1SubmitU2DeleteProcess() throws Exception {
+        bundles[0].submitClusters(prism);
+        bundles[0].submitProcess();
+        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
+        final ServiceResponse serviceResponse = cluster.getProcessHelper().delete(
+                Util.URLS.DELETE_URL, bundles[0].getProcessData(), MerlinConstants.USER2_NAME);
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpStatus.SC_BAD_REQUEST,
+                "Entity submitted by first user should not be deletable by second user");
+    }
+
+    @Test
+    public void U1SubmitU2DeleteFeed() throws Exception {
+        bundles[0].submitClusters(prism);
+        bundles[0].submitFeed();
+        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
+        final ServiceResponse serviceResponse = cluster.getFeedHelper().delete(
+                Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0), MerlinConstants.USER2_NAME);
         AssertUtil.assertFailedWithStatus(serviceResponse, HttpStatus.SC_BAD_REQUEST,
                 "Entity submitted by first user should not be deletable by second user");
     }
