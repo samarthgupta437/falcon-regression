@@ -77,38 +77,14 @@
                     <artifactId>hadoop-hdfs</artifactId>
                     <classifier>tests</classifier>
                 </dependency>
-                <!--
-                                <dependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-common</artifactId>
-                                    <classifier>tests</classifier>
-                                </dependency>
-                -->
-                <!--
-                                <dependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-yarn-server-resourcemanager</artifactId>
-                                </dependency>
-
-                                <dependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-yarn-server-nodemanager</artifactId>
-                                </dependency>-->
             </dependencies>
         </profile>
     </profiles>
     <dependencies>
-        <!--
-            <dependency>
-                <groupId>org.apache.falcon</groupId>
-                <artifactId>falcon-client</artifactId>
-            </dependency>
-        -->
         <dependency>
             <groupId>org.apache.falcon</groupId>
             <artifactId>falcon-merlin-core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
@@ -161,6 +137,11 @@
                     <artifactId>hbase-client</artifactId>
                 </exclusion>
             </exclusions>
+      </dependency>
+        <!-- Added so that at run time log4j is avaialble to capture the logs -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
         </dependency>
     </dependencies>
 </project>

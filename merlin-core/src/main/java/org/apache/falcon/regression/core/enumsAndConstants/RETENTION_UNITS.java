@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.enums;
+package org.apache.falcon.regression.core.enumsAndConstants;
 
 public enum RETENTION_UNITS {
     MINUTES("minutes"), HOURS("hours"), DAYS("days"), MONTHS("months"), YEARS("years");

@@ -33,45 +33,38 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
+@Test(groups = "distributed")
 public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
-    ColoHelper cluster2;
-    ColoHelper cluster3;
+    ColoHelper cluster1 = servers.get(0);;
+    ColoHelper cluster2 = servers.get(1);;
 
     String baseTestDir = baseHDFSDir + "/FeedDelayParallelTimeoutTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     String feedOutputPath = baseTestDir + "Target/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
-    Bundle b1 = new Bundle();
-    Bundle b2 = new Bundle();
-
-    public FeedDelayParallelTimeoutTest(){
-        super();
-        cluster2 = servers.get(1);
-        cluster3 = servers.get(2);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        b1 = (Bundle) Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        b2 = (Bundle) Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        b1 = new Bundle(b1, cluster3.getEnvFileName(), cluster3.getPrefix());
-        b2 = new Bundle(b2, cluster2.getEnvFileName(), cluster2.getPrefix());
+        Bundle bundle = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[1] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+
+        bundles[0].generateUniqueBundle();
+        bundles[1].generateUniqueBundle();
     }
 
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod
     public void tearDown() throws Exception {
-        b1.deleteBundle(prism);
+        removeBundles();
     }
 
     @Test(enabled = true, timeOut = 12000000)
     public void timeoutTest() throws Exception {
-        b1.setInputFeedDataPath(feedInputPath);
+        bundles[0].setInputFeedDataPath(feedInputPath);
 
-        Bundle.submitCluster(b1, b2);
-        String feedOutput01 = b1.getDataSets().get(0);
+        Bundle.submitCluster(bundles[0], bundles[1]);
+        String feedOutput01 = bundles[0].getDataSets().get(0);
         org.apache.falcon.regression.core.generated.dependencies.Frequency delay =
                 new org.apache.falcon.regression.core.generated.dependencies.Frequency(
                         "hours(5)");
@@ -88,23 +81,23 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
         //	feedOutput01 = instanceUtil.setFeedCluster(feedOutput01,
         // XmlUtil.createValidity("2013-04-21T00:00Z",
         // "2099-10-01T12:10Z"),XmlUtil.createRtention("hours(15)",ActionType.DELETE),
-        // Util.readClusterName(b2.getClusters().get(0)),ClusterType.SOURCE,"",delay,
+        // Util.readClusterName(bundles[1].getClusters().get(0)),ClusterType.SOURCE,"",delay,
         // feedInputPath);
         //	feedOutput01 = instanceUtil.setFeedCluster(feedOutput01,
         // XmlUtil.createValidity("2013-04-21T00:00Z",
         // "2099-10-01T12:25Z"),XmlUtil.createRtention("hours(15)",ActionType.DELETE),
-        // Util.readClusterName(b1.getClusters().get(0)),ClusterType.TARGET,"",delay,
+        // Util.readClusterName(bundles[0].getClusters().get(0)),ClusterType.TARGET,"",delay,
         // feedOutputPath);
 
         //feedOutput01 = instanceUtil.setFeedCluster(feedOutput01,
         // XmlUtil.createValidity("2013-04-21T00:00Z",
         // "2099-10-01T12:10Z"),XmlUtil.createRtention("hours(15)",ActionType.DELETE),
-        // Util.readClusterName(b2.getClusters().get(0)),ClusterType.SOURCE,"",
+        // Util.readClusterName(bundles[1].getClusters().get(0)),ClusterType.SOURCE,"",
         // feedInputPath);
         //feedOutput01 = instanceUtil.setFeedCluster(feedOutput01,
         // XmlUtil.createValidity("2013-04-21T00:00Z",
         // "2099-10-01T12:25Z"),XmlUtil.createRtention("hours(15)",ActionType.DELETE),
-        // Util.readClusterName(b1.getClusters().get(0)),ClusterType.TARGET,"",
+        // Util.readClusterName(bundles[0].getClusters().get(0)),ClusterType.TARGET,"",
         // feedOutputPath);
 
         feedOutput01 = Util.setFeedProperty(feedOutput01, "timeout", "minutes(35)");

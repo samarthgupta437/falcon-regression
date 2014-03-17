@@ -21,7 +21,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -40,32 +40,24 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class FeedScheduleTest extends BaseTestClass {
 
-    ColoHelper cluster;
-    OozieClient clusterOC;
-    private Bundle bundle;
+    ColoHelper cluster = servers.get(0);;
+    OozieClient clusterOC = serverOC.get(0);
     private String feed;
-
-    public FeedScheduleTest(){
-        super();
-        cluster = servers.get(0);
-        clusterOC = serverOC.get(0);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
-        Bundle.submitCluster(bundle);
-        feed = Util.getInputFeedFromBundle(bundle);
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].generateUniqueBundle();
+        Bundle.submitCluster(bundles[0]);
+        feed = Util.getInputFeedFromBundle(bundles[0]);
     }
 
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod
     public void tearDown() throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundle));
+        removeBundles();
     }
-
-
 
     @Test(groups = {"singleCluster"})
     public void scheduleAlreadyScheduledFeed() throws Exception {

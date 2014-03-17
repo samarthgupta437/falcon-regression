@@ -66,9 +66,6 @@ package org.apache.falcon.regression;
 //        
 //        try {
 //            
-//            System.setProperty("java.security.krb5.realm", "");
-//            System.setProperty("java.security.krb5.kdc", "");
-//            
 //            String feed=Util.setFeedPathValue(Util.getInputFeedFromBundle(bundle),
 // "/lateDataTest/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 //            feed=Util.insertLateFeedValue(feed,delay,"minutes");

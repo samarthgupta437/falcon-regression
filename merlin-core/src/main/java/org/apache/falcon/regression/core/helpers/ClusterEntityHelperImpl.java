@@ -29,8 +29,8 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -51,63 +51,63 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         super(envFileName, prefix);
     }
 
-    public ServiceResponse delete(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse delete(String url, String data, String user)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         url += "/cluster/" + Util.readClusterName(data) + colo;
-        return Util.sendRequest(url);
+        return Util.sendRequest(url, "delete", user);
     }
 
-    public ServiceResponse getEntityDefinition(String url, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse getEntityDefinition(String url, String data, String user) throws JAXBException,
+    IOException, URISyntaxException, AuthenticationException {
         url += "/cluster/" + Util.readClusterName(data);
-
-        return Util.sendRequest(url);
-
+        return Util.sendRequest(url, "get", user);
     }
 
-    public ServiceResponse getStatus(String url, String data)  {
+    public ServiceResponse getStatus(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse getStatus(Util.URLS url, String data)  {
+    public ServiceResponse getStatus(Util.URLS url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse resume(String url, String data)  {
+    public ServiceResponse resume(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse schedule(String url, String data)  {
+    public ServiceResponse schedule(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse submitAndSchedule(String url, String data)  {
+    public ServiceResponse submitAndSchedule(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse submitAndSchedule(Util.URLS url, String data)  {
+    public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)  {
         return null;
     }
 
-    public ServiceResponse submitEntity(String url, String data) throws IOException {
+    public ServiceResponse submitEntity(String url, String data, String user)
+    throws IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         System.out.println("Submitting cluster: "+data);
         url += "/cluster" + colo;
-
-        return Util.sendRequest(url, data);
+        return Util.sendRequest(url, "post", data, user);
     }
 
-    public ServiceResponse suspend(String url, String data)  {
+    public ServiceResponse suspend(String url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse suspend(Util.URLS url, String data)  {
+    public ServiceResponse suspend(Util.URLS url, String data, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
 /*
     public ServiceResponse validateEntity(String url, String data)  {
 
-        return Util.sendRequest(url, data);
+        return Util.sendPostRequest(url, data);
     }
 */
 
@@ -117,47 +117,49 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse submitEntity(Util.URLS url, String data) throws IOException {
+    public ServiceResponse submitEntity(Util.URLS url, String data, String user)
+    throws IOException, URISyntaxException, AuthenticationException {
         System.out.println("Submitting cluster: "+data);
-        return submitEntity(this.hostname + url.getValue(), data);
+        return submitEntity(this.hostname + url.getValue(), data, user);
     }
 
     @Override
-    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData)
+    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
      {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public ServiceResponse delete(Util.URLS deleteUrl, String data) throws JAXBException, IOException, URISyntaxException {
+    public ServiceResponse delete(Util.URLS deleteUrl, String data, String user)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         // TODO Auto-generated method stub
-        return delete(this.hostname + deleteUrl.getValue(), data);
+        return delete(this.hostname + deleteUrl.getValue(), data, user);
     }
 
     @Override
-    public ServiceResponse resume(Util.URLS url, String data)  {
+    public ServiceResponse resume(Util.URLS url, String data, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
-
+    @Override
     public ProcessInstancesResult getRunningInstance(
-            Util.URLS processRuningInstance, String name)  {
+            Util.URLS processRunningInstance, String name, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
-
+    @Override
     public ProcessInstancesResult getProcessInstanceStatus(
-            String readEntityName, String params) {
+            String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
 
 
     public ProcessInstancesResult getProcessInstanceSuspend(
-            String readEntityName, String params) {
+            String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -175,7 +177,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
         //System.out.println(BASE_COMMAND+ " entity -submit -url "+this.hostname+" -type cluster
         // -file "+filePath);
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -submit -url " + this.hostname + " -type cluster -file " +
                         filePath);
     }*/
@@ -183,7 +185,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     /*@Override
     public String validateEntityViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -validate -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }*/
@@ -191,7 +193,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     /*@Override
     public String submitAndScheduleViaCLI(String filePath)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -submitAndSchedule -url " + this.hostname +
                         " -type cluster -file " + filePath);
     }
@@ -199,7 +201,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String scheduleViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -schedule -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -207,7 +209,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String resumeViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -resume -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -215,7 +217,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String getStatusViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -status -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -223,7 +225,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String getEntityDefinitionViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -definition -url " + this.hostname +
                         " -type cluster -name " + entityName);
     }
@@ -231,7 +233,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String deleteViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -delete -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -239,7 +241,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public String suspendViaCLI(String entityName)  {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -suspend -url " + this.hostname + " -type cluster -name " +
                         entityName);
     }
@@ -249,14 +251,14 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 */
     public String list() throws IOException, InterruptedException {
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type cluster");
     }
 
     @Override
     public String getDependencies(String entityName) throws IOException, InterruptedException {
 
-        return Util.executeCommand(
+        return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -dependency -url " + this.hostname +
                         " -type cluster -name " + entityName);
     }
@@ -280,19 +282,20 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(Util.URLS url, String data) throws JAXBException, IOException, URISyntaxException {
-        return getEntityDefinition(this.hostname + url.getValue(), data);
+    public ServiceResponse getEntityDefinition(Util.URLS url, String data, String user)
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return getEntityDefinition(this.hostname + url.getValue(), data, user);
     }
 
     @Override
-    public ServiceResponse update(String oldEntity, String newEntity)  {
+    public ServiceResponse update(String oldEntity, String newEntity, String user)  {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
   @Override
   public ServiceResponse update(String oldEntity,
                                 String newEntity,
-                                String updateTime) throws IOException, JAXBException {
+                                String updateTime, String user) throws IOException, JAXBException {
     return null;
   }
 
@@ -315,27 +318,29 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName,
-                                                         String string)  {
+                                                         String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceRerun(
-            String readEntityName, String string)  {
+            String readEntityName, String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceResume(
-            String readEntityName, String string)  {
+            String readEntityName, String string, String user)  {
         // TODO Auto-generated method stub
         return null;
     }
 
   @Override
-  public InstancesSummaryResult getInstanceSummary(String readEntityName, String string) throws
+  public InstancesSummaryResult getInstanceSummary(String readEntityName,
+                                                   String string
+                                                   ) throws
     IOException, URISyntaxException {
     System.out.println("Not Valid for Cluster Entity");
     return null;

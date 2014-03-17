@@ -22,7 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -39,69 +39,58 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.util.List;
 
+@Test(groups = "distributed")
 public class PrismFeedLateReplicationTest extends BaseTestClass {
 
-    ColoHelper cluster1;
-    ColoHelper cluster2;
-    ColoHelper cluster3;
-    FileSystem cluster1FS;
-    FileSystem cluster2FS;
-    FileSystem cluster3FS;
-    private Bundle bundle1, bundle2, bundle3;
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
+    ColoHelper cluster3 = servers.get(2);
+    FileSystem cluster1FS = serverFS.get(0);
+    FileSystem cluster2FS = serverFS.get(1);
+    FileSystem cluster3FS = serverFS.get(2);
     private String normalInputPath = "src/test/resources/OozieExampleInputData/normalInput";
     private String inputPath = baseHDFSDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
 
-    public PrismFeedLateReplicationTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster2 = servers.get(1);
-        cluster3 = servers.get(2);
-        cluster1FS = serverFS.get(0);
-        cluster2FS = serverFS.get(1);
-        cluster3FS = serverFS.get(2);
-    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
 
-        bundle1 = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundle2 = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundle3 = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
 
-        bundle1.generateUniqueBundle();
-        bundle2.generateUniqueBundle();
-        bundle3.generateUniqueBundle();
+        bundles[0].generateUniqueBundle();
+        bundles[1].generateUniqueBundle();
+        bundles[2].generateUniqueBundle();
     }
 
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod
     public void tearDown() throws Exception {
-        bundle1.deleteBundle(prism);
-        bundle2.deleteBundle(prism);
-        bundle3.deleteBundle(prism);
+        removeBundles();
     }
 
     @Test(groups = {"multiCluster"})
     public void multipleSourceOneTarget_pastData() throws Exception {
 
-        bundle1.setInputFeedDataPath(inputPath);
-        Bundle.submitCluster(bundle1, bundle2, bundle3);
+        bundles[0].setInputFeedDataPath(inputPath);
+        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
-        String feed = bundle1.getDataSets().get(0);
+        String feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
                 ClusterType.SOURCE, null, null);
 
         String postFix = "/US/ua2";
-        String prefix = bundle1.getFeedDataPathPrefix();
+        String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
 
 
         postFix = "/UK/ua3";
-        prefix = bundle1.getFeedDataPathPrefix();
+        prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
@@ -109,17 +98,17 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         "US/${cluster.colo}", null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                        Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                         null, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                        Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                         "UK/${cluster.colo}", null);
 
 
@@ -167,10 +156,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
     @Test(groups = {"multiCluster"})
     public void multipleSourceOneTarget_futureData() throws Exception {
 
-        bundle1.setInputFeedDataPath(inputPath);
-        Bundle.submitCluster(bundle1, bundle2, bundle3);
+        bundles[0].setInputFeedDataPath(inputPath);
+        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
-        String feed = bundle1.getDataSets().get(0);
+        String feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
@@ -181,17 +170,17 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         "US/${cluster.colo}", null);
         
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                        Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                         null, null);
         
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                        Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                         "UK/${cluster.colo}", null);
 
 
@@ -201,12 +190,12 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Thread.sleep(10000);
 
         String postFix = "/US/ua2";
-        String prefix = bundle1.getFeedDataPathPrefix();
+        String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/UK/ua3";
-        prefix = bundle1.getFeedDataPathPrefix();
+        prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
@@ -321,11 +310,11 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
     @Test(groups = {"multiCluster"})
     public void mixedTest01() throws Exception {
 
-        bundle1.setInputFeedDataPath(inputPath);
-        Bundle.submitCluster(bundle1, bundle2, bundle3);
+        bundles[0].setInputFeedDataPath(inputPath);
+        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
 
-        String feed = bundle1.getDataSets().get(0);
+        String feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
@@ -336,23 +325,23 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                 "ua1/${cluster.colo}", null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                 null, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "ua1/${cluster.colo}", null);
 
         //create data in colos
 
         String postFix = "/ua1/ua2";
-        String prefix = bundle1.getFeedDataPathPrefix();
+        String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
 
@@ -495,15 +484,15 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
      after first late succeed data is put into other source and late should not rerun */
     @Test(groups = {"multiCluster"})
     public void mixedTest02() throws Exception {
-        bundle1.setInputFeedDataPath(inputPath);
+        bundles[0].setInputFeedDataPath(inputPath);
 
-        Bundle.submitCluster(bundle1, bundle2, bundle3);
+        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
         //set availability flag as _success
-        bundle1.setInputFeedAvailabilityFlag("_SUCCESS");
+        bundles[0].setInputFeedAvailabilityFlag("_SUCCESS");
 
         //get feed
-        String feed = bundle1.getDataSets().get(0);
+        String feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
@@ -513,23 +502,23 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                 "ua1/${cluster.colo}", null);
         
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                 null, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundle3.getClusters().get(0)), ClusterType.SOURCE,
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "ua1/${cluster.colo}", null);
 
         //create data in colos
 
         String postFix = "/ua1/ua2";
-        String prefix = bundle1.getFeedDataPathPrefix();
+        String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
 

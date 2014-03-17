@@ -15,20 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.falcon.regression.core.supportClasses;
 
-public enum ClusterLocationTypes {
+package org.apache.falcon.regression.core.response;
 
+public class ResponseKeys {
 
-  STAGING("staging"),WORKING("working"),TEMP("temp");
-
-  public String getValue() {
-    return value;
-  }
-
-  private String value;
-
-  private ClusterLocationTypes(String value) {
-    this.value = value;
-  }
+    public static final int PROCESS_NOT_FOUND = 777;
+    public static final int UNPARSEABLE_DATE = 2;
 }

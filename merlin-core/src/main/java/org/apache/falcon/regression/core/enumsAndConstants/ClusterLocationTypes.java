@@ -15,25 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.falcon.regression.core.enumsAndConstants;
 
-package org.apache.falcon.regression.core.supportClasses;
+public enum ClusterLocationTypes {
 
-import org.apache.falcon.regression.core.util.Util;
 
-public enum GetBundle {
+  STAGING("staging"),WORKING("working"),TEMP("temp");
 
-    BillingFeedReplicationBundle("LocalDC_feedReplicaltion_BillingRC"), RegularBundle("ELbundle");
+  public String getValue() {
+    return value;
+  }
 
-    private final String value;
+  private String value;
 
-    private GetBundle(String value) {
-        Util.print("GetBundle of enum bundle path is: " + value);
-        this.value = value;
-    }
-
-    public String getValue() {
-        Util.print("getValue of enum bundle path is: " + value);
-        return value;
-    }
-
+  private ClusterLocationTypes(String value) {
+    this.value = value;
+  }
 }

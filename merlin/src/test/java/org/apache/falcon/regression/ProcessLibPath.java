@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
@@ -43,24 +44,17 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessLibPath extends BaseTestClass {
 
-    ColoHelper cluster;
-    FileSystem clusterFS;
-    private Bundle bundle;
-
-    public ProcessLibPath() {
-        super();
-        cluster = servers.get(1);
-        clusterFS = serverFS.get(1);
-    }
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
+    String testLibDir = baseWorkflowDir + "/TestLib";
+    String resources = "src/test/resources/oozie/";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
-
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
+        //common lib for both test cases
+        HadoopUtil.uploadDir(clusterFS, testLibDir, resources + "/lib");
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
@@ -94,38 +88,41 @@ public class ProcessLibPath extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundle = Util.readELBundles()[0][0];
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
-        bundle.generateUniqueBundle();
-        bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
-        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
-        bundle.setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundle.setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setProcessConcurrency(1);
-        bundle.setProcessLibPath("/examples/apps/testLib/");
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].generateUniqueBundle();
+        bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setProcessConcurrency(1);
+        bundles[0].setProcessLibPath(testLibDir);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        removeBundles();
     }
 
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithNoLibFolderInWorkflowfLocaltion() throws Exception {
-
-        bundle.setProcessWorkflow("/examples/apps/aggregatorLib/");
-        Util.print("processData: " + bundle.getProcessData());
-        bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(cluster, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        String workflowDir = testLibDir + "/aggregatorLib1/";
+        HadoopUtil.uploadDir(clusterFS, workflowDir, resources);
+        HadoopUtil.deleteDirIfExists(workflowDir + "/lib", clusterFS);
+        Util.print("processData: " + bundles[0].getProcessData());
+        bundles[0].submitAndScheduleBundle(prism);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
-
-        bundle.setProcessWorkflow("/examples/apps/aggregatorLib02/");
-        Util.print("processData: " + bundle.getProcessData());
-        bundle.submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(cluster, bundle.getProcessName(), Status.SUCCEEDED, 20);
+        String workflowDir = testLibDir + "/aggregatorLib2/";
+        HadoopUtil.uploadDir(clusterFS, workflowDir, resources);
+        HadoopUtil.deleteFile(cluster, new Path(workflowDir + "/lib/oozie-examples-3.1.5.jar"));
+        HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib", "src/test/resources/ivory-oozie-lib-0.1.jar");
+        Util.print("processData: " + bundles[0].getProcessData());
+        bundles[0].submitAndScheduleBundle(prism);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 }

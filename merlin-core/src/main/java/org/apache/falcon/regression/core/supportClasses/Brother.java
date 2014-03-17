@@ -23,13 +23,14 @@
 package org.apache.falcon.regression.core.supportClasses;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.testng.TestNGException;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 public class Brother extends Thread {
 

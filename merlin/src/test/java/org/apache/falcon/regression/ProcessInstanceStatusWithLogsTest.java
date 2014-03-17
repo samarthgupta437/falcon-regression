@@ -61,10 +61,6 @@ package org.apache.falcon.regression;
 //
 //		Util.print("in @BeforeClass");
 //		
-//		System.setProperty("java.security.krb5.realm", "");
-//		System.setProperty("java.security.krb5.kdc", "");
-//		
-//		
 //		Bundle b = new Bundle();
 //		b = (Bundle)Util.readELBundles()[0][0];
 //		b.generateUniqueBundle();
@@ -422,10 +418,6 @@ package org.apache.falcon.regression;
 //	public void deleteData() throws Exception
 //	{
 //		Util.print("in @AfterClass");
-//		
-//		System.setProperty("java.security.krb5.realm", "");
-//		System.setProperty("java.security.krb5.kdc", "");
-//		
 //		
 //		Bundle b = new Bundle();
 //		b = (Bundle)Util.readELBundles()[0][0];

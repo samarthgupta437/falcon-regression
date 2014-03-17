@@ -25,9 +25,10 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enums.FEED_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
@@ -46,20 +47,13 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.supportClasses.OozieActions;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -69,14 +63,19 @@ import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
 import org.apache.oozie.client.XOozieClient;
+import org.apache.falcon.request.BaseRequest;
+import org.apache.falcon.request.RequestKeys;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
+
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
+import org.apache.log4j.Logger;
 import org.testng.TestNGException;
-import org.testng.log4testng.Logger;
 import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
@@ -96,7 +95,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
@@ -121,76 +120,21 @@ public class Util {
 
     static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
 
-  public static ServiceResponse sendRequest(String url) throws IOException, URISyntaxException {
-    HttpClient client = new DefaultHttpClient();
-    HttpRequestBase request;
-    if ((Thread.currentThread().getStackTrace()[2].getMethodName().contains("delete"))) {
-      request = new HttpDelete();
-    } else if (
-      (Thread.currentThread().getStackTrace()[2].getMethodName().contains("suspend")) ||
-        (Thread.currentThread().getStackTrace()[2].getMethodName()
-          .contains("resume")) ||
-        (Thread.currentThread().getStackTrace()[2].getMethodName()
-          .contains("schedule"))) {
-      request = new HttpPost();
-    } else {
-      request = new HttpGet();
-    }
-
-    request.setHeader("Remote-User", System.getProperty("user.name"));
-    logger.info("hitting the url: " + url);
-    request.setURI(new URI(url));
-    HttpResponse response = client.execute(request);
-
-    BufferedReader reader =
-      new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-    String line;
-    StringBuilder string_response = new StringBuilder();
-
-    while ((line = reader.readLine()) != null) {
-      string_response.append(line);
-    }
-
-    logger.info(
-      "The web service response status is " + response.getStatusLine().getStatusCode());
-    logger.info(
-      "The web service response status is " + response.getStatusLine().getStatusCode());
-    logger.info("The web service response is: " + string_response.toString() + "\n");
-    logger.info("The web service response is: " + string_response.toString() + "\n");
-    return new ServiceResponse(string_response.toString(),
-      response.getStatusLine().getStatusCode());
+  public static ServiceResponse sendRequest(String url, String method) throws IOException, URISyntaxException, AuthenticationException{
+    return sendRequest(url, method, null, null);
   }
 
-  public static ServiceResponse sendRequest(String url, String data) throws IOException {
+  public static ServiceResponse sendRequest(String url, String method, String user) throws IOException, URISyntaxException, AuthenticationException{
+    return sendRequest(url, method, null, user);
+  }
 
-    HttpClient client = new DefaultHttpClient();
-    HttpPost post = new HttpPost(url);
-    post.setHeader("Content-Type", "text/xml");
-    post.setHeader("Remote-User", System.getProperty("user.name"));
-    post.setEntity(new StringEntity(data));
-    logger.info("hitting the URL: " + url);
-
-    long start_time = System.currentTimeMillis();
-    HttpResponse response = client.execute(post);
-    logger.info(
-      "The web service response status is " + response.getStatusLine().getStatusCode());
-    logger.info("time taken:" + (System.currentTimeMillis() - start_time));
-    logger.info("time taken:" + (System.currentTimeMillis() - start_time));
-
-
-    BufferedReader reader =
-      new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-    String line;
-    String string_response = "";
-    while ((line = reader.readLine()) != null) {
-      string_response = string_response + line;
-    }
-
-    logger.info("The web service response is " + string_response + "\n");
-
-    return new ServiceResponse(string_response, response.getStatusLine().getStatusCode());
+  public static ServiceResponse sendRequest(String url, String method, String data,
+                                            String user) throws IOException, URISyntaxException, AuthenticationException{
+    KerberosHelper.switchUser(user);
+    BaseRequest request = new BaseRequest(url, method, user, data);
+    request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
+    HttpResponse response = request.run();
+    return new ServiceResponse(response);
   }
 
   public static String getExpectedErrorMessage(String filename) throws IOException {
@@ -564,7 +508,10 @@ public class Util {
     return readBundles("ProcessWithNoOutput");
   }
 
-  
+  public static Bundle[][] readELBundles() throws IOException {
+    return readBundles("ELbundle");
+  }
+
   public static Bundle[] getBundleData(String path) throws IOException {
 
     List<Bundle> bundleSet = Util.getDataFromFolder(path);
@@ -928,7 +875,6 @@ public class Util {
     for (int i = 1; i <= interval; i += skip + 1) {
       dates.add(formatter.print(today.plusDays(i)));
     }
-
     return dates;
   }
 
@@ -952,8 +898,7 @@ public class Util {
 
     return dates;
   }
-
-   public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
+  public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
     if (minuteSkip == 0) {
       minuteSkip = 1;
@@ -996,6 +941,17 @@ public class Util {
     }
 
     return dates;
+  }
+
+
+
+  public static int executeCommandGetExitCode(String command) {
+    return executeCommand(command).getExitVal();
+  }
+
+
+  public static String executeCommandGetOutput(String command) {
+    return executeCommand(command).getOutput();
   }
 
   public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
@@ -1224,41 +1180,36 @@ public class Util {
     return new BufferedReader(new InputStreamReader(process.getInputStream()));
   }
 
-  public static String executeCommand(String command) throws IOException, InterruptedException {
+  public static ExecResult executeCommand(String command) {
     Util.print("Command to be executed: " + command);
     StringBuilder errors = new StringBuilder();
     StringBuilder output = new StringBuilder();
 
-    Runtime rt = Runtime.getRuntime();
-    java.lang.Process proc = rt.exec(command);
+    try {
+      java.lang.Process process = Runtime.getRuntime().exec(command);
 
-    BufferedReader errorReader = getErrorReader(proc);
-    BufferedReader consoleReader = getOutputReader(proc);
+      BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+      BufferedReader consoleReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-    String line;
-    while ((line = errorReader.readLine()) != null) {
-      logger.info(line);
-      errors.append(line);
-      errors.append("\n");
+      String line;
+      while ((line = errorReader.readLine()) != null) {
+        errors.append(line + "\n");
+      }
+
+      while ((line = consoleReader.readLine()) != null) {
+        output.append(line + "\n");
+      }
+      final int exitVal = process.waitFor();
+      logger.info("exitVal: " + exitVal);
+      logger.info("output: " + output);
+      logger.info("errors: " + errors);
+      return new ExecResult(exitVal, output.toString().trim(), errors.toString().trim());
+    } catch (InterruptedException e) {
+      Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
+    } catch (IOException e) {
+      Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
     }
-
-    while ((line = consoleReader.readLine()) != null) {
-      logger.info(line);
-      output.append(line);
-      output.append("\n");
-    }
-
-    int exitVal = proc.waitFor();
-
-    if (exitVal == 0) {
-      Util.print("Exceuted command output: " + output.toString());
-      return output.toString().trim();
-    } else {
-      Util.print("Executed command error: " + errors.toString());
-      return errors.toString();
-    }
-
-
+    return null;
   }
 
   public static String insertLateFeedValue(String feed, String delay, String delayUnit)
@@ -1386,7 +1337,7 @@ public class Util {
     throws OozieClientException {
     List<DateTime> startTimes = new ArrayList<DateTime>();
 
-        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+    XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
     BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
     CoordinatorJob jobInfo;
 
@@ -1411,6 +1362,7 @@ public class Util {
 
     return null;
   }
+
 
   public static String getBundleStatus(PrismHelper prismHelper, String bundleId)
     throws OozieClientException {
@@ -1646,9 +1598,10 @@ public class Util {
     int statusCode = 0;
     for (int tries = 20; tries > 0; tries--) {
       try {
-        statusCode = Util.sendRequest(helper.getHostname()).getCode();
+        statusCode = Util.sendRequest(helper.getHostname(), "get").getCode();
       } catch (IOException e) {
       } catch (URISyntaxException e) {
+      } catch (AuthenticationException e) {
       }
       if (statusCode == 200) return;
       try {
@@ -1877,7 +1830,7 @@ public class Util {
   }
 
   public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
-                                           String folderPrefix, String fileToBePut)
+                                         String folderPrefix, String fileToBePut)
     throws IOException, InterruptedException {
     List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
     Util.print("folderData: " + folderPaths.toString());
@@ -1894,7 +1847,8 @@ public class Util {
 
   }
 
-  public static void submitAllClusters(Bundle... b) throws IOException {
+  public static void submitAllClusters(Bundle... b)
+    throws IOException, URISyntaxException, AuthenticationException {
     for (Bundle aB : b) {
       Util.print("Submitting Cluster: " + aB.getClusters().get(0));
       ServiceResponse r = prismHelper.getClusterHelper()
@@ -2091,33 +2045,6 @@ public class Util {
         " , ";
     }
     return oozieDate ;
-  }
-
-  public static String getEntityDefinition(PrismHelper cluster,
-                                           String entity,
-                                           boolean shouldReturn) throws
-    JAXBException,
-    IOException, URISyntaxException {
-    ENTITY_TYPE type = getEntityType(entity);
-    IEntityManagerHelper helper;
-    if (ENTITY_TYPE.PROCESS.equals(type))
-      helper = cluster.getProcessHelper();
-    else if (ENTITY_TYPE.FEED.equals(type))
-      helper = cluster.getFeedHelper();
-    else
-      helper = cluster.getClusterHelper();
-
-    ServiceResponse response = helper.getEntityDefinition(URLS
-      .GET_ENTITY_DEFINITION, entity);
-
-    if (shouldReturn)
-      Util.assertSucceeded(response);
-    else
-      Util.assertFailed(response);
-    String result = response.getMessage();
-    Assert.assertNotNull(result);
-
-    return result;
   }
 
   public static ENTITY_TYPE getEntityType(String entity) {
@@ -2361,7 +2288,7 @@ public class Util {
       if (xmlLocation.length == 1)
         b = (Bundle) Bundle.readBundle(xmlLocation[0])[0][0];
       else if (xmlLocation.length == 0)
-        b = Util.readELBundles()[0][0];
+        b = (Bundle) Util.readELBundles()[0][0];
       else {
         logger.info("invalid size of xmlLocaltions return null");
         return null;
@@ -2375,8 +2302,60 @@ public class Util {
     return null;
   }
 
-  public static Bundle[][] readELBundles() throws IOException {
-    return readBundles("ELbundle");
-  }
 
+
+  public static String getMethodType(String url) {
+        List<String> postList = new ArrayList<String>();
+        postList.add("/entities/validate");
+        postList.add("/entities/submit");
+        postList.add("/entities/submitAndSchedule");
+        postList.add("/entities/suspend");
+        postList.add("/entities/resume");
+        postList.add("/instance/kill");
+        postList.add("/instance/suspend");
+        postList.add("/instance/resume");
+        postList.add("/instance/rerun");
+        postList.add("/instance/summary");
+        for (String item : postList) {
+            if (url.toLowerCase().contains(item)) {
+                return "post";
+            }
+        }
+        List<String> deleteList = new ArrayList<String>();
+        deleteList.add("/entities/delete");
+        for (String item : deleteList) {
+            if (url.toLowerCase().contains(item)) {
+                return "delete";
+            }
+        }
+
+        return "get";
+    }
+
+  public static String getEntityDefinition(PrismHelper cluster,
+                                           String entity,
+                                           boolean shouldReturn) throws
+    JAXBException,
+    IOException, URISyntaxException, AuthenticationException {
+    ENTITY_TYPE type = getEntityType(entity);
+    IEntityManagerHelper helper;
+    if (ENTITY_TYPE.PROCESS.equals(type))
+      helper = cluster.getProcessHelper();
+    else if (ENTITY_TYPE.FEED.equals(type))
+      helper = cluster.getFeedHelper();
+    else
+      helper = cluster.getClusterHelper();
+
+    ServiceResponse response = helper.getEntityDefinition(URLS
+      .GET_ENTITY_DEFINITION, entity);
+
+    if (shouldReturn)
+      Util.assertSucceeded(response);
+    else
+      Util.assertFailed(response);
+    String result = response.getMessage();
+    Assert.assertNotNull(result);
+
+    return result;
+  }
 }

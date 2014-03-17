@@ -22,7 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -47,26 +47,16 @@ import java.util.List;
 @Test(groups = "embedded")
 public class NoOutputProcessTest extends BaseTestClass {
 
-    ColoHelper cluster;
-    FileSystem clusterFS;
-    OozieClient clusterOC;
-    private Bundle bundle;
-
-    public NoOutputProcessTest(){
-        super();
-        cluster = servers.get(0);
-        clusterFS = serverFS.get(0);
-        clusterOC = serverOC.get(0);
-    }
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
+    OozieClient clusterOC = serverOC.get(0);
+    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
-
-        System.setProperty("java.security.krb5.realm", "");
-        System.setProperty("java.security.krb5.kdc", "");
-
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
@@ -100,20 +90,23 @@ public class NoOutputProcessTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0].generateUniqueBundle();
+        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].submitAndScheduleBundle(prism);
     }
 
-    @AfterMethod(alwaysRun = true)
+    @AfterMethod
     public void tearDown() throws Exception {
-        bundle.deleteBundle(prism);
+        removeBundles();
     }
-
 
     @Test(enabled = true, groups = {"singleCluster"})
     public void checkForJMSMsgWhenNoOutput() throws Exception {
-
-        bundle = Util.readNoOutputBundles()[0][0];
-        setBundleProperties();
-
         Util.print("attaching consumer to:   " + "FALCON.ENTITY.TOPIC");
         Consumer consumer =
                 new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
@@ -121,7 +114,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         Thread.sleep(15000);
 
         //wait for all the instances to complete
-        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
         Assert.assertEquals(consumer.getMessageData().size(), 3,
@@ -136,14 +129,10 @@ public class NoOutputProcessTest extends BaseTestClass {
 
     @Test(enabled = true, groups = {"singleCluster"})
     public void rm() throws Exception {
-
-        bundle = Util.readELBundles()[0][0];
-        setBundleProperties();
-
         Consumer consumerInternalMsg =
                 new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         Consumer consumerProcess =
-                new Consumer("FALCON." + bundle.getProcessName(), cluster.getClusterHelper().getActiveMQ());
+                new Consumer("FALCON." + bundles[0].getProcessName(), cluster.getClusterHelper().getActiveMQ());
 
         consumerInternalMsg.start();
         consumerProcess.start();
@@ -152,7 +141,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         //wait for all the instances to complete
 
-        InstanceUtil.waitTillInstanceReachState(clusterOC, bundle.getProcessName(), 3,
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
                 CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
         Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
@@ -167,11 +156,4 @@ public class NoOutputProcessTest extends BaseTestClass {
         Util.dumpConsumerData(consumerProcess);
     }
 
-    private void setBundleProperties() throws Exception {
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
-        bundle.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundle.setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
-        bundle.setProcessPeriodicity(5, TimeUnit.minutes);
-        bundle.submitAndScheduleBundle(prism);
-    }
 }

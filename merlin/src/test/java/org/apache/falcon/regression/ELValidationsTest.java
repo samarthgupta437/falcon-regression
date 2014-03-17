@@ -35,12 +35,7 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class ELValidationsTest extends BaseTestClass {
 
-    ColoHelper cluster;
-
-    public ELValidationsTest(){
-        super();
-        cluster = servers.get(0);
-    }
+    ColoHelper cluster = servers.get(0);
 
     //test for instance when process time line is subset of feed time
     @BeforeMethod

@@ -19,7 +19,7 @@
 package org.apache.falcon.regression.core.util;
 
 
-import org.apache.falcon.regression.core.enums.FEED_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
