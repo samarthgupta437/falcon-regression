@@ -461,6 +461,9 @@ public class Util {
       return bundleList;
     }
 
+    public static Bundle readHCatBundle() throws IOException {
+        return readBundles("hcat")[0][0];
+    }
 
     List<String> dataSets = new ArrayList<String>();
     String processData = new String();
