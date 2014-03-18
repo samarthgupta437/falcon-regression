@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -128,7 +129,8 @@ public class ELUtil {
             Calendar time = Calendar.getInstance();
             time.setTime(jobNominalTime);
             Util.print("nominalTime:" + jobNominalTime);
-            Util.print("nominalTime in GNT string: " + jobNominalTime.toGMTString());
+            SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
+            Util.print("nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
 
             TimeZone z = time.getTimeZone();
             int offset = z.getRawOffset();

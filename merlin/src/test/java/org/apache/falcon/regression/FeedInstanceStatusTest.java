@@ -103,7 +103,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null, null);
+                ClusterType.SOURCE, null);
         String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
 
 
@@ -111,18 +111,18 @@ public class FeedInstanceStatusTest extends BaseTestClass {
                 InstanceUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                "US/${cluster.colo}", null);
+                "US/${cluster.colo}");
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
                         InstanceUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null, null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
                         InstanceUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}", null);
+                "UK/${cluster.colo}");
 
 
         Util.print("feed: " + feed);
