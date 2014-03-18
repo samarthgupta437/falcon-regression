@@ -429,24 +429,7 @@ public class HadoopUtil {
                                             List<String> remoteLocations, boolean isEmpty)throws Exception{
 
         if(!isEmpty){
-            File[] files = new File(inputPath).listFiles();
-            assert files != null;
-            for (final File file : files) {
-                if (!file.isDirectory()) {
-                    for (String remoteLocation : remoteLocations) {
-                        logger.info("copying to: " + remoteLocation + " " +
-                                "on:" +
-                                " " + fs
-                                .getConf().get("fs.default.name")+" file: "+file.getName());
-
-                        if (!fs.exists(new Path(remoteLocation)))
-                            fs.mkdirs(new Path(remoteLocation));
-
-                        fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                                new Path(remoteLocation));
-                    }
-                }
-            }
+            flattenAndPutDataInFolder(fs, inputPath, remoteLocations);
         }
         else{
 

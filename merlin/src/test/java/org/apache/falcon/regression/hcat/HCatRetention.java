@@ -21,7 +21,10 @@ package org.apache.falcon.regression.hcat;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.util.*;
+import org.apache.falcon.regression.core.util.HCatUtil;
+import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -33,8 +36,10 @@ import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import org.testng.log4testng.Logger;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.testng.annotations.DataProvider;
+import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -115,7 +120,7 @@ public class HCatRetention extends BaseTestClass {
             expectedStatus.add(CoordinatorAction.Status.KILLED);
             expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
 
-            List<String> initialData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, "/HCatRetention/", dataType);
+            List<String> initialData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, testDir, dataType);
 
             List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
@@ -125,7 +130,7 @@ public class HCatRetention extends BaseTestClass {
 
             DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
-            List<String> finalData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, "/HCatRetention/", dataType);
+            List<String> finalData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, testDir, dataType);
 
             List<String> expectedOutput =
                     Util.filterDataOnRetentionHCat(period, unit, dataType,
@@ -172,11 +177,11 @@ public class HCatRetention extends BaseTestClass {
 
     private void displayDetails(String period, String unit, String dataType)
             throws Exception {
-        System.out.println("***********************************************");
-        System.out.println("executing for:");
-        System.out.println(unit + "(" + period + ")");
-        System.out.println("dataType=" + dataType);
-        System.out.println("***********************************************");
+        logger.info("***********************************************");
+        logger.info("executing for:");
+        logger.info(unit + "(" + period + ")");
+        logger.info("dataType=" + dataType);
+        logger.info("***********************************************");
     }
 
     private String getFeedPathValue(String dataType) throws Exception {
