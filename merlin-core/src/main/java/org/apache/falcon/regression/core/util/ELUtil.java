@@ -66,7 +66,7 @@ public class ELUtil {
             return submitResponse;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new TestNGException(e.getMessage());
+            throw new TestNGException(e);
         } finally {
             logger.info("deleting entity:");
             bundle.deleteBundle(prismHelper);
@@ -91,7 +91,7 @@ public class ELUtil {
             return submitResponse;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new TestNGException(e.getMessage());
+            throw new TestNGException(e);
         } finally {
             logger.info("deleting entity:");
             bundle.deleteBundle(prismHelper);
@@ -102,11 +102,24 @@ public class ELUtil {
     public static void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle)
              {
         try {
-            String coordID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
-                    Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS).get(0);
+            List<String> bundles = null;
+            for(int i=0; i < 10; ++i) {
+                bundles = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                        Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                if(bundles.size() > 0) {
+                    break;
+                }
+                Thread.sleep(30000);
+            }
+            Assert.assertTrue(bundles.size() > 0, "Bundle job not created.");
+            String coordID = bundles.get(0);
             Util.print("coord id: " + coordID);
-            Thread.sleep(30000);
             List<String> missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
+            for(int i=0; i < 10 && missingDependencies == null; ++i) {
+                Thread.sleep(30000);
+                missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
+            }
+            Assert.assertNotNull(missingDependencies, "Missing dependencies not found.");
             for (String dependency : missingDependencies) {
                 Util.print("dependency from job: " + dependency);
             }
@@ -143,7 +156,7 @@ public class ELUtil {
             Assert.assertTrue(matchDependencies(missingDependencies, qaDependencyList));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new TestNGException(e.getMessage());
+            throw new TestNGException(e);
         }
     }
 

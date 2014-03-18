@@ -620,6 +620,12 @@
                         <additionalClasspathElement>src/test/resources/hadoop-conf
                         </additionalClasspathElement>
                     </additionalClasspathElements>
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>org.apache.falcon.regression.TestngListener</value>
+                        </property>
+                    </properties>
                     <!--<skipTests>true</skipTests>-->
                 </configuration>
             </plugin>

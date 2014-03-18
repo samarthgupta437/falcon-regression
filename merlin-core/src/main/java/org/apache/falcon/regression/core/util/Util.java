@@ -514,6 +514,9 @@ public class Util {
                         bundleJob.getCoordinators().get(0).getId());
         List<CoordinatorAction> actions = jobInfo.getActions();
 
+        if(actions.size() < 1) {
+            return null;
+        }
         Util.print("conf from event: " + actions.get(0).getMissingDependencies());
 
         String[] missingDependencies = actions.get(0).getMissingDependencies().split("#");
