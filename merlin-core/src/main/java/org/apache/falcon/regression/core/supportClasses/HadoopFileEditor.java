@@ -22,7 +22,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
