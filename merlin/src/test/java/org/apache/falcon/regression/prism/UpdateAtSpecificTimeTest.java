@@ -41,6 +41,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
+import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -52,6 +53,9 @@ import java.util.List;
 
 
 public class UpdateAtSpecificTimeTest extends BaseTestClass {
+
+  static Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
+
   Bundle bundle1 = new Bundle();
   Bundle bundle2 = new Bundle();
   Bundle bundle3 = new Bundle();
@@ -295,7 +299,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     String def_cluster_2 = Util.getEntityDefinition(cluster_2,
       processBundle.getProcessData(), true);
-    System.out.println("def_cluster_2 : "+def_cluster_2);
+    logger.info("def_cluster_2 : "+ Util.prettyPrintXml(def_cluster_2));
 
     // verify new bundle in cluster_2 and no new bundle in cluster_1  and
     Util.verifyNewBundleCreation(cluster_1, newBundleID_cluster1, oldNominalTimes_cluster1,
@@ -365,7 +369,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     String definition = Util.getEntityDefinition(cluster_3, feed, true);
     Diff diff = XMLUnit.compareXML(definition, processBundle.getProcessData());
-    System.out.println(diff);
+    logger.info(diff);
 
     //start stopped cluster_2
     Util.startService(cluster_2.getProcessHelper());
@@ -426,9 +430,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     processBundle.setProcessProperty("someProp","someVal");
     String updateTime = InstanceUtil.addMinsToTime(endTime, 60);
 
-    System.out.println("Original Feed : "+oldProcess);
-    System.out.println("Updated Feed :"+ processBundle.getProcessData());
-    System.out.println("Update Time : " + updateTime);
+    logger.info("Original Feed : "+ Util.prettyPrintXml(oldProcess));
+    logger.info("Updated Feed :"+ Util.prettyPrintXml(processBundle.getProcessData()));
+    logger.info("Update Time : " + updateTime);
 
 
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
@@ -486,9 +490,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String updateTime = InstanceUtil.addMinsToTime(endTime, 60);
     String updatedFeed = Util.setFeedProperty(feed, "someProp", "someVal");
 
-    System.out.println("Original Feed : "+feed);
-    System.out.println("Updated Feed :"+ updatedFeed);
-    System.out.println("Update Time : " + updateTime);
+    logger.info("Original Feed : "+ Util.prettyPrintXml(feed));
+    logger.info("Updated Feed :"+ Util.prettyPrintXml(updatedFeed));
+    logger.info("Update Time : " + updateTime);
 
     r = prism.getFeedHelper().update(feed, updatedFeed, updateTime);
     AssertUtil.assertSucceeded(r);

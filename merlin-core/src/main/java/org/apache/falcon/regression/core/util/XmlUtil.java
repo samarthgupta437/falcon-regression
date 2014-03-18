@@ -24,7 +24,7 @@ import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.testng.log4testng.Logger;
+import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

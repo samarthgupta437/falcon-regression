@@ -128,17 +128,17 @@ public class InstanceUtil {
       e.printStackTrace();
       logger.info("Could not create InstancesSummaryResult or " +
         "ProcessInstancesResult constructor");
-      System.exit(1);
+      Assert.fail();
     } catch (InvocationTargetException e) {
       e.printStackTrace();
       logger.info("Could not create InstancesSummaryResult or " +
         "ProcessInstancesResult constructor");
-      System.exit(1);
+      Assert.fail();
     } catch (IllegalAccessException e) {
       e.printStackTrace();
       logger.info("Could not create InstancesSummaryResult or " +
         "ProcessInstancesResult constructor");
-      System.exit(1);
+      Assert.fail();
     }
 
     if (jsonString.contains("(PROCESS) not found")) {
@@ -1318,7 +1318,7 @@ public class InstanceUtil {
 
     if(coordInfo.getActions().size()==0){
       logger.info("Oozie actions not created for the entire wait duration.");
-      System.exit(0);
+      Assert.fail();
     }
 
     for (int sleepCount = 0; sleepCount < sleep1; sleepCount++) {
@@ -1336,7 +1336,7 @@ public class InstanceUtil {
         }
       }
       if(flag){
-        break; // breaks from outer for upon status match too
+        return; // breaks from outer for upon status match too
       }
       try {
         Thread.sleep(20000);
