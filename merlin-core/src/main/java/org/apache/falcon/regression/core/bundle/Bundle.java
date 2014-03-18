@@ -534,9 +534,9 @@ public class Bundle {
             return;
         }
         //is folder present
-        if (!HadoopUtil.isDirPresent(colohelper, wf.getPath())) {
+        if (!HadoopUtil.isDirPresent(colohelper.getClusterHelper().getHadoopFS(), wf.getPath())) {
             System.out.println("workflowPath does not exists: creating path: " + wf.getPath());
-            HadoopUtil.createDir(colohelper, wf.getPath());
+            HadoopUtil.createDir(wf.getPath(), colohelper.getClusterHelper().getHadoopFS());
         }
 
         // If File is present in hdfs check for contents and replace if found different
