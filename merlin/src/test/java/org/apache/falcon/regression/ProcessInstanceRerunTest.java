@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -59,7 +60,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
         Util.print("in @BeforeClass");
 
-        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle b = Util.readELBundles()[0][0];
 
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
@@ -84,8 +85,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
         }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS,
-                "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
 
 

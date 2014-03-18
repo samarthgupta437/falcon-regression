@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -64,6 +65,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     private String testBaseDir4 = baseHDFSDir + "/data/fetlrc/billing";
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private final String fileName1 = OSUtil.RESOURCES + "ivoryJSM.txt";
+    private final String fileName2 = OSUtil.RESOURCES + "log4j.properties";
 
 
 // pt : partition in target
@@ -83,53 +86,39 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
         uploadDataToServer3(testDirWithDate + "00/ua2/", "feed-s4Replication.xml");
         uploadDataToServer3(testDirWithDate + "05/ua2/", "log_01.txt");
-        uploadDataToServer3(testDirWithDate + "10/ua2/", "src/main/resources/gs1001.config.properties");
-        uploadDataToServer3(testDirWithDate + "15/ua2/",
-                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testDirWithDate + "10/ua2/", fileName1);
+        uploadDataToServer3(testDirWithDate + "15/ua2/", fileName2);
 
         uploadDataToServer3(testDirWithDate + "00/ua1/", "feed-s4Replication.xml");
         uploadDataToServer3(testDirWithDate + "05/ua1/", "log_01.txt");
-        uploadDataToServer3(testDirWithDate + "10/ua1/",
-                "src/main/resources/gs1001.config.properties");
-        uploadDataToServer3(testDirWithDate + "15/ua1/",
-                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testDirWithDate + "10/ua1/", fileName1);
+        uploadDataToServer3(testDirWithDate + "15/ua1/", fileName2);
 
         uploadDataToServer3(testDirWithDate + "00/ua3/", "feed-s4Replication.xml");
         uploadDataToServer3(testDirWithDate + "05/ua3/", "log_01.txt");
-        uploadDataToServer3(testDirWithDate + "10/ua3/",
-                "src/main/resources/gs1001.config.properties");
-        uploadDataToServer3(testDirWithDate + "15/ua3/",
-                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testDirWithDate + "10/ua3/", fileName1);
+        uploadDataToServer3(testDirWithDate + "15/ua3/", fileName2);
 
 
         uploadDataToServer3(testBaseDir3 + testDate + "00/ua2/", "feed-s4Replication.xml");
         uploadDataToServer3(testBaseDir3 + testDate + "05/ua2/", "log_01.txt");
-        uploadDataToServer3(testBaseDir3 + testDate + "10/ua2/",
-                "src/main/resources/gs1001.config.properties");
-        uploadDataToServer3(testBaseDir3 + testDate + "15/ua2/",
-                "src/main/resources/log4testng.properties");
-        uploadDataToServer3(testBaseDir3 + testDate + "20/ua2/",
-                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua2/", fileName1);
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua2/", fileName2);
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua2/", fileName2);
 
 
         uploadDataToServer3(testBaseDir3 + testDate + "00/ua1/", "feed-s4Replication.xml");
         uploadDataToServer3(testBaseDir3 + testDate + "05/ua1/", "log_01.txt");
-        uploadDataToServer3(testBaseDir3 + testDate + "10/ua1/",
-                "src/main/resources/gs1001.config.properties");
-        uploadDataToServer3(testBaseDir3 + testDate + "15/ua1/",
-                "src/main/resources/log4testng.properties");
-        uploadDataToServer3(testBaseDir3 + testDate + "20/ua1/",
-                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua1/", fileName1);
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua1/", fileName2);
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua1/", fileName2);
 
 
         uploadDataToServer3(testBaseDir3 + testDate + "00/ua3/", "feed-s4Replication.xml");
         uploadDataToServer3(testBaseDir3 + testDate + "05/ua3/", "log_01.txt");
-        uploadDataToServer3(testBaseDir3 + testDate + "10/ua3/",
-                "src/main/resources/gs1001.config.properties");
-        uploadDataToServer3(testBaseDir3 + testDate + "15/ua3/",
-                "src/main/resources/log4testng.properties");
-        uploadDataToServer3(testBaseDir3 + testDate + "20/ua3/",
-                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua3/", fileName1);
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua3/", fileName2);
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua3/", fileName2);
 
         Util.print("completed creating test data");
 
