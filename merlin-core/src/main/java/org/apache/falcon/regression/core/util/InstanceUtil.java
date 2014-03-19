@@ -589,9 +589,9 @@ public class InstanceUtil {
 
 
     public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type) throws IOException {
-        String inputPath = "src/test/resources/OozieExampleInputData/normalInput";
+        String inputPath = OSUtil.NORMAL_INPUT;
         if ((null != type) && type.equals("late")) {
-            inputPath = "src/test/resources/lateData";
+            inputPath = OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData";
         }
         File[] files = new File(inputPath).listFiles();
         assert files != null;
@@ -807,7 +807,7 @@ public class InstanceUtil {
         if (!fs.exists(new Path(remoteLocation)))
             fs.mkdirs(new Path(remoteLocation));
 
-        File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
+        File[] files = new File(OSUtil.NORMAL_INPUT).listFiles();
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
@@ -955,9 +955,9 @@ public class InstanceUtil {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        File[] files = new File("src/test/resources/OozieExampleInputData/normalInput").listFiles();
+        File[] files = new File(OSUtil.NORMAL_INPUT).listFiles();
         if (lateDataFolderNumber == 2) {
-            files = new File("src/test/resources/OozieExampleInputData/2ndLateData").listFiles();
+            files = new File(OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "2ndLateData").listFiles();
         }
 
         assert files != null;

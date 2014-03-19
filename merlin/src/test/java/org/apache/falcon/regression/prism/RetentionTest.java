@@ -230,7 +230,7 @@ public class RetentionTest extends BaseTestClass {
             }
         }
 
-        consumer.stop();
+        consumer.interrupt();
 
         logger.info("deleted data which has been received from messaging queue:");
         for (HashMap<String, String> data : consumer.getMessageData()) {

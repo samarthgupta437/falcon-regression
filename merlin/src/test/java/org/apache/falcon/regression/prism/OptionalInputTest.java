@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -47,7 +48,7 @@ public class OptionalInputTest extends BaseTestClass {
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
-        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -179,7 +180,6 @@ public class OptionalInputTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
         String endTime = InstanceUtil.getTimeWrtSystemTime(10);
 
-        // b = (Bundle)Util.readBundles("src/test/resources/updateBundle")[0][0];
 
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
