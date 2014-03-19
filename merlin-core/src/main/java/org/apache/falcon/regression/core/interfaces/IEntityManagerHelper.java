@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
@@ -30,6 +31,8 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.hive.hcatalog.api.HCatClient;
+import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.oozie.client.AuthOozieClient;
 
 import javax.xml.bind.JAXBException;
@@ -82,6 +85,14 @@ public abstract class IEntityManagerHelper {
 
     public String getHCatEndpoint() {return hcatEndpoint; }
 
+    protected HCatClient hCatClient;
+
+    public HCatClient getHCatClient() throws HCatException {
+        if (null == this.hCatClient) {
+            this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint);
+        }
+        return this.hCatClient;
+    }
 
 
     //basic properties

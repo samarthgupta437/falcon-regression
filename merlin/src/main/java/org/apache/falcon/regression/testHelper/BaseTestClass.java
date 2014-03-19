@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.KerberosHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.oozie.client.OozieClient;
 
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class BaseTestClass {
     public List<ColoHelper> servers;
     public List<FileSystem> serverFS;
     public List<OozieClient> serverOC;
+    public List<HCatClient> serverHCC;
     public String baseHDFSDir = "/tmp/falcon-regression";
     public String baseWorkflowDir = baseHDFSDir + "/workflows";
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
@@ -63,10 +65,12 @@ public class BaseTestClass {
         servers = getServers();
         serverFS = new ArrayList<FileSystem>();
         serverOC = new ArrayList<OozieClient>();
+        serverHCC = new ArrayList<HCatClient>();
         for (ColoHelper server : servers) {
             try {
                 serverFS.add(server.getClusterHelper().getHadoopFS());
                 serverOC.add(server.getClusterHelper().getOozieClient());
+                serverHCC.add(server.getClusterHelper().getHCatClient());
                 HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size
                   ()-1));
             } catch (IOException e) {
