@@ -306,7 +306,7 @@ public class InstanceUtil {
     }
 
     public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
-                                            WorkflowAction.Status ws) throws OozieClientException {
+                                            WorkflowJob.Status... ws) throws OozieClientException {
 
         String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
@@ -322,41 +322,48 @@ public class InstanceUtil {
                     "():  " +
                     wfJob.getStartTime());
             Util.print("wf id: " + jobID + "  wf status: " + wfJob.getStatus());
-            if (wfJob.getStatus().equals(ws.name()))
+            if (ws.length == 0)
                 toBeReturned.add(jobID);
+            else {
+                for (WorkflowJob.Status status : ws) {
+                    if (wfJob.getStatus().name().equals(status.name()))
+                        toBeReturned.add(jobID);
+                }
+            }
         }
         return toBeReturned;
     }
 
 
-    public static boolean isWorkflowRunning(String workflowID) throws OozieClientException {
-        CoordinatorAction wfJob = oozieClient.getCoordActionInfo(workflowID);
-        WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getId());
-        return wa.getStatus().toString().equals("RUNNING");
+    public static boolean isWorkflowRunning(OozieClient OC, String workflowID) throws
+    OozieClientException {
+        String status = OC.getJobInfo(workflowID).getStatus().toString();
+        return status.equals("RUNNING");
     }
 
-    public static void areWorkflowsRunning(PrismHelper prismHelper, String ProcessName,
+    public static void areWorkflowsRunning(OozieClient OC, List<String> wfIDs,
                                            int totalWorkflows,
                                            int runningWorkflows, int killedWorkflows,
                                            int succeededWorkflows) throws OozieClientException {
 
-        List<WorkflowAction> was = getWorkflowActions(prismHelper, ProcessName);
+        List<WorkflowJob> wfJobs = new ArrayList<WorkflowJob>();
+        for(String wdID : wfIDs)
+            wfJobs.add(OC.getJobInfo(wdID));
         if (totalWorkflows != -1)
-            Assert.assertEquals(was.size(), totalWorkflows);
+            Assert.assertEquals(wfJobs.size(), totalWorkflows);
         int actualRunningWorkflows = 0;
         int actualKilledWorkflows = 0;
         int actualSucceededWorkflows = 0;
-        logger.info("was: " + was);
-        for (int instanceIndex = 0; instanceIndex < was.size(); instanceIndex++) {
+        logger.info("wfJobs: " + wfJobs);
+        for (int instanceIndex = 0; instanceIndex < wfJobs.size(); instanceIndex++) {
             logger.info("was.get(" + instanceIndex + ").getStatus(): " +
-                    was.get(instanceIndex).getStatus() + " , " +
-                    was.get(instanceIndex).getName());
+                    wfJobs.get(instanceIndex).getStatus());
 
-            if (was.get(instanceIndex).getStatus().toString().equals("RUNNING"))
+            if (wfJobs.get(instanceIndex).getStatus().toString().equals("RUNNING"))
                 actualRunningWorkflows++;
-            else if (was.get(instanceIndex).getStatus().toString().equals("KILLED"))
+            else if (wfJobs.get(instanceIndex).getStatus().toString().equals("KILLED"))
                 actualKilledWorkflows++;
-            else if (was.get(instanceIndex).getStatus().toString().equals("SUCCEEDED"))
+            else if (wfJobs.get(instanceIndex).getStatus().toString().equals("SUCCEEDED"))
                 actualSucceededWorkflows++;
         }
         if (runningWorkflows != -1)
@@ -1165,7 +1172,7 @@ public class InstanceUtil {
             coordId = cIds.get(0);
         }
         logger.info(String.format("Using coordinator id: %s", coordId));
-        int maxTries = 20;
+        int maxTries = 50;
         int totalSleepTime = totalMinutesToWait * 60 * 1000;
         int sleepTime = totalSleepTime / maxTries;
         logger.info(String.format("Sleep for %d seconds", sleepTime / 1000));
@@ -1248,7 +1255,7 @@ public class InstanceUtil {
                                                  int bundleSeqNo,
                                                  int totalMinutesToWait
                                                 ) throws JAXBException, OozieClientException {
-    int sleep = totalMinutesToWait * 60 / 20;
+    int sleep = totalMinutesToWait * 60 / 5;
     String entityName = Util.readEntityName(entity);
     ENTITY_TYPE type = Util.getEntityType(entity);
     String bundleID = getSequenceBundleID(coloHelper,entityName,type,
@@ -1265,7 +1272,7 @@ public class InstanceUtil {
         "instance created on oozie: " + coloHelper.getProcessHelper()
         .getOozieClient().getOozieUrl());
       try {
-        Thread.sleep(20000);
+        Thread.sleep(5000);
       } catch (InterruptedException e) {
         logger.error(e.getMessage());
       }
