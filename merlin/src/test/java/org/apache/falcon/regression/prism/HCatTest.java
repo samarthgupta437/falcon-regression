@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -66,25 +67,28 @@ public class HCatTest extends BaseTestClass {
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
     HCatClient clusterHC = cluster.getClusterHelper().getHCatClient();
+
     String hiveScriptDir = baseWorkflowDir + "/hive";
     String hiveScriptFile = hiveScriptDir + "/script.hql";
     final String testDir = "/HCatTest";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String inputHDFSDir = baseTestHDFSDir + "/input";
     final String outputHDFSDir = baseTestHDFSDir + "/output";
+
     final String dbName = HCatTest.class.getSimpleName().toLowerCase();
-
-
     final String inputTableName = "mytablepart3";
     final String outputTableName = "output_table";
-    public static final String localHCatData = "src/test/resources/hcat/data";
     public static final String col1Name = "id";
     public static final String col2Name = "value";
     public static final String partitionColumn = "dt";
 
+    private static final String hcatDir = OSUtil.getPath("src", "test", "resources", "hcat");
+    private static final String localHCatData = OSUtil.getPath(hcatDir, "data");
+    private static final String hiveScript = OSUtil.getPath(hcatDir, "hivescript");
+
     @BeforeClass
     public void uploadWorkflow() throws Exception {
-        HadoopUtil.uploadDir(clusterFS, hiveScriptDir, "src/test/resources/hcat/hivescript");
+        HadoopUtil.uploadDir(clusterFS, hiveScriptDir, hiveScript);
     }
 
     @BeforeMethod
