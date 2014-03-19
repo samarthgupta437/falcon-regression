@@ -88,6 +88,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
+
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -156,6 +157,10 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
+        /*
+        both start and end r in future with respect to process start end
+         */
+
         String startTime = InstanceUtil.getTimeWrtSystemTime(-20);
         String endTime = InstanceUtil.getTimeWrtSystemTime(400);
         String startTimeData = InstanceUtil.getTimeWrtSystemTime(-150);
@@ -181,6 +186,11 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture() throws Exception {
+
+        /*
+         both start and end r in future with respect to current time
+          */
+
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2099-01-02T01:21Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -188,8 +198,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(10);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(400);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(1);
+        String endTime = InstanceUtil.getTimeWrtSystemTime(40);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + startTime + "&end=" + endTime);

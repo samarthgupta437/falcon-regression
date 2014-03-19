@@ -21,6 +21,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.PrismUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -28,8 +29,11 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.util.List;
@@ -227,7 +231,8 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
         PrismUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-                Util.readClusterName( bundles[0].getClusters().get(0)), 1);
+
+        Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2,
                 Util.readClusterName( bundles[0].getClusters().get(0)), 1);
 
@@ -315,7 +320,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
         PrismUtil.compareDataStoreStates(parCluster1, beforeCluster1, 0);
         PrismUtil.compareDataStoreStates(beforePrism, parPrism,
-                Util.readClusterName(bundle2.getClusters().get(0)), 1);
+          Util.readClusterName(bundle2.getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeCluster2, parCluster2,
                 Util.readClusterName(bundle2.getClusters().get(0)), 1);
 
@@ -552,5 +557,14 @@ public class PrismSubmitTest extends BaseTestClass {
                 Util.getProcessName( bundles[0].getProcessData()), 1);
         PrismUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
     }
+
+  @DataProvider(name = "errorDP")
+  public Object[][] getTestData(Method m) throws Exception {
+    Object[][] testData = new Object[2][1];
+    testData[0][0] = "EmptyInputTagProcess";
+    testData[1][0] = "EmptyOutputTagProcess";
+
+    return testData;
+  }
 
 }

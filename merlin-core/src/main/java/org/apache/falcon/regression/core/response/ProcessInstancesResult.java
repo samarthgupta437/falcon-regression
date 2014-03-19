@@ -84,7 +84,7 @@ public class ProcessInstancesResult extends APIResult {
     @XmlElement
     private ProcessInstance[] instances;
 
-    public ProcessInstancesResult() { // for jaxb
+    private ProcessInstancesResult() { // for jaxb
         super();
     }
 

@@ -109,6 +109,7 @@
         <internal.maven.repo>file:///tmp/falcontemprepo</internal.maven.repo>
         <hortonworks.repo.url>http://repo.hortonworks.com/content/repositories/releases</hortonworks.repo.url>
         <skipCheck>false</skipCheck>
+        <hive.version>0.12.0</hive.version>
     </properties>
 
     <modules>
@@ -510,6 +511,22 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>0.11.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive.hcatalog</groupId>
+                <artifactId>webhcat-java-client</artifactId>
+                <version>${hive.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-metastore</artifactId>
+                <version>${hive.version}</version>
+                <exclusions>
+                    <exclusion> <!--Oozie already imports this-->
+                        <groupId>org.apache.derby</groupId>
+                        <artifactId>derby</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -20,7 +20,7 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -213,8 +213,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
 
     @Test()
     public void testResumeSubmittedProcessOnBothColos() throws Exception {
-        bundles[0].submitProcess();
-        bundles[1].submitProcess();
+        bundles[0].submitProcess(true);
+        bundles[1].submitProcess(true);
 
         Util.assertFailed(prism.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
@@ -404,8 +404,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
     public void testResumeSubmittedProcessOnBothColosWhen1ColoIsDown()
     throws Exception {
         try {
-            bundles[0].submitProcess();
-            bundles[1].submitProcess();
+            bundles[0].submitProcess(true);
+            bundles[1].submitProcess(true);
 
             Util.shutDownService(cluster2.getProcessHelper());
 

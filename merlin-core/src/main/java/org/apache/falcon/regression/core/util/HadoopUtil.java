@@ -329,6 +329,22 @@ public class HadoopUtil {
         return returnList;
     }
 
+    public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix, boolean isEmpty)throws Exception{
+        Util.HDFSCleanup(fs, prefix);
+
+        ArrayList<String> dataFolder = new ArrayList<String>();
+        for (int i = 0; i < dataDates.size(); i++){
+            dataDates.set(i, prefix + dataDates.get(i));
+        }
+
+        for (String dataDate : dataDates) {
+            dataFolder.add(dataDate);
+        }
+
+        HadoopUtil.flattenDataInFolders(fs, "src/test/resources/OozieExampleInputData/lateData", dataFolder, isEmpty);
+        return dataFolder;
+    }
+
     @Deprecated
     public static boolean isDirPresent(ColoHelper prismHelper, String path) throws IOException {
         Configuration conf = new Configuration();
@@ -341,9 +357,9 @@ public class HadoopUtil {
 
         boolean isPresent = fs.exists(new Path(path));
         if (isPresent)
-            System.out.println("dir exists");
+            logger.info("dir exists");
         else
-            System.out.println("dir does not exists");
+            logger.info("dir does not exists");
         return isPresent;
 
     }
@@ -360,7 +376,7 @@ public class HadoopUtil {
 
         for (FileSystem fs : fileSystems) {
             deleteDirIfExists(path, fs);
-            System.out.println("creating hdfs dir: " + path + " on " + fs
+            logger.info("creating hdfs dir: " + path + " on " + fs
               .getConf().get("fs.default.name"));
             fs.mkdirs(new Path(path));
         }
@@ -369,6 +385,7 @@ public class HadoopUtil {
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
         if (fs.exists(path)) {
+          logger.info("Deleting HDFS path: "+ path + " on "+fs.getConf().get("fs.default.name"));
             fs.delete(path, true);
         }
     }
@@ -397,8 +414,11 @@ public class HadoopUtil {
         for (final File file : files) {
             if (!file.isDirectory()) {
                 for (String remoteLocation : remoteLocations) {
-                    logger.info(String.format("Copy file %s to folder %s", file.getPath(),
-                            remoteLocation));
+                  logger.info("copying to: " + remoteLocation + " " +
+                    "on:" +
+                    " " + fs
+                    .getConf().get("fs.default.name")+" file: "+file.getName());
+
                     if (!fs.exists(new Path(remoteLocation)))
                         fs.mkdirs(new Path(remoteLocation));
 
@@ -407,5 +427,24 @@ public class HadoopUtil {
                 }
             }
         }
+    }
+
+    public static void flattenDataInFolders(FileSystem fs, String inputPath,
+                                            List<String> remoteLocations, boolean isEmpty)throws Exception{
+
+        if(!isEmpty){
+            flattenAndPutDataInFolder(fs, inputPath, remoteLocations);
+        }
+        else{
+
+            for (String remoteLocation : remoteLocations) {
+                logger.info("generating empty folder: " + remoteLocation);
+
+                if (!fs.exists(new Path(remoteLocation)))
+                    fs.mkdirs(new Path(remoteLocation));
+            }
+
+        }
+
     }
 }

@@ -21,7 +21,7 @@ package org.apache.falcon.regression.core.util;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.hadoop.fs.Path;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
@@ -59,6 +59,14 @@ public class AssertUtil {
 
     }
 
+  public static void assertSucceeded(APIResult response) throws JAXBException {
+    Assert.assertEquals(response.getStatus(), APIResult.Status.SUCCEEDED);
+    Assert.assertEquals(response.getStatusCode(), 200);
+    Assert.assertNotNull(response.getMessage());
+
+  }
+
+
     public static void assertFailed(final ServiceResponse response, final String message) throws JAXBException {
         assertFailedWithStatus(response, 400, message);
     }
@@ -74,6 +82,23 @@ public class AssertUtil {
         Assert.assertNotNull(Util.parseResponse(response).getRequestId());
     }
 
+  public static void assertFailed(APIResult response, String message) throws JAXBException {
+    if (response.getMessage().equals("null"))
+      Assert.assertTrue(false, "response message should not be null");
+
+    Assert.assertEquals(response.getStatus(),
+      APIResult.Status.FAILED, message);
+    Assert.assertEquals(response.getStatus(), 400,
+      message);
+    Assert.assertNotNull(response.getRequestId());
+  }
+
+  public static void assertPartial(ServiceResponse response) throws JAXBException {
+    Assert.assertEquals(Util.parseResponse(response).getStatus(),APIResult.Status.PARTIAL);
+    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
+    Assert.assertNotNull(Util.parseResponse(response).getMessage());
+
+  }
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data, Job.Status expectedStatus) throws Exception {
         String name = null;
         if(entityType == ENTITY_TYPE.FEED) {

@@ -20,7 +20,7 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -173,8 +173,8 @@ public class PrismProcessSuspendTest extends BaseTestClass {
 
     @Test()
     public void testSuspendSubmittedProcessOnBothColos() throws Exception {
-        bundles[0].submitProcess();
-        bundles[1].submitProcess();
+        bundles[0].submitProcess(true);
+        bundles[1].submitProcess(true);
 
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData()));
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundles[1].getProcessData()));
@@ -242,8 +242,8 @@ public class PrismProcessSuspendTest extends BaseTestClass {
     @Test()
     public void testSuspendSubmittedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
-        bundles[0].submitProcess();
-        bundles[1].submitProcess();
+        bundles[0].submitProcess(true);
+        bundles[1].submitProcess(true);
 
         Util.shutDownService(cluster1.getProcessHelper());
 

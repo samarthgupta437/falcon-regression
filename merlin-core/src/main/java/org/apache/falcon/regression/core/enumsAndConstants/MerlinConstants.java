@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core;
+package org.apache.falcon.regression.core.enumsAndConstants;
 
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.conf.Configuration;

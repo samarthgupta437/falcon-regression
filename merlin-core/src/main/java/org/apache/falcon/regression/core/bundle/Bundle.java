@@ -18,6 +18,8 @@
 
 package org.apache.falcon.regression.core.bundle;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
@@ -48,7 +50,7 @@ import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -72,6 +74,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -126,10 +129,14 @@ public class Bundle {
         }
     }
 
-    public void submitProcess() throws Exception {
+    public ServiceResponse submitProcess(boolean shouldSucceed) throws JAXBException,
+      IOException, URISyntaxException, AuthenticationException {
         submitAndScheduleAllFeeds();
-
-        Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, processData));
+      ServiceResponse r = prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
+        processData);
+      if(shouldSucceed)
+        Util.assertSucceeded(r);
+      return r;
     }
 
     public void submitFeedsScheduleProcess() throws Exception {
@@ -148,7 +155,7 @@ public class Bundle {
     }
 
     public void submitAndScheduleProcessUsingColoHelper(ColoHelper coloHelper) throws Exception {
-        submitProcess();
+        submitProcess(true);
 
         Util.assertSucceeded(coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
     }
@@ -546,7 +553,7 @@ public class Bundle {
         }
         // If there is no file in hdfs , replace it anyways
         HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getPath() + "/workflow.xml"),
-                wfFile.getAbsolutePath());
+          wfFile.getAbsolutePath());
     }
 
     public String submitAndScheduleBundle(PrismHelper prismHelper)
@@ -795,9 +802,8 @@ public class Bundle {
 
     public String getFeedDataPathPrefix() throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(this, Util.getInputFeedNameFromBundle(this));
-        String p = feedElement.getLocations().getLocation().get(0).getPath();
-        p = p.substring(0, p.indexOf("$"));
-        return p;
+        return Util.getPathPrefix(feedElement.getLocations().getLocation().get(0)
+          .getPath());
     }
 
     public void setProcessValidity(DateTime startDate, DateTime endDate, String clusterName) throws JAXBException {
@@ -1011,7 +1017,9 @@ public class Bundle {
         }
     }
 
-    public void addClusterToBundle(String clusterData, ClusterType type) throws JAXBException {
+    public void addClusterToBundle(String clusterData, ClusterType type,
+                                   String startTime, String endTime
+                                   ) throws JAXBException, ParseException {
 
         clusterData = setNewClusterName(clusterData);
 
@@ -1032,12 +1040,17 @@ public class Bundle {
 
         }
 
-
         //now to add cluster to process
         Process processObject = Util.getProcessObject(processData);
         Cluster cluster = new Cluster();
         cluster.setName(Util.getClusterObject(clusterData).getName());
-        cluster.setValidity(processObject.getClusters().getCluster().get(0).getValidity());
+        org.apache.falcon.regression.core.generated.process.Validity v =
+        processObject.getClusters().getCluster().get(0).getValidity();
+        if(StringUtils.isNotEmpty(startTime))
+          v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
+        if(StringUtils.isNotEmpty(endTime))
+          v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+        cluster.setValidity(v);
         processObject.getClusters().getCluster().add(cluster);
         this.processData = processHelper.toString(processObject);
 
@@ -1407,4 +1420,12 @@ public class Bundle {
         p.setOutputs(outputs);
         return InstanceUtil.processToString(p);
     }
-}
+
+  public void setProcessProperty(String property, String value) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+
+       ProcessMerlin process = new ProcessMerlin(this.getProcessData());
+       process.setProperty(property, value);
+       this.setProcessData(process.toString());
+
+    }
+ }
