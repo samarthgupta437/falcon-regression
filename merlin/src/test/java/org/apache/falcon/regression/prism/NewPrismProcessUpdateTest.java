@@ -1548,6 +1548,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         InstanceUtil.getTimeWrtSystemTime(15));
       b.submitAndScheduleBundle(prism);
 
+      ProcessMerlin process = new ProcessMerlin(b.getProcessData());
+
       InstanceUtil.waitTillInstanceReachState(serverOC.get(1),
         Util.readEntityName(b.getProcessData()),0,CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
 

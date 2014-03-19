@@ -332,7 +332,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     }
 
 
-//    @AfterClass(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
         Bundle b = Util.readELBundles()[0][0];

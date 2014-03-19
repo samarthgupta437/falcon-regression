@@ -112,18 +112,17 @@ public class InstanceUtil {
     logger.info("The web service response is: " + string_response.toString() + "\n");
     APIResult r = null;
     try {
-    if(url.contains("/summary/")) {
-     Constructor<?> constructor = InstancesSummaryResult.class
-     .getDeclaredConstructors()[0];
-     constructor.setAccessible(true);
-     r = (InstancesSummaryResult)constructor.newInstance();
-    }
-    else  {
-      Constructor<?> constructor = ProcessInstancesResult.class
-       .getDeclaredConstructors()[0];
-     constructor.setAccessible(true);
-     r = (ProcessInstancesResult)constructor.newInstance();
-    }
+      if (url.contains("/summary/")) {
+        Constructor<?> constructor = InstancesSummaryResult.class
+          .getDeclaredConstructors()[0];
+        constructor.setAccessible(true);
+        r = (InstancesSummaryResult) constructor.newInstance();
+      } else {
+        Constructor<?> constructor = ProcessInstancesResult.class
+          .getDeclaredConstructors()[0];
+        constructor.setAccessible(true);
+        r = (ProcessInstancesResult) constructor.newInstance();
+      }
     } catch (InstantiationException e) {
       e.printStackTrace();
       logger.info("Could not create InstancesSummaryResult or " +
@@ -167,9 +166,9 @@ public class InstanceUtil {
     r = new GsonBuilder().setPrettyPrinting().create()
       .fromJson(jsonString, ProcessInstancesResult.class);
 
-    Util.print("r.getMessage(): " + r.getMessage());
-    Util.print("r.getStatusCode(): " + r.getStatusCode());
-    Util.print("r.getStatus() " + r.getStatus());
+    logger.info("r.getMessage(): " + r.getMessage());
+    logger.info("r.getStatusCode(): " + r.getStatusCode());
+    logger.info("r.getStatus() " + r.getStatus());
     return r;
   }
 
@@ -183,10 +182,10 @@ public class InstanceUtil {
                                                ProcessInstancesResult.WorkflowStatus ws) {
         ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
         int runningCount = 0;
-        //Util.print("function runningInstancesInResult: Start");
-        Util.print("pArray: " + Arrays.toString(pArray));
+        //logger.info("function runningInstancesInResult: Start");
+        logger.info("pArray: " + Arrays.toString(pArray));
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
-            Util.print(
+            logger.info(
                     "pArray[" + instanceIndex + "]: " + pArray[instanceIndex].getStatus() + " , " +
                             pArray[instanceIndex].getInstance());
 
@@ -268,10 +267,10 @@ public class InstanceUtil {
         int actualWaitingInstances = 0;
         int actualKilledInstances = 0;
         ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
-        Util.print("pArray: " + Arrays.toString(pArray));
+        logger.info("pArray: " + Arrays.toString(pArray));
         Assert.assertEquals(pArray.length, totalInstances);
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
-            Util.print(
+            logger.info(
                     "pArray[" + instanceIndex + "]: " + pArray[instanceIndex].getStatus() + " , " +
                             pArray[instanceIndex].getInstance());
 
@@ -307,7 +306,7 @@ public class InstanceUtil {
     }
 
     public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
-                                                 WorkflowAction.Status ws) throws OozieClientException {
+                                            WorkflowAction.Status ws) throws OozieClientException {
 
         String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
@@ -317,13 +316,13 @@ public class InstanceUtil {
 
         List<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
-            CoordinatorAction wfJob = oozieClient.getCoordActionInfo(jobID);
-            WorkflowAction wa = oozieClient.getWorkflowActionInfo(wfJob.getId());
-            Util.print("wa.getExternalId(): " + wa.getExternalId() + " wa.getExternalStatus():  " +
-                    wa.getExternalStatus());
-            Util.print("wf id: " + jobID + "  wf status: " + wa.getStatus());
-            //org.apache.oozie.client.WorkflowAction.Status.
-            if (wa.getStatus().equals(ws))
+            WorkflowJob wfJob = oozieClient.getJobInfo(jobID);
+            Util.print("wa.getExternalId(): " + wfJob.getId() + " wa" +
+                    ".getExternalStatus" +
+                    "():  " +
+                    wfJob.getStartTime());
+            Util.print("wf id: " + jobID + "  wf status: " + wfJob.getStatus());
+            if (wfJob.getStatus().equals(ws.name()))
                 toBeReturned.add(jobID);
         }
         return toBeReturned;
@@ -347,9 +346,9 @@ public class InstanceUtil {
         int actualRunningWorkflows = 0;
         int actualKilledWorkflows = 0;
         int actualSucceededWorkflows = 0;
-        Util.print("was: " + was);
+        logger.info("was: " + was);
         for (int instanceIndex = 0; instanceIndex < was.size(); instanceIndex++) {
-            Util.print("was.get(" + instanceIndex + ").getStatus(): " +
+            logger.info("was.get(" + instanceIndex + ").getStatus(): " +
                     was.get(instanceIndex).getStatus() + " , " +
                     was.get(instanceIndex).getName());
 
@@ -376,7 +375,7 @@ public class InstanceUtil {
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
         //String coordId = getDefaultCoordinatorFromProcessName(processName);
-        Util.print("default coordID: " + coordId);
+        logger.info("default coordID: " + coordId);
         return oozieClient.getCoordJobInfo(coordId).getActions();
     }
 
@@ -402,7 +401,7 @@ public class InstanceUtil {
             }
         }
 
-        Util.print("function getDefaultCoordIDFromBundle: minString: " + minString);
+        logger.info("function getDefaultCoordIDFromBundle: minString: " + minString);
         return minString;
 
     }
@@ -518,7 +517,7 @@ public class InstanceUtil {
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
         String bundleID;
         for (String strID : bundleIds) {
-            Util.print("getSequenceBundleID: " + strID);
+            logger.info("getSequenceBundleID: " + strID);
             int key = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
             bundleMap.put(key, strID);
         }
@@ -540,7 +539,7 @@ public class InstanceUtil {
     public static String dateToOozieDate(Date dt) throws ParseException {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        Util.print("SystemTime: " + jodaTime);
+        logger.info("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         return fmt.print(jodaTime);
     }
@@ -596,7 +595,7 @@ public class InstanceUtil {
 
         for (final File file : files) {
             if (!file.isDirectory()) {
-                Util.print("putDataInFolder: " + remoteLocation);
+                logger.info("putDataInFolder: " + remoteLocation);
                 fs.mkdirs(new Path(remoteLocation));
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(remoteLocation));
             }
@@ -610,7 +609,7 @@ public class InstanceUtil {
         while (true) {
             DateTime sysDate = new DateTime(Util.getSystemDate(prismHelper));
             sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            Util.print("sysDate: " + sysDate + "  finalDate: " + finalDate);
+            logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
             if (sysDate.compareTo(finalDate) > 0)
                 break;
 
@@ -701,7 +700,6 @@ public class InstanceUtil {
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(c, sw);
-        //logger.info("modified process is: " + sw);
         bundle.setClusterData(sw.toString());
     }
 
@@ -896,7 +894,7 @@ public class InstanceUtil {
         OozieClient oozieClient = ua1.getProcessHelper().getOozieClient();
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
         String jobId = coordInfo.getActions().get(instanceNumber).getExternalId();
-        Util.print("jobId = " + jobId);
+        logger.info("jobId = " + jobId);
         if(jobId == null)
             return null;
         WorkflowJob actionInfo = oozieClient.getJobInfo(jobId);
@@ -917,14 +915,8 @@ public class InstanceUtil {
             String runConf) {
         String conf;
         conf = runConf.substring(runConf.indexOf("falconInPaths</name>") + 20);
-        //	Util.print("conf1: "+conf);
-
         conf = conf.substring(conf.indexOf("<value>") + 7);
-        //Util.print("conf2: "+conf);
-
         conf = conf.substring(0, conf.indexOf("</value>"));
-        //Util.print("conf3: "+conf);
-
         return new ArrayList<String>(Arrays.asList(conf.split(",")));
     }
 
@@ -1063,7 +1055,7 @@ public class InstanceUtil {
 
         String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
         //String coordId = getDefaultCoordinatorFromProcessName(processName);
-        Util.print("default coordID: " + coordId);
+        logger.info("default coordID: " + coordId);
 
         return list;
     }
@@ -1103,13 +1095,8 @@ public class InstanceUtil {
 
     private static String getReplicatedFolderBaseFromInstanceRunConf(String runConf) {
         String conf = runConf.substring(runConf.indexOf("distcpTargetPaths</name>") + 24);
-        //	Util.print("conf1: "+conf);
-
         conf = conf.substring(conf.indexOf("<value>") + 7);
-        //Util.print("conf2: "+conf);
-
         conf = conf.substring(0, conf.indexOf("</value>"));
-
         return conf;
     }
 
@@ -1121,7 +1108,6 @@ public class InstanceUtil {
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(c, sw);
-        //logger.info("modified process is: " + sw);
         return sw.toString();
     }
 
@@ -1141,7 +1127,7 @@ public class InstanceUtil {
                                                           .Status expectedStatus,
                                                   int totalMinutesToWait, ENTITY_TYPE entityType)
     throws InterruptedException, OozieClientException {
-        String filter = "";
+        String filter ;
         // get the bunlde ids
         if (entityType.equals(ENTITY_TYPE.FEED)) {
             filter = "name=FALCON_FEED_" + entityName;
@@ -1162,7 +1148,7 @@ public class InstanceUtil {
         List<String> bundleIds = OozieUtil.getBundleIds(bundleJobs);
         String bundleId = OozieUtil.getMaxId(bundleIds);
         logger.info(String.format("Using bundle %s", bundleId));
-        String coordId = null;
+        String coordId ;
         List<CoordinatorJob> coords = client.getBundleJobInfo(bundleId).getCoordinators();
         List<String> cIds = new ArrayList<String>();
         if (entityType.equals(ENTITY_TYPE.PROCESS)) {
