@@ -34,6 +34,7 @@ import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.oozie.client.AuthOozieClient;
+import org.testng.TestNGException;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -87,9 +88,13 @@ public abstract class IEntityManagerHelper {
 
     protected HCatClient hCatClient;
 
-    public HCatClient getHCatClient() throws HCatException {
+    public HCatClient getHCatClient() {
         if (null == this.hCatClient) {
-            this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint);
+            try {
+                this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint);
+            } catch (HCatException e) {
+                throw new TestNGException(e);
+            }
         }
         return this.hCatClient;
     }

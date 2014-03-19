@@ -65,7 +65,7 @@ public class HCatTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    HCatClient clusterHC = serverHC.get(0);
+    HCatClient clusterHC = cluster.getClusterHelper().getHCatClient();
     String hiveScriptDir = baseWorkflowDir + "/hive";
     String hiveScriptFile = hiveScriptDir + "/script.hql";
     final String testDir = "/HCatTest";
