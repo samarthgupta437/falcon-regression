@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult.Workflo
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -54,7 +55,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         Util.print("in @BeforeClass");
-        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
@@ -74,7 +75,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
         }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)

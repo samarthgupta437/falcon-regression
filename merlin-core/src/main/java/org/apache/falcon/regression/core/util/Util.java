@@ -619,7 +619,10 @@ public class Util {
                   bundleJob.getCoordinators().get(0).getId());
     List<CoordinatorAction> actions = jobInfo.getActions();
 
-    Util.print("conf from event: " + actions.get(0).getMissingDependencies());
+        if(actions.size() < 1) {
+            return null;
+        }
+        Util.print("conf from event: " + actions.get(0).getMissingDependencies());
 
     String[] missingDependencies = actions.get(0).getMissingDependencies().split("#");
     return new ArrayList<String>(Arrays.asList(missingDependencies));
@@ -1249,35 +1252,22 @@ public class Util {
     return sw.toString();
   }
 
-  public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList)
+    public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList)
     throws IOException, InterruptedException {
-    logger.info("creating late data folders.....");
-    Configuration conf = new Configuration();
-    conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
+        logger.info("creating late data folders.....");
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
 
-    final FileSystem fs = FileSystem.get(conf);
+        final FileSystem fs = FileSystem.get(conf);
 
-    folderList.add("somethingRandom");
+        folderList.add("somethingRandom");
 
-    for (final String folder : folderList) {
-      fs.mkdirs(new Path("/lateDataTest/testFolders/" + folder));
+        for (final String folder : folderList) {
+            fs.mkdirs(new Path("/lateDataTest/testFolders/" + folder));
+        }
+
+        logger.info("created all late data folders.....");
     }
-
-    logger.info("created all late data folders.....");
-  }
-
-  public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
-                                           final String FolderPrefix)
-    throws IOException, InterruptedException {
-    Configuration conf = new Configuration();
-    conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-    final FileSystem fs = FileSystem.get(conf);
-
-    for (final String folder : folderList) {
-      fs.mkdirs(new Path(FolderPrefix + folder));
-    }
-  }
 
   public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
                                        String directory)
@@ -1303,7 +1293,46 @@ public class Util {
     logger.info("copied data into latedata folders....");
   }
 
-  public static DateTime getSystemDate(PrismHelper prismHelper)
+    public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
+                                         List<String> folderList,
+                                         String... fileLocations)
+    throws IOException, InterruptedException {
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
+
+        final FileSystem fs = FileSystem.get(conf);
+
+        for (final String folder : folderList) {
+            boolean r;
+            String folder_space = folder.replaceAll("/", "_");
+            File f = new File(
+                    OSUtil.NORMAL_INPUT + folder_space +
+                            ".txt");
+            if (!f.exists()) {
+                r = f.createNewFile();
+                if (!r)
+                    System.out.println("file could not be created");
+            }
+
+
+            FileWriter fr = new FileWriter(f);
+            fr.append("folder");
+            fr.close();
+            fs.copyFromLocalFile(new Path(f.getAbsolutePath()), new Path(folderPrefix + folder));
+            r = f.delete();
+            if (!r)
+                System.out.println("delete was not successful");
+
+
+            for (final String file : fileLocations) {
+                logger.info("copying  " + file + " to " + folderPrefix + folder);
+                fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
+            }
+        }
+    }
+
+
+    public static DateTime getSystemDate(PrismHelper prismHelper)
     throws IOException, JSchException {
 
     DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
@@ -1408,19 +1437,33 @@ public class Util {
                                        int minuteSkip) throws IOException, InterruptedException {
     List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
-    Util.createLateDataFolders(prismHelper, folderData);
-    Util.copyDataToFolders(prismHelper, folderData,
-      "src/test/resources/OozieExampleInputData/normalInput");
-  }
+        Util.createLateDataFolders(prismHelper, folderData);
+        Util.copyDataToFolders(prismHelper, folderData,
+                OSUtil.NORMAL_INPUT);
+    }
 
-  public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
-                                       int minuteSkip, String... files)
+    public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
+                                         int minuteSkip, String... files)
     throws IOException, InterruptedException {
-    List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
-    Util.createLateDataFolders(prismHelper, folderData);
-    Util.copyDataToFolders(prismHelper, baseFolder, folderData, files);
-  }
+        Util.createLateDataFolders(prismHelper, folderData);
+        Util.copyDataToFolders(prismHelper, baseFolder, folderData, files);
+    }
+
+
+  public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
+                                             final String FolderPrefix)
+    throws IOException, InterruptedException {
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
+
+        final FileSystem fs = FileSystem.get(conf);
+
+        for (final String folder : folderList) {
+            fs.mkdirs(new Path(FolderPrefix + folder));
+        }
+    }
 
   public static void injectMoreData(PrismHelper prismHelper, final String remoteLocation,
                                     String localLocation)
@@ -1453,44 +1496,6 @@ public class Util {
     return feedObject.getName();
   }
 
-  public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
-                                       List<String> folderList,
-                                       String... fileLocations)
-    throws IOException, InterruptedException {
-    Configuration conf = new Configuration();
-    conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
-
-    final FileSystem fs = FileSystem.get(conf);
-
-    for (final String folder : folderList) {
-      boolean r;
-      String folder_space = folder.replaceAll("/", "_");
-      File f = new File(
-        "src/test/resources/OozieExampleInputData/normalInput/" + folder_space +
-          ".txt");
-      if (!f.exists()) {
-        r = f.createNewFile();
-        if (!r)
-          logger.info("file could not be created");
-      }
-
-
-      FileWriter fr = new FileWriter(f);
-      fr.append("folder");
-      fr.close();
-      fs.copyFromLocalFile(new Path(f.getAbsolutePath()), new Path(folderPrefix + folder));
-      r = f.delete();
-      if (!r)
-        logger.info("delete was not successful");
-
-
-      for (final String file : fileLocations) {
-        logger.info("copying  " + file + " to " + folderPrefix + folder + " " +
-          "on "+ fs.getConf().get("fs.default.name"));
-        fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
-      }
-    }
-  }
 
   public static String getFeedName(String feedData) throws JAXBException {
     JAXBContext processContext = JAXBContext.newInstance(Feed.class);
@@ -1767,23 +1772,24 @@ public class Util {
     }
   }
 
-  public static void lateDataReplenish(PrismHelper prismHelper, int interval,
-                                       int minuteSkip,
-                                       String folderPrefix, String postFix)
+    public static void lateDataReplenish(PrismHelper prismHelper, int interval,
+                                         int minuteSkip,
+                                         String folderPrefix, String postFix)
     throws IOException, InterruptedException {
-    List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
-    Util.print("folderData: " + folderPaths.toString());
+        List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        Util.print("folderData: " + folderPaths.toString());
 
-    if (postFix != null) {
-      for (int i = 0; i < folderPaths.size(); i++)
-        folderPaths.set(i, folderPaths.get(i) + postFix);
+        if (postFix != null) {
+            for (int i = 0; i < folderPaths.size(); i++)
+                folderPaths.set(i, folderPaths.get(i) + postFix);
+        }
+
+        Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
+        Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
+                OSUtil.NORMAL_INPUT + "_SUCCESS",
+                OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-    Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
-    Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-      "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS",
-      "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
-  }
 
   public static void assertSucceeded(ProcessInstancesResult response) {
     Assert.assertNotNull(response.getMessage());
@@ -1820,22 +1826,23 @@ public class Util {
     return false;
   }
 
-  public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
-                                                      int minuteSkip, String folderPrefix,
-                                                      String postFix)
+    public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
+                                                        int minuteSkip, String folderPrefix,
+                                                        String postFix)
     throws IOException, InterruptedException {
-    List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
-    Util.print("folderData: " + folderPaths.toString());
+        List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        Util.print("folderData: " + folderPaths.toString());
 
-    if (postFix != null) {
-      for (int i = 0; i < folderPaths.size(); i++)
-        folderPaths.set(i, folderPaths.get(i) + postFix);
+        if (postFix != null) {
+            for (int i = 0; i < folderPaths.size(); i++)
+                folderPaths.set(i, folderPaths.get(i) + postFix);
+        }
+
+        Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
+        Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
+                OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-    Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
-    Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-      "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
-  }
 
   public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
                                          String folderPrefix, String fileToBePut)
@@ -1845,13 +1852,13 @@ public class Util {
 
     Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
 
-    if (fileToBePut.equals("_SUCCESS"))
-      Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-        "src/test/resources/OozieExampleInputData/normalInput/_SUCCESS");
+        if (fileToBePut.equals("_SUCCESS"))
+            Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
+                    OSUtil.NORMAL_INPUT + "_SUCCESS");
 
-    else
-      Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-        "src/test/resources/OozieExampleInputData/normalInput/log_01.txt");
+        else
+            Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
+                    OSUtil.NORMAL_INPUT + "log_01.txt");
 
   }
 

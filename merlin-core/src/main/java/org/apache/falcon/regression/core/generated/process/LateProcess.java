@@ -143,7 +143,7 @@ public class LateProcess {
 
     public void setLateInput(List<LateInput> lateInput) {
 
-        this.lateInput = new ArrayList(lateInput);
+        this.lateInput = new ArrayList<LateInput>(lateInput);
     }
 
 }

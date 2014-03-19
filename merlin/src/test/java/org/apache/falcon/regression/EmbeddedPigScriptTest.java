@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -62,7 +63,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
         Util.print("in @BeforeClass");
         //copy pig script
-        HadoopUtil.uploadDir(clusterFS, pigScriptDir, "src/test/resources/pig");
+        HadoopUtil.uploadDir(clusterFS, pigScriptDir, OSUtil.RESOURCES + "pig");
 
         Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
@@ -87,7 +88,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
 
     @BeforeMethod(alwaysRun = true)
