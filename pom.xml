@@ -145,6 +145,11 @@
                         </exclusions>
                     </dependency>
 
+                    <dependency>
+                        <groupId>org.apache.hive.hcatalog</groupId>
+                        <artifactId>webhcat-java-client</artifactId>
+                        <version>${hive.version}</version>
+                    </dependency>
                 </dependencies>
             </dependencyManagement>
         </profile>
@@ -192,6 +197,11 @@
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-yarn-server-nodemanager</artifactId>
                         <version>${hadoop2.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.hive.hcatalog</groupId>
+                        <artifactId>hive-webhcat-java-client</artifactId>
+                        <version>${hive.version}</version>
                     </dependency>
                 </dependencies>
             </dependencyManagement>
@@ -511,11 +521,6 @@
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
                 <version>0.11.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hive.hcatalog</groupId>
-                <artifactId>webhcat-java-client</artifactId>
-                <version>${hive.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hive</groupId>
