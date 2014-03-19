@@ -26,11 +26,12 @@
       </clusters>
 	<parallel>1</parallel>
 	<order>FIFO</order>
-       <frequency>minutes(5)</frequency>
+       <frequency>hours(2)</frequency>
 	<timezone>UTC</timezone>
 	
 	<inputs>
-		<input end="now(0,0)" start="now(0,-20)"
+        <!--<input end="now(0,0)" start="now(0,-2)"-->
+		<input end="now(0,0)" start="now(0,0)"
 			feed="raaw-logs16" name="inputData"/>
 	</inputs>
 	<outputs>
@@ -40,12 +41,12 @@
 	<properties>
 		<property name="queueName" value="default"/>
 		
-       <property name="fileTime" value="${formatTime(dateOffset(instanceTime(), 1, 'DAY'), 'yyyy-MMM-dd')}"/>
-       <property name="user" value="${user()}"/>
-       <property name="baseTime" value="${today(0,0)}"/>
+       <!--property name="fileTime" value="${formatTime(dateOffset(instanceTime(), 1, 'DAY'), 'yyyy-MMM-dd')}"/-->
+       <!--property name="user" value="${user()}"/-->
+       <!--property name="baseTime" value="${today(0,0)}"/-->
    
 	</properties>
-	<workflow path="/examples/apps/aggregator" />
+	<workflow engine="hive" path="/examples/apps/aggregator" />
 	<retry policy="periodic" delay="minutes(3)" attempts="3" />
 
 </process>

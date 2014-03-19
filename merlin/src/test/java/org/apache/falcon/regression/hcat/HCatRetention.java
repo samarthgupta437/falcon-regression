@@ -59,7 +59,7 @@ public class HCatRetention extends BaseTestClass {
     final String dBName="default";
 
     @BeforeMethod
-    public void setUp(){
+    public void setUp() throws Exception {
         cli=HCatUtil.getHCatClient(servers.get(0));
     }
 

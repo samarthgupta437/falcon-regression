@@ -50,7 +50,7 @@ public class BaseTestClass {
     public List<ColoHelper> servers;
     public List<FileSystem> serverFS;
     public List<OozieClient> serverOC;
-    public List<HCatClient> serverHCC;
+    public List<HCatClient> serverHC;
     public String baseHDFSDir = "/tmp/falcon-regression";
     public String baseWorkflowDir = baseHDFSDir + "/workflows";
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
@@ -65,12 +65,12 @@ public class BaseTestClass {
         servers = getServers();
         serverFS = new ArrayList<FileSystem>();
         serverOC = new ArrayList<OozieClient>();
-        serverHCC = new ArrayList<HCatClient>();
+        serverHC = new ArrayList<HCatClient>();
         for (ColoHelper server : servers) {
             try {
                 serverFS.add(server.getClusterHelper().getHadoopFS());
                 serverOC.add(server.getClusterHelper().getOozieClient());
-                serverHCC.add(server.getClusterHelper().getHCatClient());
+                serverHC.add(server.getClusterHelper().getHCatClient());
                 HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size
                   ()-1));
             } catch (IOException e) {
