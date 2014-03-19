@@ -34,6 +34,7 @@ import org.apache.falcon.regression.core.supportClasses.HadoopFileEditor;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -119,9 +120,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             fs.mkdirs(new Path(workflowPath));
             fs.setPermission(new Path(workflowPath), new FsPermission("777"));
             fs.mkdirs(new Path(workflowPath + "/lib"));
-            fs.copyFromLocalFile(new Path("src/test/resources/oozie/workflow.xml"),
+            fs.copyFromLocalFile(new Path(OSUtil.RESOURCES_OOZIE + "workflow.xml"),
                     new Path(workflowPath + "/workflow.xml"));
-            fs.copyFromLocalFile(new Path("src/test/resources/oozie/lib/oozie-examples-3.1.5.jar"),
+            fs.copyFromLocalFile(new Path(OSUtil.RESOURCES_OOZIE
+                    + OSUtil.getPath("lib", "oozie-examples-3.1.5.jar")),
                     new Path(workflowPath + "/lib/oozie-examples-3.1.5.jar"));
         }
     }
@@ -1547,6 +1549,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
       b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-10),
         InstanceUtil.getTimeWrtSystemTime(15));
       b.submitAndScheduleBundle(prism);
+
+      ProcessMerlin process = new ProcessMerlin(b.getProcessData());
 
       InstanceUtil.waitTillInstanceReachState(serverOC.get(1),
         Util.readEntityName(b.getProcessData()),0,CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
