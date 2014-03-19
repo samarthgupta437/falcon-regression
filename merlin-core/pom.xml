@@ -31,9 +31,6 @@
     <description>merlin-core - utilities for Apache Falcon regression suite</description>
     <name>Apache Falcon Regression Suite Core</name>
     <packaging>jar</packaging>
-    <properties>
-        <hive.version>0.12.0</hive.version>
-    </properties>
     <profiles>
         <profile>
             <id>hadoop-1</id>
