@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.supportClasses;
+package org.apache.falcon.regression.core.enumsAndConstants;
 
-public enum RawOrRC {
+public enum ENTITY_TYPE {
 
-    RAW, RC;
+    PROCESS, DATA, CLUSTER, FEED;
+
 }

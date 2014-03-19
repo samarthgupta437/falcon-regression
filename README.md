@@ -25,3 +25,11 @@ This project had 2 modules :
 
 merlin had all the test for apache falcon project
 merlin-core has al the utils used by merlin
+
+Build Command : 
+------------------
+
+Fast Build : mvn clean install -DskipTests -DskipCheck=true -Phadoop-1
+Regression build : mvn clean install -Phadoop-1
+Profiles Supported: hadoop-1,hadoop-2
+(hadoop-1 is by default for chd repo)

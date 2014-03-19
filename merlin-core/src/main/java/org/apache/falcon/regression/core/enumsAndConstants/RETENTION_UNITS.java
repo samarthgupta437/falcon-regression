@@ -16,34 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.supportClasses;
-//package com.inmobi.qa.ivory.supportClasses;
-//
-//import lombok.Getter;
-//import lombok.Setter;
-//
-//public class EnhancedDataDetails extends DSTCounts{
-//	
-//	
-//	@Getter @Setter private int enhancedTrue = 0;
-//	@Getter @Setter private int enhancedFalse = 0;
-//	@Getter @Setter private int totalEnhanced = 0;
-//	@Getter @Setter private int totalDeferred = 0;
-//	
-//
-//
-//	
-//	public void incrementEnhancedTrue(){
-//		enhancedTrue++;
-//		totalEnhanced++;
-//	}
-//
-//	public void incrementEnhancedFalse(){
-//		enhancedFalse++;
-//		totalEnhanced++;
-//	}
-//
-//	public void incrementTotalDeferred() {
-//		totalDeferred++;		
-//	}
-//}
+package org.apache.falcon.regression.core.enumsAndConstants;
+
+public enum RETENTION_UNITS {
+    MINUTES("minutes"), HOURS("hours"), DAYS("days"), MONTHS("months"), YEARS("years");
+
+    private String value;
+
+    private RETENTION_UNITS(String value){
+        this.value = value;
+    }
+
+    public String getValue(){
+        return value;
+    }
+}

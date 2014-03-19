@@ -92,9 +92,10 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(
                 baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
+
         String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(bundles[0]));
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        Util.lateDataReplenish(cluster, 40, 1, prefix);
+        Util.lateDataReplenish(cluster, 40, 1, prefix, null);
 
         System.out.println("process: " + bundles[0].getProcessData());
 

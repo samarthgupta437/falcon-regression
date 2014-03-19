@@ -25,7 +25,7 @@ package org.apache.falcon.regression.core.interfaces;
 import org.apache.falcon.regression.core.helpers.ClusterEntityHelperImpl;
 import org.apache.falcon.regression.core.helpers.DataEntityHelperImpl;
 import org.apache.falcon.regression.core.helpers.ProcessEntityHelperImpl;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 
 public class EntityHelperFactory {
 

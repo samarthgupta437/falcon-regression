@@ -18,8 +18,8 @@
 
 package org.apache.falcon.regression.testHelper;
 
-import org.apache.falcon.regression.core.MerlinConstants;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;

@@ -21,7 +21,7 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -84,14 +84,15 @@ public class PrismProcessSnSTest extends BaseTestClass {
     @Test(groups = {"prism", "0.2"})
     public void testProcessSnSForSubmittedProcessOnBothColos() throws Exception {
         //schedule both bundles
-        bundles[0].submitProcess();
+
+        bundles[0].submitProcess(true);
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
-        bundles[1].submitProcess();
+        bundles[1].submitProcess(true);
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
@@ -106,16 +107,17 @@ public class PrismProcessSnSTest extends BaseTestClass {
     public void testProcessSnSForSubmittedProcessOnBothColosUsingColoHelper()
     throws Exception {
         //schedule both bundles
-        bundles[0].submitProcess();
+
+        bundles[0].submitProcess(true);
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
-        bundles[1].submitProcess();
+        bundles[1].submitProcess(true);
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
-        bundles[1].submitProcess();
+        bundles[1].submitProcess(true);
 
         Util.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
@@ -184,6 +186,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         CLUSTER1_RUNNING = bundles[0].getClusterHelper().getColo().split("=")[1] + RUNNING;
         CLUSTER2_RUNNING = bundles[1].getClusterHelper().getColo().split("=")[1] + RUNNING;
         bundles[0].submitAndScheduleProcess();
+
         Assert.assertEquals(Util.parseResponse(
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, bundles[0].getProcessData())).getMessage(),

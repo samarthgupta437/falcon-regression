@@ -20,15 +20,15 @@ package org.apache.falcon.regression;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Inputs;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.MerlinConstants;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.KerberosHelper;
@@ -96,7 +96,7 @@ public class AuthorizationTest extends BaseTestClass {
     @Test
     public void U1SubmitU2DeleteProcess() throws Exception {
         bundles[0].submitClusters(prism);
-        bundles[0].submitProcess();
+        bundles[0].submitProcess(true);
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = cluster.getProcessHelper().delete(
                 Util.URLS.DELETE_URL, bundles[0].getProcessData(), MerlinConstants.USER2_NAME);
