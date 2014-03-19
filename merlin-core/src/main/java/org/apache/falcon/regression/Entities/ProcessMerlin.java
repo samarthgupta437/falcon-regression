@@ -20,14 +20,14 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.process.*;
+import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
+import org.apache.falcon.regression.core.generated.process.Property;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hive.hcatalog.api.HCatClient;
-import org.joda.time.DateTime;
 
 import javax.xml.bind.JAXBException;
 import java.lang.reflect.Field;
@@ -35,7 +35,9 @@ import java.lang.reflect.InvocationTargetException;
 
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProcessMerlin extends org.apache.falcon.regression.core.generated
   .process.Process {
@@ -126,7 +128,7 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
           for (String feed : b.getDataSets()) {
              if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
                   FeedMerlin feedO = new FeedMerlin(feed);
-                  inpFeeds.put(Util.readDatasetName(feed),feedO);
+                  inpFeeds.put(Util.readDatasetName(feed), feedO);
                   break;
              }
           }
