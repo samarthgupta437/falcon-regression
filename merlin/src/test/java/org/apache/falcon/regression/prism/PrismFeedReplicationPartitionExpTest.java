@@ -489,7 +489,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         AssertUtil.checkForPathsSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
     }
 
-    @Test(enabled = true)
+    @Test(enabled = true, groups = "embedded")
     public void normalTest_2s1t_pt() throws Exception {
         //this test is for ideal condition when data is present in all the required places and
         // replication takes
