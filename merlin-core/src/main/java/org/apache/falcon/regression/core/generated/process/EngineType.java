@@ -52,7 +52,8 @@ public enum EngineType {
 
     @XmlEnumValue("oozie")
     OOZIE("oozie"),
-    @XmlEnumValue("pig")PIG("pig");
+    @XmlEnumValue("pig")PIG("pig"),
+    @XmlEnumValue("hive")HIVE("hive");
 
     private final String value;
 

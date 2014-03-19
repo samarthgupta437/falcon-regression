@@ -34,6 +34,10 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.hcatalog.api.HCatClient;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.common.HCatException;
 
 public class HCatUtil {
 

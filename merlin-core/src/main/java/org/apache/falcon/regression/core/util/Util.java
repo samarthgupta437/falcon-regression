@@ -451,7 +451,11 @@ public class Util {
     return testData;
   }
 
-  public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
+    public static Bundle readHCatBundle() throws IOException {
+        return readBundles("hcat")[0][0];
+    }
+
+    public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
 
     List<Bundle> bundleList = new ArrayList<Bundle>();
     File[] files;
@@ -459,10 +463,6 @@ public class Util {
       files = Util.getFiles(folderPath);
     } catch (URISyntaxException e) {
       return bundleList;
-    }
-
-    public static Bundle readHCatBundle() throws IOException {
-        return readBundles("hcat")[0][0];
     }
 
     List<String> dataSets = new ArrayList<String>();
