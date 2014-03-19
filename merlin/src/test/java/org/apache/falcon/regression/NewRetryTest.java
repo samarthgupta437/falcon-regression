@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -73,7 +74,7 @@ public class NewRetryTest extends BaseTestClass {
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
-        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -915,7 +916,7 @@ public class NewRetryTest extends BaseTestClass {
                 if (!inserted && validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId),
                                 bundles[0].getProcessObject().getRetry().getAttempts())) {
                     System.out.println("inserting data in folder " + insertionFolder + " at " + DateTime.now());
-                    Util.injectMoreData(cluster, insertionFolder, "src/test/resources/OozieExampleInputData/lateData");
+                    Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
                     inserted = true;
                     break;
                 }

@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -56,7 +57,7 @@ public class NoOutputProcessTest extends BaseTestClass {
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
-        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
@@ -83,7 +84,7 @@ public class NoOutputProcessTest extends BaseTestClass {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
 
 
@@ -120,7 +121,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         Assert.assertEquals(consumer.getMessageData().size(), 3,
                 " Message for all the 3 instance not found");
 
-        consumer.stop();
+        consumer.interrupt();
 
         Util.dumpConsumerData(consumer);
 
@@ -149,8 +150,8 @@ public class NoOutputProcessTest extends BaseTestClass {
         Assert.assertEquals(consumerProcess.getMessageData().size(), 3,
                 " Message for all the 3 instance not found");
 
-        consumerInternalMsg.stop();
-        consumerProcess.stop();
+        consumerInternalMsg.interrupt();
+        consumerProcess.interrupt();
 
         Util.dumpConsumerData(consumerInternalMsg);
         Util.dumpConsumerData(consumerProcess);

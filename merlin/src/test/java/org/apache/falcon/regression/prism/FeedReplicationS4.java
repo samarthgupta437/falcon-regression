@@ -61,8 +61,7 @@ public class FeedReplicationS4 extends BaseTestClass {
                 .setFeedCluster(feedOutput01,
                         XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null,
-                        null);
+                        ClusterType.SOURCE, null);
         feedOutput01 = InstanceUtil
                 .setFeedCluster(feedOutput01,
                         XmlUtil.createValidity("2012-12-06T05:00Z", "2099-10-01T12:10Z"),

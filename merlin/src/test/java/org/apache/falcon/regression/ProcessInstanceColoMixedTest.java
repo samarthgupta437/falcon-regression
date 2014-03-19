@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -59,8 +60,8 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     @BeforeClass(alwaysRun = true)
     public void prepareClusters() throws Exception {
         Util.print("in @BeforeClass");
-        HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, "src/test/resources/oozie");
-        HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, "src/test/resources/oozie");
+        HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+        HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -109,17 +110,17 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                 .setFeedCluster(feed01,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null, null);
+                        ClusterType.SOURCE, null);
         feed02 = InstanceUtil
                 .setFeedCluster(feed02,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null, null);
+                        ClusterType.SOURCE, null);
         outputFeed = InstanceUtil
                 .setFeedCluster(outputFeed,
                         XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null, null);
+                        ClusterType.SOURCE, null);
 
 
         //set new feed input data
@@ -149,34 +150,34 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                 .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
                         Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
-                        null, null);
+                        null);
         feed01 = InstanceUtil
                 .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
-                        null, null);
+                        null);
 
         //set clusters for feed02
         feed02 = InstanceUtil
                 .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
                         Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
-                        null, null);
+                        null);
         feed02 = InstanceUtil
                 .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        null, null);
+                        null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                 XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null, null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
                 XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null, null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
         Util.print("feed01: " + feed01);

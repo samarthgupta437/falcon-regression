@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.interfaces;
 
 import com.jcraft.jsch.JSchException;
@@ -28,6 +24,7 @@ import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -43,7 +40,8 @@ import java.util.Properties;
 
 public abstract class IEntityManagerHelper {
 
-    protected String CLIENT_LOCATION = "src/test/resources/IvoryClient/IvoryCLI.jar";
+    protected String CLIENT_LOCATION = OSUtil.RESOURCES
+            + OSUtil.getPath("IvoryClient", "IvoryCLI.jar");
     protected String BASE_COMMAND = "java -jar " + CLIENT_LOCATION;
 
     public String getActiveMQ() {
