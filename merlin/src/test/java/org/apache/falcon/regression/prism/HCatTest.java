@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
@@ -48,6 +49,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -98,12 +100,17 @@ public class HCatTest extends BaseTestClass {
         clusterHC.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
     }
 
-    @Test
-    public void getRunningProcessInstance() throws Exception {
+    @DataProvider
+    public String[][] generateSeparators() {
+        return new String[][] {{"-"}, {"/"}};
+    }
+
+    @Test(dataProvider = "generateSeparators")
+    public void getRunningProcessInstance(String separator) throws Exception {
         /* upload data and create partition */
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = "yyyy-MM-dd-HH";
+        final String datePattern = StringUtils.join(new String[] {"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
         final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
@@ -137,7 +144,8 @@ public class HCatTest extends BaseTestClass {
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
 
-        final String tableUriPartitionFragment = "#dt=${YEAR}-${MONTH}-${DAY}-${HOUR}";
+        final String tableUriPartitionFragment = StringUtils.join(
+                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
         bundles[0].setFeedTableUri(0, inputTableUri);
         String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
