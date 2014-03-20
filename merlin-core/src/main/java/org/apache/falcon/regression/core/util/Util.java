@@ -1970,28 +1970,6 @@ public class Util {
 
   }
 
-  public static void verifyNewBundleCreation(ColoHelper coloHelper,
-                                             String originalBundleId,
-                                             int originalBundleCount,
-                                             String processName, boolean shouldBeCreated)
-    throws Exception {
-        String newBundleId =
-                InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
-    if (shouldBeCreated) {
-      Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
-        "eeks! new bundle is not getting created!!!!");
-      logger.info("old bundleId=" + originalBundleId + " on oozie: " +
-        ""+coloHelper.getProcessHelper().getOozieClient().getOozieUrl());
-      logger.info("new bundleId=" + newBundleId + " on oozie: " +
-        ""+coloHelper.getProcessHelper().getOozieClient().getOozieUrl());
-      Util.validateNumberOfWorkflowInstances(coloHelper,
-        originalBundleCount, originalBundleId, newBundleId);
-    } else {
-      Assert.assertEquals(newBundleId,
-        originalBundleId, "eeks! new bundle is getting created!!!!");
-    }
-  }
-
   public static void verifyNewBundleCreation(ColoHelper cluster,
                                              String originalBundleId,
                                              List<String>
