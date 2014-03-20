@@ -113,15 +113,23 @@ public class InstanceUtil {
     APIResult r = null;
     try {
       if (url.contains("/summary/")) {
-        Constructor<?> constructor = InstancesSummaryResult.class
-          .getDeclaredConstructors()[0];
-        constructor.setAccessible(true);
-        r = (InstancesSummaryResult) constructor.newInstance();
+        Constructor<?> constructors[] = InstancesSummaryResult.class
+          .getDeclaredConstructors();
+        for (Constructor<?> constructor : constructors) {
+          if(constructor.getParameterTypes().length == 0) {
+            constructor.setAccessible(true);
+            r = (InstancesSummaryResult) constructor.newInstance();
+          }
+        }
       } else {
-        Constructor<?> constructor = ProcessInstancesResult.class
-          .getDeclaredConstructors()[0];
-        constructor.setAccessible(true);
-        r = (ProcessInstancesResult) constructor.newInstance();
+        Constructor<?> constructors[] = ProcessInstancesResult.class
+          .getDeclaredConstructors();
+          for (Constructor<?> constructor : constructors) {
+            if(constructor.getParameterTypes().length == 0) {
+              constructor.setAccessible(true);
+              r = (ProcessInstancesResult) constructor.newInstance();
+            }
+          }
       }
     } catch (InstantiationException e) {
       e.printStackTrace();
