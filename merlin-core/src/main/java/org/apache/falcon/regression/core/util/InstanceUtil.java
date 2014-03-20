@@ -113,18 +113,22 @@ public class InstanceUtil {
     APIResult r = null;
     try {
       if (url.contains("/summary/")) {
+        //Order is not guaranteed in the getDeclaredConstructors() call
         Constructor<?> constructors[] = InstancesSummaryResult.class
           .getDeclaredConstructors();
         for (Constructor<?> constructor : constructors) {
+          //we want to invoke the constructor that has no parameters
           if(constructor.getParameterTypes().length == 0) {
             constructor.setAccessible(true);
             r = (InstancesSummaryResult) constructor.newInstance();
           }
         }
       } else {
+        //Order is not guaranteed in the getDeclaredConstructors() call
         Constructor<?> constructors[] = ProcessInstancesResult.class
           .getDeclaredConstructors();
           for (Constructor<?> constructor : constructors) {
+            //we want to invoke the constructor that has no parameters
             if(constructor.getParameterTypes().length == 0) {
               constructor.setAccessible(true);
               r = (ProcessInstancesResult) constructor.newInstance();
