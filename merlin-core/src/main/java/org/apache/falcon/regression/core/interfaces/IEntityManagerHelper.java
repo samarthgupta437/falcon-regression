@@ -19,6 +19,8 @@
 package org.apache.falcon.regression.core.interfaces;
 
 import com.jcraft.jsch.JSchException;
+import junit.framework.Assert;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
@@ -93,7 +95,7 @@ public abstract class IEntityManagerHelper {
             try {
                 this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint);
             } catch (HCatException e) {
-                throw new TestNGException(e);
+                Assert.fail("Unable to create hCatClient because of exception:\n" + ExceptionUtils.getStackTrace(e));
             }
         }
         return this.hCatClient;

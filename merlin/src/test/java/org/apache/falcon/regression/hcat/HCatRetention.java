@@ -32,6 +32,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatPartition;
+import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -59,7 +60,7 @@ public class HCatRetention extends BaseTestClass {
     final String dBName="default";
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp() throws HCatException {
         cli=HCatUtil.getHCatClient(servers.get(0));
     }
 
