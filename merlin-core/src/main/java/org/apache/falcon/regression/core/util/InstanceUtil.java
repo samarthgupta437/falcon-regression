@@ -729,7 +729,7 @@ public class InstanceUtil {
 
         org.apache.falcon.regression.core.generated.feed.Locations ls =
                 new org.apache.falcon.regression.core.generated.feed.Locations();
-        if (null != locations) {
+        if (null != locations && locations.length > 0) {
             for (int i = 0; i < locations.length; i++) {
                 org.apache.falcon.regression.core.generated.feed.Location l =
                         new org.apache.falcon.regression.core.generated.feed.Location();
