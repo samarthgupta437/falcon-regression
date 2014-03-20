@@ -42,7 +42,7 @@
 		
        <property name="fileTime" value="${formatTime(dateOffset(instanceTime(), 1, 'DAY'), 'yyyy-MMM-dd')}"/>
        <property name="user" value="${user()}"/>
-       <property name="baseTime" value="${today(0,0)}"/>
+       <!--<property name="baseTime" value="${today(0,0)}"/>-->
    
 	</properties>
 	<workflow path="/examples/apps/aggregator" />
