@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class    HCatRetention extends BaseTestClass {
+public class HCatRetention extends BaseTestClass {
 
     static Logger logger = Logger.getLogger(HCatRetention.class);
 
