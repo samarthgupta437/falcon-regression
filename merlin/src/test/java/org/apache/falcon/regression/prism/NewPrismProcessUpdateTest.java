@@ -105,7 +105,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
             setupOozieData(fs, WORKFLOW_PATH, WORKFLOW_PATH2, aggreagator1Path);
         }
-       // Util.restartService(cluster3.getClusterHelper());
+        Util.restartService(cluster3.getClusterHelper());
     }
 
     @AfterMethod
