@@ -30,7 +30,7 @@
 	<timezone>UTC</timezone>
 	
 	<inputs>
-		<input end="now(0,0)" start="now(0,0)"
+		<input end="now(0,0)" start="now(0,-20)"
 			feed="raaw-logs16" name="inputData"/>
 	</inputs>
 	<outputs>
