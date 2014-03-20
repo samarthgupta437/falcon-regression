@@ -19,14 +19,25 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.Util;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hive.hcatalog.api.HCatClient;
 
 import javax.xml.bind.JAXBException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProcessMerlin extends org.apache.falcon.regression.core.generated
   .process.Process {
@@ -69,4 +80,62 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
     }
     return null;
   }
+
+  public void generateData(FileSystem fs, Bundle b, boolean isEmpty)throws Exception{
+
+      Bundle b1 = new Bundle(b);
+      b1 = setFeedsToGenerateData(fs,b1);
+      Map<String, FeedMerlin> inpFeeds = getInputFeeds(b1);
+      for(FeedMerlin feedElement : inpFeeds.values()){
+          feedElement.generateData(fs, isEmpty);
+      }
+  }
+
+  public void generateData(FileSystem fs, Bundle b, HCatClient client, boolean isEmpty)throws Exception{
+
+      Bundle b1 = new Bundle(b);
+      b1 = setFeedsToGenerateData(fs,b1);
+      Map<String, FeedMerlin> inpFeeds = getInputFeeds(b1);
+      for(FeedMerlin feedElement : inpFeeds.values()){
+          feedElement.generateData(client,fs, isEmpty);
+      }
+  }
+
+  public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b)throws Exception{
+
+      Date start = element.getClusters().getCluster().get(0).getValidity().getStart();
+      Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+      String startDate = formatter.format(start);
+      Date end = element.getClusters().getCluster().get(0).getValidity().getEnd();
+      String endDate = formatter.format(end);
+
+      Map<String, FeedMerlin> inpFeeds = getInputFeeds(b);
+
+      for(FeedMerlin feedElement : inpFeeds.values()){
+          feedElement.getClusters().getCluster().get(0).getValidity()
+                  .setStart(InstanceUtil.oozieDateToDate(startDate).toDate());
+          feedElement.getClusters().getCluster().get(0).getValidity()
+                  .setEnd(InstanceUtil.oozieDateToDate(endDate).toDate());
+          InstanceUtil.writeFeedElement(b, feedElement, feedElement.getName());
+      }
+      return b;
+  }
+
+  public Map<String,FeedMerlin> getInputFeeds(Bundle b)throws Exception{
+
+      Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
+      for (Input input : element.getInputs().getInput()) {
+          for (String feed : b.getDataSets()) {
+             if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
+                  FeedMerlin feedO = new FeedMerlin(feed);
+                  inpFeeds.put(Util.readDatasetName(feed), feedO);
+                  break;
+             }
+          }
+      }
+      return inpFeeds;
+  }
+
 }
+
+
