@@ -20,7 +20,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	
 
-	<frequency>hours(1)</frequency>
+	<frequency>minutes(20)</frequency>
 	<timezone>UTC</timezone>
 	<late-arrival cut-off="hours(6)" />
 

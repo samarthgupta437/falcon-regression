@@ -151,13 +151,19 @@ public class HCatTest extends BaseTestClass {
         final String tableUriPartitionFragment = StringUtils.join(
                 new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
-        bundles[0].setFeedTableUri(0, inputTableUri);
+        bundles[0].setInputFeedTableUri(inputTableUri);
+        bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setInputFeedValidity(startDate, endDate);
         String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
-        bundles[0].setFeedTableUri(1, outputTableUri);
+        bundles[0].setOutputFeedTableUri(outputTableUri);
+        bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setOutputFeedValidity(startDate, endDate);
 
         bundles[0].setProcessValidity(startDate, endDate);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
-        bundles[0].submitAndScheduleProcess();
+        bundles[0].submitClusters(prism);
+        bundles[0].submitFeeds(prism);
+        bundles[0].submitProcess(true);
 
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
