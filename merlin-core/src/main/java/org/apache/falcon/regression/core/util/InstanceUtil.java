@@ -121,6 +121,7 @@ public class InstanceUtil {
           if(constructor.getParameterTypes().length == 0) {
             constructor.setAccessible(true);
             r = (InstancesSummaryResult) constructor.newInstance();
+            break;
           }
         }
       } else {
@@ -132,6 +133,7 @@ public class InstanceUtil {
             if(constructor.getParameterTypes().length == 0) {
               constructor.setAccessible(true);
               r = (ProcessInstancesResult) constructor.newInstance();
+              break;
             }
           }
       }
