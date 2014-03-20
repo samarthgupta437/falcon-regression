@@ -695,6 +695,13 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
+    public void setProcessInputStartEnd(String start, String end) throws JAXBException {
+        Process processElement = InstanceUtil.getProcessElement(this);
+        processElement.getInputs().getInput().get(0).setStart(start);
+        processElement.getInputs().getInput().get(0).setEnd(end);
+        InstanceUtil.writeProcessElement(this, processElement);
+    }
+
     public void setOutputFeedPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();

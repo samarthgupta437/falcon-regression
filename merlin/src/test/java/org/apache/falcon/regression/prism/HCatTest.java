@@ -161,9 +161,8 @@ public class HCatTest extends BaseTestClass {
 
         bundles[0].setProcessValidity(startDate, endDate);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
-        bundles[0].submitClusters(prism);
-        bundles[0].submitFeeds(prism);
-        bundles[0].submitProcess(true);
+        bundles[0].setProcessInputStartEnd("now(0,0)", "now(0,0)");
+        bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
