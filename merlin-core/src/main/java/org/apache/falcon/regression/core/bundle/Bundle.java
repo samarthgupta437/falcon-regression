@@ -805,6 +805,10 @@ public class Bundle {
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
+    public void setOutputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
+        String feedName = Util.getOutputFeedNameFromBundle(this);
+        this.setFeedValidity(startInstance, endInstance, feedName);
+    }
     public void setInputFeedDataPath(String path) throws JAXBException {
         String feedName = Util.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
@@ -1010,8 +1014,8 @@ public class Bundle {
         clusters.set(0, clusterData);
     }
 
-    public void setFeedTableUri(int feedIndex, String tableUri) throws ParseException, JAXBException {
-        final String feedStr = dataSets.get(feedIndex);
+    public void setInputFeedTableUri(String tableUri) throws ParseException, JAXBException {
+        final String feedStr = Util.getInputFeedFromBundle(this);
         Feed feed = InstanceUtil.getFeedElement(feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
@@ -1019,6 +1023,14 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feed, feed.getName());
     }
 
+    public void setOutputFeedTableUri(String tableUri) throws ParseException, JAXBException {
+        final String feedStr = Util.getOutputFeedFromBundle(this);
+        Feed feed = InstanceUtil.getFeedElement(feedStr);
+        final CatalogTable catalogTable = new CatalogTable();
+        catalogTable.setUri(tableUri);
+        feed.setTable(catalogTable);
+        InstanceUtil.writeFeedElement(this, feed, feed.getName());
+    }
 
     public void setCLusterWorkingPath(String clusterData, String path) throws JAXBException {
 
