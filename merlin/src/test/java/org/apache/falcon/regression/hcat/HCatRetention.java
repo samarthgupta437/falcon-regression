@@ -64,19 +64,16 @@ public class HCatRetention extends BaseTestClass {
         cli=HCatUtil.getHCatClient(servers.get(0));
     }
 
-    @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000)
+    @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
     public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit, FEED_TYPE dataType, boolean isEmpty) {
 
-        String tableName = "mytable"+unit.getValue() + period;
+        String tableName = "testHCatRetention"+unit.getValue() + period;
 
         try{
             HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
             bundle = new Bundle(b, servers.get(0));
             int p= Integer.parseInt(period);
             displayDetails(period, unit.getValue(), dataType.getValue());
-
-            System.setProperty("java.security.krb5.realm", "");
-            System.setProperty("java.security.krb5.kdc", "");
 
             FeedMerlin feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
             String feed= feedElement.setTableValue(Util.getInputFeedFromBundle(bundle), getFeedPathValue(dataType.getValue()), dBName, tableName);
