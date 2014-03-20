@@ -75,7 +75,7 @@ public class HCatTest extends BaseTestClass {
     final String inputHDFSDir = baseTestHDFSDir + "/input";
     final String outputHDFSDir = baseTestHDFSDir + "/output";
 
-    final String dbName = HCatTest.class.getSimpleName().toLowerCase();
+    final String dbName = "default";
     final String inputTableName = "mytablepart3";
     final String outputTableName = "output_table";
     public static final String col1Name = "id";
@@ -101,7 +101,8 @@ public class HCatTest extends BaseTestClass {
 
         HadoopUtil.deleteDirIfExists(baseTestHDFSDir, clusterFS);
         HadoopUtil.createDir(outputHDFSDir, clusterFS);
-        clusterHC.dropDatabase(dbName, true, HCatClient.DropDBMode.CASCADE);
+        clusterHC.dropTable(dbName, inputTableName, true);
+        clusterHC.dropTable(dbName, outputTableName, true);
     }
 
     @DataProvider
@@ -125,7 +126,6 @@ public class HCatTest extends BaseTestClass {
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
-        clusterHC.createDatabase(HCatCreateDBDesc.create(dbName).build());
         clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
