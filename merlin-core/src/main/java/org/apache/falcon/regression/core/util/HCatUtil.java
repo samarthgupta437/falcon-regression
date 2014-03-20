@@ -34,29 +34,31 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hive.hcatalog.api.HCatClient;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.common.HCatException;
 
 public class HCatUtil {
 
     public static HCatClient client;
 
-    public static HCatClient getHCatClient(ColoHelper helper) {
-        try {
-            HiveConf hcatConf = new HiveConf();
-            hcatConf.set("hive.metastore.local", "false");
-            hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS,helper.getProcessHelper().getHCatEndpoint());
-            hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
-            hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
-                    HCatSemanticAnalyzer.class.getName());
-            hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    public static HCatClient getHCatClient(String hCatEndPoint) throws HCatException {
+        HiveConf hcatConf = new HiveConf();
+        hcatConf.set("hive.metastore.local", "false");
+        hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, hCatEndPoint);
+        hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+        hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
+                HCatSemanticAnalyzer.class.getName());
+        hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
-            hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-            hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-            return HCatClient.create(hcatConf);
+        hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
+        hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+        return HCatClient.create(hcatConf);
+    }
 
-        } catch (HCatException e) {
-            e.printStackTrace();
-        }
-        return client;
+    public static HCatClient getHCatClient(ColoHelper helper) throws HCatException {
+        return getHCatClient(helper.getProcessHelper().getHCatEndpoint());
     }
 
     private static void createDB(HCatClient cli, String dbName) {
