@@ -37,7 +37,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.api.HCatAddPartitionDesc;
 import org.apache.hive.hcatalog.api.HCatClient;
-import org.apache.hive.hcatalog.api.HCatCreateDBDesc;
 import org.apache.hive.hcatalog.api.HCatCreateTableDesc;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.log4j.Logger;
@@ -61,8 +60,8 @@ import java.util.List;
 import java.util.Map;
 
 @Test(groups = "embedded")
-public class HCatTest extends BaseTestClass {
-    private static Logger logger = Logger.getLogger(HCatTest.class);
+public class HCatProcessTest extends BaseTestClass {
+    private static Logger logger = Logger.getLogger(HCatProcessTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
@@ -70,7 +69,7 @@ public class HCatTest extends BaseTestClass {
 
     String hiveScriptDir = baseWorkflowDir + "/hive";
     String hiveScriptFile = hiveScriptDir + "/script.hql";
-    final String testDir = "/HCatTest";
+    final String testDir = "/HCatProcessTest";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String inputHDFSDir = baseTestHDFSDir + "/input";
     final String outputHDFSDir = baseTestHDFSDir + "/output";
