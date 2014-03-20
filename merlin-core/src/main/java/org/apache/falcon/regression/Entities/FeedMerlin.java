@@ -104,7 +104,7 @@ public class FeedMerlin extends Feed {
       }
     }
 
-    String[] parts = pathValue.split("/$");
+    String[] parts = pathValue.split("\\$");
     int len = parts.length;
     if (len != 2) {
       dataType = getDataType(len - 1);
