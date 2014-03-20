@@ -75,8 +75,8 @@ public class HCatProcessTest extends BaseTestClass {
     final String outputHDFSDir = baseTestHDFSDir + "/output";
 
     final String dbName = "default";
-    final String inputTableName = "mytablepart3";
-    final String outputTableName = "output_table";
+    final String inputTableName = "hcatprocesstest_input_table";
+    final String outputTableName = "hcatprocesstest_output_table";
     public static final String col1Name = "id";
     public static final String col2Name = "value";
     public static final String partitionColumn = "dt";
