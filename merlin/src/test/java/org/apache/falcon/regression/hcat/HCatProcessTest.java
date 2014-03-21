@@ -69,7 +69,7 @@ public class HCatProcessTest extends BaseTestClass {
 
     String hiveScriptDir = baseWorkflowDir + "/hive";
     String hiveScriptFile = hiveScriptDir + "/script.hql";
-    String hiveScriptFile2 = hiveScriptDir + "/script_non_hcat_input.hql";
+    String hiveScriptFileNonHCatInput = hiveScriptDir + "/script_non_hcat_input.hql";
     final String testDir = "/HCatProcessTest";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String inputHDFSDir = baseTestHDFSDir + "/input";
@@ -219,7 +219,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
 
-        bundles[0].setProcessWorkflow(hiveScriptFile2, EngineType.HIVE);
+        bundles[0].setProcessWorkflow(hiveScriptFileNonHCatInput, EngineType.HIVE);
         bundles[0].setProcessValidity(startDate, endDate);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setProcessInputStartEnd("now(0,0)", "now(0,0)");
