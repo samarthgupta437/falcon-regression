@@ -123,12 +123,16 @@ public class BaseRequest {
                 uri.getHost(), uri.getPort());
         request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
         DefaultHttpClient client = new DefaultHttpClient();
-        LOGGER.info("Request Url: " + request.getRequestLine().getUri().toString());
-        LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
-        for (Header header : request.getAllHeaders()) {
-            LOGGER.info(String.format("Request Header: Name=%s Value=%s", header.getName(),
-                    header.getValue()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Request Url: " + request.getRequestLine().getUri().toString());
+            LOGGER.debug("Request Method: " + request.getRequestLine().getMethod());
+
+            for (Header header : request.getAllHeaders()) {
+                LOGGER.debug(String.format("Request Header: Name=%s Value=%s", header.getName(),
+                        header.getValue()));
+            }
         }
+
         HttpResponse response = client.execute(target, request);
         // incase the cookie is expired and we get a negotiate error back, generate the token again
         // and send the request
@@ -141,19 +145,25 @@ public class BaseRequest {
 
                 request.removeHeaders(RequestKeys.COOKIE);
                 request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
-                LOGGER.info("Request Url: " + request.getRequestLine().getUri().toString());
-                LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
-                for (Header header : request.getAllHeaders()) {
-                    LOGGER.info(String.format("Request Header: Name=%s Value=%s", header.getName(),
-                            header.getValue()));
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Request Url: " + request.getRequestLine().getUri().toString());
+                    LOGGER.debug("Request Method: " + request.getRequestLine().getMethod());
+                    for (Header header : request.getAllHeaders()) {
+                        LOGGER.debug(
+                                String.format("Request Header: Name=%s Value=%s", header.getName(),
+                                        header.getValue())
+                        );
+                    }
                 }
                 response = client.execute(target, request);
             }
         }
-        LOGGER.info("Response Status: " + response.getStatusLine());
-        for (Header header : response.getAllHeaders()) {
-            LOGGER.info(String.format("Response Header: Name=%s Value=%s", header.getName(),
-                    header.getValue()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Response Status: " + response.getStatusLine());
+            for (Header header : response.getAllHeaders()) {
+                LOGGER.debug(String.format("Response Header: Name=%s Value=%s", header.getName(),
+                        header.getValue()));
+            }
         }
         return response;
     }
