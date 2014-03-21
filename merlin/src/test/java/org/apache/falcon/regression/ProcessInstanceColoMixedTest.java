@@ -270,7 +270,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                                 .addMinsToTime(processStartTime, 37) + "&end=" +
                                 InstanceUtil.addMinsToTime(processStartTime, 44));
         Util.assertSucceeded(responseInstance);
-        Assert.assertTrue(responseInstance.getInstances() == null);
+        Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
