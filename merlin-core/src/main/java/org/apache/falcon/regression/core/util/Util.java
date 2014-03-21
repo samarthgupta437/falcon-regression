@@ -1533,10 +1533,10 @@ public class Util {
     return null;
   }
 
-  public static String setFeedName(String outputFeed, String newName) throws JAXBException {
+  public static String setFeedName(String feedString, String newName) throws JAXBException {
     JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
     Feed feedObject =
-      (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(outputFeed));
+      (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
 
     //set the value
     feedObject.setName(newName);
@@ -1544,6 +1544,18 @@ public class Util {
     feedContext.createMarshaller().marshal(feedObject, feedWriter);
     return feedWriter.toString().trim();
   }
+
+    public static String setClusterNameInFeed(String feedString, String clusterName) throws JAXBException {
+        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
+        Feed feedObject =
+                (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
+        //set the value
+        Assert.assertEquals(feedObject.getClusters().getCluster().size(), 1, "Expected only on cluster in the feed");
+        feedObject.getClusters().getCluster().get(0).setName(clusterName);
+        StringWriter feedWriter = new StringWriter();
+        feedContext.createMarshaller().marshal(feedObject, feedWriter);
+        return feedWriter.toString().trim();
+    }
 
     public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId,
                                                       ENTITY_TYPE type)

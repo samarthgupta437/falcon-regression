@@ -69,6 +69,7 @@ public class HCatProcessTest extends BaseTestClass {
 
     String hiveScriptDir = baseWorkflowDir + "/hive";
     String hiveScriptFile = hiveScriptDir + "/script.hql";
+    String hiveScriptFile2 = hiveScriptDir + "/script_non_hcat_input.hql";
     final String testDir = "/HCatProcessTest";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String inputHDFSDir = baseTestHDFSDir + "/input";
@@ -158,6 +159,67 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
 
+        bundles[0].setProcessValidity(startDate, endDate);
+        bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setProcessInputStartEnd("now(0,0)", "now(0,0)");
+        bundles[0].submitFeedsScheduleProcess();
+
+        InstanceUtil.waitTillInstanceReachState(
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
+
+        List<Path> inputData = HadoopUtil
+                .getAllFilesRecursivelyHDFS(cluster, new Path(inputHDFSDir + "/" + dataDates.get(0)));
+        List<Path> outputData = HadoopUtil
+                .getAllFilesRecursivelyHDFS(cluster, new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
+        AssertUtil.checkForPathsSizes(inputData, outputData);
+    }
+
+    @Test(dataProvider = "generateSeparators")
+    public void OneNonCatInputOneHCatOutput(String separator) throws Exception {
+        /* upload data and create partition */
+        final String startDate = "2010-01-01T20:00Z";
+        final String endDate = "2010-01-02T04:00Z";
+        final String datePattern = StringUtils.join(new String[] {"yyyy", "MM", "dd", "HH"}, separator);
+        List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
+
+        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+
+        ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
+        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
+        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
+
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        clusterHC.createTable(HCatCreateTableDesc
+                .create(dbName, outputTableName, cols)
+                .partCols(partitionCols)
+                .ifNotExists(true)
+                .isTableExternal(true)
+                .location(outputHDFSDir)
+                .fieldsTerminatedBy('\t')
+                .linesTerminatedBy('\n')
+                .build());
+
+        String nonHCatFeed = Util.getInputFeedFromBundle(Util.readELBundles()[0][0]);
+        final String inputFeedName = Util.getInputFeedNameFromBundle(bundles[0]);
+        nonHCatFeed = Util.setFeedName(nonHCatFeed, inputFeedName);
+        final List<String> clusterNames = bundles[0].getClusterNames();
+        Assert.assertEquals(clusterNames.size(), 1, "Expected only one cluster in the bundle.");
+        nonHCatFeed = Util.setClusterNameInFeed(nonHCatFeed, clusterNames.get(0));
+        InstanceUtil.writeFeedElement(bundles[0], nonHCatFeed, inputFeedName);
+        bundles[0].setInputFeedDataPath(inputHDFSDir + "/" +
+                StringUtils.join(new String[] {"${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator));
+        bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setInputFeedValidity(startDate, endDate);
+
+        final String tableUriPartitionFragment = StringUtils.join(
+                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
+        bundles[0].setOutputFeedTableUri(outputTableUri);
+        bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setOutputFeedValidity(startDate, endDate);
+
+        bundles[0].setProcessWorkflow(hiveScriptFile2, EngineType.HIVE);
         bundles[0].setProcessValidity(startDate, endDate);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setProcessInputStartEnd("now(0,0)", "now(0,0)");
