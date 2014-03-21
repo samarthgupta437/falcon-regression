@@ -19,10 +19,13 @@
 package org.apache.falcon.regression.core.interfaces;
 
 import com.jcraft.jsch.JSchException;
+import junit.framework.Assert;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
@@ -30,7 +33,10 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.hive.hcatalog.api.HCatClient;
+import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.oozie.client.AuthOozieClient;
+import org.testng.TestNGException;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -82,6 +88,18 @@ public abstract class IEntityManagerHelper {
 
     public String getHCatEndpoint() {return hcatEndpoint; }
 
+    protected HCatClient hCatClient;
+
+    public HCatClient getHCatClient() {
+        if (null == this.hCatClient) {
+            try {
+                this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint);
+            } catch (HCatException e) {
+                Assert.fail("Unable to create hCatClient because of exception:\n" + ExceptionUtils.getStackTrace(e));
+            }
+        }
+        return this.hCatClient;
+    }
 
 
     //basic properties

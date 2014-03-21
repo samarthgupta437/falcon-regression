@@ -98,26 +98,10 @@
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-metastore</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.oozie</groupId>
-            <artifactId>oozie-client</artifactId>
-        </dependency>
         <!-- Added so that at run time log4j is avaialble to capture the logs -->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>xmlunit</groupId>
-            <artifactId>xmlunit</artifactId>
         </dependency>
     </dependencies>
 </project>
