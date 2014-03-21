@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -32,12 +33,14 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 
-@Test(groups = "distributed")
+@Test(groups = {"distributed", "embedded"})
 public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -46,12 +49,20 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     FileSystem cluster1FS = serverFS.get(0);
     FileSystem cluster2FS = serverFS.get(1);
     FileSystem cluster3FS = serverFS.get(2);
-    String cluster1Colo = cluster1.getClusterHelper().getColo().split("=")[1];
-    String cluster2Colo = cluster2.getClusterHelper().getColo().split("=")[1];
-    String cluster3Colo = cluster3.getClusterHelper().getColo().split("=")[1];
+    String cluster1Colo = cluster1.getClusterHelper().getColoName();
+    String cluster2Colo = cluster2.getClusterHelper().getColoName();
+    String cluster3Colo = cluster3.getClusterHelper().getColoName();
     private final String inputPath = baseHDFSDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String alternativeInputPath = baseHDFSDir + "/newFeedPath/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
 
+    @BeforeClass
+    public void prepareCluster() throws IOException, InterruptedException {
+        // upload workflow to hdfs
+        HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+        HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+        HadoopUtil.uploadDir(cluster3FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
@@ -65,6 +76,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();
         bundles[2].generateUniqueBundle();
+
+        //set the workflow path for the bundles
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[1].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[2].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod
@@ -84,13 +100,15 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
                 ClusterType.SOURCE, null);
 
-        String postFix = "/US/ua2";
+        // use the colo string here so that the test works in embedded and distributed mode.
+        String postFix = "/US/" + cluster2Colo;
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 5, 80, prefix, postFix);
 
 
-        postFix = "/UK/ua3";
+        // use the colo string here so that the test works in embedded and distributed mode.
+        postFix = "/UK/" + cluster3Colo;
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 5, 80, prefix, postFix);
@@ -275,6 +293,14 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Status status1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
             Status status2 = InstanceUtil.getInstanceStatus(cluster3,
                     Util.getProcessName(process), 0, 0);
+            // if the status is failed or killed lets fail
+            // this will stop unnecessary looping
+            if ((status1 != null && status2 != null) && (status1 == Status.FAILED || status2 ==
+                    Status.FAILED || status1 == Status.KILLED
+                    || status2 == Status.KILLED)) {
+                Assert.fail(String.format("status1 = %s, status2 = %s", status1, status2));
+            }
+
             if (status1 != null && status2 != null &&
                     (status1 == Status.RUNNING || status1 == Status.SUCCEEDED)
                     && (status2 == Status.RUNNING || status2 == Status.SUCCEEDED)) {
