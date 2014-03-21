@@ -286,12 +286,10 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
       Util.URLS.FEED_UPDATE.getValue(), user) ;
   }
 
-  public ServiceResponse update(String newEntity, String user)
+  public ServiceResponse update(String oldEntity, String newEntity)
   throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
-    String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
-      Util.readDatasetName(newEntity);
-    return Util.sendRequest(url + colo, "post", newEntity, user);
+    return update(oldEntity, newEntity, null);
   }
 
   @Override
