@@ -257,12 +257,19 @@ public class InstanceUtil {
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(feedElement, sw);
         //logger.info("feed to be written is: "+sw);
+        writeFeedElement(bundle, sw.toString(), feedName);
+    }
+
+    public static void writeFeedElement(Bundle bundle, String feedString,
+                                        String feedName) throws JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(Feed.class);
+        Unmarshaller u = jc.createUnmarshaller();
         int index = 0;
         Feed dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(0)));
         if (!dataElement.getName().contains(feedName)) {
             index = 1;
         }
-        bundle.getDataSets().set(index, sw.toString());
+        bundle.getDataSets().set(index, feedString);
     }
 
     public static void validateSuccessOnlyStart(ProcessInstancesResult r,
