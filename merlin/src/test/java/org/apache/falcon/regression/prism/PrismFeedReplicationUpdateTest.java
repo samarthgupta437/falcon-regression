@@ -295,8 +295,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
                     Util.getProcessName(process), 0, 0);
             // if the status is failed or killed lets fail
             // this will stop unnecessary looping
-            if (status1 == Status.FAILED || status2 == Status.FAILED || status1 == Status.KILLED
-                    || status2 == Status.KILLED) {
+            if ((status1 != null && status2 != null) && (status1 == Status.FAILED || status2 ==
+                    Status.FAILED || status1 == Status.KILLED
+                    || status2 == Status.KILLED)) {
                 Assert.fail(String.format("status1 = %s, status2 = %s", status1, status2));
             }
 
