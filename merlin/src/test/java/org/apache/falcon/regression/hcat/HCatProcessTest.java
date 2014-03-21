@@ -110,7 +110,7 @@ public class HCatProcessTest extends BaseTestClass {
     }
 
     @Test(dataProvider = "generateSeparators")
-    public void getRunningProcessInstance(String separator) throws Exception {
+    public void OneHCatInputOneHCatOutput(String separator) throws Exception {
         /* upload data and create partition */
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
