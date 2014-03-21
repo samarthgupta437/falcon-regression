@@ -67,9 +67,9 @@ public class HCatProcessTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
     HCatClient clusterHC = cluster.getClusterHelper().getHCatClient();
 
-    String hiveScriptDir = baseWorkflowDir + "/hive";
-    String hiveScriptFile = hiveScriptDir + "/script.hql";
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    String hiveScriptDir = OSUtil.getPath(baseWorkflowDir, "hive");
+    String hiveScriptFile = OSUtil.getPath(hiveScriptDir, "script.hql");
+    String aggregateWorkflowDir = OSUtil.getPath(baseWorkflowDir, "aggregator");
     String hiveScriptFileNonHCatInput = hiveScriptDir + "/script_non_hcat_input.hql";
     String hiveScriptFileNonHCatOutput = hiveScriptDir + "/script_non_hcat_output.hql";
     final String testDir = "/HCatProcessTest";
