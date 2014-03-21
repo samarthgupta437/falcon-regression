@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -64,14 +65,14 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     private String testBaseDir4 = baseHDFSDir + "/data/fetlrc/billing";
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private String testFile1 =
-      "src/test/resources/ReplicationResources/feed-s4Replication.xml" ;
-    private String testFile2 =  "src/test/resources/ReplicationResources/id.pig" ;
-    private String testFile3 =
-      "src/test/resources/ReplicationResources/cluster-0.1.xml" ;
-    private String testFile4 =
-      "src/test/resources/ReplicationResources/log4testng.properties" ;
-  
+    private String testFile1 = OSUtil.RESOURCES
+            + OSUtil.getPath("ReplicationResources", "feed-s4Replication.xml");
+    private String testFile2 = OSUtil.RESOURCES + OSUtil.getPath("ReplicationResources", "id.pig");
+    private String testFile3 = OSUtil.RESOURCES
+            + OSUtil.getPath("ReplicationResources", "cluster-0.1.xml");
+    private String testFile4 = OSUtil.RESOURCES
+            + OSUtil.getPath("ReplicationResources", "log4testng.properties");
+
     public PrismFeedReplicationPartitionExpTest(){
         super();
         cluster1 = servers.get(0);
@@ -110,8 +111,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         uploadDataToServer3(testDirWithDate + "05/ua1/", testFile2);
         uploadDataToServer3(testDirWithDate + "10/ua1/",
                 testFile3);
-        uploadDataToServer3(testDirWithDate + "15/ua1/",
-                "src/main/resources/log4testng.properties");
+        uploadDataToServer3(testDirWithDate + "15/ua1/", testFile4);
 
         uploadDataToServer3(testDirWithDate + "00/ua3/", testFile1);
         uploadDataToServer3(testDirWithDate + "05/ua3/", testFile2);
@@ -179,7 +179,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
 
 
-    @Test(enabled = true)
+    @Test(enabled = true, groups = "embedded")
     public void blankPartition() throws Exception {
         //this test is for ideal condition when data is present in all the required places and
         // replication takes
@@ -489,7 +489,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         AssertUtil.checkForPathsSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
     }
 
-    @Test(enabled = true)
+    @Test(enabled = true, groups = "embedded")
     public void normalTest_2s1t_pt() throws Exception {
         //this test is for ideal condition when data is present in all the required places and
         // replication takes
@@ -812,7 +812,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     }
 
 
-    @Test(enabled = true)
+    @Test(enabled = true, groups = "embedded")
     public void moreThanOneClusterWithSameNameDiffValidity() throws Exception {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 

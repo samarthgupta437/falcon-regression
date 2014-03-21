@@ -18,6 +18,8 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.apache.commons.lang.StringUtils;
+
 public class OSUtil {
 
     public static String SEPARATOR = System.getProperty("file.separator", "/");
@@ -29,14 +31,6 @@ public class OSUtil {
             String.format(OOZIE_EXAMPLE_INPUT_DATA + "normalInput%s", SEPARATOR);
 
     public static String getPath(String... pathParts) {
-        StringBuilder path = new StringBuilder();
-        if (pathParts.length == 0) return "";
-
-        path.append(pathParts[0]);
-        for (int i = 1; i < pathParts.length; i++) {
-            path.append(OSUtil.SEPARATOR);
-            path.append(pathParts[i]);
-        }
-        return path.toString();
+        return StringUtils.join(pathParts, OSUtil.SEPARATOR);
     }
 }

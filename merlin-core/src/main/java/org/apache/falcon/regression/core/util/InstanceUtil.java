@@ -113,15 +113,29 @@ public class InstanceUtil {
     APIResult r = null;
     try {
       if (url.contains("/summary/")) {
-        Constructor<?> constructor = InstancesSummaryResult.class
-          .getDeclaredConstructors()[0];
-        constructor.setAccessible(true);
-        r = (InstancesSummaryResult) constructor.newInstance();
+        //Order is not guaranteed in the getDeclaredConstructors() call
+        Constructor<?> constructors[] = InstancesSummaryResult.class
+          .getDeclaredConstructors();
+        for (Constructor<?> constructor : constructors) {
+          //we want to invoke the constructor that has no parameters
+          if(constructor.getParameterTypes().length == 0) {
+            constructor.setAccessible(true);
+            r = (InstancesSummaryResult) constructor.newInstance();
+            break;
+          }
+        }
       } else {
-        Constructor<?> constructor = ProcessInstancesResult.class
-          .getDeclaredConstructors()[0];
-        constructor.setAccessible(true);
-        r = (ProcessInstancesResult) constructor.newInstance();
+        //Order is not guaranteed in the getDeclaredConstructors() call
+        Constructor<?> constructors[] = ProcessInstancesResult.class
+          .getDeclaredConstructors();
+          for (Constructor<?> constructor : constructors) {
+            //we want to invoke the constructor that has no parameters
+            if(constructor.getParameterTypes().length == 0) {
+              constructor.setAccessible(true);
+              r = (ProcessInstancesResult) constructor.newInstance();
+              break;
+            }
+          }
       }
     } catch (InstantiationException e) {
       e.printStackTrace();
@@ -729,7 +743,7 @@ public class InstanceUtil {
 
         org.apache.falcon.regression.core.generated.feed.Locations ls =
                 new org.apache.falcon.regression.core.generated.feed.Locations();
-        if (null != locations) {
+        if (null != locations && locations.length > 0) {
             for (int i = 0; i < locations.length; i++) {
                 org.apache.falcon.regression.core.generated.feed.Location l =
                         new org.apache.falcon.regression.core.generated.feed.Location();

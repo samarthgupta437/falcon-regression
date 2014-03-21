@@ -20,9 +20,13 @@ package org.apache.falcon.regression.core.bundle;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.Entities.ProcessMerlin;
+import org.apache.falcon.regression.core.generated.cluster.Interface;
+import org.apache.falcon.regression.core.generated.cluster.Interfaces;
+import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
+import org.apache.falcon.regression.core.generated.feed.CatalogTable;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Clusters;
 import org.apache.falcon.regression.core.generated.feed.Feed;
@@ -33,6 +37,7 @@ import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.RetentionType;
 import org.apache.falcon.regression.core.generated.feed.Validity;
 import org.apache.falcon.regression.core.generated.process.Cluster;
+import org.apache.falcon.regression.core.generated.process.EngineType;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Inputs;
 import org.apache.falcon.regression.core.generated.process.LateInput;
@@ -690,6 +695,13 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
+    public void setProcessInputStartEnd(String start, String end) throws JAXBException {
+        Process processElement = InstanceUtil.getProcessElement(this);
+        processElement.getInputs().getInput().get(0).setStart(start);
+        processElement.getInputs().getInput().get(0).setEnd(end);
+        InstanceUtil.writeProcessElement(this, processElement);
+    }
+
     public void setOutputFeedPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -755,8 +767,15 @@ public class Bundle {
     }
 
     public void setProcessWorkflow(String wfPath) throws JAXBException {
+        setProcessWorkflow(wfPath, null);
+    }
+
+    public void setProcessWorkflow(String wfPath, EngineType engineType) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow w = processElement.getWorkflow();
+        if(engineType != null) {
+            w.setEngine(engineType);
+        }
         w.setPath(wfPath);
         processElement.setWorkflow(w);
         InstanceUtil.writeProcessElement(this, processElement);
@@ -793,6 +812,10 @@ public class Bundle {
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
+    public void setOutputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
+        String feedName = Util.getOutputFeedNameFromBundle(this);
+        this.setFeedValidity(startInstance, endInstance, feedName);
+    }
     public void setInputFeedDataPath(String path) throws JAXBException {
         String feedName = Util.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
@@ -981,6 +1004,39 @@ public class Bundle {
         c.setColo(colo);
         InstanceUtil.writeClusterElement(this, c);
 
+    }
+
+    public void setClusterInterface(Interfacetype interfacetype, String value) throws JAXBException {
+        org.apache.falcon.regression.core.generated.cluster.Cluster c =
+                InstanceUtil.getClusterElement(this);
+        final Interfaces interfaces = c.getInterfaces();
+        final List<Interface> interfaceList = interfaces.getInterface();
+        for(int i = 0; i < interfaceList.size(); ++i) {
+            final Interface anInterface = interfaceList.get(i);
+            if(anInterface.getType() == interfacetype) {
+                anInterface.setEndpoint(value);
+            }
+        }
+        InstanceUtil.writeClusterElement(this, c);
+        clusters.set(0, clusterData);
+    }
+
+    public void setInputFeedTableUri(String tableUri) throws ParseException, JAXBException {
+        final String feedStr = Util.getInputFeedFromBundle(this);
+        Feed feed = InstanceUtil.getFeedElement(feedStr);
+        final CatalogTable catalogTable = new CatalogTable();
+        catalogTable.setUri(tableUri);
+        feed.setTable(catalogTable);
+        InstanceUtil.writeFeedElement(this, feed, feed.getName());
+    }
+
+    public void setOutputFeedTableUri(String tableUri) throws ParseException, JAXBException {
+        final String feedStr = Util.getOutputFeedFromBundle(this);
+        Feed feed = InstanceUtil.getFeedElement(feedStr);
+        final CatalogTable catalogTable = new CatalogTable();
+        catalogTable.setUri(tableUri);
+        feed.setTable(catalogTable);
+        InstanceUtil.writeFeedElement(this, feed, feed.getName());
     }
 
     public void setCLusterWorkingPath(String clusterData, String path) throws JAXBException {

@@ -451,7 +451,11 @@ public class Util {
     return testData;
   }
 
-  public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
+    public static Bundle readHCatBundle() throws IOException {
+        return readBundles("hcat")[0][0];
+    }
+
+    public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
 
     List<Bundle> bundleList = new ArrayList<Bundle>();
     File[] files;
@@ -460,7 +464,6 @@ public class Util {
     } catch (URISyntaxException e) {
       return bundleList;
     }
-
 
     List<String> dataSets = new ArrayList<String>();
     String processData = new String();
@@ -1496,6 +1499,15 @@ public class Util {
     return feedObject.getName();
   }
 
+    public static String getOutputFeedNameFromBundle(Bundle b) throws JAXBException {
+        String feedData = getOutputFeedFromBundle(b);
+
+        JAXBContext processContext = JAXBContext.newInstance(Feed.class);
+        Unmarshaller unmarshaller = processContext.createUnmarshaller();
+        Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
+
+        return feedObject.getName();
+    }
 
   public static String getFeedName(String feedData) throws JAXBException {
     JAXBContext processContext = JAXBContext.newInstance(Feed.class);
