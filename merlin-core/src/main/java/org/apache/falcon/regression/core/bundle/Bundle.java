@@ -297,6 +297,15 @@ public class Bundle {
         this.clusters = new ArrayList<String>(clusters);
     }
 
+    public List<String> getClusterNames() throws JAXBException {
+        List<String> clusterNames = new ArrayList<String>();
+        for (String cluster : clusters) {
+            final org.apache.falcon.regression.core.generated.cluster.Cluster clusterObject = Util.getClusterObject(cluster);
+            clusterNames.add(clusterObject.getName());
+        }
+        return clusterNames;
+    }
+
     public void setClusterData(String clusterData) {
         this.clusterData = clusterData;
     }
