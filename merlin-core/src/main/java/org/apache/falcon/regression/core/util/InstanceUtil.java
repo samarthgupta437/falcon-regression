@@ -1176,8 +1176,12 @@ public class InstanceUtil {
         List<String> bundleIds = OozieUtil.getBundleIds(bundleJobs);
         String bundleId = OozieUtil.getMaxId(bundleIds);
         logger.info(String.format("Using bundle %s", bundleId));
-        String coordId ;
-        List<CoordinatorJob> coords = client.getBundleJobInfo(bundleId).getCoordinators();
+        final String coordId ;
+        final BundleJob bundleJobInfo = client.getBundleJobInfo(bundleId);
+        final Status status = bundleJobInfo.getStatus();
+        Assert.assertTrue(status == Status.RUNNING || status == Status.PREP,
+                String.format("Bundle job %s is should be prep/running but is %s", bundleId, status));
+        List<CoordinatorJob> coords = bundleJobInfo.getCoordinators();
         List<String> cIds = new ArrayList<String>();
         if (entityType.equals(ENTITY_TYPE.PROCESS)) {
             for (CoordinatorJob coord : coords) {
@@ -1201,6 +1205,9 @@ public class InstanceUtil {
             logger.info(String.format("Try %d of %d", (i + 1), maxTries));
             int instanceWithStatus = 0;
             CoordinatorJob coordinatorJob = client.getCoordJobInfo(coordId);
+            final Status coordinatorStatus = coordinatorJob.getStatus();
+            Assert.assertTrue(coordinatorStatus == Status.RUNNING || coordinatorStatus == Status.PREP,
+                    String.format("Coordinator %s should be running/prep but is %s.", coordId, coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
             for (CoordinatorAction coordinatorAction : coordinatorActions) {
                 logger.info(String.format("Coordinator Action %s status is %s",
