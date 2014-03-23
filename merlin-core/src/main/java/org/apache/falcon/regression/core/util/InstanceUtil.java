@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.JSchException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
@@ -578,11 +579,11 @@ public class InstanceUtil {
                                                              int bundleNumber, int instanceNumber) throws OozieClientException {
         String bundleID = InstanceUtil
                 .getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
-        if (bundleID == null) {
+        if (StringUtils.isEmpty(bundleID)) {
             return null;
         }
         String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        if (coordID == null) {
+        if (StringUtils.isEmpty(coordID)) {
             return null;
         }
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
