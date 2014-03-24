@@ -128,11 +128,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        InstanceUtil
-                .areWorkflowsRunning(clusterOC, wfIDs,
-                        6,
-                        3, 1,
-                        2);
+        InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 6, 5, 1, 0);
     }
 
     @Test(groups = {"singleCluster"})
@@ -183,10 +179,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         Thread.sleep(5000);
-        InstanceUtil
-                .areWorkflowsRunning(clusterOC, wfIDs,
-                        3, 3, 0,
-                        0);
+        InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 6, 6, 0, 0);
     }
 
 
