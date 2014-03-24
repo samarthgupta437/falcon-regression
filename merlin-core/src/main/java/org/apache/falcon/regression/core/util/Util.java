@@ -77,6 +77,7 @@ import org.testng.Assert;
 import org.apache.log4j.Logger;
 import org.testng.TestNGException;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -2222,7 +2223,14 @@ public class Util {
     return path.substring(path.lastIndexOf("/")+1,path.length());
   }
 
-  public enum URLS {
+  public static boolean isDefinitionSame(PrismHelper server1, PrismHelper server2,
+                                           String entity)
+    throws URISyntaxException, IOException, AuthenticationException, JAXBException, SAXException {
+        return XmlUtil.isIdentical(getEntityDefinition(server1, entity, true),
+                getEntityDefinition(server2, entity, true));
+  }
+
+    public enum URLS {
 
     SUBMIT_URL("/api/entities/submit"),
     GET_ENTITY_DEFINITION("/api/entities/definition"),
