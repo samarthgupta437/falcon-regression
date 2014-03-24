@@ -125,7 +125,7 @@ public class HCatProcessTest extends BaseTestClass {
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
-        clusterHC.createTable(HCatCreateTableDesc
+       /* clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
                 .ifNotExists(true)
@@ -143,7 +143,7 @@ public class HCatProcessTest extends BaseTestClass {
                 .location(outputHDFSDir)
                 .fieldsTerminatedBy('\t')
                 .linesTerminatedBy('\n')
-                .build());
+                .build());*/
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
 

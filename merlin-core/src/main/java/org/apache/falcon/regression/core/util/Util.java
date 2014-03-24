@@ -1817,27 +1817,27 @@ public class Util {
       response.getStatus().toString().equals("FAILED"));
   }
 
-  public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
+   public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
     throws OozieClientException {
         XOozieClient client = coloHelper.getClusterHelper().getOozieClient();
 
-    BundleJob bundleJob = client.getBundleJobInfo(bundleId);
+        BundleJob bundleJob = client.getBundleJobInfo(bundleId);
 
-    if (bundleJob.getStatus().equals(BundleJob.Status.DONEWITHERROR) ||
-      bundleJob.getStatus().equals(BundleJob.Status.FAILED) ||
-      bundleJob.getStatus().equals(BundleJob.Status.SUCCEEDED) ||
-      bundleJob.getStatus().equals(BundleJob.Status.KILLED)) {
-      return true;
+        if (bundleJob.getStatus().equals(BundleJob.Status.DONEWITHERROR) ||
+                bundleJob.getStatus().equals(BundleJob.Status.FAILED) ||
+                bundleJob.getStatus().equals(BundleJob.Status.SUCCEEDED) ||
+                bundleJob.getStatus().equals(BundleJob.Status.KILLED)) {
+            return true;
+        }
+
+
+        try {
+            TimeUnit.SECONDS.sleep(20);
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage());
+        }
+        return false;
     }
-
-
-    try {
-      TimeUnit.SECONDS.sleep(20);
-    } catch (InterruptedException e) {
-      logger.error(e.getMessage());
-    }
-    return false;
-  }
 
     public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
@@ -1854,7 +1854,7 @@ public class Util {
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
         Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
                 OSUtil.NORMAL_INPUT + "log_01.txt");
-    }
+  }
 
 
   public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
@@ -2108,7 +2108,6 @@ public class Util {
         pathToCheck = pathToCheck+"feed/";
       else
         pathToCheck = pathToCheck+"process/";
-
       pathToCheck = pathToCheck+name+"/logs/job-"+instanceTime + "/" +
         feedElement
           .getTargetCluster()+"/000/replication_SUCCEEDED.log";
@@ -2121,59 +2120,63 @@ public class Util {
     }
   }
 
-  public static void updateWorkflowXml(FileSystem fs, String path) throws IOException {
-    FileUtils.deleteQuietly(new File("workflow.xml"));
-    FileUtils.deleteQuietly(new File(".workflow.xml.crc"));
-    FileUtils.deleteQuietly(new File("workflow.xml.bck"));
 
-    if(!path.endsWith("/"))
-      path = path + "/workflow.xml";
-    else
-      path = path + "workflow.xml" ;
+    public static void updateWorkflowXml(FileSystem fs, String path) throws IOException {
+        FileUtils.deleteQuietly(new File("workflow.xml"));
+        FileUtils.deleteQuietly(new File(".workflow.xml.crc"));
+        FileUtils.deleteQuietly(new File("workflow.xml.bck"));
 
-    Path file = new Path(path);
-    //check if workflow.xml exists or not
-    if(fs.exists(file)){
-      fs.copyToLocalFile(file, new Path("workflow.xml"));
-      FileUtils.copyFile(new File("workflow.xml"),new File("workflow.xml.bck"));
-      PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter
-        ("workflow.xml", true)));
-      out.println("<!-- some comment -->");
-      out.close();
-      fs.delete(file,false);
-      File crcFile = new File(".workflow.xml.crc");
-      if(crcFile.exists())
-        crcFile.delete();
-      fs.copyFromLocalFile(new Path("workflow.xml"),file);
+        if(!path.endsWith("/"))
+            path = path + "/workflow.xml";
+        else
+            path = path + "workflow.xml" ;
+
+        Path file = new Path(path);
+        //check if workflow.xml exists or not
+        if(fs.exists(file)){
+            fs.copyToLocalFile(file, new Path("workflow.xml"));
+            FileUtils.copyFile(new File("workflow.xml"),new File("workflow.xml.bck"));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter
+                    ("workflow.xml", true)));
+            out.println("<!-- some comment -->");
+            out.close();
+            fs.delete(file,false);
+            File crcFile = new File(".workflow.xml.crc");
+            if(crcFile.exists())
+                crcFile.delete();
+            fs.copyFromLocalFile(new Path("workflow.xml"),file);
+        }
+        else {
+            logger.info("Nothing to do, workflow.xml does not exists");
+        }
+
     }
-    else {
-      logger.info("Nothing to do, workflow.xml does not exists");
+
+    public static List<String> getAppPath(ColoHelper cluster,
+                                          String entityData
+    ) throws JAXBException, OozieClientException {
+
+        List<String> appPaths = new ArrayList<String>();
+        List<CoordinatorJob> coords = OozieUtil.getAllCoordIds(cluster,      entityData);
+        for(CoordinatorJob coord : coords) {
+            appPaths.add(Util.getAppPathFromConf(coord.getConf()));
+        }
+        appPaths = new ArrayList<String>(new HashSet<String>(appPaths));
+        return appPaths;
     }
 
-  }
+    private static String getAppPathFromConf(String conf) {
 
-  public static List<String> getAppPath(ColoHelper cluster,
-                                  String entityData
-                                  ) throws JAXBException, OozieClientException {
+        String tempConf = conf.substring(conf.indexOf("<name>oozie.coord" +
+                ".application.path</name>")+"<name>oozie.coord.application.path</name>"
+                .length());
 
-    List<String> appPaths = new ArrayList<String>();
-    List<CoordinatorJob> coords = OozieUtil.getAllCoordIds(cluster,      entityData);
-    for(CoordinatorJob coord : coords) {
-      appPaths.add(Util.getAppPathFromConf(coord.getConf()));
+        return tempConf.substring(tempConf.indexOf("<value>")+"<value>".length(),
+                tempConf.indexOf("/coordinator.xm"));
     }
-    appPaths = new ArrayList<String>(new HashSet<String>(appPaths));
-    return appPaths;
-  }
 
-  private static String getAppPathFromConf(String conf) {
 
-    String tempConf = conf.substring(conf.indexOf("<name>oozie.coord" +
-      ".application.path</name>")+"<name>oozie.coord.application.path</name>"
-      .length());
 
-    return tempConf.substring(tempConf.indexOf("<value>")+"<value>".length(),
-      tempConf.indexOf("/coordinator.xm"));
-  }
 
   public static int getOozieActionRetryCount(ColoHelper cluster,
                                              String entityData,
@@ -2202,6 +2205,44 @@ public class Util {
 
   }
 
+  public static boolean isDefinitionSame(PrismHelper server1, PrismHelper server2,
+                                           String entity)
+    throws URISyntaxException, IOException, AuthenticationException, JAXBException, SAXException {
+        return XmlUtil.isIdentical(getEntityDefinition(server1, entity, true),
+                getEntityDefinition(server2, entity, true));
+  }
+
+    public enum URLS {
+
+        SUBMIT_URL("/api/entities/submit"),
+        GET_ENTITY_DEFINITION("/api/entities/definition"),
+        DELETE_URL("/api/entities/delete"),
+        SCHEDULE_URL("/api/entities/schedule"),
+        VALIDATE_URL("/api/entities/validate"),
+        SUSPEND_URL("/api/entities/suspend"),
+        RESUME_URL("/api/entities/resume"),
+        STATUS_URL("/api/entities/status"),
+        SUBMIT_AND_SCHEDULE_URL("/api/entities/submitAndSchedule"),
+        INSTANCE_RUNNING("/api/instance/running"),
+        INSTANCE_STATUS("/api/instance/status"),
+        INSTANCE_KILL("/api/instance/kill"),
+        INSTANCE_RESUME("/api/instance/resume"),
+        INSTANCE_SUSPEND("/api/instance/suspend"),
+        PROCESS_UPDATE("/api/entities/update/process"),
+        INSTANCE_RERUN("/api/instance/rerun"),
+        FEED_UPDATE("/api/entities/update/feed"),
+        INSTANCE_SUMMARY("/api/instance/summary");
+        private final String url;
+
+        URLS(String url) {
+            this.url = url;
+        }
+
+        public String getValue() {
+            return this.url;
+        }
+    }
+
   private static CoordinatorAction getAction(ColoHelper cluster, String entityData, int instanceNumber) throws JAXBException, OozieClientException {
 
     String bundleId =  InstanceUtil
@@ -2223,43 +2264,6 @@ public class Util {
     return path.substring(path.lastIndexOf("/")+1,path.length());
   }
 
-  public static boolean isDefinitionSame(PrismHelper server1, PrismHelper server2,
-                                           String entity)
-    throws URISyntaxException, IOException, AuthenticationException, JAXBException, SAXException {
-        return XmlUtil.isIdentical(getEntityDefinition(server1, entity, true),
-                getEntityDefinition(server2, entity, true));
-  }
-
-    public enum URLS {
-
-    SUBMIT_URL("/api/entities/submit"),
-    GET_ENTITY_DEFINITION("/api/entities/definition"),
-    DELETE_URL("/api/entities/delete"),
-    SCHEDULE_URL("/api/entities/schedule"),
-    VALIDATE_URL("/api/entities/validate"),
-    SUSPEND_URL("/api/entities/suspend"),
-    RESUME_URL("/api/entities/resume"),
-    STATUS_URL("/api/entities/status"),
-    SUBMIT_AND_SCHEDULE_URL("/api/entities/submitAndSchedule"),
-    INSTANCE_RUNNING("/api/instance/running"),
-    INSTANCE_STATUS("/api/instance/status"),
-    INSTANCE_KILL("/api/instance/kill"),
-    INSTANCE_RESUME("/api/instance/resume"),
-    INSTANCE_SUSPEND("/api/instance/suspend"),
-    PROCESS_UPDATE("/api/entities/update/process"),
-    INSTANCE_RERUN("/api/instance/rerun"),
-    FEED_UPDATE("/api/entities/update/feed"), 
-    INSTANCE_SUMMARY("/api/instance/summary");
-    private final String url;
-
-    URLS(String url) {
-      this.url = url;
-    }
-
-    public String getValue() {
-      return this.url;
-    }
-  }
 
   private static class HardcodedUserInfo implements UserInfo {
 
