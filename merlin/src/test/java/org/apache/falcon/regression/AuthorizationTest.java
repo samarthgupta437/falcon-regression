@@ -335,6 +335,82 @@ public class AuthorizationTest extends BaseTestClass {
         InstanceUtil.validateResponse(r, 5, 0, 3, 2, 0);
     }
 
+    @Test
+    public void U1SuspendU2ResumeFeedInstances() throws Exception {
+        //configure paths
+        String targetPath = baseTestDir + "/backUp" + datePattern;
+        //cluster1 and cluster2 are sources, cluster3 is target
+        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
+        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
+        String endTime = InstanceUtil.addMinsToTime(startTime, 5);
+        Util.print("Time range between : " + startTime + " and " + endTime);
+
+        //configure feed
+        String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedFilePath(feed, feedInputPath);
+        feed = InstanceUtil.setFeedFrequency(feed, new Frequency(10, Frequency.TimeUnit.minutes));
+        //set invalid cluster - erase all clusters from feed definition
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+                XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null);
+        //set cluster1 as source
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity(startTime, endTime),
+                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+                Util.readClusterName(bundles[0].getClusters().get(0)),
+                ClusterType.SOURCE, "${cluster.colo}");
+        //set cluster2 as source
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity(startTime, endTime),
+                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)),
+                ClusterType.SOURCE, "country/${cluster.colo}");
+        //set cluster3 as target
+        feed = InstanceUtil.setFeedCluster(feed,
+                XmlUtil.createValidity(startTime, endTime),
+                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+                Util.readClusterName(bundles[2].getClusters().get(0)),
+                ClusterType.TARGET, null, targetPath);
+
+        //submit and schedule feed
+        Util.print("Feed : " + feed);
+        AssertUtil.assertSucceeded(
+                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
+                        feed));
+
+        //check id required coordinators exist
+        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feed),
+                "REPLICATION"), 2);
+
+        //upload necessary data
+        FeedMerlin feedMerlin = new FeedMerlin(feed);
+        feedMerlin.generateData(cluster1FS, true);
+        feedMerlin.generateData(cluster2FS, true);
+
+        //wait till replication starts
+        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.getFeedName(feed), 1,
+                CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.FEED);
+
+        ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(Util
+                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime);
+        InstanceUtil.validateResponse(r, 2, 2, 0, 0, 0);
+
+        //suspend instances by U1
+        r = prism.getFeedHelper().getProcessInstanceSuspend(Util
+                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime);
+        InstanceUtil.validateResponse(r, 2, 0, 2, 0, 0);
+
+        //try to resume them by U2
+        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
+        r = prism.getFeedHelper().getProcessInstanceResume(Util
+                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime,
+                MerlinConstants.USER2_NAME);
+        //instances should be suspended
+        InstanceUtil.validateResponse(r, 2, 0, 2, 0, 0);
+
+    }
     /**
      * U2Kill test cases
      */
