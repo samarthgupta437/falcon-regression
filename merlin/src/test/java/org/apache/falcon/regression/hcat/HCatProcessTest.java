@@ -218,7 +218,7 @@ public class HCatProcessTest extends BaseTestClass {
         nonHCatFeed = Util.setFeedName(nonHCatFeed, outputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();
         Assert.assertEquals(clusterNames.size(), 1, "Expected only one cluster in the bundle.");
-        nonHCatFeed = Util.setClusterNameInFeed(nonHCatFeed, clusterNames.get(0));
+        nonHCatFeed = Util.setClusterNameInFeed(nonHCatFeed, clusterNames.get(0), 0);
         InstanceUtil.writeFeedElement(bundles[0], nonHCatFeed, outputFeedName);
         bundles[0].setOutputFeedLocationData(outputHDFSDir + "/" +
                 StringUtils.join(new String[]{"${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator));
@@ -273,7 +273,7 @@ public class HCatProcessTest extends BaseTestClass {
         nonHCatFeed = Util.setFeedName(nonHCatFeed, inputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();
         Assert.assertEquals(clusterNames.size(), 1, "Expected only one cluster in the bundle.");
-        nonHCatFeed = Util.setClusterNameInFeed(nonHCatFeed, clusterNames.get(0));
+        nonHCatFeed = Util.setClusterNameInFeed(nonHCatFeed, clusterNames.get(0), 0);
         InstanceUtil.writeFeedElement(bundles[0], nonHCatFeed, inputFeedName);
         bundles[0].setInputFeedDataPath(inputHDFSDir + "/" +
                 StringUtils.join(new String[] {"${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator));
