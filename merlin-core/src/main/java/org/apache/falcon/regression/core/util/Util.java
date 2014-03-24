@@ -104,7 +104,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
@@ -1545,13 +1544,12 @@ public class Util {
     return feedWriter.toString().trim();
   }
 
-    public static String setClusterNameInFeed(String feedString, String clusterName) throws JAXBException {
+    public static String setClusterNameInFeed(String feedString, String clusterName, int clusterIndex) throws JAXBException {
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
         Feed feedObject =
                 (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
         //set the value
-        Assert.assertEquals(feedObject.getClusters().getCluster().size(), 1, "Expected only on cluster in the feed");
-        feedObject.getClusters().getCluster().get(0).setName(clusterName);
+        feedObject.getClusters().getCluster().get(clusterIndex).setName(clusterName);
         StringWriter feedWriter = new StringWriter();
         feedContext.createMarshaller().marshal(feedObject, feedWriter);
         return feedWriter.toString().trim();
