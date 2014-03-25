@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
+import org.apache.falcon.regression.core.generated.feed.CatalogTable;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.generated.feed.Property;
@@ -1752,6 +1753,14 @@ public class Util {
 
 
   }
+
+    public static String setFeedTableUri(String feedStr, String tableUri) throws ParseException, JAXBException {
+        Feed feed = Util.getFeedObject(feedStr);
+        final CatalogTable catalogTable = new CatalogTable();
+        catalogTable.setUri(tableUri);
+        feed.setTable(catalogTable);
+        return InstanceUtil.feedElementToString(feed);
+    }
 
   public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId)
     throws OozieClientException {
