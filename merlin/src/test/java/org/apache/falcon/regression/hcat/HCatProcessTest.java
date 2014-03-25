@@ -25,7 +25,6 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.process.EngineType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -144,8 +143,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(inputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
@@ -154,8 +151,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(outputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
@@ -179,11 +174,7 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
 
-        List<Path> inputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(inputHDFSDir + "/" + dataDates.get(0)));
-        List<Path> outputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
-        AssertUtil.checkForPathsSizes(inputData, outputData);
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
     }
 
     @Test(dataProvider = "generateSeparators")
@@ -209,8 +200,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(inputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
@@ -219,8 +208,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(inputHDFSDir2)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
@@ -229,12 +216,10 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(outputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
-        addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName2);
+        addPartitionsToTable(dataDates, dataset2, "dt", dbName, inputTableName2);
 
         final String tableUriPartitionFragment = StringUtils.join(
                 new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
@@ -263,10 +248,6 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
 
-        List<Path> inputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(inputHDFSDir + "/" + dataDates.get(0)));
-        List<Path> outputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
         final ContentSummary inputContentSummary =
                 clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
         final ContentSummary inputContentSummary2 =
@@ -303,8 +284,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(inputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
@@ -339,11 +318,7 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
 
-        List<Path> inputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(inputHDFSDir + "/" + dataDates.get(0)));
-        List<Path> outputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(outputHDFSDir + "/" + dataDates.get(0)));
-        AssertUtil.checkForPathsSizes(inputData, outputData);
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/" + dataDates.get(0));
     }
 
     @Test(dataProvider = "generateSeparators")
@@ -368,8 +343,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(outputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         String nonHCatFeed = Util.getInputFeedFromBundle(Util.readELBundles()[0][0]);
@@ -400,11 +373,19 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
 
-        List<Path> inputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(inputHDFSDir + "/" + dataDates.get(0)));
-        List<Path> outputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
-        AssertUtil.checkForPathsSizes(inputData, outputData);
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
+    }
+
+    private void checkContentSize(String inputPath, String outputPath) throws IOException {
+        final ContentSummary inputContentSummary =
+                clusterFS.getContentSummary(new Path(inputPath));
+        final ContentSummary outputContentSummary =
+                clusterFS.getContentSummary(new Path(outputPath));
+        logger.info("inputContentSummary = " + inputContentSummary.toString(false));
+        logger.info("outputContentSummary = " + outputContentSummary.toString(false));
+        Assert.assertEquals(inputContentSummary.getLength(),
+                outputContentSummary.getLength(),
+                "Unexpected size of the output.");
     }
 
     private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations, String partitionCol,

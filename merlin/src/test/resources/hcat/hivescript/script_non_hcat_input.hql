@@ -18,7 +18,6 @@
 DROP TABLE IF EXISTS ${falcon_outputData_database}.temp_table_on_raw_data;
 
 CREATE EXTERNAL TABLE ${falcon_outputData_database}.temp_table_on_raw_data(id STRING, value STRING)
- ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n'
  LOCATION '${inputData}';
 
 INSERT OVERWRITE TABLE ${falcon_outputData_database}.${falcon_outputData_table}
