@@ -228,7 +228,7 @@ public class HCatProcessTest extends BaseTestClass {
                 .build());
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
-        addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName2);
+        addPartitionsToTable(dataDates, dataset2, "dt", dbName, inputTableName2);
 
         final String tableUriPartitionFragment = StringUtils.join(
                 new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
