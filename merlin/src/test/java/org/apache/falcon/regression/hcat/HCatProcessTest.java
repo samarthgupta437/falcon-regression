@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.hcat;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
@@ -73,6 +74,7 @@ public class HCatProcessTest extends BaseTestClass {
     String hiveScriptFileNonHCatInput = hiveScriptDir + "/script_non_hcat_input.hql";
     String hiveScriptFileNonHCatOutput = hiveScriptDir + "/script_non_hcat_output.hql";
     String hiveScriptTwoHCatInputOneHCatOutput = hiveScriptDir + "/script_two_hcat_input_one_hcat_output.hql";
+    String hiveScriptOneHCatInputTwoHCatOutput = hiveScriptDir + "/script_one_hcat_input_two_hcat_output.hql";
     final String testDir = "/HCatProcessTest";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String inputHDFSDir = baseTestHDFSDir + "/input";
@@ -261,6 +263,97 @@ public class HCatProcessTest extends BaseTestClass {
                 outputContentSummary.getLength(),
                 "Unexpected size of the output.");
     }
+
+    @Test(dataProvider = "generateSeparators")
+    public void OneHCatInputTwoHCatOutput(String separator) throws Exception {
+        /* upload data and create partition */
+        final String startDate = "2010-01-01T20:00Z";
+        final String endDate = "2010-01-02T04:00Z";
+        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
+
+        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+
+        ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
+        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
+        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
+
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        clusterHC.createTable(HCatCreateTableDesc
+                .create(dbName, inputTableName, cols)
+                .partCols(partitionCols)
+                .ifNotExists(true)
+                .isTableExternal(true)
+                .location(inputHDFSDir)
+                .fieldsTerminatedBy('\t')
+                .linesTerminatedBy('\n')
+                .build());
+
+        clusterHC.createTable(HCatCreateTableDesc
+                .create(dbName, outputTableName, cols)
+                .partCols(partitionCols)
+                .ifNotExists(true)
+                .isTableExternal(true)
+                .location(outputHDFSDir)
+                .fieldsTerminatedBy('\t')
+                .linesTerminatedBy('\n')
+                .build());
+
+        clusterHC.createTable(HCatCreateTableDesc
+                .create(dbName, inputTableName2, cols)
+                .partCols(partitionCols)
+                .ifNotExists(true)
+                .isTableExternal(true)
+                .location(outputHDFSDir2)
+                .fieldsTerminatedBy('\t')
+                .linesTerminatedBy('\n')
+                .build());
+
+        addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
+
+        final String tableUriPartitionFragment = StringUtils.join(
+                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
+        bundles[0].setInputFeedTableUri(inputTableUri);
+        bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setInputFeedValidity(startDate, endDate);
+        String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
+        String outputTableUri2 = "catalog:" + dbName + ":" + outputTableName2 + tableUriPartitionFragment;
+        bundles[0].setOutputFeedTableUri(outputTableUri);
+        bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setOutputFeedValidity(startDate, endDate);
+        final String outputFeed1 = Util.getInputFeedFromBundle(bundles[0]);
+        final String outputFeed2Name = "second-" + Util.getFeedName(outputFeed1);
+        FeedMerlin feedObj = new FeedMerlin(outputFeed1);
+        feedObj.setName(outputFeed2Name);
+        feedObj.getTable().setUri(outputTableUri2);
+        bundles[0].addOutputFeedToBundle("outputData2", feedObj.toString(), 0);
+
+        bundles[0].setProcessValidity(startDate, endDate);
+        bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setProcessInputStartEnd("now(0,0)", "now(0,0)");
+        bundles[0].setProcessWorkflow(hiveScriptOneHCatInputTwoHCatOutput, EngineType.HIVE);
+        bundles[0].submitFeedsScheduleProcess();
+
+        InstanceUtil.waitTillInstanceReachState(
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
+
+        final ContentSummary inputContentSummary =
+                clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
+        final ContentSummary outputContentSummary =
+                clusterFS.getContentSummary(new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
+        final ContentSummary outputContentSummary2 =
+                clusterFS.getContentSummary(new Path(outputHDFSDir2 + "/dt=" + dataDates.get(0)));
+        logger.info("inputContentSummary = " + inputContentSummary.toString(false));
+        logger.info("outputContentSummary = " + outputContentSummary.toString(false));
+        logger.info("outputContentSummary2 = " + outputContentSummary2.toString(false));
+        Assert.assertEquals(inputContentSummary.getLength(), outputContentSummary.getLength(),
+                "Unexpected size of the output.");
+        Assert.assertEquals(inputContentSummary.getLength(), outputContentSummary2.getLength(),
+                "Unexpected size of the output.");
+    }
+
 
     @Test(dataProvider = "generateSeparators")
     public void OneHCatInputOneNonHCatOutput(String separator) throws Exception {
