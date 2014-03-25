@@ -810,11 +810,11 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         Thread.sleep(10000);
         Util.assertPartialSucceeded(r);                
         Assert.assertTrue(r.getMessage().contains(cluster1Colo + "/org.apache.falcon.FalconException")
-                && r.getMessage().contains(cluster2Colo + "/" + Util.getFeedName(feed)));
+                && r.getMessage().contains(cluster2Colo + "/" + Util.readEntityName(feed)));
 
         ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
         Assert.assertTrue(response.getMessage().contains(cluster1Colo + "/org.apache.falcon.FalconException")
-                && response.getMessage().contains(cluster2Colo + "/" + Util.getFeedName(feed)));
+                && response.getMessage().contains(cluster2Colo + "/" + Util.readEntityName(feed)));
         Util.assertPartialSucceeded(response);
 
         //now lets get the final states
@@ -910,7 +910,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
         Assert.assertTrue(response.getMessage().contains(cluster1Colo + "/org.apache.falcon" +
                 ".FalconException")
-                && response.getMessage().contains(cluster2Colo + "/" + Util.getFeedName(feed)));
+                && response.getMessage().contains(cluster2Colo + "/" + Util.readEntityName(feed)));
         Util.assertPartialSucceeded(response);
 
         //now lets get the final states

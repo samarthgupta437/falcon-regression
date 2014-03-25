@@ -275,7 +275,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "05/ua3/"),
                 "log_01.txt");
 
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
         Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
                 "REPLICATION"), 1);
@@ -352,7 +352,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         Assert.assertEquals(InstanceUtil
@@ -440,10 +440,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Thread.sleep(15000);
 
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.getFeedName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 3,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 3,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -592,9 +592,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Thread.sleep(15000);
 
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.getFeedName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 7,ENTITY_TYPE.FEED);
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -687,7 +687,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         AssertUtil.assertSucceeded(r);
         Thread.sleep(15000);
 
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 2,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -765,9 +765,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         Thread.sleep(15000);        
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.getFeedName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 3,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 3,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
