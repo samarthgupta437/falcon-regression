@@ -1576,11 +1576,11 @@ public class Util {
   public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
     throws IOException, JSchException {
     List<String> raw = runRemoteScript(coloHelper.getProcessHelper()
-      .getQaHost(), coloHelper.getProcessHelper().getUsername(),
-      coloHelper.getProcessHelper().getPassword(),
-      "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
-        "\"Received\" | awk '{print $2}'",
-      coloHelper.getProcessHelper().getIdentityFile());
+            .getQaHost(), coloHelper.getProcessHelper().getUsername(),
+            coloHelper.getProcessHelper().getPassword(),
+            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
+                    "\"Received\" | awk '{print $2}'",
+            coloHelper.getProcessHelper().getIdentityFile());
     List<String> finalList = new ArrayList<String>();
     for (String line : raw) {
       finalList.add(line.split(",")[0]);
@@ -1807,8 +1807,8 @@ public class Util {
   public static void assertSucceeded(ProcessInstancesResult response) {
     Assert.assertNotNull(response.getMessage());
     Assert.assertTrue(
-      response.getMessage().contains("SUCCEEDED") ||
-        response.getStatus().toString().equals("SUCCEEDED"));
+            response.getMessage().contains("SUCCEEDED") ||
+                    response.getStatus().toString().equals("SUCCEEDED"));
   }
 
   public static void assertFailed(ProcessInstancesResult response) {
@@ -2014,8 +2014,8 @@ public class Util {
   private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId, ENTITY_TYPE type) throws OozieClientException, ParseException {
 
     List<String> nominalTimesOriginalAndNew = Util.getActionsNominalTime
-      (cluster,
-        originalBundleId, type);
+            (cluster,
+                    originalBundleId, type);
 
     nominalTimesOriginalAndNew.addAll(Util.getActionsNominalTime(cluster,
       newBundleId, type));
@@ -2069,7 +2069,7 @@ public class Util {
   public static String getCoordStartTime(ColoHelper colo, String entity,
                                          int bundleNo) throws JAXBException, OozieClientException, ParseException {
     String bundleID = InstanceUtil.getSequenceBundleID(colo,
-      Util.readEntityName(entity),Util.getEntityType(entity),bundleNo);
+            Util.readEntityName(entity), Util.getEntityType(entity), bundleNo);
 
     CoordinatorJob coord = Util.getDefaultOozieCoord(colo, bundleID,
       Util.getEntityType(entity));
@@ -2152,32 +2152,6 @@ public class Util {
 
     }
 
-    public static List<String> getAppPath(ColoHelper cluster,
-                                          String entityData
-    ) throws JAXBException, OozieClientException {
-
-        List<String> appPaths = new ArrayList<String>();
-        List<CoordinatorJob> coords = OozieUtil.getAllCoordIds(cluster,      entityData);
-        for(CoordinatorJob coord : coords) {
-            appPaths.add(Util.getAppPathFromConf(coord.getConf()));
-        }
-        appPaths = new ArrayList<String>(new HashSet<String>(appPaths));
-        return appPaths;
-    }
-
-    private static String getAppPathFromConf(String conf) {
-
-        String tempConf = conf.substring(conf.indexOf("<name>oozie.coord" +
-                ".application.path</name>")+"<name>oozie.coord.application.path</name>"
-                .length());
-
-        return tempConf.substring(tempConf.indexOf("<value>")+"<value>".length(),
-                tempConf.indexOf("/coordinator.xm"));
-    }
-
-
-
-
   public static int getOozieActionRetryCount(ColoHelper cluster,
                                              String entityData,
                                              int instanceNumber,
@@ -2247,7 +2221,7 @@ public class Util {
 
     String bundleId =  InstanceUtil
       .getLatestBundleID(cluster,
-        Util.readEntityName(entityData), Util.getEntityType(entityData));
+              Util.readEntityName(entityData), Util.getEntityType(entityData));
     List<CoordinatorAction> actions = getDefaultOozieCoord(cluster,
       bundleId, Util.getEntityType(entityData)).getActions();
 
