@@ -332,19 +332,8 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
 
-        final ContentSummary inputContentSummary =
-                clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
-        final ContentSummary outputContentSummary =
-                clusterFS.getContentSummary(new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
-        final ContentSummary outputContentSummary2 =
-                clusterFS.getContentSummary(new Path(outputHDFSDir2 + "/dt=" + dataDates.get(0)));
-        logger.info("inputContentSummary = " + inputContentSummary.toString(false));
-        logger.info("outputContentSummary = " + outputContentSummary.toString(false));
-        logger.info("outputContentSummary2 = " + outputContentSummary2.toString(false));
-        Assert.assertEquals(inputContentSummary.getLength(), outputContentSummary.getLength(),
-                "Unexpected size of the output.");
-        Assert.assertEquals(inputContentSummary.getLength(), outputContentSummary2.getLength(),
-                "Unexpected size of the output.");
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir2 + "/dt=" + dataDates.get(0));
     }
 
 
