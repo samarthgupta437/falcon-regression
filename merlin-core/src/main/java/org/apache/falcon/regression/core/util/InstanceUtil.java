@@ -1180,7 +1180,7 @@ public class InstanceUtil {
         final String coordId ;
         final BundleJob bundleJobInfo = client.getBundleJobInfo(bundleId);
         final Status status = bundleJobInfo.getStatus();
-        Assert.assertTrue(status == Status.RUNNING || status == Status.PREP,
+        Assert.assertTrue(status == Status.RUNNING || status == Status.PREP || status == Status.SUCCEEDED,
                 String.format("Bundle job %s is should be prep/running but is %s", bundleId, status));
         List<CoordinatorJob> coords = bundleJobInfo.getCoordinators();
         List<String> cIds = new ArrayList<String>();
@@ -1207,7 +1207,8 @@ public class InstanceUtil {
             int instanceWithStatus = 0;
             CoordinatorJob coordinatorJob = client.getCoordJobInfo(coordId);
             final Status coordinatorStatus = coordinatorJob.getStatus();
-            Assert.assertTrue(coordinatorStatus == Status.RUNNING || coordinatorStatus == Status.PREP,
+            Assert.assertTrue(coordinatorStatus == Status.RUNNING || coordinatorStatus == Status.PREP ||
+                            coordinatorStatus == Status.SUCCEEDED,
                     String.format("Coordinator %s should be running/prep but is %s.", coordId, coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
             for (CoordinatorAction coordinatorAction : coordinatorActions) {
