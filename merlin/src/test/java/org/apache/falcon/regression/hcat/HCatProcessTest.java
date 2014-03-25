@@ -209,8 +209,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(inputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
@@ -219,8 +217,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(inputHDFSDir2)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
@@ -229,8 +225,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(outputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
