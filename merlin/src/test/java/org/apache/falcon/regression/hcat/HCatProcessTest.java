@@ -286,8 +286,6 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(inputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
@@ -296,18 +294,14 @@ public class HCatProcessTest extends BaseTestClass {
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(outputHDFSDir)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
-                .create(dbName, inputTableName2, cols)
+                .create(dbName, outputTableName2, cols)
                 .partCols(partitionCols)
                 .ifNotExists(true)
                 .isTableExternal(true)
                 .location(outputHDFSDir2)
-                .fieldsTerminatedBy('\t')
-                .linesTerminatedBy('\n')
                 .build());
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
@@ -325,10 +319,9 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setOutputFeedValidity(startDate, endDate);
         final String outputFeed1 = Util.getInputFeedFromBundle(bundles[0]);
         final String outputFeed2Name = "second-" + Util.getFeedName(outputFeed1);
-        FeedMerlin feedObj = new FeedMerlin(outputFeed1);
-        feedObj.setName(outputFeed2Name);
-        feedObj.getTable().setUri(outputTableUri2);
-        bundles[0].addOutputFeedToBundle("outputData2", feedObj.toString(), 0);
+        String outputFeed2 = Util.setFeedName(outputFeed1, outputFeed2Name);
+        outputFeed2 = Util.setFeedTableUri(outputFeed2, outputTableUri2);
+        bundles[0].addOutputFeedToBundle("outputData2", outputFeed2, 0);
 
         bundles[0].setProcessValidity(startDate, endDate);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
@@ -339,19 +332,8 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
 
-        final ContentSummary inputContentSummary =
-                clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
-        final ContentSummary outputContentSummary =
-                clusterFS.getContentSummary(new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
-        final ContentSummary outputContentSummary2 =
-                clusterFS.getContentSummary(new Path(outputHDFSDir2 + "/dt=" + dataDates.get(0)));
-        logger.info("inputContentSummary = " + inputContentSummary.toString(false));
-        logger.info("outputContentSummary = " + outputContentSummary.toString(false));
-        logger.info("outputContentSummary2 = " + outputContentSummary2.toString(false));
-        Assert.assertEquals(inputContentSummary.getLength(), outputContentSummary.getLength(),
-                "Unexpected size of the output.");
-        Assert.assertEquals(inputContentSummary.getLength(), outputContentSummary2.getLength(),
-                "Unexpected size of the output.");
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir2 + "/dt=" + dataDates.get(0));
     }
 
 
