@@ -225,6 +225,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
      coords.
      */
 
+      try {
     String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
     processBundle.setProcessValidity(startTime,
       InstanceUtil.getTimeWrtSystemTime(60));
@@ -327,11 +328,15 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Util.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
       oldProcess, true, true);
   }
+   finally {
+          Util.restartService(cluster_2.getProcessHelper());
+      }
+  }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
   public void inNextFewMinutesUpdate_RollForward_Feed() throws InterruptedException, JAXBException, ParseException, IOException, URISyntaxException, JSchException, OozieClientException, SAXException, AuthenticationException {
-
+    try {
     String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-18);
 
     String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_source);
@@ -403,6 +408,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Util.verifyNewBundleCreation(cluster_1, oldBundle_cluster1, oldNominalTimes_cluster1,
       feed, true , true);
 
+  }
+
+    finally {
+        Util.restartService(cluster_2.getProcessHelper());
+    }
   }
 
 
@@ -709,7 +719,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
     Util.print("tearDown " + method.getName());
     processBundle.deleteBundle(prism);
-    Util.restartService(cluster_2.getProcessHelper());
     bundle1.deleteBundle(prism);
     processBundle.deleteBundle(prism);
   }
