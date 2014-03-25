@@ -263,10 +263,6 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
 
-        List<Path> inputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(inputHDFSDir + "/" + dataDates.get(0)));
-        List<Path> outputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(outputHDFSDir + "/dt=" + dataDates.get(0)));
         final ContentSummary inputContentSummary =
                 clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
         final ContentSummary inputContentSummary2 =
