@@ -297,7 +297,7 @@ public class HCatProcessTest extends BaseTestClass {
                 .build());
 
         clusterHC.createTable(HCatCreateTableDesc
-                .create(dbName, inputTableName2, cols)
+                .create(dbName, outputTableName2, cols)
                 .partCols(partitionCols)
                 .ifNotExists(true)
                 .isTableExternal(true)
@@ -319,10 +319,9 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setOutputFeedValidity(startDate, endDate);
         final String outputFeed1 = Util.getInputFeedFromBundle(bundles[0]);
         final String outputFeed2Name = "second-" + Util.getFeedName(outputFeed1);
-        FeedMerlin feedObj = new FeedMerlin(outputFeed1);
-        feedObj.setName(outputFeed2Name);
-        feedObj.getTable().setUri(outputTableUri2);
-        bundles[0].addOutputFeedToBundle("outputData2", feedObj.toString(), 0);
+        String outputFeed2 = Util.setFeedName(outputFeed1, outputFeed2Name);
+        outputFeed2 = Util.setFeedTableUri(outputFeed2, outputTableUri2);
+        bundles[0].addOutputFeedToBundle("outputData2", outputFeed2, 0);
 
         bundles[0].setProcessValidity(startDate, endDate);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);

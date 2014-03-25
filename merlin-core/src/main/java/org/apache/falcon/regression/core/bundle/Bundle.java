@@ -1508,8 +1508,7 @@ public class Bundle {
     public void addOutputFeedToBundle(String feedRefName, String feed, int templateOutputIdx) throws JAXBException {
         this.getDataSets().add(feed);
         String feedName = Util.getFeedName(feed);
-        String processData = getProcessData();
-        Process processObject = InstanceUtil.getProcessElement(processData);
+        Process processObject = getProcessObject();
         final List<Output> processOutputs = processObject.getOutputs().getOutput();
         Output templateOutput = processOutputs.get(templateOutputIdx);
         Output newOutput = new Output();
