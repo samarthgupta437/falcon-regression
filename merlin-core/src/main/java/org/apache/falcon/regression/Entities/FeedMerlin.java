@@ -169,4 +169,15 @@ public class FeedMerlin extends Feed {
     return InstanceUtil.feedElementToString(element);
   }
 
+  @Override
+    public String toString() {
+
+        try {
+            return InstanceUtil.feedElementToString(this);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+    return null;
+    }
+
 }
