@@ -1510,13 +1510,6 @@ public class Util {
         return feedObject.getName();
     }
 
-  public static String getFeedName(String feedData) throws JAXBException {
-    JAXBContext processContext = JAXBContext.newInstance(Feed.class);
-    Unmarshaller unmarshaller = processContext.createUnmarshaller();
-    Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
-    return feedObject.getName();
-  }
-
   public static String getOutputFeedFromBundle(Bundle bundle) throws JAXBException {
     String processData = bundle.getProcessData();
 
@@ -1754,14 +1747,6 @@ public class Util {
 
 
   }
-
-    public static String setFeedTableUri(String feedStr, String tableUri) throws ParseException, JAXBException {
-        Feed feed = Util.getFeedObject(feedStr);
-        final CatalogTable catalogTable = new CatalogTable();
-        catalogTable.setUri(tableUri);
-        feed.setTable(catalogTable);
-        return InstanceUtil.feedElementToString(feed);
-    }
 
   public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId)
     throws OozieClientException {
