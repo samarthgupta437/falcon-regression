@@ -235,19 +235,17 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             sUa1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
             sUa2 = InstanceUtil.getInstanceStatus(cluster2, Util.getProcessName(process), 0, 0);
             if (sUa1 != null && sUa2 != null &&
-                    (sUa1.toString().equals("RUNNING") || sUa1.toString().equals("SUCCEEDED") ||
-                            sUa1.toString().equals("KILLED")) &&
-                    (sUa2.toString().equals("RUNNING") || sUa2.toString().equals("SUCCEEDED") ||
-                            sUa2.toString().equals("KILLED")))
+                    (sUa1 == Status.RUNNING || sUa1 == Status.SUCCEEDED || sUa1 == Status.KILLED) &&
+                    (sUa2 == Status.RUNNING || sUa2 == Status.SUCCEEDED || sUa2 == Status.KILLED)) {
                 break;
+            }
             Thread.sleep(20000);
-
         }
 
-        Assert.assertNotNull(sUa1);
-        Assert.assertTrue(sUa1.toString().equals("RUNNING") || sUa1.toString().equals("SUCCEEDED"));
-        Assert.assertNotNull(sUa2);
-        Assert.assertTrue(sUa2.toString().equals("RUNNING") || sUa2.toString().equals("SUCCEEDED"));
+        Assert.assertNotNull(sUa1, "sUa1 should not be null.");
+        Assert.assertTrue(sUa1 == Status.RUNNING || sUa1 == Status.SUCCEEDED, "Unexpected sUa1: " + sUa1);
+        Assert.assertNotNull(sUa2, "sUa2 should not be null.");
+        Assert.assertTrue(sUa2 == Status.RUNNING || sUa2 == Status.SUCCEEDED, "Unexpected sUa2: " + sUa2);
 
         ProcessInstancesResult responseInstance = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
@@ -270,7 +268,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                                 .addMinsToTime(processStartTime, 37) + "&end=" +
                                 InstanceUtil.addMinsToTime(processStartTime, 44));
         Util.assertSucceeded(responseInstance);
-        Assert.assertTrue(responseInstance.getInstances() == null);
+        Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),

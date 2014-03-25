@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
+import org.apache.falcon.regression.core.generated.feed.CatalogTable;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.generated.feed.Property;
@@ -105,7 +106,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedExceptionAction;
@@ -1534,10 +1534,10 @@ public class Util {
     return null;
   }
 
-  public static String setFeedName(String outputFeed, String newName) throws JAXBException {
+  public static String setFeedName(String feedString, String newName) throws JAXBException {
     JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
     Feed feedObject =
-      (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(outputFeed));
+      (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
 
     //set the value
     feedObject.setName(newName);
@@ -1545,6 +1545,17 @@ public class Util {
     feedContext.createMarshaller().marshal(feedObject, feedWriter);
     return feedWriter.toString().trim();
   }
+
+    public static String setClusterNameInFeed(String feedString, String clusterName, int clusterIndex) throws JAXBException {
+        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
+        Feed feedObject =
+                (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
+        //set the value
+        feedObject.getClusters().getCluster().get(clusterIndex).setName(clusterName);
+        StringWriter feedWriter = new StringWriter();
+        feedContext.createMarshaller().marshal(feedObject, feedWriter);
+        return feedWriter.toString().trim();
+    }
 
     public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId,
                                                       ENTITY_TYPE type)
@@ -1743,6 +1754,14 @@ public class Util {
 
 
   }
+
+    public static String setFeedTableUri(String feedStr, String tableUri) throws ParseException, JAXBException {
+        Feed feed = Util.getFeedObject(feedStr);
+        final CatalogTable catalogTable = new CatalogTable();
+        catalogTable.setUri(tableUri);
+        feed.setTable(catalogTable);
+        return InstanceUtil.feedElementToString(feed);
+    }
 
   public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId)
     throws OozieClientException {

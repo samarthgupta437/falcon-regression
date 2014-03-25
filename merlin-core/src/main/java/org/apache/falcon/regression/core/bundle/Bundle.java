@@ -297,6 +297,15 @@ public class Bundle {
         this.clusters = new ArrayList<String>(clusters);
     }
 
+    public List<String> getClusterNames() throws JAXBException {
+        List<String> clusterNames = new ArrayList<String>();
+        for (String cluster : clusters) {
+            final org.apache.falcon.regression.core.generated.cluster.Cluster clusterObject = Util.getClusterObject(cluster);
+            clusterNames.add(clusterObject.getName());
+        }
+        return clusterNames;
+    }
+
     public void setClusterData(String clusterData) {
         this.clusterData = clusterData;
     }
@@ -697,8 +706,10 @@ public class Bundle {
 
     public void setProcessInputStartEnd(String start, String end) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
-        processElement.getInputs().getInput().get(0).setStart(start);
-        processElement.getInputs().getInput().get(0).setEnd(end);
+        for (Input input : processElement.getInputs().getInput()) {
+            input.setStart(start);
+            input.setEnd(end);
+        }
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
@@ -1477,7 +1488,28 @@ public class Bundle {
         return InstanceUtil.processToString(p);
     }
 
-  public void setProcessProperty(String property, String value) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) throws JAXBException {
+        this.getDataSets().add(feed);
+        String feedName = Util.getFeedName(feed);
+        String processData = getProcessData();
+
+        JAXBContext processContext = JAXBContext.newInstance(Process.class);
+        Unmarshaller unmarshaller = processContext.createUnmarshaller();
+        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
+        final List<Input> processInputs = processObject.getInputs().getInput();
+        Input templateInput = processInputs.get(templateInputIdx);
+        Input newInput = new Input();
+        newInput.setFeed(feedName);
+        newInput.setName(feedRefName);
+        newInput.setOptional(templateInput.isOptional());
+        newInput.setStart(templateInput.getStart());
+        newInput.setEnd(templateInput.getEnd());
+        newInput.setPartition(templateInput.getPartition());
+        processInputs.add(newInput);
+        InstanceUtil.writeProcessElement(this, processObject);
+    }
+
+    public void setProcessProperty(String property, String value) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
        ProcessMerlin process = new ProcessMerlin(this.getProcessData());
        process.setProperty(property, value);
