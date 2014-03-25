@@ -1490,12 +1490,10 @@ public class Bundle {
 
     public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) throws JAXBException {
         this.getDataSets().add(feed);
-        String feedName = Util.getFeedName(feed);
+        String feedName = Util.readEntityName(feed);
         String processData = getProcessData();
 
-        JAXBContext processContext = JAXBContext.newInstance(Process.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
+        Process processObject = InstanceUtil.getProcessElement(processData);
         final List<Input> processInputs = processObject.getInputs().getInput();
         Input templateInput = processInputs.get(templateInputIdx);
         Input newInput = new Input();
