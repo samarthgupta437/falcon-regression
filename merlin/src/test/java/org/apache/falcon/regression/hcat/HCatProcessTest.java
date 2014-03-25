@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.hcat;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
@@ -203,7 +204,7 @@ public class HCatProcessTest extends BaseTestClass {
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
-       /* clusterHC.createTable(HCatCreateTableDesc
+        clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
                 .ifNotExists(true)
@@ -231,7 +232,7 @@ public class HCatProcessTest extends BaseTestClass {
                 .location(outputHDFSDir)
                 .fieldsTerminatedBy('\t')
                 .linesTerminatedBy('\n')
-                .build());*/
+                .build());
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName2);
@@ -244,9 +245,13 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
         final String inputFeed1 = Util.getInputFeedFromBundle(bundles[0]);
-        final String inputFeed2Name = "second-" + Util.getFeedName(inputFeed1);
-        String inputFeed2 = Util.setFeedName(inputFeed1, inputFeed2Name);
-        inputFeed2 = Util.setFeedTableUri(inputFeed2, inputTableUri2);
+        final String inputFeed2Name = "second-" + Util.readEntityName(inputFeed1);
+
+        FeedMerlin feedObj = new FeedMerlin(inputFeed1);
+        feedObj.setName(inputFeed2Name);
+        feedObj.getTable().setUri(inputTableUri2);
+
+        String inputFeed2 = feedObj.toString();
         bundles[0].addInputFeedToBundle("inputData2", inputFeed2, 0);
 
         String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
