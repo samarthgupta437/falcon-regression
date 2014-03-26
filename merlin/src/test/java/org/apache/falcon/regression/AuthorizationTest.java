@@ -328,7 +328,8 @@ public class AuthorizationTest extends BaseTestClass {
                 .getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION,
                         feed).getMessage();
         Assert.assertTrue(definition.contains(Util
-                .getFeedName(feed)) && !definition.contains("(feed) not found"), "Feed should be already submitted");
+                .readEntityName(feed)) && !definition.contains("(feed) not found"),
+                "Feed should be already submitted");
         //update feed definition
         String newFeed = Util.setFeedPathValue(feed,
                 baseHDFSDir + "/randomPath/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");

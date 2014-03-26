@@ -76,10 +76,11 @@ public class HCatRetention extends BaseTestClass {
             displayDetails(period, unit.getValue(), dataType.getValue());
 
             FeedMerlin feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
-            String feed= feedElement.setTableValue(Util.getInputFeedFromBundle(bundle), getFeedPathValue(dataType.getValue()), dBName, tableName);
-            feed = feedElement.insertRetentionValueInFeed(feed, unit.getValue() + "(" + period + ")");
+            feedElement.setTableValue(getFeedPathValue(dataType.getValue()),
+                    dBName, tableName);
+            feedElement.insertRetentionValueInFeed(unit.getValue() + "(" + period + ")");
             bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
-            bundle.getDataSets().add(feed);
+            bundle.getDataSets().add(feedElement.toString());
             bundle.generateUniqueBundle();
 
             bundle.submitClusters(prism);

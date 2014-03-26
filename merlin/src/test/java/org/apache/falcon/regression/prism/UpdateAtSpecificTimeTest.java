@@ -91,30 +91,38 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void invalidChar_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, AuthenticationException {
+  public void invalidChar_Process()
+  throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException,
+  AuthenticationException, OozieClientException {
     processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
       InstanceUtil.getTimeWrtSystemTime(20));
     processBundle.submitAndScheduleBundle(prism);
-    String oldProcess = processBundle.getProcessData();
+    InstanceUtil.waitTillInstancesAreCreated(cluster_1, processBundle.getProcessData(), 0,
+            10);
+      String oldProcess =
+              processBundle.getProcessData();
     processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
       InstanceUtil.getTimeWrtSystemTime(100));
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-      processBundle.getProcessData(), "abc");
+      processBundle.getProcessData(),"abc", null);
     Assert.assertTrue(r.getMessage().contains("java.lang.IllegalArgumentException: abc is not a valid UTC string"));
   }
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void invalidChar_Feed() throws ParseException, JAXBException, IOException, URISyntaxException, AuthenticationException {
+  public void invalidChar_Feed()
+  throws ParseException, JAXBException, IOException, URISyntaxException, AuthenticationException,
+  OozieClientException {
 
     String feed = submitAndScheduleFeed(processBundle);
-
+    InstanceUtil.waitTillInstancesAreCreated(cluster_1,feed,0,10);
     //update frequency
     Frequency f = new Frequency(21, Frequency.TimeUnit.minutes);
     String updatedFeed = InstanceUtil.setFeedFrequency(feed, f);
 
-    ServiceResponse r = prism.getFeedHelper().update(feed, updatedFeed, "abc");
-    Assert.assertTrue(r.getMessage().contains("java.lang.IllegalArgumentException: abc is not a valid UTC string"));
+    ServiceResponse r = prism.getFeedHelper().update(feed, updatedFeed, "abc", null);
+    Assert.assertTrue(r.getMessage()
+            .contains("java.lang.IllegalArgumentException: abc is not a valid UTC string"));
   }
 
 
@@ -181,7 +189,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String updatedFeed = InstanceUtil.setFeedFrequency(feed, f);
 
     r = prism.getFeedHelper().update(feed, updatedFeed,
-      InstanceUtil.getTimeWrtSystemTime(-10000));
+      InstanceUtil.getTimeWrtSystemTime(-10000),null);
     AssertUtil.assertSucceeded(r);
 
     InstanceUtil.waitTillInstancesAreCreated(cluster_1, feed, 1, 10);
@@ -217,6 +225,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
      coords.
      */
 
+      try {
     String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
     processBundle.setProcessValidity(startTime,
       InstanceUtil.getTimeWrtSystemTime(60));
@@ -319,11 +328,15 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Util.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
       oldProcess, true, true);
   }
+   finally {
+          Util.restartService(cluster_2.getProcessHelper());
+      }
+  }
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
   public void inNextFewMinutesUpdate_RollForward_Feed() throws InterruptedException, JAXBException, ParseException, IOException, URISyntaxException, JSchException, OozieClientException, SAXException, AuthenticationException {
-
+    try {
     String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-18);
 
     String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_source);
@@ -359,7 +372,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     //send update command with +5 mins in future
     String updateTime = InstanceUtil.getTimeWrtSystemTime(5);
-    r = prism.getFeedHelper().update(feed, updatedFeed, updateTime);
+    r = prism.getFeedHelper().update(feed, updatedFeed, updateTime, null);
     AssertUtil.assertPartial(r);
 
     //verify new bundle creation on cluster_1 and new definition on cluster_3
@@ -395,6 +408,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Util.verifyNewBundleCreation(cluster_1, oldBundle_cluster1, oldNominalTimes_cluster1,
       feed, true , true);
 
+  }
+
+    finally {
+        Util.restartService(cluster_2.getProcessHelper());
+    }
   }
 
 
@@ -701,7 +719,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
     Util.print("tearDown " + method.getName());
     processBundle.deleteBundle(prism);
-    Util.restartService(cluster_2.getProcessHelper());
     bundle1.deleteBundle(prism);
     processBundle.deleteBundle(prism);
   }

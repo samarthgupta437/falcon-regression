@@ -1490,8 +1490,10 @@ public class Bundle {
 
     public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) throws JAXBException {
         this.getDataSets().add(feed);
-        String feedName = Util.getFeedName(feed);
-        Process processObject = getProcessObject();
+        String feedName = Util.readEntityName(feed);
+        String processData = getProcessData();
+
+        Process processObject = InstanceUtil.getProcessElement(processData);
         final List<Input> processInputs = processObject.getInputs().getInput();
         Input templateInput = processInputs.get(templateInputIdx);
         Input newInput = new Input();
@@ -1507,7 +1509,7 @@ public class Bundle {
 
     public void addOutputFeedToBundle(String feedRefName, String feed, int templateOutputIdx) throws JAXBException {
         this.getDataSets().add(feed);
-        String feedName = Util.getFeedName(feed);
+        String feedName = Util.readEntityName(feed);
         Process processObject = getProcessObject();
         final List<Output> processOutputs = processObject.getOutputs().getOutput();
         Output templateOutput = processOutputs.get(templateOutputIdx);

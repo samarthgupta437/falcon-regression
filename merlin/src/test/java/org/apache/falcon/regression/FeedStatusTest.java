@@ -134,7 +134,7 @@ public class FeedStatusTest extends BaseTestClass {
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
 
         Assert.assertTrue(
-                response.getMessage().contains(Util.getFeedName(feed) + " (FEED) not found"));
+                response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
         AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
     }
 
@@ -145,7 +145,7 @@ public class FeedStatusTest extends BaseTestClass {
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
         Assert.assertTrue(
-                response.getMessage().contains(Util.getFeedName(feed) + " (FEED) not found"));
+                response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
 
     }
 }

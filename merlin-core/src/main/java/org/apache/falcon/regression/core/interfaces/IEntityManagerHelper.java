@@ -421,10 +421,10 @@ public abstract class IEntityManagerHelper {
                 Util.readEntityName(oldEntity);
 
         if (org.apache.commons.lang.StringUtils.isEmpty(colo))
-            return Util.sendRequest(url + "?effective=" + updateTime, "post",
+            return Util.sendRequest(url + "?effective=" + updateTime,"post",
               newEntity, null);
 
-        return Util.sendRequest(url + colo + "&effective=" + updateTime, "post",
+        return Util.sendRequest(url + colo + "&effective=" + updateTime,"post",
           newEntity, null);
     }
 

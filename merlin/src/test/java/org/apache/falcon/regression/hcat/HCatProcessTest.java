@@ -231,9 +231,13 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
         final String inputFeed1 = Util.getInputFeedFromBundle(bundles[0]);
-        final String inputFeed2Name = "second-" + Util.getFeedName(inputFeed1);
-        String inputFeed2 = Util.setFeedName(inputFeed1, inputFeed2Name);
-        inputFeed2 = Util.setFeedTableUri(inputFeed2, inputTableUri2);
+        final String inputFeed2Name = "second-" + Util.readEntityName(inputFeed1);
+
+        FeedMerlin feedObj = new FeedMerlin(inputFeed1);
+        feedObj.setName(inputFeed2Name);
+        feedObj.getTable().setUri(inputTableUri2);
+
+        String inputFeed2 = feedObj.toString();
         bundles[0].addInputFeedToBundle("inputData2", inputFeed2, 0);
 
         String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
@@ -318,10 +322,11 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
         final String outputFeed1 = Util.getInputFeedFromBundle(bundles[0]);
-        final String outputFeed2Name = "second-" + Util.getFeedName(outputFeed1);
-        String outputFeed2 = Util.setFeedName(outputFeed1, outputFeed2Name);
-        outputFeed2 = Util.setFeedTableUri(outputFeed2, outputTableUri2);
-        bundles[0].addOutputFeedToBundle("outputData2", outputFeed2, 0);
+        final String outputFeed2Name = "second-" + Util.readEntityName(outputFeed1);
+        FeedMerlin feedObj = new FeedMerlin(outputFeed1) ;
+        feedObj.setName(outputFeed2Name);
+        feedObj.getTable().setUri(outputTableUri2);
+        bundles[0].addOutputFeedToBundle("outputData2", feedObj.toString(), 0);
 
         bundles[0].setProcessValidity(startDate, endDate);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.hours);
@@ -433,7 +438,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedValidity(startDate, endDate);
 
         final String tableUriPartitionFragment = StringUtils.join(
-                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+                new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
@@ -446,9 +451,11 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5,
+                ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+                outputHDFSDir + "/dt=" + dataDates.get(0));
     }
 
     private void checkContentSize(String inputPath, String outputPath) throws IOException {
