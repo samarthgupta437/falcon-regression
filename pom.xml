@@ -157,7 +157,7 @@
         <profile>
             <id>hadoop-2</id>
             <properties>
-                <hadoop2.version>2.2.0</hadoop2.version>
+                <hadoop2.version>2.0.0-cdh4.6.0</hadoop2.version>
             </properties>
             <dependencyManagement>
                 <dependencies>
@@ -200,7 +200,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.apache.hive.hcatalog</groupId>
-                        <artifactId>hive-webhcat-java-client</artifactId>
+                        <artifactId>webhcat-java-client</artifactId>
                         <version>${hive.version}</version>
                     </dependency>
                 </dependencies>

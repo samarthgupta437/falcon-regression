@@ -67,7 +67,9 @@ public class HCatRetention extends BaseTestClass {
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
     public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit, FEED_TYPE dataType, boolean isEmpty) {
 
-        String tableName = "testHCatRetention"+unit.getValue() + period;
+        String tableName = "testhcatretention"+unit.getValue() + period;
+        /*the hcatalog table that is created changes tablename characters to lowercase. So the
+          name in the feed should be the same.*/
 
         try{
             HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
@@ -90,7 +92,11 @@ public class HCatRetention extends BaseTestClass {
                         .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
 
                 feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
-                feedElement.generateData(cli, serverFS.get(0), isEmpty);
+                if(isEmpty){
+                    feedElement.generateData(cli, serverFS.get(0));
+                }else{
+                    feedElement.generateData(cli, serverFS.get(0), "src/test/resources/OozieExampleInputData/lateData");
+                }
 
                 check(dataType.getValue(), unit.getValue(), p, tableName);
             } else {

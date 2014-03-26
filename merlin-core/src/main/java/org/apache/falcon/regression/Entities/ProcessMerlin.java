@@ -80,23 +80,23 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
     return null;
   }
 
-  public void generateData(FileSystem fs, Bundle b, boolean isEmpty)throws Exception{
+  public void generateData(FileSystem fs, Bundle b, String... copyFrom)throws Exception{
 
       Bundle b1 = new Bundle(b);
       b1 = setFeedsToGenerateData(fs,b1);
       Map<String, FeedMerlin> inpFeeds = getInputFeeds(b1);
       for(FeedMerlin feedElement : inpFeeds.values()){
-          feedElement.generateData(fs, isEmpty);
+          feedElement.generateData(fs, copyFrom);
       }
   }
 
-  public void generateData(FileSystem fs, Bundle b, HCatClient client, boolean isEmpty)throws Exception{
+  public void generateData(FileSystem fs, Bundle b, HCatClient client, String... copyFrom)throws Exception{
 
       Bundle b1 = new Bundle(b);
       b1 = setFeedsToGenerateData(fs,b1);
       Map<String, FeedMerlin> inpFeeds = getInputFeeds(b1);
       for(FeedMerlin feedElement : inpFeeds.values()){
-          feedElement.generateData(client,fs, isEmpty);
+          feedElement.generateData(client,fs, copyFrom);
       }
   }
 

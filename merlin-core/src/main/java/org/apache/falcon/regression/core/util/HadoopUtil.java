@@ -329,7 +329,7 @@ public class HadoopUtil {
         return returnList;
     }
 
-    public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix, boolean isEmpty)throws Exception{
+    public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix, String... copyFrom)throws Exception{
         Util.HDFSCleanup(fs, prefix);
 
         ArrayList<String> dataFolder = new ArrayList<String>();
@@ -341,7 +341,7 @@ public class HadoopUtil {
             dataFolder.add(dataDate);
         }
 
-        HadoopUtil.flattenDataInFolders(fs, "src/test/resources/OozieExampleInputData/lateData", dataFolder, isEmpty);
+        HadoopUtil.flattenDataInFolders(fs, dataFolder, copyFrom);
         return dataFolder;
     }
 
@@ -429,22 +429,19 @@ public class HadoopUtil {
         }
     }
 
-    public static void flattenDataInFolders(FileSystem fs, String inputPath,
-                                            List<String> remoteLocations, boolean isEmpty)throws Exception{
+    public static void flattenDataInFolders(FileSystem fs,
+                                            List<String> remoteLocations, String... inputPath)throws Exception{
 
-        if(!isEmpty){
-            flattenAndPutDataInFolder(fs, inputPath, remoteLocations);
-        }
-        else{
-
+        if(inputPath.length == 0){
             for (String remoteLocation : remoteLocations) {
                 logger.info("generating empty folder: " + remoteLocation);
 
                 if (!fs.exists(new Path(remoteLocation)))
                     fs.mkdirs(new Path(remoteLocation));
             }
-
         }
-
+        else{
+            flattenAndPutDataInFolder(fs, inputPath[0], remoteLocations);
+        }
     }
 }

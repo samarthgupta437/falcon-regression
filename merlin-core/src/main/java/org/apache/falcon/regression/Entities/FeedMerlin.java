@@ -51,8 +51,10 @@ public class FeedMerlin extends Feed {
     Field[] fields = Feed.class.getDeclaredFields();
     for (Field fld : fields) {
       System.out.println("current field: " + fld.getName());
-      if ("acl".equals(fld.getName()))
-        continue;
+        if ("acl".equals(fld.getName())){
+            this.setACL(element.getACL());
+            continue;
+        }
       PropertyUtils.setProperty(this, fld.getName(),
         PropertyUtils.getProperty(element, fld.getName()));
     }
@@ -71,7 +73,7 @@ public class FeedMerlin extends Feed {
     return "";
   }
 
-  public void generateData(HCatClient cli, FileSystem fs, boolean isEmpty) throws Exception {
+  public void generateData(HCatClient cli, FileSystem fs, String... copyFrom) throws Exception {
     FEED_TYPE dataType;
     ArrayList<String> dataFolder;
     String ur = getTable().getUri();
@@ -90,11 +92,11 @@ public class FeedMerlin extends Feed {
     String loc = cli.getTable(dbName, tableName).getLocation();
     loc = loc + "/";
 
-    dataFolder = createTestData(fs, dataType, loc, isEmpty);
+    dataFolder = createTestData(fs, dataType, loc, copyFrom);
     HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder);
   }
 
-  public void generateData(FileSystem fs, boolean isEmpty) throws Exception {
+  public void generateData(FileSystem fs, String... copyFrom) throws Exception {
     FEED_TYPE dataType;
     String pathValue = "";
     for (Location location : getLocations().getLocation()) {
@@ -112,10 +114,10 @@ public class FeedMerlin extends Feed {
     }
 
     String loc = pathValue.substring(0, pathValue.indexOf("$"));
-    createTestData(fs, dataType, loc, isEmpty);
+    createTestData(fs, dataType, loc, copyFrom);
   }
 
-  public ArrayList<String> createTestData(FileSystem fs, FEED_TYPE dataType, String loc, boolean isEmpty) throws Exception {
+  public ArrayList<String> createTestData(FileSystem fs, FEED_TYPE dataType, String loc, String... copyFrom) throws Exception {
     ArrayList<String> dataFolder = new ArrayList<String>();
 
     Date start = getClusters().getCluster().get(0).getValidity().getStart();
@@ -127,7 +129,7 @@ public class FeedMerlin extends Feed {
     DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
     DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
 
-    dataFolder = HadoopUtil.createTestDataInHDFS(fs, Util.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, isEmpty);
+    dataFolder = HadoopUtil.createTestDataInHDFS(fs, Util.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
     return dataFolder;
   }
 
