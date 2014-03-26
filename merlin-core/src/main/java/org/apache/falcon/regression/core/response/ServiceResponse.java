@@ -22,13 +22,16 @@
  */
 package org.apache.falcon.regression.core.response;
 
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.http.HttpResponse;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ServiceResponse {
+    Logger logger = Logger.getLogger(ServiceResponse.class);
 
     public String message;
     int code;
@@ -77,6 +80,8 @@ public class ServiceResponse {
         this.code = response.getStatusLine().getStatusCode();
         this.response = response;
 
+        logger.info("The web service response is:\n" +
+                Util.prettyPrintXmlOrJson(message));
     }
     public ServiceResponse() {
     }

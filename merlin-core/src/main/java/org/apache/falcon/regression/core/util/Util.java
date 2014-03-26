@@ -19,6 +19,8 @@
 package org.apache.falcon.regression.core.util;
 
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -2343,6 +2345,22 @@ public class Util {
             return xmlString;
         }
 
+    }
+
+    public static String prettyPrintJson(String jsonString) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(jsonString);
+    }
+
+    public static String prettyPrintXmlOrJson(final String str) {
+        String cleanStr = str.trim();
+        //taken from http://stackoverflow.com/questions/7256142/way-to-quickly-check-if-string-is-xml-or-json-in-c-sharp
+        if(cleanStr.startsWith("{") || cleanStr.startsWith("["))
+            return prettyPrintJson(cleanStr);
+        if(cleanStr.startsWith("<"))
+            return prettyPrintXml(cleanStr);
+        logger.warn("The string does not seem to be either json or xml: " + cleanStr);
+        return str;
     }
 
   public static String getEntityDefinition(PrismHelper cluster,

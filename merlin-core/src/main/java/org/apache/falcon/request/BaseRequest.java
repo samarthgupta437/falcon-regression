@@ -18,6 +18,7 @@
 
 package org.apache.falcon.request;
 
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.security.FalconAuthorizationToken;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -32,7 +33,6 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -159,12 +159,10 @@ public class BaseRequest {
                 response = client.execute(target, request);
             }
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Response Status: " + response.getStatusLine());
-            for (Header header : response.getAllHeaders()) {
-                LOGGER.debug(String.format("Response Header: Name=%s Value=%s", header.getName(),
-                        header.getValue()));
-            }
+        LOGGER.info("Response Status: " + response.getStatusLine());
+        for (Header header : response.getAllHeaders()) {
+            LOGGER.info(String.format("Response Header: Name=%s Value=%s", header.getName(),
+                    header.getValue()));
         }
         return response;
     }

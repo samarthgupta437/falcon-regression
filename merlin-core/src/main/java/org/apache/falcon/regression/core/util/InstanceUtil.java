@@ -108,9 +108,7 @@ public class InstanceUtil {
       string_response.append(line).append("\n");
     }
     String jsonString = string_response.toString();
-    logger.info(
-      "The web service response status is " + response.getStatusLine().getStatusCode());
-    logger.info("The web service response is: " + string_response.toString() + "\n");
+    logger.info("The web service response is:\n" + Util.prettyPrintXmlOrJson(jsonString));
     APIResult r = null;
     try {
       if (url.contains("/summary/")) {
