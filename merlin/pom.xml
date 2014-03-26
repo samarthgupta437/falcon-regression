@@ -80,7 +80,7 @@
                 </dependency>
                 <dependency>
                     <groupId>org.apache.hive.hcatalog</groupId>
-                    <artifactId>hive-webhcat-java-client</artifactId>
+                    <artifactId>webhcat-java-client</artifactId>
                 </dependency>
             </dependencies>
         </profile>
@@ -102,6 +102,12 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
