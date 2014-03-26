@@ -98,7 +98,7 @@
             	</dependency>-->
                 <dependency>
                     <groupId>org.apache.hive.hcatalog</groupId>
-                    <artifactId>webhcat-java-client</artifactId>
+                    <artifactId>hive-webhcat-java-client</artifactId>
                 </dependency>
             </dependencies>
         </profile>
