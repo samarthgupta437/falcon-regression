@@ -19,13 +19,10 @@
 package org.apache.falcon.regression;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.process.Input;
 import org.apache.falcon.regression.core.generated.process.Inputs;
 import org.apache.falcon.regression.core.generated.process.Process;
@@ -38,7 +35,6 @@ import org.apache.falcon.regression.core.util.KerberosHelper;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -65,14 +61,9 @@ import java.util.List;
 public class AuthorizationTest extends BaseTestClass {
     private static final Logger logger = Logger.getLogger(AuthorizationTest.class);
 
-    ColoHelper cluster1 = servers.get(0);
-    ColoHelper cluster2 = servers.get(1);
-    ColoHelper cluster3 = servers.get(2);
-    FileSystem cluster1FS = serverFS.get(0);
-    FileSystem cluster2FS = serverFS.get(1);
-    OozieClient cluster1OC = serverOC.get(0);
-    OozieClient cluster2OC = serverOC.get(1);
-    OozieClient cluster3OC = serverOC.get(2);
+    ColoHelper cluster = servers.get(0);
+    FileSystem clusterFS = serverFS.get(0);
+    OozieClient clusterOC = serverOC.get(0);
     String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String baseTestDir = baseHDFSDir + "/AuthorizationTest";
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -80,22 +71,15 @@ public class AuthorizationTest extends BaseTestClass {
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
-        HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+        HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-
         Bundle bundle = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
-
+        bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].generateUniqueBundle();
-        bundles[1].generateUniqueBundle();
-        bundles[2].generateUniqueBundle();
-
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
@@ -139,7 +123,7 @@ public class AuthorizationTest extends BaseTestClass {
     throws Exception {
         //submit, schedule process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.RUNNING);
         //try to delete process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -156,7 +140,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         //delete feed by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().delete(Util.URLS
@@ -169,11 +153,11 @@ public class AuthorizationTest extends BaseTestClass {
     public void U1SuspendU2DeleteProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.RUNNING);
         Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
                 bundles[0].getProcessData()));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.SUSPENDED);
         //try to delete process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -191,7 +175,7 @@ public class AuthorizationTest extends BaseTestClass {
         Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         //delete feed by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().delete(Util.URLS
@@ -210,7 +194,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         //try to suspend by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().suspend(Util.URLS
@@ -222,7 +206,7 @@ public class AuthorizationTest extends BaseTestClass {
     @Test
     public void U1ScheduleU2SuspendProcess() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.RUNNING);
         //try to suspend process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -243,7 +227,7 @@ public class AuthorizationTest extends BaseTestClass {
         Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         //try to resume feed by User2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().resume(Util.URLS
@@ -258,7 +242,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
                 bundles[0].getProcessData()));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.SUSPENDED);
         //try to resume process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -286,7 +270,7 @@ public class AuthorizationTest extends BaseTestClass {
         //provide necessary data for first 3 instances to run
         Util.print("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
@@ -294,18 +278,18 @@ public class AuthorizationTest extends BaseTestClass {
         Util.print("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
         Util.print("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(bundles[0]
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
                 .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
 
         //check that there are 2 waiting instances
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(bundles[0]
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
                 .getProcessData()), 2, CoordinatorAction.Status.WAITING, 1, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
@@ -336,73 +320,6 @@ public class AuthorizationTest extends BaseTestClass {
         InstanceUtil.validateResponse(r, 5, 0, 3, 2, 0);
     }
 
-    @Test
-    public void U1SuspendU2ResumeFeedInstances() throws Exception {
-        String targetPath = baseTestDir + "/backUp" + datePattern;
-        Bundle.submitCluster(bundles[0], bundles[1]);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
-        String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Time range between : " + startTime + " and " + endTime);
-
-        //configure feed
-        String feed = bundles[0].getDataSets().get(0);
-        feed = InstanceUtil.setFeedFilePath(feed, feedInputPath);
-        //erase all clusters from feed definition
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null);
-        //set cluster1 as source
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(startTime, endTime),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)),
-                ClusterType.SOURCE, null);
-        //set cluster2 as target
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(startTime, endTime),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)),
-                ClusterType.TARGET, null, targetPath);
-
-        //submit and schedule feed
-        Util.print("Feed : " + feed);
-        AssertUtil.assertSucceeded(
-                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
-                        feed));
-
-        //check id required coordinators exist
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feed),
-                "REPLICATION"), 1);
-
-        //upload necessary data
-        FeedMerlin feedMerlin = new FeedMerlin(feed);
-        feedMerlin.generateData(cluster1FS, true);
-
-        //wait till replication starts
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 1,
-                CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.FEED);
-
-        ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime);
-        InstanceUtil.validateResponse(r, 1, 1, 0, 0, 0);
-
-        //suspend instance by U1
-        r = prism.getFeedHelper().getProcessInstanceSuspend(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime);
-        InstanceUtil.validateResponse(r, 1, 0, 1, 0, 0);
-
-        //try to resume it by U2
-        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
-        r = prism.getFeedHelper().getProcessInstanceResume(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime,
-                MerlinConstants.USER2_NAME);
-        //instance should be suspended
-        InstanceUtil.validateResponse(r, 1, 0, 1, 0, 0);
-
-    }
-
     /**
      * U2Kill test cases
      */
@@ -423,7 +340,7 @@ public class AuthorizationTest extends BaseTestClass {
         //provide necessary data for first 3 instances to run
         Util.print("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
@@ -431,14 +348,14 @@ public class AuthorizationTest extends BaseTestClass {
         Util.print("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
         Util.print("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(bundles[0]
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
                 .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
@@ -475,7 +392,7 @@ public class AuthorizationTest extends BaseTestClass {
         //provide necessary data for first 3 instances to run
         Util.print("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
@@ -483,18 +400,18 @@ public class AuthorizationTest extends BaseTestClass {
         Util.print("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
         Util.print("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(bundles[0]
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
                 .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
 
         //check that there are 2 waiting instances
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(bundles[0]
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
                 .getProcessData()), 2, CoordinatorAction.Status.WAITING, 1, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
@@ -517,68 +434,6 @@ public class AuthorizationTest extends BaseTestClass {
 
         //3 should still be suspended, 2 should be waiting
         InstanceUtil.validateResponse(r, 5, 0, 3, 2, 0);
-    }
-
-    @Test
-    public void U1ScheduleU2KillFeedInstance() throws Exception {
-        String targetPath = baseTestDir + "/backUp" + datePattern;
-        Bundle.submitCluster(bundles[0], bundles[1]);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
-        String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Time range between : " + startTime + " and " + endTime);
-
-        //configure feed
-        String feed = bundles[0].getDataSets().get(0);
-        feed = InstanceUtil.setFeedFilePath(feed, feedInputPath);
-        //erase all clusters from feed definition
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null);
-        //set cluster1 as source
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(startTime, endTime),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)),
-                ClusterType.SOURCE, null);
-        //set cluster2 as target
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(startTime, endTime),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)),
-                ClusterType.TARGET, null, targetPath);
-
-        //submit and schedule feed
-        Util.print("Feed : " + feed);
-        AssertUtil.assertSucceeded(
-                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
-                        feed));
-
-        //check id required coordinators exist
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feed),
-                "REPLICATION"), 1);
-
-        //upload necessary data
-        FeedMerlin feedMerlin = new FeedMerlin(feed);
-        feedMerlin.generateData(cluster1FS, true);
-
-        //wait till replication starts
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 1,
-                CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.FEED);
-
-        ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime);
-        InstanceUtil.validateResponse(r, 1, 1, 0, 0, 0);
-
-        //try to kill it by U2
-        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
-        r = prism.getFeedHelper().getProcessInstanceKill(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime,
-                MerlinConstants.USER2_NAME);
-
-        //instance status should still be the running
-        InstanceUtil.validateResponse(r, 1, 1, 0, 0, 0);
     }
 
     /**
@@ -604,7 +459,7 @@ public class AuthorizationTest extends BaseTestClass {
         //provide necessary data for first 4 instances to run
         Util.print("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
-        HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
@@ -612,14 +467,14 @@ public class AuthorizationTest extends BaseTestClass {
         Util.print("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
         Util.print("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 4 running instances
-        InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(bundles[0]
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
                 .getProcessData()), 4, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
 
         //4 instances should be running , 1 should be waiting
@@ -644,71 +499,6 @@ public class AuthorizationTest extends BaseTestClass {
 
         //instances should still be killed
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
-    }
-
-    @Test
-    public void U1KillU2RerunFeedInstance() throws Exception {
-        String targetPath = baseTestDir + "/backUp" + datePattern;
-        Bundle.submitCluster(bundles[0], bundles[1]);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
-        String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Time range between : " + startTime + " and " + endTime);
-
-        //configure feed
-        String feed = bundles[0].getDataSets().get(0);
-        feed = InstanceUtil.setFeedFilePath(feed, feedInputPath);
-        //erase all clusters from feed definition
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null);
-        //set cluster1 as source
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(startTime, endTime),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)),
-                ClusterType.SOURCE, null);
-        //set cluster2 as target
-        feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(startTime, endTime),
-                XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)),
-                ClusterType.TARGET, null, targetPath);
-
-        //submit and schedule feed
-        Util.print("Feed : " + feed);
-        AssertUtil.assertSucceeded(
-                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
-                        feed));
-
-        //check id required coordinators exist
-        Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feed),
-                "REPLICATION"), 1);
-
-        //upload necessary data
-        FeedMerlin feedMerlin = new FeedMerlin(feed);
-        feedMerlin.generateData(cluster1FS, true);
-
-        //wait till replication starts
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.getFeedName(feed), 1,
-                CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.FEED);
-
-        ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime);
-        InstanceUtil.validateResponse(r, 1, 1, 0, 0, 0);
-
-        //kill instance by U1
-        r = prism.getFeedHelper().getProcessInstanceKill(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime);
-        InstanceUtil.validateResponse(r, 1, 0, 0, 0, 1);
-
-        //try to rerun instance by U2
-        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
-        r = prism.getFeedHelper().getProcessInstanceRerun(Util
-                .readEntityName(feed), "?start=" + startTime + "&end=" + endTime,
-                MerlinConstants.USER2_NAME);
-        InstanceUtil.validateResponse(r, 1, 0, 0, 0, 1);
     }
 
     /**
@@ -746,7 +536,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         //update feed definition
         String newFeed = Util.setFeedPathValue(feed,
                 baseHDFSDir + "/randomPath/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
@@ -787,7 +577,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         //submit, schedule process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.RUNNING);
         //update process definition
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2020-01-02T01:04Z");
