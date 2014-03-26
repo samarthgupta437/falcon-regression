@@ -120,9 +120,9 @@ public class BaseRequest {
         request.addHeader("Remote-User","test");
         // get the token and add it to the header.
         // works in secure and un secure mode.
-//        AuthenticatedURL.Token token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-//                uri.getHost(), uri.getPort());
-//        request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+        AuthenticatedURL.Token token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
+                uri.getHost(), uri.getPort());
+        request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
         DefaultHttpClient client = new DefaultHttpClient();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Request Url: " + request.getRequestLine().getUri().toString());
@@ -141,11 +141,11 @@ public class BaseRequest {
             Header[] wwwAuthHeaders = response.getHeaders(RequestKeys.WWW_AUTHENTICATE);
             if (wwwAuthHeaders != null && wwwAuthHeaders.length != 0 &&
                     wwwAuthHeaders[0].getValue().trim().startsWith(RequestKeys.NEGOTIATE)) {
-//                token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-//                        uri.getHost(), uri.getPort(), true);
-//
-//                request.removeHeaders(RequestKeys.COOKIE);
-//                request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+                token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
+                        uri.getHost(), uri.getPort(), true);
+
+                request.removeHeaders(RequestKeys.COOKIE);
+                request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Request Url: " + request.getRequestLine().getUri().toString());
                     LOGGER.debug("Request Method: " + request.getRequestLine().getMethod());
