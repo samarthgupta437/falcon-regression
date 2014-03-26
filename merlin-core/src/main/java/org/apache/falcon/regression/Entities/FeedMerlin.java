@@ -74,7 +74,7 @@ public class FeedMerlin extends Feed {
   public void generateData(HCatClient cli, FileSystem fs, boolean isEmpty) throws Exception {
     FEED_TYPE dataType;
     ArrayList<String> dataFolder;
-    String ur = element.getTable().getUri();
+    String ur = getTable().getUri();
 
     if (ur.contains(";")) {
       String[] parts = ur.split("#")[1].split(";");
@@ -98,7 +98,7 @@ public class FeedMerlin extends Feed {
   public void generateData(FileSystem fs, boolean isEmpty) throws Exception {
     FEED_TYPE dataType;
     String pathValue = "";
-    for (Location location : element.getLocations().getLocation()) {
+    for (Location location : getLocations().getLocation()) {
       if (location.getType().equals(LocationType.DATA)) {
         pathValue = location.getPath();
       }
@@ -119,10 +119,10 @@ public class FeedMerlin extends Feed {
   public ArrayList<String> createTestData(FileSystem fs, FEED_TYPE dataType, String loc, boolean isEmpty) throws Exception {
     ArrayList<String> dataFolder = new ArrayList<String>();
 
-    Date start = element.getClusters().getCluster().get(0).getValidity().getStart();
+    Date start = getClusters().getCluster().get(0).getValidity().getStart();
     Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
     String startDate = formatter.format(start);
-    Date end = element.getClusters().getCluster().get(0).getValidity().getEnd();
+    Date end = getClusters().getCluster().get(0).getValidity().getEnd();
     String endDate = formatter.format(end);
 
     DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
@@ -147,26 +147,26 @@ public class FeedMerlin extends Feed {
     return null;
   }
 
-  public String insertRetentionValueInFeed(String feed, String retentionValue)
+  public String insertRetentionValueInFeed(String retentionValue)
     throws JAXBException {
 
     //insert retentionclause
-    element.getClusters().getCluster().get(0).getRetention()
+    getClusters().getCluster().get(0).getRetention()
       .setLimit(new Frequency(retentionValue));
 
-    for (org.apache.falcon.regression.core.generated.feed.Cluster cluster : element
-      .getClusters().getCluster()) {
+    for (org.apache.falcon.regression.core.generated.feed.Cluster cluster :
+      getClusters().getCluster()) {
       cluster.getRetention().setLimit(new Frequency(retentionValue));
     }
 
-    return InstanceUtil.feedElementToString(element);
+    return toString();
   }
 
-  public String setTableValue(String feed, String pathValue, String dBName, String tableName) throws Exception {
+  public String setTableValue(String pathValue, String dBName, String tableName) throws Exception {
 
-    element.getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
+    getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
     //set the value
-    return InstanceUtil.feedElementToString(element);
+    return toString();
   }
 
   @Override

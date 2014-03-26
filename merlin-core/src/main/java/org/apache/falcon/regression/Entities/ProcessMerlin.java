@@ -103,10 +103,10 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
 
   public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b)throws Exception{
 
-      Date start = element.getClusters().getCluster().get(0).getValidity().getStart();
+      Date start = getClusters().getCluster().get(0).getValidity().getStart();
       Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
       String startDate = formatter.format(start);
-      Date end = element.getClusters().getCluster().get(0).getValidity().getEnd();
+      Date end = getClusters().getCluster().get(0).getValidity().getEnd();
       String endDate = formatter.format(end);
 
       Map<String, FeedMerlin> inpFeeds = getInputFeeds(b);
@@ -124,7 +124,7 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
   public Map<String,FeedMerlin> getInputFeeds(Bundle b)throws Exception{
 
       Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
-      for (Input input : element.getInputs().getInput()) {
+      for (Input input : getInputs().getInput()) {
           for (String feed : b.getDataSets()) {
              if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
                   FeedMerlin feedO = new FeedMerlin(feed);
