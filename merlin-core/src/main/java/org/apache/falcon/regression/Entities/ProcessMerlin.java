@@ -42,10 +42,9 @@ import java.util.Map;
 public class ProcessMerlin extends org.apache.falcon.regression.core.generated
   .process.Process {
 
-  private Process element;
 
   public ProcessMerlin(String processData) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-    element = InstanceUtil.getProcessElement(processData);
+    Process element = InstanceUtil.getProcessElement(processData);
     Field[] fields = Process.class.getDeclaredFields();
     for (Field fld : fields) {
       PropertyUtils.setProperty(this, fld.getName(),

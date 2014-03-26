@@ -43,10 +43,10 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class FeedMerlin extends Feed {
-  private Feed element;
+
 
   public FeedMerlin(String entity) throws JAXBException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    element = InstanceUtil.getFeedElement(entity);
+    Feed element = InstanceUtil.getFeedElement(entity);
 
     Field[] fields = Feed.class.getDeclaredFields();
     for (Field fld : fields) {
