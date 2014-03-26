@@ -591,6 +591,48 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process scheduled by first user should not be updated by second user");
     }
 
+    @Test
+    public void U1ScheduleFeedU2ScheduleDependantProcessU1UpdateFeed() throws Exception {
+        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String process = bundles[0].getProcessData();
+        //submit both feeds
+        bundles[0].submitClusters(prism);
+        bundles[0].submitFeeds(prism);
+        //schedule input feed by U1
+        Util.assertSucceeded(prism.getFeedHelper().schedule(
+                Util.URLS.SCHEDULE_URL, feed));
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+
+        //by U2 schedule process dependant on scheduled feed by U1
+        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
+        ServiceResponse serviceResponse = prism.getProcessHelper().submitAndSchedule(Util
+                .URLS.SUBMIT_AND_SCHEDULE_URL, process, MerlinConstants.USER2_NAME);
+        Util.assertSucceeded(serviceResponse);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, process, Job.Status.RUNNING);
+
+        //get old process details
+        String oldProcessBundleId = InstanceUtil
+                .getLatestBundleID(cluster, Util.readEntityName(process), ENTITY_TYPE.PROCESS);
+
+        //get old feed details
+        String oldFeedBundleId = InstanceUtil
+                .getLatestBundleID(cluster, Util.readEntityName(feed), ENTITY_TYPE.FEED);
+
+        //update feed definition
+        String newFeed = Util.setFeedPathValue(feed,
+                baseHDFSDir + "/randomPath/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
+
+        //update feed by U1
+        KerberosHelper.loginFromKeytab(MerlinConstants.CURRENT_USER_NAME);
+        serviceResponse = prism.getFeedHelper().update(feed, newFeed,
+                InstanceUtil.getTimeWrtSystemTime(0), MerlinConstants.CURRENT_USER_NAME);
+        AssertUtil.assertSucceeded(serviceResponse);
+
+        //new Feed Bundle should be created by by user A and new process bundle should be created by user B
+        Util.verifyNewBundleCreation(cluster, oldFeedBundleId, null, feed, true, false);
+        Util.verifyNewBundleCreation(cluster, oldProcessBundleId, null, process, true, false);
+    }
+
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         KerberosHelper.loginFromKeytab(MerlinConstants.CURRENT_USER_NAME);
