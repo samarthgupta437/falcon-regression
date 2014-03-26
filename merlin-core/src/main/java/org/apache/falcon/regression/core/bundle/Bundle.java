@@ -1507,6 +1507,20 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processObject);
     }
 
+    public void addOutputFeedToBundle(String feedRefName, String feed, int templateOutputIdx) throws JAXBException {
+        this.getDataSets().add(feed);
+        String feedName = Util.readEntityName(feed);
+        Process processObject = getProcessObject();
+        final List<Output> processOutputs = processObject.getOutputs().getOutput();
+        Output templateOutput = processOutputs.get(templateOutputIdx);
+        Output newOutput = new Output();
+        newOutput.setFeed(feedName);
+        newOutput.setName(feedRefName);
+        newOutput.setInstance(templateOutput.getInstance());
+        processOutputs.add(newOutput);
+        InstanceUtil.writeProcessElement(this, processObject);
+    }
+
     public void setProcessProperty(String property, String value) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
        ProcessMerlin process = new ProcessMerlin(this.getProcessData());

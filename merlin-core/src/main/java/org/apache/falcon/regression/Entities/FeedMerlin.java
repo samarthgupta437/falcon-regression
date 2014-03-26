@@ -75,7 +75,6 @@ public class FeedMerlin extends Feed {
     FEED_TYPE dataType;
     ArrayList<String> dataFolder;
     String ur = getTable().getUri();
-
     if (ur.contains(";")) {
       String[] parts = ur.split("#")[1].split(";");
       int len = parts.length;

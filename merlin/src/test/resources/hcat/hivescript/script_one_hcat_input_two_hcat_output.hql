@@ -15,13 +15,8 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-DROP TABLE IF EXISTS ${falcon_outputData_database}.temp_table_on_raw_data;
 
-CREATE EXTERNAL TABLE ${falcon_outputData_database}.temp_table_on_raw_data(id STRING, value STRING)
- LOCATION '${inputData}';
-
-INSERT OVERWRITE TABLE ${falcon_outputData_database}.${falcon_outputData_table}
- PARTITION (dt='${falcon_outputData_dated_partition_value}')
- SELECT id, value FROM temp_table_on_raw_data;
-
-DROP TABLE IF EXISTS ${falcon_outputData_database}.temp_table_on_raw_data;
+INSERT OVERWRITE TABLE ${falcon_outputData_database}.${falcon_outputData_table} PARTITION ${falcon_inputData_filter}
+ SELECT id, value FROM ${falcon_inputData_database}.${falcon_inputData_table} WHERE ${falcon_inputData_filter};
+INSERT OVERWRITE TABLE ${falcon_outputData2_database}.${falcon_outputData2_table} PARTITION ${falcon_inputData_filter}
+ SELECT id, value FROM ${falcon_inputData_database}.${falcon_inputData_table} WHERE ${falcon_inputData_filter};
