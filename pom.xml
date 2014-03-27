@@ -209,34 +209,20 @@
         <profile>
             <id>hadoop-cdh4</id>
             <properties>
-                <hadoop2.version>2.0.0-cdh4.6.0</hadoop2.version>
+                <hadoop-cdh4.version>2.0.0-cdh4.6.0</hadoop-cdh4.version>
             </properties>
             <dependencyManagement>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-client</artifactId>
-                        <version>${hadoop2.version}</version>
+                        <version>${hadoop-cdh4.version}</version>
                         <exclusions>
                             <exclusion>
                                 <groupId>org.glassfish</groupId>
                                 <artifactId>javax.servlet</artifactId>
                             </exclusion>
                         </exclusions>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.apache.hadoop</groupId>
-                        <artifactId>hadoop-hdfs</artifactId>
-                        <version>${hadoop2.version}</version>
-                        <classifier>tests</classifier>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.apache.hadoop</groupId>
-                        <artifactId>hadoop-common</artifactId>
-                        <version>${hadoop2.version}</version>
-                        <classifier>tests</classifier>
                     </dependency>
                     <dependency>
                         <groupId>org.apache.hive.hcatalog</groupId>
