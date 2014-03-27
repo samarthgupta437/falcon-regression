@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -47,25 +48,26 @@ public class FeedInstanceStatusTest extends BaseTestClass {
 
     private String baseTestDir = baseHDFSDir + "/FeedInstanceStatusTest";
     private String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
+    private String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
-    ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     ColoHelper cluster3 = servers.get(2);
     FileSystem cluster2FS = serverFS.get(1);
     FileSystem cluster3FS = serverFS.get(2);
 
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
+
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
-        bundles[0].generateUniqueBundle();
-        bundles[1] = Util.readELBundles()[0][0];
-        bundles[1].generateUniqueBundle();
-        bundles[2] = Util.readELBundles()[0][0];
-        bundles[2].generateUniqueBundle();
-        bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundles[2], cluster3.getEnvFileName(), cluster3.getPrefix());
+        Bundle bundle = Util.readELBundles()[0][0];
+        for (int i = 0; i < 3; i++) {
+            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i].generateUniqueBundle();
+            bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+        }
     }
 
     @AfterMethod

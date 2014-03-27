@@ -47,21 +47,24 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
+    String baseTestDir = baseHDFSDir + "/RescheduleProcessInFinalStates";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
         Util.print("in @BeforeClass");
-
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b.setProcessWorkflow(aggregateWorkflowDir);
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
-        b.setInputFeedDataPath(baseHDFSDir +"/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(baseTestDir +"/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
@@ -87,14 +90,14 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
-        bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedDataPath(baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setOutputFeedLocationData(baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
-
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)

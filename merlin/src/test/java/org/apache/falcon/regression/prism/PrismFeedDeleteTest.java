@@ -28,12 +28,14 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -52,6 +54,12 @@ public class PrismFeedDeleteTest extends BaseTestClass {
     ColoHelper cluster2 = servers.get(1);
     private String cluster1Colo = cluster1.getClusterHelper().getColoName();
     private String cluster2Colo = cluster2.getClusterHelper().getColoName();
+    String aggregateWorkflowDir = baseHDFSDir + "/PrismFeedDeleteTest/aggregator";
+
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
@@ -60,9 +68,11 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         Bundle bundle = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         bundles[0].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
         bundles[1].generateUniqueBundle();
+        bundles[1].setProcessWorkflow(aggregateWorkflowDir);
     }
     
     @AfterMethod(alwaysRun = true)
@@ -773,10 +783,10 @@ public class PrismFeedDeleteTest extends BaseTestClass {
                 ClusterType.SOURCE, null);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeServer1, "2099-10-01T12:10Z"),
-                        XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                        Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
-                        "${cluster.colo}",
-                        baseHDFSDir + "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+                XmlUtil.createRtention("days(10000)", ActionType.DELETE),
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+                "${cluster.colo}",
+                baseHDFSDir + "/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeServer2, "2099-10-01T12:25Z"),
                         XmlUtil.createRtention("days(10000)", ActionType.DELETE),

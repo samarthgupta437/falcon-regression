@@ -21,12 +21,14 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.PrismUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -40,16 +42,24 @@ public class PrismSubmitTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
-    String randomHDFSPath = baseHDFSDir + "/someRandomPath";
+    String baseTestDir = baseHDFSDir + "/PrismSubmitTest";
+    String randomHDFSPath = baseTestDir + "/someRandomPath";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
     boolean restartRequired = false;
+
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
-         restartRequired = false;
-         bundles[0] = Util.readELBundles()[0][0];
-         bundles[0] = new Bundle( bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
-         bundles[0].generateUniqueBundle();
+        restartRequired = false;
+        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
 
@@ -297,8 +307,9 @@ public class PrismSubmitTest extends BaseTestClass {
     @Test(groups = {"prism", "0.2", "distributed"})
     public void submitCluster_resubmitAlreadyPARTIAL() throws Exception {
         restartRequired = true;
-        Bundle bundle2 = new Bundle( bundles[0], cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundle2.generateUniqueBundle();
+        bundles[1] = new Bundle(bundles[0], cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[1].generateUniqueBundle();
+        bundles[1].setProcessWorkflow(aggregateWorkflowDir);
 
         List<String> beforeCluster1 = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforePrism = prism.getClusterHelper().getStoreInfo();
@@ -306,9 +317,9 @@ public class PrismSubmitTest extends BaseTestClass {
 
         Util.shutDownService(cluster1.getFeedHelper());
 
-        bundle2.setCLusterColo(cluster2.getClusterHelper().getColoName());
-        Util.print("cluster b2: " + bundle2.getClusters().get(0));
-        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundle2.getClusters().get(0));
+        bundles[1].setCLusterColo(cluster2.getClusterHelper().getColoName());
+        Util.print("cluster b2: " + bundles[1].getClusters().get(0));
+        ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
         List<String> parCluster1 = cluster1.getClusterHelper().getStoreInfo();
@@ -317,9 +328,9 @@ public class PrismSubmitTest extends BaseTestClass {
 
         PrismUtil.compareDataStoreStates(parCluster1, beforeCluster1, 0);
         PrismUtil.compareDataStoreStates(beforePrism, parPrism,
-          Util.readClusterName(bundle2.getClusters().get(0)), 1);
+          Util.readClusterName(bundles[1].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(beforeCluster2, parCluster2,
-                Util.readClusterName(bundle2.getClusters().get(0)), 1);
+                Util.readClusterName(bundles[1].getClusters().get(0)), 1);
 
         Util.restartService(cluster1.getFeedHelper());
 
@@ -336,7 +347,6 @@ public class PrismSubmitTest extends BaseTestClass {
                 Util.readClusterName( bundles[0].getClusters().get(0)), 1);
         PrismUtil.compareDataStoreStates(afterPrism, parPrism, 0);
         PrismUtil.compareDataStoreStates(afterCluster2, parCluster2, 0);
-        bundle2.deleteBundle(prism);
     }
 
     @Test(groups = "distributed")

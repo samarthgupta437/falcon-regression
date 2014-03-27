@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -49,12 +50,19 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     OozieClient clusterOC = serverOC.get(0);
+    String aggregateWorkflowDir = baseHDFSDir + "/FeedSubmitAndScheduleTest/aggregator";
+
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod

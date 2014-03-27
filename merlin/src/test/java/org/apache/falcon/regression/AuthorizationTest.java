@@ -66,8 +66,8 @@ public class AuthorizationTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String baseTestDir = baseHDFSDir + "/AuthorizationTest";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + datePattern;
 

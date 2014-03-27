@@ -51,7 +51,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputTimedOutPath = baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";

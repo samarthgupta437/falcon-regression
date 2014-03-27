@@ -24,11 +24,13 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.TestNGException;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -44,15 +46,22 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     Bundle bundle;
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
+    String aggregateWorkflowDir = baseHDFSDir + "/PrismProcessDeleteTest/aggregator";
+
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundle = Util.readBundles("LateDataBundles")[0][0];
-        bundles[0] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[0].generateUniqueBundle();
-        bundles[1] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1].generateUniqueBundle();
+        for (int i = 0; i < 2; i++) {
+            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i].generateUniqueBundle();
+            bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+        }
     }
 
     @AfterMethod

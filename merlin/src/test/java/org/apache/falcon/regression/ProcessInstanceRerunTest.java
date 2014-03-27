@@ -47,8 +47,8 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceRerunTest extends BaseTestClass {
 
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String baseTestDir = baseHDFSDir + "/ProcessInstanceRerunTest";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputTimedOutPath =

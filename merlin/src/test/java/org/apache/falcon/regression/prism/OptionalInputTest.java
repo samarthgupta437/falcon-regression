@@ -44,7 +44,7 @@ public class OptionalInputTest extends BaseTestClass {
     OozieClient oozieClient = serverOC.get(0);
     String baseTestDir = baseHDFSDir + "/OptionalInputTest";
     String inputPath = baseTestDir + "/input";
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {

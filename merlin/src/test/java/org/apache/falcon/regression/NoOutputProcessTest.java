@@ -51,7 +51,7 @@ public class NoOutputProcessTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    String aggregateWorkflowDir = baseHDFSDir + "/NoOutputProcessTest/aggregator";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {

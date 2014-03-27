@@ -21,10 +21,13 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -38,6 +41,12 @@ public class PrismClusterDeleteTest extends BaseTestClass {
     private boolean restartRequired;
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
+    String aggregateWorkflowDir = baseHDFSDir + "/PrismClusterDeleteTest/aggregator";
+
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
@@ -46,6 +55,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
         bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
         bundles[0].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)

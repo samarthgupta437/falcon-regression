@@ -66,7 +66,7 @@ public class NewRetryTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    String aggregateWorkflowDir = baseHDFSDir + "/NewRetryTest/aggregator";
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
     private String latePath = "/lateDataTest/testFolders/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";

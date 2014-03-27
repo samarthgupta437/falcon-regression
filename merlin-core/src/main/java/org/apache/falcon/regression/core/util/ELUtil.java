@@ -44,14 +44,18 @@ public class ELUtil {
 
     static Logger logger = Logger.getLogger(ELUtil.class);
 
-
+    //TODO: Methods should be moved to tests
+    static String aggregateWorkflowDir = "/tmp/falcon-regression/ELUtil/aggregator";
 
     public static String testWith(PrismHelper prismHelper, ColoHelper server1, String feedStart, String feedEnd, String processStart,
                                   String processend,
-                                  String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, ParseException, URISyntaxException {
+                                  String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, ParseException, URISyntaxException, InterruptedException {
+        HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
+                aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
-
+        bundle.generateUniqueBundle();
+        bundle.setProcessWorkflow(aggregateWorkflowDir);
         bundle.setFeedValidity(feedStart, feedEnd, Util.getInputFeedNameFromBundle(bundle));
         bundle.setProcessValidity(processStart, processend);
         try {
@@ -76,10 +80,13 @@ public class ELUtil {
     }
 
 
-    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, URISyntaxException {
+    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, URISyntaxException, InterruptedException {
+        HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
+                aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
-
+        bundle.generateUniqueBundle();
+        bundle.setProcessWorkflow(aggregateWorkflowDir);
         try {
 
             bundle.setInvalidData();

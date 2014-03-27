@@ -47,10 +47,13 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
     private String prefix;
+    private String baseTestDir = baseHDFSDir + "/ELExp_FutureAndLatest";
+    private String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         Util.print("in @BeforeClass");
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
@@ -59,7 +62,8 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
         String startDate = InstanceUtil.getTimeWrtSystemTime(-150);
         String endDate = InstanceUtil.getTimeWrtSystemTime(100);
 
-        b.setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setProcessWorkflow(aggregateWorkflowDir);
         prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
@@ -84,7 +88,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
-        bundles[0].setInputFeedDataPath(baseHDFSDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setInputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
         String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
@@ -92,6 +96,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
         Util.print("processStart: " + processStart + " processEnd: " + processEnd);
         bundles[0].setProcessValidity(processStart, processEnd);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod
