@@ -119,7 +119,7 @@ public class HCatRetention extends BaseTestClass {
     public void check(String dataType, String unit, int period, String tableName){
         try{
 
-            List <org.apache.oozie.client.CoordinatorAction.Status> expectedStatus = new ArrayList();
+            List <CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
             expectedStatus.add(CoordinatorAction.Status.FAILED);
             expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
             expectedStatus.add(CoordinatorAction.Status.KILLED);
