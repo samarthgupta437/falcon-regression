@@ -18,6 +18,7 @@
 
 package org.apache.falcon.request;
 
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.security.FalconAuthorizationToken;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -32,7 +33,6 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -124,14 +124,12 @@ public class BaseRequest {
                 uri.getHost(), uri.getPort());
         request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
         DefaultHttpClient client = new DefaultHttpClient();
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Request Url: " + request.getRequestLine().getUri().toString());
-            LOGGER.debug("Request Method: " + request.getRequestLine().getMethod());
+        LOGGER.info("Request Url: " + request.getRequestLine().getUri().toString());
+        LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
 
-            for (Header header : request.getAllHeaders()) {
-                LOGGER.debug(String.format("Request Header: Name=%s Value=%s", header.getName(),
-                        header.getValue()));
-            }
+        for (Header header : request.getAllHeaders()) {
+            LOGGER.info(String.format("Request Header: Name=%s Value=%s", header.getName(),
+                    header.getValue()));
         }
 
         HttpResponse response = client.execute(target, request);
@@ -146,25 +144,21 @@ public class BaseRequest {
 
                 request.removeHeaders(RequestKeys.COOKIE);
                 request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Request Url: " + request.getRequestLine().getUri().toString());
-                    LOGGER.debug("Request Method: " + request.getRequestLine().getMethod());
-                    for (Header header : request.getAllHeaders()) {
-                        LOGGER.debug(
-                                String.format("Request Header: Name=%s Value=%s", header.getName(),
-                                        header.getValue())
-                        );
-                    }
+                LOGGER.info("Request Url: " + request.getRequestLine().getUri().toString());
+                LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
+                for (Header header : request.getAllHeaders()) {
+                    LOGGER.info(
+                            String.format("Request Header: Name=%s Value=%s", header.getName(),
+                                    header.getValue())
+                    );
                 }
                 response = client.execute(target, request);
             }
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Response Status: " + response.getStatusLine());
-            for (Header header : response.getAllHeaders()) {
-                LOGGER.debug(String.format("Response Header: Name=%s Value=%s", header.getName(),
-                        header.getValue()));
-            }
+        LOGGER.info("Response Status: " + response.getStatusLine());
+        for (Header header : response.getAllHeaders()) {
+            LOGGER.info(String.format("Response Header: Name=%s Value=%s", header.getName(),
+                    header.getValue()));
         }
         return response;
     }
