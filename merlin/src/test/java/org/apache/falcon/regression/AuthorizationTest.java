@@ -38,7 +38,9 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
@@ -614,6 +616,8 @@ public class AuthorizationTest extends BaseTestClass {
         String oldProcessBundleId = InstanceUtil
                 .getLatestBundleID(cluster, Util.readEntityName(process), ENTITY_TYPE.PROCESS);
 
+        String oldProcessUser = getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+
         //get old feed details
         String oldFeedBundleId = InstanceUtil
                 .getLatestBundleID(cluster, Util.readEntityName(feed), ENTITY_TYPE.FEED);
@@ -628,9 +632,29 @@ public class AuthorizationTest extends BaseTestClass {
                 InstanceUtil.getTimeWrtSystemTime(0), MerlinConstants.CURRENT_USER_NAME);
         AssertUtil.assertSucceeded(serviceResponse);
 
-        //new Feed Bundle should be created by by user A and new process bundle should be created by user B
+        //new feed bundle should be created by by U1
         Util.verifyNewBundleCreation(cluster, oldFeedBundleId, null, feed, true, false);
+
+        //new process bundle should be created by U2
         Util.verifyNewBundleCreation(cluster, oldProcessBundleId, null, process, true, false);
+        String newProcessUser = getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+        Assert.assertEquals(oldProcessUser, newProcessUser, "User should be the same");
+    }
+
+    private String getBundleUser(ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType)
+    throws OozieClientException {
+        String newProcessBundleId = InstanceUtil.getLatestBundleID(coloHelper, entityName,
+                entityType);
+        BundleJob newProcessBundlejob = coloHelper.getClusterHelper().getOozieClient().getBundleJobInfo
+                (newProcessBundleId);
+        CoordinatorJob coordinatorJob = null;
+        for (CoordinatorJob coord : newProcessBundlejob.getCoordinators()) {
+            if (coord.getAppName().contains("DEFAULT")) {
+                coordinatorJob = coord;
+            }
+        }
+        Assert.assertNotNull(coordinatorJob);
+        return coordinatorJob.getUser();
     }
 
     @AfterMethod(alwaysRun = true)
