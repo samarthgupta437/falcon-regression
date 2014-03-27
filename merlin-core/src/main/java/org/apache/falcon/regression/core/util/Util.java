@@ -2047,17 +2047,6 @@ public class Util {
     return concatenated;
   }
 
-  public static String toOozieDateList(String dateString) throws
-    ParseException {
-    String[] dateList = dateString.split(" , ");
-    String oozieDate="";
-    for(String date : dateList){
-      oozieDate = oozieDate + InstanceUtil.dateToOozieDate(new Date(date)) +
-        " , ";
-    }
-    return oozieDate ;
-  }
-
   public static ENTITY_TYPE getEntityType(String entity) {
     if (
       entity.contains("uri:falcon:process:0.1"))

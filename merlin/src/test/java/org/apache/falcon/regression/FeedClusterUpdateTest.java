@@ -717,7 +717,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     feedOriginalSubmit = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
       XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-      ClusterType.SOURCE, null, null);
+      ClusterType.SOURCE, null);
 
     feedOriginalSubmit = InstanceUtil
       .setFeedCluster(feedOriginalSubmit, XmlUtil.createValidity(startTime,
@@ -725,20 +725,20 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
         Util.readClusterName(bundles[1].getClusters().get(0)),
       ClusterType.SOURCE,
-        "US/${cluster.colo}", null);
+        "US/${cluster.colo}");
     feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
       XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
         InstanceUtil.addMinsToTime(startTime, 85)),
       XmlUtil.createRtention("hours(10)", ActionType.DELETE),
       Util.readClusterName(bundles[0].getClusters().get(0)),
-      ClusterType.TARGET, null, null);
+      ClusterType.TARGET, null);
     feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
       XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
         InstanceUtil.addMinsToTime(startTime, 110)),
       XmlUtil.createRtention("hours(10)", ActionType.DELETE),
       Util.readClusterName(bundles[2].getClusters().get(0)),
       ClusterType.SOURCE,
-      "UK/${cluster.colo}", null);
+      "UK/${cluster.colo}");
 
     Util.print("Feed: " + feedOriginalSubmit);
 
@@ -783,7 +783,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     feedUpdated = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
       XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-      ClusterType.SOURCE, null, null);
+      ClusterType.SOURCE, null);
 
     feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
       XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
@@ -791,7 +791,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
       XmlUtil.createRtention("hours(10)", ActionType.DELETE),
       Util.readClusterName(bundles[2].getClusters().get(0)),
     ClusterType.SOURCE,
-      "UK/${cluster.colo}", null);
+      "UK/${cluster.colo}");
 
     Util.print("Feed: " + feedUpdated);
 

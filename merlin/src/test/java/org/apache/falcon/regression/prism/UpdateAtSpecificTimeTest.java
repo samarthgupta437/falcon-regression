@@ -483,7 +483,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     feed = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE), null,
-      ClusterType.SOURCE, null, null);
+      ClusterType.SOURCE, null);
 
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, endTime),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE),
@@ -657,7 +657,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     feed = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
       XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-      ClusterType.SOURCE, null, null);
+      ClusterType.SOURCE, null);
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity
       ("2012-10-01T12:10Z", "2099-10-01T12:10Z"),
       XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
@@ -686,11 +686,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     feed = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE), null,
-      ClusterType.SOURCE, null, null);
+      ClusterType.SOURCE, null);
 
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_source, "2099-10-01T12:10Z"),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-      Util.readClusterName(bundle3.getClusters().get(0)), null, null, null);
+      Util.readClusterName(bundle3.getClusters().get(0)), null, null);
 
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_target, "2099-10-01T12:25Z"),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE),
