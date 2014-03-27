@@ -102,6 +102,31 @@
                 </dependency>
             </dependencies>
         </profile>
+        <profile>
+            <id>hadoop-cdh4</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-client</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.glassfish</groupId>
+                            <artifactId>javax.servlet</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-hdfs</artifactId>
+                    <classifier>tests</classifier>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hive.hcatalog</groupId>
+                    <artifactId>webhcat-java-client</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
     <dependencies>
         <!--
