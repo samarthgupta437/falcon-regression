@@ -120,16 +120,15 @@ public class FeedMerlin extends Feed {
   public ArrayList<String> createTestData(FileSystem fs, FEED_TYPE dataType, String loc, String... copyFrom) throws Exception {
     ArrayList<String> dataFolder;
 
-        DateTime start = new DateTime(getClusters().getCluster().get(0).getValidity()
-                .getStart(), DateTimeZone.UTC);
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        String startDate = formatter.print(start);
-        DateTime end = new DateTime(getClusters().getCluster().get(0).getValidity().getEnd(),
-                DateTimeZone.UTC);
-        String endDate = formatter.print(end);
-
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+    DateTime start = new DateTime(getClusters().getCluster().get(0).getValidity()
+            .getStart(), DateTimeZone.UTC);
+    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+    String startDate = formatter.print(start);
+    DateTime end = new DateTime(getClusters().getCluster().get(0).getValidity().getEnd(),
+            DateTimeZone.UTC);
+    String endDate = formatter.print(end);
+    DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
+    DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
 
     dataFolder = HadoopUtil.createTestDataInHDFS(fs, Util.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
     return dataFolder;
