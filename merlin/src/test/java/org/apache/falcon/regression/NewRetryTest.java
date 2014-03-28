@@ -1115,37 +1115,6 @@ public class NewRetryTest extends BaseTestClass {
     }
 
 
-    private boolean allRelevantWorkflowsAreOver(ColoHelper coloHelper, String bundleId,
-                                                String insertionFolder) throws Exception {
-        boolean finished = true;
-        OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
-        for (CoordinatorJob job : bundleJob.getCoordinators()) {
-            if (job.getAppName().contains("DEFAULT")) {
-
-                CoordinatorJob coordJob = oozieClient.getCoordJobInfo(job.getId());
-
-                for (CoordinatorAction action : coordJob.getActions()) {
-                    CoordinatorAction actionMan = oozieClient.getCoordActionInfo(action.getId());
-
-                    if (actionMan.getRunConf().contains(insertionFolder)) {
-                        if ((actionMan.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) ||
-                                actionMan.getStatus().equals(CoordinatorAction.Status.KILLED) ||
-                                actionMan.getStatus().equals(CoordinatorAction.Status.FAILED)) {
-                            System.out.println(
-                                    "related workflow " + actionMan.getId() + " is over....");
-                            finished &= true;
-                        } else {
-                            finished &= false;
-                        }
-                    }
-                }
-            }
-        }
-
-        return finished;
-    }
-
 
     private boolean ensureAllFailedInstancesHaveRetried(ColoHelper coloHelper, String bundleId,
                                                         int maxNumberOfRetries) throws Exception {
@@ -1185,39 +1154,6 @@ public class NewRetryTest extends BaseTestClass {
                 }
             }
         }
-    }
-
-    private void waitTillCertainPercentageOfProcessAreKilled(ColoHelper coloHelper, String bundleId,
-                                                             int percentage) throws Exception {
-        CoordinatorJob defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
-
-        while (defaultCoordinator.getStatus().equals(CoordinatorJob.Status.PREP)) {
-            defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
-        }
-
-        int totalCount = defaultCoordinator.getActions().size();
-
-        int percentageConversion = (percentage * totalCount) / 100;
-
-        while (true && percentageConversion > 0) {
-            int doneBynow = 0;
-            for (CoordinatorAction action : defaultCoordinator.getActions()) {
-                CoordinatorAction actionInfo = getOozieActionInfo(coloHelper, action.getId());
-                if (actionInfo.getStatus().equals(CoordinatorAction.Status.KILLED) ||
-                        actionInfo.getStatus().equals(CoordinatorAction.Status.FAILED)) {
-                    doneBynow++;
-                    if (doneBynow == percentageConversion) {
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
-
-    private CoordinatorAction getOozieActionInfo(ColoHelper colohelper, String actionId) throws Exception {
-        OozieClient client =colohelper.getProcessHelper().getOozieClient();
-        return client.getCoordActionInfo(actionId);
     }
 
 
@@ -1352,12 +1288,6 @@ public class NewRetryTest extends BaseTestClass {
             return Math.abs(delay * attempts);
         }
 
-    }
-
-    private void submitClusters(Bundle bundle) throws Exception {
-        for (String cluster : bundle.getClusters()) {
-            Util.assertSucceeded(prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster));
-        }
     }
 
 }
