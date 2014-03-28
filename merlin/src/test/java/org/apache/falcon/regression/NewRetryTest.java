@@ -109,7 +109,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -169,7 +169,7 @@ public class NewRetryTest extends BaseTestClass {
         for (String data : bundles[0].getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -239,7 +239,7 @@ public class NewRetryTest extends BaseTestClass {
         for (String data : bundles[0].getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -301,7 +301,7 @@ public class NewRetryTest extends BaseTestClass {
         for (String data : bundles[0].getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -365,7 +365,7 @@ public class NewRetryTest extends BaseTestClass {
         for (String data : bundles[0].getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -426,7 +426,7 @@ public class NewRetryTest extends BaseTestClass {
         for (String data : bundles[0].getDataSets()) {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -487,7 +487,7 @@ public class NewRetryTest extends BaseTestClass {
                     prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -550,7 +550,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -604,7 +604,7 @@ public class NewRetryTest extends BaseTestClass {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         bundles[0].submitClusters(prism);
 
@@ -650,7 +650,7 @@ public class NewRetryTest extends BaseTestClass {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         bundles[0].submitClusters(prism);
 
@@ -709,7 +709,7 @@ public class NewRetryTest extends BaseTestClass {
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
         bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         bundles[0].submitClusters(prism);
 
@@ -768,7 +768,7 @@ public class NewRetryTest extends BaseTestClass {
         feed = Util.insertLateFeedValue(feed, "10", "minutes");
         bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         bundles[0].submitClusters(prism);
 
@@ -865,7 +865,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
 
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         bundles[0].submitClusters(prism);
 
@@ -947,7 +947,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
 
-        bundles[0].setRetry(getRetry(bundles[0], delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
@@ -1251,7 +1251,7 @@ public class NewRetryTest extends BaseTestClass {
 
     }
 
-    private Retry getRetry(Bundle bundle, int delay, String delayUnits, String retryType,
+    private Retry getRetry(int delay, String delayUnits, String retryType,
                            int retryAttempts)
     throws Exception {
         Retry retry = new Retry();
