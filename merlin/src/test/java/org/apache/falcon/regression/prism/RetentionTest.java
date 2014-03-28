@@ -443,31 +443,28 @@ public class RetentionTest extends BaseTestClass {
     private List<String> getFeedRetentionJobs(String bundleID)
     throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
-        BundleJob bundleJob = clusterOC.getBundleJobInfo(bundleID);
-        for(int i=0; i < 60 && bundleJob.getCoordinators().isEmpty(); ++i) {
+        logger.info("using bundleId:" + bundleID);
+        for(int i=0; i < 60 && clusterOC.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
             Thread.sleep(2000);
         }
-        Assert.assertFalse(bundleJob.getCoordinators().isEmpty(),
+        Assert.assertFalse(clusterOC.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
                 "Coordinator job should have got created by now.");
-        CoordinatorJob jobInfo =
-                clusterOC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        final String coordinatorId = clusterOC.getBundleJobInfo(bundleID).getCoordinators().get(0).getId();
+        logger.info("using coordinatorId: " + coordinatorId);
 
-        for(int i=0; i < 120 && jobInfo.getActions().isEmpty(); ++i) {
+        for(int i=0; i < 120 && clusterOC.getCoordJobInfo(coordinatorId).getActions().isEmpty(); ++i) {
             Thread.sleep(4000);
         }
-        Assert.assertFalse(jobInfo.getActions().isEmpty(),
+        Assert.assertFalse(clusterOC.getCoordJobInfo(coordinatorId).getActions().isEmpty(),
                 "Coordinator actions should have got created by now.");
-        jobInfo = clusterOC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
 
-        logger.info("got coordinator jobInfo array of length:" + jobInfo.getActions());
-        for (CoordinatorAction action : jobInfo.getActions()) {
-            logger.info(action.getId());
-        }
-        for (CoordinatorAction action : jobInfo.getActions()) {
-            CoordinatorAction actionInfo = clusterOC.getCoordActionInfo(action.getId());
+        final List<CoordinatorAction> actions = clusterOC.getCoordJobInfo(coordinatorId).getActions();
+        logger.info("actions: " + actions);
 
+        for (CoordinatorAction action : actions) {
             for(int i=0; i < 180; ++i) {
-                actionInfo = clusterOC.getCoordActionInfo(action.getId());
+                CoordinatorAction actionInfo = clusterOC.getCoordActionInfo(action.getId());
+                logger.info("actionInfo: " + actionInfo);
                 if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
                         actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
                         actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
@@ -475,12 +472,13 @@ public class RetentionTest extends BaseTestClass {
                 }
                 Thread.sleep(10000);
             }
-            Assert.assertEquals(actionInfo.getStatus(),CoordinatorAction.Status.SUCCEEDED,
+            Assert.assertEquals(
+                    clusterOC.getCoordActionInfo(action.getId()).getStatus(),
+                    CoordinatorAction.Status.SUCCEEDED,
                     "Action did not succeed.");
             jobIds.add(action.getId());
 
         }
-
 
         return jobIds;
 
