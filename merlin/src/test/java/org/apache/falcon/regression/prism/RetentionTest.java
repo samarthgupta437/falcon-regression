@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -111,16 +112,16 @@ public class RetentionTest extends BaseTestClass {
 
         bundles[0].submitClusters(prism);
 
+        final ServiceResponse response = prism.getFeedHelper()
+                .submitEntity(URLS.SUBMIT_URL, inputFeed);
         if (Integer.parseInt(period) > 0) {
-            Util.assertSucceeded(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, inputFeed));
+            Util.assertSucceeded(response);
 
             replenishData(dataType, gaps, withData);
 
             commonDataRetentionWorkflow(inputFeed, Integer.parseInt(period), unit);
         } else {
-            Util.assertFailed(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, inputFeed));
+            Util.assertFailed(response);
         }
     }
 
@@ -184,15 +185,16 @@ public class RetentionTest extends BaseTestClass {
         cluster.getFeedHelper()
                 .schedule(URLS.SCHEDULE_URL, inputFeed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
-        logger.info(Util.readDatasetName(inputFeed));
+        final String inputDataSetName = Util.readDatasetName(inputFeed);
+        logger.info(inputDataSetName);
         Consumer consumer =
-                new Consumer("FALCON." + Util.readDatasetName(inputFeed),
+                new Consumer("FALCON." + inputDataSetName,
                         cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
         String bundleId = Util.getBundles(clusterOC,
-                Util.readDatasetName(inputFeed), ENTITY_TYPE.FEED).get(0);
+                inputDataSetName, ENTITY_TYPE.FEED).get(0);
 
         List<String> workflows = getFeedRetentionJobs(bundleId);
         logger.info("got a workflow list of length:" + workflows.size());
@@ -253,7 +255,7 @@ public class RetentionTest extends BaseTestClass {
         }
 
         validateDataFromFeedQueue(
-                Util.readDatasetName(inputFeed),
+                inputDataSetName,
                 consumer.getMessageData(), expectedOutput, initialData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
