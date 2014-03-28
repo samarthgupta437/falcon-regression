@@ -97,7 +97,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
     public void testRetryInProcessZeroAttemptUpdate(String retryType, int delay, String delayUnits,
                                                     int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -158,7 +157,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
     public void testRetryInProcessLowerAttemptUpdate(String retryType, int delay, String delayUnits,
                                                      int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -227,7 +225,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInProcessLowerManageableAttemptUpdate(String retryType, int delay,
                                                                String delayUnits, int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -290,7 +287,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInProcessLowerBoundaryAttemptUpdate(String retryType, int delay,
                                                              String delayUnits, int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -354,7 +350,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInProcessUpdate(String retryType, int delay, String delayUnits,
                                          int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -415,7 +410,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInProcessHigherDelayUpdate(String retryType, int delay, String delayUnits,
                                                     int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -474,7 +468,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInProcessLowerDelayUpdate(String retryType, int delay, String delayUnits,
                                                    int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -538,7 +531,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInProcessZeroDelayUpdate(String retryType, int delay, String delayUnits,
                                                   int retryAttempts) throws Exception {
-        displayInputs("testRetryInProcessUpdate", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -598,7 +590,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInSimpleFailureCase(String retryType, int delay, String delayUnits,
                                              int retryAttempts) throws Exception {
-        displayInputs("testRetryInSimpleFailureCase", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "8", "minutes");
@@ -642,7 +633,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testUserRetryWhileAutomaticRetriesHappen(String retryType, int delay, String delayUnits,
                                                          int retryAttempts) throws Exception {
-        displayInputs("testUserRetryWhileAutomaticRetriesHappen", delay, retryType, retryAttempts);
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/hh:mm");
 
@@ -701,7 +691,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testUserRetryAfterAutomaticRetriesHappen(String retryType, int delay, String delayUnits,
                                                          int retryAttempts) throws Exception {
-        displayInputs("testUserRetryAfterAutomaticRetriesHappen", delay, retryType, retryAttempts);
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/hh:mm");
 
@@ -762,7 +751,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInSuspendedAndResumeCaseWithLateData(String retryType, int delay,
                                                               String delayUnits, int retryAttempts) throws Exception {
-        displayInputs("testRetryInSuspendedAndResumeCaseWithLateData", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "10", "minutes");
@@ -856,7 +844,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInLateDataCase(String retryType, int delay,
                                         String delayUnits, int retryAttempts) throws Exception {
-        displayInputs("testRetryInLateDataCase", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
 
@@ -940,7 +927,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInDeleteAfterPartialRetryCase(String retryType, int delay, String delayUnits,
                                                        int retryAttempts) throws Exception {
-        displayInputs("testRetryInDeleteAfterPartialRetryCase", delay, retryType, retryAttempts);
 
         String feed = Util.setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]), latePath);
         feed = Util.insertLateFeedValue(feed, "1", "minutes");
@@ -1259,17 +1245,6 @@ public class NewRetryTest extends BaseTestClass {
         retry.setDelay(new Frequency(delayUnits + "(" + delay + ")"));
         retry.setPolicy(PolicyType.fromValue(retryType));
         return retry;
-    }
-
-    private void displayInputs(String m, int delay, String policy, int retryAttempts)
-    throws Exception {
-        System.out.println("******************");
-        System.out.println("This test case is being executed with:");
-        System.out.println("test case=" + m);
-        System.out.println("delay=" + delay);
-        System.out.println("policy=" + policy);
-        System.out.println("retries=" + retryAttempts);
-        System.out.println("******************");
     }
 
     private Integer getDelay(int delay, int attempts, String attemptType) throws Exception {
