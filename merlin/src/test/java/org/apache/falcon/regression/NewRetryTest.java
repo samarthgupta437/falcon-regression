@@ -188,7 +188,7 @@ public class NewRetryTest extends BaseTestClass {
             boolean validation = false;
             for (int attempt = 0; attempt < 60; ++attempt) {
                 validation =
-                        validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1);
+                        validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1);
                 if (validation)
                     break;
                 Thread.sleep(10000);
@@ -255,7 +255,7 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);;
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
+            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
                 //wait
             }
 
@@ -317,7 +317,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 2)) {
+            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 2)) {
                 //wait
             }
 
@@ -668,7 +668,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
+            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
                 //keep waiting
             }
 
@@ -796,7 +796,7 @@ public class NewRetryTest extends BaseTestClass {
             //now wait till the process is over
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
+            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
                 //keep waiting
             }
 
@@ -900,7 +900,7 @@ public class NewRetryTest extends BaseTestClass {
                 //keep dancing
                 String insertionFolder = Util.findFolderBetweenGivenTimeStamps(now, now.plusMinutes(5), initialData);
 
-                if (!inserted && validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId),
+                if (!inserted && validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId),
                                 bundles[0].getProcessObject().getRetry().getAttempts())) {
                     System.out.println("inserting data in folder " + insertionFolder + " at " + DateTime.now());
                     Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
@@ -1002,7 +1002,7 @@ public class NewRetryTest extends BaseTestClass {
     }
 
 
-    private boolean validateFailureRetries(ColoHelper coloHelper, CoordinatorJob coordinator,
+    private boolean validateFailureRetries(OozieClient oozieClient, CoordinatorJob coordinator,
                                            int maxNumberOfRetries) throws Exception {
 
         if (maxNumberOfRetries < 0) {
@@ -1010,8 +1010,6 @@ public class NewRetryTest extends BaseTestClass {
         }
 
         HashMap<String, Boolean> workflowMap = new HashMap<String, Boolean>();
-
-        OozieClient client =coloHelper.getFeedHelper().getOozieClient();
 
         if (coordinator.getActions().size() == 0) {
             return false;
@@ -1024,7 +1022,7 @@ public class NewRetryTest extends BaseTestClass {
             }
 
 
-            WorkflowJob actionInfo = client.getJobInfo(action.getExternalId());
+            WorkflowJob actionInfo = oozieClient.getJobInfo(action.getExternalId());
 
 
             if (!(actionInfo.getStatus().equals(WorkflowJob.Status.SUCCEEDED) ||
@@ -1105,7 +1103,7 @@ public class NewRetryTest extends BaseTestClass {
                                                         int maxNumberOfRetries) throws Exception {
 
         CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
-        boolean retriedAllDefault = validateFailureRetries(coloHelper, defaultCoordinator, maxNumberOfRetries);
+        boolean retriedAllDefault = validateFailureRetries(coloHelper.getFeedHelper().getOozieClient(), defaultCoordinator, maxNumberOfRetries);
         if (retriedAllDefault) {
             return true;
         }
