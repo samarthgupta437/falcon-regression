@@ -290,19 +290,11 @@ public class FeedReplicationTest extends BaseTestClass {
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(), feedName, "REPLICATION"), 1);
 
         //replication should not start
-        boolean started = true;
-        try{
-            InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                    CoordinatorAction.Status.RUNNING, timeout, ENTITY_TYPE.FEED);
-        }catch (AssertionError error){
-            //check if really replication is waiting and not running
-            ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
-                    "?start=" + startTime + "&end=" + endTime);
-            InstanceUtil.validateResponse(r, 1, 0, 0, 1, 0);
-            Util.print("Replication didn't start. Test passed.");
-            started = false;
-        }
-        Assert.assertFalse(started, "Replication should not start!");
+        Thread.sleep(60000);
+        ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
+                "?start=" + startTime + "&end=" + endTime);
+        InstanceUtil.validateResponse(r, 1, 0, 0, 1, 0);
+        Util.print("Replication didn't start.");
 
         //create availability flag on source
         HadoopUtil.copyDataToFolder(cluster1, toSource, availabilityFlagName);
