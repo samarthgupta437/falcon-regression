@@ -127,11 +127,11 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
 
             //now wait till the process is over
-            String bundleId = Util.getBundles(cluster.getFeedHelper().getOozieClient(),
+            String bundleId = Util.getBundles(clusterOC,
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
+            waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
             Process oldProcessObject = bundles[0].getProcessObject();
 
@@ -183,14 +183,14 @@ public class NewRetryTest extends BaseTestClass {
             List<String> initialData = Util.getHadoopLateData(cluster, Util.getInputFeedFromBundle(bundles[0]));
             //now wait till the process is over
             Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
-            String bundleId = Util.getBundles(cluster.getFeedHelper().getOozieClient(),
+            String bundleId = Util.getBundles(clusterOC,
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
             boolean validation = false;
             for (int attempt = 0; attempt < 60; ++attempt) {
                 validation =
-                        validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 1);
+                        validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1);
                 if (validation)
                     break;
                 Thread.sleep(10000);
@@ -258,7 +258,7 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);;
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 1)) {
+            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
                 //wait
             }
 
@@ -321,7 +321,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 2)) {
+            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 2)) {
                 //wait
             }
 
@@ -384,7 +384,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
+            waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
             Process oldProcessObject = bundles[0].getProcessObject();
 
@@ -444,7 +444,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
+            waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
             Process oldProcessObject = bundles[0].getProcessObject();
 
@@ -506,7 +506,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
+            waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
             Process oldProcessObject = bundles[0].getProcessObject();
 
@@ -569,7 +569,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            waitTillCertainPercentageOfProcessHasStarted(cluster, bundleId, 25);
+            waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
             Process oldProcessObject = bundles[0].getProcessObject();
 
             Retry retry = bundles[0].getProcessObject().getRetry();
@@ -678,7 +678,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 1)) {
+            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
                 //keep waiting
             }
 
@@ -808,7 +808,7 @@ public class NewRetryTest extends BaseTestClass {
             //now wait till the process is over
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId), 1)) {
+            while (!validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
                 //keep waiting
             }
 
@@ -817,7 +817,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(cluster.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
 
             HashMap<String, Integer> initialMap = getFailureRetriesForEachWorkflow(cluster,
-                    getDefaultOozieCoord(cluster, bundleId));
+                    getDefaultOozieCoordinator(clusterOC, bundleId));
             System.out.println("saved state of workflow retries");
 
             for (String key : initialMap.keySet()) {
@@ -828,7 +828,7 @@ public class NewRetryTest extends BaseTestClass {
 
 
             HashMap<String, Integer> finalMap = getFailureRetriesForEachWorkflow(cluster,
-                    getDefaultOozieCoord(cluster, bundleId));
+                    getDefaultOozieCoordinator(clusterOC, bundleId));
             System.out.println("final state of process looks like:");
 
             for (String key : finalMap.keySet()) {
@@ -913,7 +913,7 @@ public class NewRetryTest extends BaseTestClass {
                 //keep dancing
                 String insertionFolder = Util.findFolderBetweenGivenTimeStamps(now, now.plusMinutes(5), initialData);
 
-                if (!inserted && validateFailureRetries(cluster, getDefaultOozieCoord(cluster, bundleId),
+                if (!inserted && validateFailureRetries(cluster, getDefaultOozieCoordinator(clusterOC, bundleId),
                                 bundles[0].getProcessObject().getRetry().getAttempts())) {
                     System.out.println("inserting data in folder " + insertionFolder + " at " + DateTime.now());
                     Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
@@ -1073,13 +1073,12 @@ public class NewRetryTest extends BaseTestClass {
         }
     }
 
-    private CoordinatorJob getDefaultOozieCoord(ColoHelper coloHelper, String bundleId) throws Exception {
-        OozieClient client = coloHelper.getFeedHelper().getOozieClient();
-        BundleJob bundlejob = client.getBundleJobInfo(bundleId);
+    public CoordinatorJob getDefaultOozieCoordinator(OozieClient oozieClient, String bundleId) throws Exception {
+        BundleJob bundlejob = oozieClient.getBundleJobInfo(bundleId);
 
         for (CoordinatorJob coord : bundlejob.getCoordinators()) {
             if (coord.getAppName().contains("DEFAULT")) {
-                return client.getCoordJobInfo(coord.getId());
+                return oozieClient.getCoordJobInfo(coord.getId());
             }
         }
         return null;
@@ -1120,7 +1119,7 @@ public class NewRetryTest extends BaseTestClass {
                                                         int maxNumberOfRetries) throws Exception {
         boolean retried = false;
 
-        CoordinatorJob defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
+        CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
         boolean retriedAllDefault = validateFailureRetries(coloHelper, defaultCoordinator, maxNumberOfRetries);
         if (retriedAllDefault) {
             return true;
@@ -1129,9 +1128,8 @@ public class NewRetryTest extends BaseTestClass {
     }
 
 
-    private void waitTillCertainPercentageOfProcessHasStarted(ColoHelper coloHelper,
-                                                              String bundleId, int percentage) throws Exception {
-        CoordinatorJob defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
+    private void waitTillCertainPercentageOfProcessHasStarted(OozieClient oozieClient, String bundleId, int percentage) throws Exception {
+        CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
 
         for (int i = 0; i < 120 && defaultCoordinator.getStatus() == CoordinatorJob.Status.PREP; ++i) {
             TimeUnit.SECONDS.sleep(10);
@@ -1145,7 +1143,7 @@ public class NewRetryTest extends BaseTestClass {
         while (percentageConversion > 0) {
             int doneBynow = 0;
             for (CoordinatorAction action : defaultCoordinator.getActions()) {
-                CoordinatorAction actionInfo = getOozieActionInfo(coloHelper, action.getId());
+                CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
                 if (actionInfo.getStatus().equals(CoordinatorAction.Status.RUNNING)) {
                     doneBynow++;
                     if (doneBynow == percentageConversion) {
@@ -1178,7 +1176,7 @@ public class NewRetryTest extends BaseTestClass {
         OozieClient client = coloHelper.getProcessHelper().getOozieClient();
         List<DateTime> dateList = new ArrayList<DateTime>();
 
-        CoordinatorJob coordinator = getDefaultOozieCoord(coloHelper, bundleId);
+        CoordinatorJob coordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
 
         for (CoordinatorAction action : coordinator.getActions()) {
             if (action.getExternalId() != null) {
@@ -1196,7 +1194,7 @@ public class NewRetryTest extends BaseTestClass {
     private void checkIfRetriesWereTriggeredCorrectly(ColoHelper coloHelper, String retryType,
                                                       int delay, String bundleId) throws Exception {
         //it is presumed that this delay here will be expressed in minutes. Hourly/daily is unfeasible to check :)
-        checkRetryTriggerForCoordinator(coloHelper, retryType, delay, getDefaultOozieCoord(coloHelper, bundleId));
+        checkRetryTriggerForCoordinator(coloHelper, retryType, delay, getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId));
     }
 
     private void checkRetryTriggerForCoordinator(ColoHelper coloHelper, String retryType, int delay,
@@ -1206,7 +1204,7 @@ public class NewRetryTest extends BaseTestClass {
 
         for (CoordinatorAction action : coordinator.getActions()) {
 
-            CoordinatorAction coordAction = getOozieActionInfo(coloHelper, action.getExternalId());
+            CoordinatorAction coordAction = coloHelper.getProcessHelper().getOozieClient().getCoordActionInfo(action.getExternalId());
             if (!coordAction.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
                 int expectedDelay = delay;
                 //first get data from logs:
