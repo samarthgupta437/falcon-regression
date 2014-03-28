@@ -986,7 +986,8 @@ public class NewRetryTest extends BaseTestClass {
         int attempt = 0;
         boolean result = false;
         while (true) {
-            result = ensureAllFailedInstancesHaveRetried(coloHelper, bundleId, maxNumberOfRetries);
+            CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
+            result = validateFailureRetries(coloHelper.getFeedHelper().getOozieClient(), defaultCoordinator, maxNumberOfRetries);
 
             if (result || attempt > 60) {
                 break;
@@ -1096,20 +1097,6 @@ public class NewRetryTest extends BaseTestClass {
 
         return testData;
     }
-
-
-
-    private boolean ensureAllFailedInstancesHaveRetried(ColoHelper coloHelper, String bundleId,
-                                                        int maxNumberOfRetries) throws Exception {
-
-        CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
-        boolean retriedAllDefault = validateFailureRetries(coloHelper.getFeedHelper().getOozieClient(), defaultCoordinator, maxNumberOfRetries);
-        if (retriedAllDefault) {
-            return true;
-        }
-        return false;
-    }
-
 
     private void waitTillCertainPercentageOfProcessHasStarted(OozieClient oozieClient, String bundleId, int percentage) throws Exception {
         CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
