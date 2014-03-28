@@ -1103,14 +1103,13 @@ public class NewRetryTest extends BaseTestClass {
 
     private boolean ensureAllFailedInstancesHaveRetried(ColoHelper coloHelper, String bundleId,
                                                         int maxNumberOfRetries) throws Exception {
-        boolean retried = false;
 
         CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
         boolean retriedAllDefault = validateFailureRetries(coloHelper, defaultCoordinator, maxNumberOfRetries);
         if (retriedAllDefault) {
             return true;
         }
-        return retried;
+        return false;
     }
 
 
