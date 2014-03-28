@@ -1156,16 +1156,12 @@ public class NewRetryTest extends BaseTestClass {
     private void checkIfRetriesWereTriggeredCorrectly(ColoHelper coloHelper, String retryType,
                                                       int delay, String bundleId) throws Exception {
         //it is presumed that this delay here will be expressed in minutes. Hourly/daily is unfeasible to check :)
-        checkRetryTriggerForCoordinator(coloHelper, retryType, delay, getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId));
-    }
 
-    private void checkRetryTriggerForCoordinator(ColoHelper coloHelper, String retryType, int delay,
-                                                 CoordinatorJob coordinator) throws Exception {
+        final DateTimeFormatter formatter = DateTimeFormat.forPattern("HH:mm:ss");
 
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("HH:mm:ss");
+        final CoordinatorJob coordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
 
         for (CoordinatorAction action : coordinator.getActions()) {
-
             CoordinatorAction coordAction = coloHelper.getProcessHelper().getOozieClient().getCoordActionInfo(action.getExternalId());
             if (!coordAction.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
                 int expectedDelay = delay;
