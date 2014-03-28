@@ -38,7 +38,6 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-@Test(groups = "distributed")
 public class PrismProcessScheduleTest extends BaseTestClass {
 
   ColoHelper cluster1 = servers.get(0);
@@ -61,7 +60,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     removeBundles();
   }
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOnBothColos() throws Exception {
     //schedule both bundles
     bundles[0].submitAndScheduleProcess();
@@ -78,7 +77,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "distributed"})
   public void testScheduleAlreadyScheduledProcessOnBothColos() throws Exception {
     //schedule both bundles
     bundles[0].submitAndScheduleProcess();
@@ -102,7 +101,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "distributed"})
   public void testScheduleSuspendedProcessOnBothColos() throws Exception {
     //schedule both bundles
     bundles[0].submitAndScheduleProcess();
@@ -127,7 +126,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
   }
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "embedded"})
   public void testScheduleDeletedProcessOnBothColos() throws Exception {
     //schedule both bundles
     bundles[0].submitAndScheduleProcess();
@@ -151,7 +150,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "embedded"})
   public void testScheduleNonExistentProcessOnBothColos() throws Exception {
     Util.assertFailed(cluster2.getProcessHelper()
       .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
@@ -161,7 +160,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOn1ColoWhileOtherColoIsDown() throws Exception {
     try {
       bundles[1].submitProcess(true);
@@ -185,7 +184,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "distributed"})
   public void testProcessScheduleOn1ColoWhileThatColoIsDown() throws Exception {
     try {
       bundles[0].submitProcess(true);
@@ -204,7 +203,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "distributed"})
   public void testProcessScheduleOn1ColoWhileAnotherColoHasSuspendedProcess()
     throws Exception {
     try {
@@ -226,7 +225,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-  @Test(groups = {"prism", "0.2"})
+  @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOn1ColoWhileAnotherColoHasKilledProcess()
     throws Exception {
     try {
@@ -246,7 +245,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     }
   }
 
-  @Test(groups = {"prism", "0.2"}, enabled = true, timeOut = 1800000)
+  @Test(groups = {"prism", "0.2", "distributed"}, enabled = true, timeOut = 1800000)
   public void testRescheduleKilledProcess() throws Exception {
 
     /*
