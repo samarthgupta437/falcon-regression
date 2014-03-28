@@ -484,12 +484,7 @@ public class InstanceUtil {
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         DateTime jodaTime = fmt.parseDateTime(time);
-
-        if (minutes > 0)
-            jodaTime = jodaTime.plusMinutes(minutes);
-        else
-            jodaTime = jodaTime.minusMinutes(-1 * minutes);
-
+        jodaTime = jodaTime.plusMinutes(minutes);
         return fmt.print(jodaTime);
     }
 
