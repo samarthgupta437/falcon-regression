@@ -81,8 +81,12 @@ public class RetentionTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testName(Method method) throws IOException, JAXBException {
         logger.info("test name: " + method.getName());
+        Bundle bundle = Util.getBundleData("RetentionBundles")[0];
+        bundles[0] = new Bundle(bundle, cluster);
+        bundles[0].setInputFeedDataPath(testHDFSDir);
+        bundles[0].generateUniqueBundle();
     }
 
     @AfterMethod(alwaysRun = true)
@@ -95,23 +99,17 @@ public class RetentionTest extends BaseTestClass {
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
         // test for https://issues.apache.org/jira/browse/FALCON-321
-        final Bundle bundle = Util.getBundleData("RetentionBundles")[0];
-        testRetention(bundle, "24", "hours", true, "daily", false);
+        testRetention("24", "hours", true, "daily", false);
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
-    public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType,
+    public void testRetention(String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
-        bundles[0] = new Bundle(b, cluster);
-        b.setInputFeedDataPath(testHDFSDir);
-        displayDetails(period, unit, gaps, dataType);
-
         String feed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
                 getFeedPathValue(dataType));
         feed = insertRetentionValueInFeed(feed, unit + "(" + period + ")");
         bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
-        bundles[0].generateUniqueBundle();
 
         bundles[0].submitClusters(prism);
 
@@ -142,16 +140,6 @@ public class RetentionTest extends BaseTestClass {
         StringWriter feedWriter = new StringWriter();
         feedContext.createMarshaller().marshal(feedObject, feedWriter);
         return feedWriter.toString();
-    }
-
-    private void displayDetails(String period, String unit, boolean gaps, String dataType)
-    throws Exception {
-        logger.info("***********************************************");
-        logger.info("executing for:");
-        logger.info(unit + "(" + period + ")");
-        logger.info("gaps=" + gaps);
-        logger.info("dataType=" + dataType);
-        logger.info("***********************************************");
     }
 
     private void replenishData(String dataType, boolean gap,
@@ -581,29 +569,25 @@ public class RetentionTest extends BaseTestClass {
 
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) throws Exception {
-        Bundle[] bundles = Util.getBundleData("RetentionBundles");
         String[] periods = new String[]{"0", "10080", "60", "8", "24"}; // a negative value like -4 should be covered in validation scenarios.
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
         String[] dataTypes = new String[]{"daily", "yearly", "monthly"};
-        Object[][] testData = new Object[bundles.length * units.length * periods.length * gaps
-                .length * dataTypes.length][6];
+        Object[][] testData = new Object[periods.length * units.length *
+                gaps.length * dataTypes.length][5];
 
         int i = 0;
 
-        for (Bundle bundle : bundles) {
-            for (String unit : units) {
-                for (String period : periods) {
-                    for (boolean gap : gaps) {
-                        for (String dataType : dataTypes) {
-                            testData[i][0] = bundle;
-                            testData[i][1] = period;
-                            testData[i][2] = unit;
-                            testData[i][3] = gap;
-                            testData[i][4] = dataType;
-                            testData[i][5] = true;
-                            i++;
-                        }
+        for (String unit : units) {
+            for (String period : periods) {
+                for (boolean gap : gaps) {
+                    for (String dataType : dataTypes) {
+                        testData[i][0] = period;
+                        testData[i][1] = unit;
+                        testData[i][2] = gap;
+                        testData[i][3] = dataType;
+                        testData[i][4] = true;
+                        i++;
                     }
                 }
             }
