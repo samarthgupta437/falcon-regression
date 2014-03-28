@@ -124,7 +124,14 @@ public class OozieUtil {
     );
   }
 
-
+    /**
+     *
+     * @param bundleID
+     * @param oozieClient
+     * @return list of action ids of the succeeded retention workflow
+     * @throws OozieClientException
+     * @throws InterruptedException
+     */
     public static List<String> waitForRetentionWorkflowToSucceed(String bundleID, OozieClient oozieClient)
     throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
