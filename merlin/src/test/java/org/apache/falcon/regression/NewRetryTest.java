@@ -81,7 +81,6 @@ public class NewRetryTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
         bundles[0] = new Bundle(Util.getBundleData("RetryTests")[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -142,7 +141,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             prism.getProcessHelper().update((bundles[0].getProcessData()), bundles[0].getProcessData());
             String newBundleId = InstanceUtil.getLatestBundleID(cluster,
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS);
@@ -204,7 +203,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
 
             if ((retryAttempts - 2) > 0) {
                 Assert.assertTrue(prism.getProcessHelper().update((bundles[0].getProcessData()), bundles[0].getProcessData())
@@ -268,7 +267,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             Assert.assertTrue(prism.getProcessHelper()
                             .update((bundles[0].getProcessData()), bundles[0].getProcessData())
                             .getMessage().contains("updated successfully"),
@@ -330,7 +329,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             Assert.assertTrue(
                     prism.getProcessHelper()
                             .update((bundles[0].getProcessData()), bundles[0].getProcessData())
@@ -390,7 +389,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             Assert.assertTrue(prism.getProcessHelper()
                     .update(Util.readEntityName(bundles[0].getProcessData()),
                             bundles[0].getProcessFilePath()).getMessage()
@@ -449,7 +448,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             Assert.assertTrue(prism.getProcessHelper().update(Util.readEntityName(bundles[0].getProcessData()),
                             bundles[0].getProcessData()).getMessage()
                     .contains("updated successfully"), "process was not updated successfully");
@@ -510,7 +509,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             Assert.assertTrue(prism.getProcessHelper()
                     .update(Util.readEntityName(bundles[0].getProcessData()),
                             bundles[0].getProcessData()).getMessage()
@@ -571,7 +570,7 @@ public class NewRetryTest extends BaseTestClass {
 
             bundles[0].setRetry(retry);
 
-            System.out.println("going to update process at:" + DateTime.now(DateTimeZone.UTC));
+            logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             Assert.assertFalse(prism.getProcessHelper().update(Util.readEntityName(bundles[0].getProcessData())
                             , bundles[0].getProcessData()).getMessage().contains("updated successfully"),
                     "process was updated successfully!!!");
@@ -650,7 +649,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        System.out.println("process dates: " + startDate + "," + endDate);
+        logger.info("process dates: " + startDate + "," + endDate);
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -675,7 +674,7 @@ public class NewRetryTest extends BaseTestClass {
             }
 
             //now start firing random retries
-            System.out.println("now firing user reruns:");
+            logger.info("now firing user reruns:");
             for (int i = 0; i < 1; i++) {
                 prism.getProcessHelper()
                         .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
@@ -708,7 +707,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        System.out.println("process dates: " + startDate + "," + endDate);
+        logger.info("process dates: " + startDate + "," + endDate);
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
@@ -730,7 +729,7 @@ public class NewRetryTest extends BaseTestClass {
             //now to validate all failed instances to check if they were retried or not.
             validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
 
-            System.out.println("now firing user reruns:");
+            logger.info("now firing user reruns:");
 
             DateTime[] dateBoundaries = getFailureTimeBoundaries(cluster, bundleId);
             ProcessInstancesResult piResult = prism.getProcessHelper()
@@ -741,7 +740,6 @@ public class NewRetryTest extends BaseTestClass {
 
             Assert.assertEquals(piResult.getStatusCode(), 0, "rerun failed miserably! you fool!");
 
-            System.out.println();
             validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts() + 1);
 
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
@@ -786,9 +784,9 @@ public class NewRetryTest extends BaseTestClass {
                 dates = Util.getStartTimeForRunningCoordinators(cluster, bundleId);
             } while (dates == null);
 
-            System.out.println("Start time: " + formatter.print(startDate));
-            System.out.println("End time: " + formatter.print(endDate));
-            System.out.println("candidate nominal time:" + formatter.print(dates.get(0)));
+            logger.info("Start time: " + formatter.print(startDate));
+            logger.info("End time: " + formatter.print(endDate));
+            logger.info("candidate nominal time:" + formatter.print(dates.get(0)));
             DateTime now = dates.get(0);
 
             if (formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0))) > 0) {
@@ -802,16 +800,16 @@ public class NewRetryTest extends BaseTestClass {
                 //keep waiting
             }
 
-            System.out.println("now suspending the process altogether....");
+            logger.info("now suspending the process altogether....");
 
             Util.assertSucceeded(cluster.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
 
             HashMap<String, Integer> initialMap = getFailureRetriesForEachWorkflow(cluster,
                     getDefaultOozieCoordinator(clusterOC, bundleId));
-            System.out.println("saved state of workflow retries");
+            logger.info("saved state of workflow retries");
 
             for (String key : initialMap.keySet()) {
-                System.out.println(key + "," + initialMap.get(key));
+                logger.info(key + "," + initialMap.get(key));
             }
 
             Thread.sleep(600000);
@@ -819,10 +817,10 @@ public class NewRetryTest extends BaseTestClass {
 
             HashMap<String, Integer> finalMap = getFailureRetriesForEachWorkflow(cluster,
                     getDefaultOozieCoordinator(clusterOC, bundleId));
-            System.out.println("final state of process looks like:");
+            logger.info("final state of process looks like:");
 
             for (String key : finalMap.keySet()) {
-                System.out.println(key + "," + finalMap.get(key));
+                logger.info(key + "," + finalMap.get(key));
             }
 
             Assert.assertEquals(initialMap.size(), finalMap.size(), "a new workflow retried while process was suspended!!!!");
@@ -831,7 +829,7 @@ public class NewRetryTest extends BaseTestClass {
                 Assert.assertEquals(initialMap.get(key), finalMap.get(key), "values are different for workflow: " + key);
             }
 
-            System.out.println("now resuming the process...");
+            logger.info("now resuming the process...");
             Util.assertSucceeded(cluster.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData()));
 
             //now to validate all failed instances to check if they were retried or not.
@@ -882,9 +880,9 @@ public class NewRetryTest extends BaseTestClass {
                 dates = Util.getStartTimeForRunningCoordinators(cluster, bundleId);
             } while (dates == null);
 
-            System.out.println("Start time: " + formatter.print(startDate));
-            System.out.println("End time: " + formatter.print(endDate));
-            System.out.println("candidate nominal time:" + formatter.print(dates.get(0)));
+            logger.info("Start time: " + formatter.print(startDate));
+            logger.info("End time: " + formatter.print(endDate));
+            logger.info("candidate nominal time:" + formatter.print(dates.get(0)));
             DateTime now = dates.get(0);
 
             if (formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0))) > 0) {
@@ -904,7 +902,7 @@ public class NewRetryTest extends BaseTestClass {
 
                 if (!inserted && validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId),
                                 bundles[0].getProcessObject().getRetry().getAttempts())) {
-                    System.out.println("inserting data in folder " + insertionFolder + " at " + DateTime.now());
+                    logger.info("inserting data in folder " + insertionFolder + " at " + DateTime.now());
                     Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
                     inserted = true;
                     break;
@@ -1025,7 +1023,7 @@ public class NewRetryTest extends BaseTestClass {
             if (!(actionInfo.getStatus().equals(WorkflowJob.Status.SUCCEEDED) ||
                     actionInfo.getStatus().equals(WorkflowJob.Status.RUNNING))) {
 
-                System.out.println("workflow " + actionInfo.getId() + " has action number: " +
+                logger.info("workflow " + actionInfo.getId() + " has action number: " +
                         actionInfo.getRun());
                 if (actionInfo.getRun() == maxNumberOfRetries) {
                     workflowMap.put(actionInfo.getId(), true);
@@ -1132,7 +1130,7 @@ public class NewRetryTest extends BaseTestClass {
             }
 
             WorkflowJob actionInfo = client.getJobInfo(action.getExternalId());
-            System.out.println("adding workflow " + actionInfo.getId() + " to the map");
+            logger.info("adding workflow " + actionInfo.getId() + " to the map");
             workflowRetryMap.put(actionInfo.getId(), actionInfo.getRun());
         }
         return workflowRetryMap;
@@ -1177,17 +1175,17 @@ public class NewRetryTest extends BaseTestClass {
                 List<String> instanceRetryTimes = Util.getInstanceRetryTimes(coloHelper, action.getExternalId());
                 List<String> instanceFinishTimes = Util.getInstanceFinishTimes(coloHelper, action.getExternalId());
 
-                System.out.println("finish times look like:");
+                logger.info("finish times look like:");
                 for (String line : instanceFinishTimes) {
-                    System.out.println(line);
+                    logger.info(line);
                 }
 
-                System.out.println("retry times look like:");
+                logger.info("retry times look like:");
                 for (String line : instanceRetryTimes) {
-                    System.out.println(line);
+                    logger.info(line);
                 }
 
-                System.out.println("checking timelines for retry type " + retryType + " for delay " +
+                logger.info("checking timelines for retry type " + retryType + " for delay " +
                                 expectedDelay + " for workflow id: " + action.getExternalId());
 
                 if (retryType.equalsIgnoreCase("periodic")) {
