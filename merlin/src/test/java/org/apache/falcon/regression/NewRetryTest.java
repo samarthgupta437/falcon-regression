@@ -731,7 +731,7 @@ public class NewRetryTest extends BaseTestClass {
 
             logger.info("now firing user reruns:");
 
-            DateTime[] dateBoundaries = getFailureTimeBoundaries(cluster, bundleId);
+            DateTime[] dateBoundaries = getFailureTimeBoundaries(clusterOC, bundleId);
             ProcessInstancesResult piResult = prism.getProcessHelper()
                     .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                             "?start=" + formatter.print(dateBoundaries[0]).replace("/", "T") +
@@ -804,8 +804,8 @@ public class NewRetryTest extends BaseTestClass {
 
             Util.assertSucceeded(cluster.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
 
-            HashMap<String, Integer> initialMap = getFailureRetriesForEachWorkflow(cluster,
-                    getDefaultOozieCoordinator(clusterOC, bundleId));
+            HashMap<String, Integer> initialMap = getFailureRetriesForEachWorkflow(
+                    clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId));
             logger.info("saved state of workflow retries");
 
             for (String key : initialMap.keySet()) {
@@ -815,8 +815,8 @@ public class NewRetryTest extends BaseTestClass {
             Thread.sleep(600000);
 
 
-            HashMap<String, Integer> finalMap = getFailureRetriesForEachWorkflow(cluster,
-                    getDefaultOozieCoordinator(clusterOC, bundleId));
+            HashMap<String, Integer> finalMap = getFailureRetriesForEachWorkflow(
+                    clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId));
             logger.info("final state of process looks like:");
 
             for (String key : finalMap.keySet()) {
@@ -1119,9 +1119,8 @@ public class NewRetryTest extends BaseTestClass {
     }
 
 
-    private HashMap<String, Integer> getFailureRetriesForEachWorkflow(ColoHelper coloHelper, CoordinatorJob coordinator)
+    private HashMap<String, Integer> getFailureRetriesForEachWorkflow(OozieClient oozieClient, CoordinatorJob coordinator)
     throws Exception {
-        OozieClient client = coloHelper.getClusterHelper().getOozieClient();
         HashMap<String, Integer> workflowRetryMap = new HashMap<String, Integer>();
         for (CoordinatorAction action : coordinator.getActions()) {
 
@@ -1129,23 +1128,22 @@ public class NewRetryTest extends BaseTestClass {
                 continue;
             }
 
-            WorkflowJob actionInfo = client.getJobInfo(action.getExternalId());
+            WorkflowJob actionInfo = oozieClient.getJobInfo(action.getExternalId());
             logger.info("adding workflow " + actionInfo.getId() + " to the map");
             workflowRetryMap.put(actionInfo.getId(), actionInfo.getRun());
         }
         return workflowRetryMap;
     }
 
-    private DateTime[] getFailureTimeBoundaries(ColoHelper coloHelper, String bundleId) throws Exception {
-        OozieClient client = coloHelper.getProcessHelper().getOozieClient();
+    private DateTime[] getFailureTimeBoundaries(OozieClient oozieClient, String bundleId) throws Exception {
         List<DateTime> dateList = new ArrayList<DateTime>();
 
-        CoordinatorJob coordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
+        CoordinatorJob coordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
 
         for (CoordinatorAction action : coordinator.getActions()) {
             if (action.getExternalId() != null) {
 
-                WorkflowJob jobInfo = client.getJobInfo(action.getExternalId());
+                WorkflowJob jobInfo = oozieClient.getJobInfo(action.getExternalId());
                 if (jobInfo.getRun() > 0) {
                     dateList.add(new DateTime(jobInfo.getStartTime(), DateTimeZone.UTC));
                 }
