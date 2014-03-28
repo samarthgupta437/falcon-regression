@@ -1159,10 +1159,11 @@ public class NewRetryTest extends BaseTestClass {
 
         final DateTimeFormatter formatter = DateTimeFormat.forPattern("HH:mm:ss");
 
-        final CoordinatorJob coordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
+        final OozieClient oozieClient = coloHelper.getFeedHelper().getOozieClient();
+        final CoordinatorJob coordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
 
         for (CoordinatorAction action : coordinator.getActions()) {
-            CoordinatorAction coordAction = coloHelper.getProcessHelper().getOozieClient().getCoordActionInfo(action.getExternalId());
+            CoordinatorAction coordAction = oozieClient.getCoordActionInfo(action.getExternalId());
             if (!coordAction.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
                 int expectedDelay = delay;
                 //first get data from logs:
