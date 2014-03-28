@@ -1164,10 +1164,11 @@ public class NewRetryTest extends BaseTestClass {
                                                               String bundleId, int percentage) throws Exception {
         CoordinatorJob defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
 
-        while (defaultCoordinator.getStatus().equals(CoordinatorJob.Status.PREP)) {
-            defaultCoordinator = getDefaultOozieCoord(coloHelper, bundleId);
+        for (int i = 0; i < 120 && defaultCoordinator.getStatus() == CoordinatorJob.Status.PREP; ++i) {
+            TimeUnit.SECONDS.sleep(10);
         }
-
+        Assert.assertNotEquals(defaultCoordinator.getStatus(), CoordinatorJob.Status.PREP,
+                "Unexpected state for coordinator job: " + defaultCoordinator.getId());
         int totalCount = defaultCoordinator.getActions().size();
 
         int percentageConversion = (percentage * totalCount) / 100;
