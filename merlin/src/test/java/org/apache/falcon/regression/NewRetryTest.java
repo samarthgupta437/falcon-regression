@@ -35,6 +35,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -61,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 @Test(groups = "embedded")
 public class NewRetryTest extends BaseTestClass {
 
+    private Logger logger = Logger.getLogger(NewRetryTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
@@ -148,7 +150,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, defaultRetries);
+            validateRetry(clusterOC, bundleId, defaultRetries);
             checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
         }
     }
@@ -213,7 +215,7 @@ public class NewRetryTest extends BaseTestClass {
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
                 //now to validate all failed instances to check if they were retried or not.
-                validateRetry(cluster, bundleId, retryAttempts - 2);
+                validateRetry(clusterOC, bundleId, retryAttempts - 2);
                 if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                     checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
                 }
@@ -277,7 +279,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, retryAttempts - 1);
+            validateRetry(clusterOC, bundleId, retryAttempts - 1);
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -340,7 +342,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, 2);
+            validateRetry(clusterOC, bundleId, 2);
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -399,7 +401,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, 4);
+            validateRetry(clusterOC, bundleId, 4);
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -457,7 +459,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -520,7 +522,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -579,7 +581,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -622,7 +624,7 @@ public class NewRetryTest extends BaseTestClass {
             String status = Util.getBundleStatus(cluster, bundleId);
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -681,7 +683,7 @@ public class NewRetryTest extends BaseTestClass {
                                         "&end=" + formatter.print(endDate).replace("/", "T") + "Z");
             }
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -726,7 +728,7 @@ public class NewRetryTest extends BaseTestClass {
             String status = Util.getBundleStatus(cluster, bundleId);
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
 
             System.out.println("now firing user reruns:");
 
@@ -740,7 +742,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(piResult.getStatusCode(), 0, "rerun failed miserably! you fool!");
 
             System.out.println();
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts() + 1);
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts() + 1);
 
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
@@ -833,7 +835,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.assertSucceeded(cluster.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData()));
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+            validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
             }
@@ -914,7 +916,7 @@ public class NewRetryTest extends BaseTestClass {
             }
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId,
+            validateRetry(clusterOC, bundleId,
                     bundles[0].getProcessObject().getRetry().getAttempts());
 
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
@@ -958,7 +960,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            validateRetry(cluster, bundleId, (bundles[0].getProcessObject().getRetry().getAttempts()) / 2);
+            validateRetry(clusterOC, bundleId, (bundles[0].getProcessObject().getRetry().getAttempts()) / 2);
 
             Util.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL, (bundles[0].getProcessData())));
 
@@ -971,7 +973,7 @@ public class NewRetryTest extends BaseTestClass {
             }
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(cluster, bundleId, (bundles[0].getProcessObject().getRetry().getAttempts()) / 2);
+            validateRetry(clusterOC, bundleId, (bundles[0].getProcessObject().getRetry().getAttempts()) / 2);
 
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
                 checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
@@ -980,26 +982,20 @@ public class NewRetryTest extends BaseTestClass {
     }
 
 
-    private void validateRetry(ColoHelper coloHelper, String bundleId, int maxNumberOfRetries)
+    private void validateRetry(OozieClient oozieClient, String bundleId, int maxNumberOfRetries)
     throws Exception {
         //validate that all failed processes were retried the specified number of times.
-        int attempt = 0;
-        boolean result = false;
-        while (true) {
-            CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(coloHelper.getFeedHelper().getOozieClient(), bundleId);
-            result = validateFailureRetries(coloHelper.getFeedHelper().getOozieClient(), defaultCoordinator, maxNumberOfRetries);
-
-            if (result || attempt > 60) {
-                break;
-            } else {
-                Thread.sleep(1000);
-                System.out.println("desired state not reached.This was attempt number: " + attempt);
-                attempt++;
-                Thread.sleep(5000);
-            }
+        for(int i = 0; i < 60 && getDefaultOozieCoordinator(oozieClient, bundleId) == null; ++i ) {
+            TimeUnit.SECONDS.sleep(10);
         }
-        Assert.assertTrue(result, "all retries were not attempted correctly!");
+        final CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
+        Assert.assertNotNull(defaultCoordinator, "Unexpected value of defaultCoordinator");
 
+        for(int i = 0; i < 60 && validateFailureRetries(oozieClient, defaultCoordinator, maxNumberOfRetries); ++i) {
+            logger.info("desired state not reached, attempt number: " + i);
+            TimeUnit.SECONDS.sleep(10);
+        }
+        Assert.fail("all retries were not attempted correctly!");
     }
 
 
