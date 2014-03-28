@@ -84,13 +84,13 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
                 ClusterType.SOURCE, null);
 
-        String postFix = "/US/ua2";
+        String postFix = "/US/" + cluster2.getClusterHelper().getColoName();
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
 
 
-        postFix = "/UK/ua3";
+        postFix = "/UK/" + cluster3.getClusterHelper().getColoName();
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
@@ -190,12 +190,12 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
 
-        String postFix = "/US/ua2";
+        String postFix = "/US/" + cluster2.getClusterHelper().getColoName();;
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
 
-        postFix = "/UK/ua3";
+        postFix = "/UK/" + cluster3.getClusterHelper().getColoName();;
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);

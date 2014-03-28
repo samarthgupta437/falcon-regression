@@ -21,12 +21,14 @@ package org.apache.falcon.regression.core.util;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.oozie.client.AuthOozieClient;
 import org.apache.oozie.client.BundleJob;
+import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.CoordinatorJob;
 import org.joda.time.DateTime;
 import org.apache.log4j.Logger;
+import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.text.ParseException;
@@ -122,5 +124,55 @@ public class OozieUtil {
     );
   }
 
+    /**
+     *
+     * @param bundleID
+     * @param oozieClient
+     * @return list of action ids of the succeeded retention workflow
+     * @throws OozieClientException
+     * @throws InterruptedException
+     */
+    public static List<String> waitForRetentionWorkflowToSucceed(String bundleID, OozieClient oozieClient)
+    throws OozieClientException, InterruptedException {
+        List<String> jobIds = new ArrayList<String>();
+        logger.info("using bundleId:" + bundleID);
+        for(int i=0; i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
+            Thread.sleep(2000);
+        }
+        Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
+                "Coordinator job should have got created by now.");
+        final String coordinatorId = oozieClient.getBundleJobInfo(bundleID).getCoordinators().get(0).getId();
+        logger.info("using coordinatorId: " + coordinatorId);
 
+        for(int i=0; i < 120 && oozieClient.getCoordJobInfo(coordinatorId).getActions().isEmpty(); ++i) {
+            Thread.sleep(4000);
+        }
+        Assert.assertFalse(oozieClient.getCoordJobInfo(coordinatorId).getActions().isEmpty(),
+                "Coordinator actions should have got created by now.");
+
+        final List<CoordinatorAction> actions = oozieClient.getCoordJobInfo(coordinatorId).getActions();
+        logger.info("actions: " + actions);
+
+        for (CoordinatorAction action : actions) {
+            for(int i=0; i < 180; ++i) {
+                CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
+                logger.info("actionInfo: " + actionInfo);
+                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
+                        actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
+                        actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
+                    break;
+                }
+                Thread.sleep(10000);
+            }
+            Assert.assertEquals(
+                    oozieClient.getCoordActionInfo(action.getId()).getStatus(),
+                    CoordinatorAction.Status.SUCCEEDED,
+                    "Action did not succeed.");
+            jobIds.add(action.getId());
+
+        }
+
+        return jobIds;
+
+    }
 }

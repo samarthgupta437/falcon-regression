@@ -25,21 +25,19 @@ import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Location;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
-import org.apache.oozie.client.BundleJob;
-import org.apache.oozie.client.CoordinatorAction;
-import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.apache.oozie.client.WorkflowJob;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -64,7 +62,6 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -81,8 +78,12 @@ public class RetentionTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) {
+    public void testName(Method method) throws IOException, JAXBException {
         logger.info("test name: " + method.getName());
+        Bundle bundle = Util.getBundleData("RetentionBundles")[0];
+        bundles[0] = new Bundle(bundle, cluster);
+        bundles[0].setInputFeedDataPath(testHDFSDir);
+        bundles[0].generateUniqueBundle();
     }
 
     @AfterMethod(alwaysRun = true)
@@ -95,36 +96,28 @@ public class RetentionTest extends BaseTestClass {
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
         // test for https://issues.apache.org/jira/browse/FALCON-321
-        final Bundle bundle = Util.getBundleData("RetentionBundles")[0];
-        testRetention(bundle, "24", "hours", true, "daily", false);
+        testRetention("24", "hours", true, "daily", false);
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
-    public void testRetention(Bundle b, String period, String unit, boolean gaps, String dataType,
+    public void testRetention(String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
-        bundles[0] = new Bundle(b, cluster);
-        b.setInputFeedDataPath(testHDFSDir);
-        displayDetails(period, unit, gaps, dataType);
-
-        String feed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
+        String inputFeed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
                 getFeedPathValue(dataType));
-        feed = insertRetentionValueInFeed(feed, unit + "(" + period + ")");
-        bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].generateUniqueBundle();
+        inputFeed = insertRetentionValueInFeed(inputFeed, unit + "(" + period + ")");
 
         bundles[0].submitClusters(prism);
 
+        final ServiceResponse response = prism.getFeedHelper()
+                .submitEntity(URLS.SUBMIT_URL, inputFeed);
         if (Integer.parseInt(period) > 0) {
-            Util.assertSucceeded(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundles[0])));
+            Util.assertSucceeded(response);
 
             replenishData(dataType, gaps, withData);
 
-            commonDataRetentionWorkflow(bundles[0], Integer.parseInt(period), unit);
+            commonDataRetentionWorkflow(inputFeed, Integer.parseInt(period), unit);
         } else {
-            Util.assertFailed(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundles[0])));
+            Util.assertFailed(response);
         }
     }
 
@@ -142,16 +135,6 @@ public class RetentionTest extends BaseTestClass {
         StringWriter feedWriter = new StringWriter();
         feedContext.createMarshaller().marshal(feedObject, feedWriter);
         return feedWriter.toString();
-    }
-
-    private void displayDetails(String period, String unit, boolean gaps, String dataType)
-    throws Exception {
-        logger.info("***********************************************");
-        logger.info("executing for:");
-        logger.info(unit + "(" + period + ")");
-        logger.info("gaps=" + gaps);
-        logger.info("dataType=" + dataType);
-        logger.info("***********************************************");
     }
 
     private void replenishData(String dataType, boolean gap,
@@ -186,49 +169,31 @@ public class RetentionTest extends BaseTestClass {
         return null;
     }
 
-    private void commonDataRetentionWorkflow(Bundle bundle, int time,
+    private void commonDataRetentionWorkflow(String inputFeed, int time,
                                              String interval)
     throws JAXBException, OozieClientException, IOException, URISyntaxException,
     InterruptedException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
-                Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundle),
+                Util.getHadoopDataFromDir(cluster, inputFeed,
                         testHDFSDir);
 
         cluster.getFeedHelper()
-                .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
+                .schedule(URLS.SCHEDULE_URL, inputFeed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
-        logger.info(Util.readDatasetName(Util.getInputFeedFromBundle(bundle)));
+        final String inputDataSetName = Util.readDatasetName(inputFeed);
+        logger.info(inputDataSetName);
         Consumer consumer =
-                new Consumer("FALCON." + Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
+                new Consumer("FALCON." + inputDataSetName,
                         cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
         String bundleId = Util.getBundles(clusterOC,
-                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
+                inputDataSetName, ENTITY_TYPE.FEED).get(0);
 
-        List<String> workflows = getFeedRetentionJobs(bundleId);
-        logger.info("got a workflow list of length:" + workflows.size());
-        Collections.sort(workflows);
-
-        for (String workflow : workflows) {
-            logger.info(workflow);
-        }
-
-        if (!workflows.isEmpty()) {
-            String workflowId = workflows.get(0);
-            String status = getWorkflowInfo(workflowId);
-            while (!(status.equalsIgnoreCase("KILLED") || status.equalsIgnoreCase("FAILED") ||
-                    status.equalsIgnoreCase("SUCCEEDED"))) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                }
-                status = getWorkflowInfo(workflowId);
-            }
-        }
+        List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
+        logger.info("workflows: " + workflows);
 
         consumer.interrupt();
 
@@ -243,12 +208,12 @@ public class RetentionTest extends BaseTestClass {
 
         //now look for cluster data
         List<String> finalData =
-                Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundle),
+                Util.getHadoopDataFromDir(cluster, inputFeed,
                         testHDFSDir);
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput =
-                filterDataOnRetention(Util.getInputFeedFromBundle(bundle), time, interval,
+                filterDataOnRetention(inputFeed, time, interval,
                         currentTime, initialData);
 
         logger.info("initial data in system was:");
@@ -267,7 +232,7 @@ public class RetentionTest extends BaseTestClass {
         }
 
         validateDataFromFeedQueue(
-                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
+                inputDataSetName,
                 consumer.getMessageData(), expectedOutput, initialData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
@@ -452,59 +417,6 @@ public class RetentionTest extends BaseTestClass {
         return dates;
     }
 
-    private List<String> getFeedRetentionJobs(String bundleID)
-    throws OozieClientException, InterruptedException {
-        List<String> jobIds = new ArrayList<String>();
-        BundleJob bundleJob = clusterOC.getBundleJobInfo(bundleID);
-        for(int i=0; i < 60 && bundleJob.getCoordinators().isEmpty(); ++i) {
-            Thread.sleep(2000);
-        }
-        Assert.assertFalse(bundleJob.getCoordinators().isEmpty(),
-                "Coordinator job should have got created by now.");
-        CoordinatorJob jobInfo =
-                clusterOC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
-
-        for(int i=0; i < 120 && jobInfo.getActions().isEmpty(); ++i) {
-            Thread.sleep(4000);
-        }
-        Assert.assertFalse(jobInfo.getActions().isEmpty(),
-                "Coordinator actions should have got created by now.");
-        jobInfo = clusterOC.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
-
-        logger.info("got coordinator jobInfo array of length:" + jobInfo.getActions());
-        for (CoordinatorAction action : jobInfo.getActions()) {
-            logger.info(action.getId());
-        }
-        for (CoordinatorAction action : jobInfo.getActions()) {
-            CoordinatorAction actionInfo = clusterOC.getCoordActionInfo(action.getId());
-
-            for(int i=0; i < 180; ++i) {
-                actionInfo = clusterOC.getCoordActionInfo(action.getId());
-                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
-                        actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
-                        actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
-                    break;
-                }
-                Thread.sleep(10000);
-            }
-            Assert.assertEquals(actionInfo.getStatus(),CoordinatorAction.Status.SUCCEEDED,
-                    "Action did not succeed.");
-            jobIds.add(action.getId());
-
-        }
-
-
-        return jobIds;
-
-    }
-
-    private String getWorkflowInfo(String workflowId)
-    throws OozieClientException {
-        logger.info("fetching info for workflow with id: " + workflowId);
-        WorkflowJob job = clusterOC.getJobInfo(workflowId);
-        return job.getStatus().toString();
-    }
-
     private List<String> filterDataOnRetention(String feed, int time, String interval,
                                                      DateTime endDate,
                                                      List<String> inputData) throws JAXBException {
@@ -581,29 +493,25 @@ public class RetentionTest extends BaseTestClass {
 
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) throws Exception {
-        Bundle[] bundles = Util.getBundleData("RetentionBundles");
         String[] periods = new String[]{"0", "10080", "60", "8", "24"}; // a negative value like -4 should be covered in validation scenarios.
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
         String[] dataTypes = new String[]{"daily", "yearly", "monthly"};
-        Object[][] testData = new Object[bundles.length * units.length * periods.length * gaps
-                .length * dataTypes.length][6];
+        Object[][] testData = new Object[periods.length * units.length *
+                gaps.length * dataTypes.length][5];
 
         int i = 0;
 
-        for (Bundle bundle : bundles) {
-            for (String unit : units) {
-                for (String period : periods) {
-                    for (boolean gap : gaps) {
-                        for (String dataType : dataTypes) {
-                            testData[i][0] = bundle;
-                            testData[i][1] = period;
-                            testData[i][2] = unit;
-                            testData[i][3] = gap;
-                            testData[i][4] = dataType;
-                            testData[i][5] = true;
-                            i++;
-                        }
+        for (String unit : units) {
+            for (String period : periods) {
+                for (boolean gap : gaps) {
+                    for (String dataType : dataTypes) {
+                        testData[i][0] = period;
+                        testData[i][1] = unit;
+                        testData[i][2] = gap;
+                        testData[i][3] = dataType;
+                        testData[i][4] = true;
+                        i++;
                     }
                 }
             }
