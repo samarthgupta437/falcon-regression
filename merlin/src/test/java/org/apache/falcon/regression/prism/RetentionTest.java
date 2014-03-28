@@ -105,24 +105,22 @@ public class RetentionTest extends BaseTestClass {
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
-        String feed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
+        String inputFeed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
                 getFeedPathValue(dataType));
-        feed = insertRetentionValueInFeed(feed, unit + "(" + period + ")");
-        bundles[0].getDataSets().remove(Util.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
+        inputFeed = insertRetentionValueInFeed(inputFeed, unit + "(" + period + ")");
 
         bundles[0].submitClusters(prism);
 
         if (Integer.parseInt(period) > 0) {
             Util.assertSucceeded(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundles[0])));
+                    .submitEntity(URLS.SUBMIT_URL, inputFeed));
 
             replenishData(dataType, gaps, withData);
 
-            commonDataRetentionWorkflow(bundles[0], Integer.parseInt(period), unit);
+            commonDataRetentionWorkflow(inputFeed, Integer.parseInt(period), unit);
         } else {
             Util.assertFailed(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundles[0])));
+                    .submitEntity(URLS.SUBMIT_URL, inputFeed));
         }
     }
 
@@ -174,27 +172,27 @@ public class RetentionTest extends BaseTestClass {
         return null;
     }
 
-    private void commonDataRetentionWorkflow(Bundle bundle, int time,
+    private void commonDataRetentionWorkflow(String inputFeed, int time,
                                              String interval)
     throws JAXBException, OozieClientException, IOException, URISyntaxException,
     InterruptedException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
-                Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundle),
+                Util.getHadoopDataFromDir(cluster, inputFeed,
                         testHDFSDir);
 
         cluster.getFeedHelper()
-                .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle));
+                .schedule(URLS.SCHEDULE_URL, inputFeed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
-        logger.info(Util.readDatasetName(Util.getInputFeedFromBundle(bundle)));
+        logger.info(Util.readDatasetName(inputFeed));
         Consumer consumer =
-                new Consumer("FALCON." + Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
+                new Consumer("FALCON." + Util.readDatasetName(inputFeed),
                         cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
         String bundleId = Util.getBundles(clusterOC,
-                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)), ENTITY_TYPE.FEED).get(0);
+                Util.readDatasetName(inputFeed), ENTITY_TYPE.FEED).get(0);
 
         List<String> workflows = getFeedRetentionJobs(bundleId);
         logger.info("got a workflow list of length:" + workflows.size());
@@ -231,12 +229,12 @@ public class RetentionTest extends BaseTestClass {
 
         //now look for cluster data
         List<String> finalData =
-                Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundle),
+                Util.getHadoopDataFromDir(cluster, inputFeed,
                         testHDFSDir);
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput =
-                filterDataOnRetention(Util.getInputFeedFromBundle(bundle), time, interval,
+                filterDataOnRetention(inputFeed, time, interval,
                         currentTime, initialData);
 
         logger.info("initial data in system was:");
@@ -255,7 +253,7 @@ public class RetentionTest extends BaseTestClass {
         }
 
         validateDataFromFeedQueue(
-                Util.readDatasetName(Util.getInputFeedFromBundle(bundle)),
+                Util.readDatasetName(inputFeed),
                 consumer.getMessageData(), expectedOutput, initialData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
