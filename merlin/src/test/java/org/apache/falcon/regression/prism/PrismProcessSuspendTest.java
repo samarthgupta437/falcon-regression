@@ -34,7 +34,6 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-@Test(groups = "distributed")
 public class PrismProcessSuspendTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -64,7 +63,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSuspendSuspendedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
 
@@ -92,7 +91,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSuspendScheduledProcessOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster1);
@@ -115,7 +114,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
                 .getStatus(URLS.STATUS_URL, bundles[1].getProcessData())).getMessage().contains("RUNNING"));
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSuspendDeletedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster1);
@@ -138,7 +137,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSuspendSuspendedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster1);
@@ -162,7 +161,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         }
     }
 
-    @Test()
+    @Test(groups = "embedded")
     public void testSuspendNonExistentProcessOnBothColos() throws Exception {
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData()));
         Util.assertFailed(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundles[1].getProcessData()));
@@ -171,7 +170,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         Util.assertFailed(cluster2.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData()));
     }
 
-    @Test()
+    @Test(groups = "embedded")
     public void testSuspendSubmittedProcessOnBothColos() throws Exception {
         bundles[0].submitProcess(true);
         bundles[1].submitProcess(true);
@@ -183,7 +182,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         Util.assertFailed(cluster2.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundles[1].getProcessData()));
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSuspendScheduledProcessOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
         //schedule using colohelpers
@@ -203,7 +202,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSuspendDeletedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster1);
@@ -228,7 +227,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
     }
 
 
-    @Test()
+    @Test(groups = "distributed")
     public void testSuspendNonExistentProcessOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
         Util.shutDownService(cluster1.getProcessHelper());
@@ -239,7 +238,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
         Util.assertFailed(cluster2.getProcessHelper().suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData()));
     }
 
-    @Test()
+    @Test(groups = "distributed")
     public void testSuspendSubmittedFeedOnBothColosWhen1ColoIsDown() throws Exception {
         restartRequired = true;
         bundles[0].submitProcess(true);
