@@ -35,7 +35,6 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-@Test(groups = "distributed")
 public class PrismProcessSnSTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -62,7 +61,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         removeBundles();
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testProcessSnSOnBothColos() throws Exception {
         //schedule both bundles
         bundles[0].submitAndScheduleProcess();
@@ -81,7 +80,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
 
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testProcessSnSForSubmittedProcessOnBothColos() throws Exception {
         //schedule both bundles
 
@@ -103,7 +102,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
 
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testProcessSnSForSubmittedProcessOnBothColosUsingColoHelper()
     throws Exception {
         //schedule both bundles
@@ -128,7 +127,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
 
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testProcessSnSAlreadyScheduledOnBothColos() throws Exception {
         //schedule both bundles
         bundles[0].submitAndScheduleProcess();
@@ -151,7 +150,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testSnSSuspendedProcessOnBothColos() throws Exception {
         //schedule both bundles
         bundles[0].submitAndScheduleProcess();
@@ -180,7 +179,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "embedded"})
     public void testSnSDeletedProcessOnBothColos() throws Exception {
         //schedule both bundles
         CLUSTER1_RUNNING = bundles[0].getClusterHelper().getColo().split("=")[1] + RUNNING;
@@ -228,7 +227,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
 
     }
 
-    @Test(groups = {"prism", "0.2"})
+    @Test(groups = {"prism", "0.2", "distributed"})
     public void testScheduleNonExistentProcessOnBothColos() throws Exception {
         Assert.assertEquals(Util.parseResponse(cluster2.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()))
