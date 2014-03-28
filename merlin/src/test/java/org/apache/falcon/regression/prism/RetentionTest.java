@@ -29,18 +29,15 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
-import org.apache.oozie.client.BundleJob;
-import org.apache.oozie.client.CoordinatorAction;
-import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.apache.oozie.client.WorkflowJob;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -65,7 +62,6 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -196,27 +192,8 @@ public class RetentionTest extends BaseTestClass {
         String bundleId = Util.getBundles(clusterOC,
                 inputDataSetName, ENTITY_TYPE.FEED).get(0);
 
-        List<String> workflows = getFeedRetentionJobs(bundleId);
-        logger.info("got a workflow list of length:" + workflows.size());
-        Collections.sort(workflows);
-
-        for (String workflow : workflows) {
-            logger.info(workflow);
-        }
-
-        if (!workflows.isEmpty()) {
-            String workflowId = workflows.get(0);
-            String status = getWorkflowInfo(workflowId);
-            while (!(status.equalsIgnoreCase("KILLED") || status.equalsIgnoreCase("FAILED") ||
-                    status.equalsIgnoreCase("SUCCEEDED"))) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage());
-                }
-                status = getWorkflowInfo(workflowId);
-            }
-        }
+        List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
+        logger.info("workflows: " + workflows);
 
         consumer.interrupt();
 
@@ -438,57 +415,6 @@ public class RetentionTest extends BaseTestClass {
         }
 
         return dates;
-    }
-
-    private List<String> getFeedRetentionJobs(String bundleID)
-    throws OozieClientException, InterruptedException {
-        List<String> jobIds = new ArrayList<String>();
-        logger.info("using bundleId:" + bundleID);
-        for(int i=0; i < 60 && clusterOC.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
-            Thread.sleep(2000);
-        }
-        Assert.assertFalse(clusterOC.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
-                "Coordinator job should have got created by now.");
-        final String coordinatorId = clusterOC.getBundleJobInfo(bundleID).getCoordinators().get(0).getId();
-        logger.info("using coordinatorId: " + coordinatorId);
-
-        for(int i=0; i < 120 && clusterOC.getCoordJobInfo(coordinatorId).getActions().isEmpty(); ++i) {
-            Thread.sleep(4000);
-        }
-        Assert.assertFalse(clusterOC.getCoordJobInfo(coordinatorId).getActions().isEmpty(),
-                "Coordinator actions should have got created by now.");
-
-        final List<CoordinatorAction> actions = clusterOC.getCoordJobInfo(coordinatorId).getActions();
-        logger.info("actions: " + actions);
-
-        for (CoordinatorAction action : actions) {
-            for(int i=0; i < 180; ++i) {
-                CoordinatorAction actionInfo = clusterOC.getCoordActionInfo(action.getId());
-                logger.info("actionInfo: " + actionInfo);
-                if(actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
-                        actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
-                        actionInfo.getStatus() == CoordinatorAction.Status.FAILED ) {
-                    break;
-                }
-                Thread.sleep(10000);
-            }
-            Assert.assertEquals(
-                    clusterOC.getCoordActionInfo(action.getId()).getStatus(),
-                    CoordinatorAction.Status.SUCCEEDED,
-                    "Action did not succeed.");
-            jobIds.add(action.getId());
-
-        }
-
-        return jobIds;
-
-    }
-
-    private String getWorkflowInfo(String workflowId)
-    throws OozieClientException {
-        logger.info("fetching info for workflow with id: " + workflowId);
-        WorkflowJob job = clusterOC.getJobInfo(workflowId);
-        return job.getStatus().toString();
     }
 
     private List<String> filterDataOnRetention(String feed, int time, String interval,
