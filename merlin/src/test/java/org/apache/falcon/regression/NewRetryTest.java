@@ -192,7 +192,7 @@ public class NewRetryTest extends BaseTestClass {
                         validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1);
                 if (validation)
                     break;
-                Thread.sleep(10000);
+                TimeUnit.SECONDS.sleep(10);
             }
             Assert.assertTrue(validation, "Failure Retry validation failed");
 
@@ -812,7 +812,7 @@ public class NewRetryTest extends BaseTestClass {
                 logger.info(key + "," + initialMap.get(key));
             }
 
-            Thread.sleep(600000);
+            TimeUnit.MINUTES.sleep(10);
 
 
             HashMap<String, Integer> finalMap = getFailureRetriesForEachWorkflow(
@@ -908,7 +908,7 @@ public class NewRetryTest extends BaseTestClass {
                     break;
                 }
 
-                Thread.sleep(1000);
+                TimeUnit.SECONDS.sleep(1);
                 tryingToInsertData++;
                 status = Util.getBundleStatus(cluster, bundleId);
             }
