@@ -189,7 +189,7 @@ public class NewRetryTest extends BaseTestClass {
             boolean validation = false;
             for (int attempt = 0; attempt < 60; ++attempt) {
                 validation =
-                        validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1);
+                        validateFailureRetries(clusterOC, bundleId, 1);
                 if (validation)
                     break;
                 TimeUnit.SECONDS.sleep(10);
@@ -256,7 +256,7 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);;
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            for (int i = 0; i < 10 && !validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1); ++i) {
+            for (int i = 0; i < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++i) {
                 TimeUnit.SECONDS.sleep(10);
             }
 
@@ -318,7 +318,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 2)) {
+            while (!validateFailureRetries(clusterOC, bundleId, 2)) {
                 TimeUnit.SECONDS.sleep(10);
             }
 
@@ -669,7 +669,7 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
+            while (!validateFailureRetries(clusterOC, bundleId, 1)) {
                 TimeUnit.SECONDS.sleep(10);
             }
 
@@ -797,7 +797,7 @@ public class NewRetryTest extends BaseTestClass {
             //now wait till the process is over
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
+            while (!validateFailureRetries(clusterOC, bundleId, 1)) {
                 TimeUnit.SECONDS.sleep(10);
             }
 
@@ -902,7 +902,7 @@ public class NewRetryTest extends BaseTestClass {
                 //keep dancing
                 String insertionFolder = Util.findFolderBetweenGivenTimeStamps(now, now.plusMinutes(5), initialData);
 
-                if (!inserted && validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId),
+                if (!inserted && validateFailureRetries(clusterOC, bundleId,
                                 bundles[0].getProcessObject().getRetry().getAttempts())) {
                     logger.info("inserting data in folder " + insertionFolder + " at " + DateTime.now());
                     Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
@@ -991,7 +991,7 @@ public class NewRetryTest extends BaseTestClass {
         final CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         Assert.assertNotNull(defaultCoordinator, "Unexpected value of defaultCoordinator");
 
-        for(int i = 0; i < 60 && validateFailureRetries(oozieClient, getDefaultOozieCoordinator(oozieClient, bundleId), maxNumberOfRetries); ++i) {
+        for(int i = 0; i < 60 && validateFailureRetries(oozieClient, bundleId, maxNumberOfRetries); ++i) {
             logger.info("desired state not reached, attempt number: " + i);
             TimeUnit.SECONDS.sleep(10);
         }
@@ -999,9 +999,9 @@ public class NewRetryTest extends BaseTestClass {
     }
 
 
-    private boolean validateFailureRetries(OozieClient oozieClient, CoordinatorJob coordinator,
+    private boolean validateFailureRetries(OozieClient oozieClient, String bundleId,
                                            int maxNumberOfRetries) throws Exception {
-
+        final CoordinatorJob coordinator = getDefaultOozieCoordinator(clusterOC, bundleId);
         if (maxNumberOfRetries < 0) {
             maxNumberOfRetries = 0;
         }
