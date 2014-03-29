@@ -256,8 +256,8 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);;
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
-                //wait
+            for (int i = 0; i < 10 && !validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1); ++i) {
+                TimeUnit.SECONDS.sleep(10);
             }
 
             Process oldProcessObject = bundles[0].getProcessObject();
@@ -319,7 +319,7 @@ public class NewRetryTest extends BaseTestClass {
             String status = Util.getBundleStatus(cluster, bundleId);
 
             while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 2)) {
-                //wait
+                TimeUnit.SECONDS.sleep(10);
             }
 
             Process oldProcessObject = bundles[0].getProcessObject();
@@ -670,7 +670,7 @@ public class NewRetryTest extends BaseTestClass {
             String status = Util.getBundleStatus(cluster, bundleId);
 
             while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
-                //keep waiting
+                TimeUnit.SECONDS.sleep(10);
             }
 
             //now start firing random retries
@@ -782,6 +782,7 @@ public class NewRetryTest extends BaseTestClass {
 
             do {
                 dates = Util.getStartTimeForRunningCoordinators(cluster, bundleId);
+                TimeUnit.SECONDS.sleep(10);
             } while (dates == null);
 
             logger.info("Start time: " + formatter.print(startDate));
@@ -797,7 +798,7 @@ public class NewRetryTest extends BaseTestClass {
             String status = Util.getBundleStatus(cluster, bundleId);
 
             while (!validateFailureRetries(clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId), 1)) {
-                //keep waiting
+                TimeUnit.SECONDS.sleep(10);
             }
 
             logger.info("now suspending the process altogether....");
@@ -878,6 +879,7 @@ public class NewRetryTest extends BaseTestClass {
 
             do {
                 dates = Util.getStartTimeForRunningCoordinators(cluster, bundleId);
+                TimeUnit.SECONDS.sleep(10);
             } while (dates == null);
 
             logger.info("Start time: " + formatter.print(startDate));
@@ -908,7 +910,7 @@ public class NewRetryTest extends BaseTestClass {
                     break;
                 }
 
-                TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(10);
                 tryingToInsertData++;
                 status = Util.getBundleStatus(cluster, bundleId);
             }
@@ -989,7 +991,7 @@ public class NewRetryTest extends BaseTestClass {
         final CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         Assert.assertNotNull(defaultCoordinator, "Unexpected value of defaultCoordinator");
 
-        for(int i = 0; i < 60 && validateFailureRetries(oozieClient, defaultCoordinator, maxNumberOfRetries); ++i) {
+        for(int i = 0; i < 60 && validateFailureRetries(oozieClient, getDefaultOozieCoordinator(oozieClient, bundleId), maxNumberOfRetries); ++i) {
             logger.info("desired state not reached, attempt number: " + i);
             TimeUnit.SECONDS.sleep(10);
         }
@@ -1115,6 +1117,7 @@ public class NewRetryTest extends BaseTestClass {
                     }
                 }
             }
+            TimeUnit.SECONDS.sleep(10);
         }
     }
 
