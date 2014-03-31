@@ -72,7 +72,7 @@ public class PrismSubmitTest extends BaseTestClass {
         removeBundles();
     }
 
-    @Test(groups = "embedded")
+    @Test(groups = "distributed")
     public void submitCluster_1prism1coloPrismdown() throws Exception {
         restartRequired = true;
         Util.shutDownService(prism.getClusterHelper());
