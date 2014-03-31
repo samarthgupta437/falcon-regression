@@ -989,7 +989,8 @@ public class NewRetryTest extends BaseTestClass {
             logger.info("desired state not reached, attempt number: " + i);
             TimeUnit.SECONDS.sleep(10);
         }
-        Assert.fail("all retries were not attempted correctly!");
+        Assert.assertTrue(validateFailureRetries(oozieClient, bundleId, maxNumberOfRetries),
+                "all retries were not attempted correctly!");
     }
 
 
@@ -1016,8 +1017,8 @@ public class NewRetryTest extends BaseTestClass {
             WorkflowJob actionInfo = oozieClient.getJobInfo(action.getExternalId());
 
 
-            if (!(actionInfo.getStatus().equals(WorkflowJob.Status.SUCCEEDED) ||
-                    actionInfo.getStatus().equals(WorkflowJob.Status.RUNNING))) {
+            if (!(actionInfo.getStatus() == WorkflowJob.Status.SUCCEEDED ||
+                    actionInfo.getStatus() == WorkflowJob.Status.RUNNING)) {
 
                 logger.info("workflow " + actionInfo.getId() + " has action number: " +
                         actionInfo.getRun());
@@ -1029,7 +1030,7 @@ public class NewRetryTest extends BaseTestClass {
                     workflowMap.put(actionInfo.getId(), false);
                 }
 
-            } else if (actionInfo.getStatus().equals(WorkflowJob.Status.SUCCEEDED)) {
+            } else if (actionInfo.getStatus() == WorkflowJob.Status.SUCCEEDED) {
                 workflowMap.put(actionInfo.getId(), true);
             }
         }
