@@ -45,8 +45,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
     ColoHelper cluster2 = servers.get(1);
     FileSystem server1FS = serverFS.get(0);
     String baseTestDir = baseHDFSDir + "/PrismFeedUpdateTest";
-    public final String cluster1colo = cluster1.getClusterHelper().getColo().split("=")[0];
-    public final String cluster2colo = cluster2.getClusterHelper().getColo().split("=")[0];
+    public final String cluster1colo = cluster1.getClusterHelper().getColoName();
+    public final String cluster2colo = cluster2.getClusterHelper().getColoName();
 
 
     @BeforeMethod(alwaysRun = true)

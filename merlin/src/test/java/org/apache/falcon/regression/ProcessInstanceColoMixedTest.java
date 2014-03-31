@@ -79,9 +79,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
 
         //set cluster colos
-        bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColo().split("=")[1]);
+        bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColoName());
         Util.print("cluster b1: " + bundles[0].getClusters().get(0));
-        bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColo().split("=")[1]);
+        bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColoName());
         Util.print("cluster b2: " + bundles[1].getClusters().get(0));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
