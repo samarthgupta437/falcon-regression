@@ -186,15 +186,10 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            boolean validation = false;
-            for (int attempt = 0; attempt < 60; ++attempt) {
-                validation =
-                        validateFailureRetries(clusterOC, bundleId, 1);
-                if (validation)
-                    break;
+            for (int attempt = 0; attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
                 TimeUnit.SECONDS.sleep(10);
             }
-            Assert.assertTrue(validation, "Failure Retry validation failed");
+            Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1), "Failure Retry validation failed");
 
             Process oldProcessObject = bundles[0].getProcessObject();
 
@@ -259,6 +254,7 @@ public class NewRetryTest extends BaseTestClass {
             for (int i = 0; i < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++i) {
                 TimeUnit.SECONDS.sleep(10);
             }
+            Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1), "Failure Retry validation failed");
 
             Process oldProcessObject = bundles[0].getProcessObject();
 
@@ -318,9 +314,10 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(clusterOC, bundleId, 2)) {
+            for (int attempt = 0; attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 2); ++attempt) {
                 TimeUnit.SECONDS.sleep(10);
             }
+            Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 2), "Failure Retry validation failed");
 
             Process oldProcessObject = bundles[0].getProcessObject();
 
@@ -669,9 +666,10 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(clusterOC, bundleId, 1)) {
+            for (int attempt = 0; attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
                 TimeUnit.SECONDS.sleep(10);
             }
+            Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1), "Failure Retry validation failed");
 
             //now start firing random retries
             logger.info("now firing user reruns:");
@@ -780,11 +778,11 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             List<DateTime> dates = null;
 
-            do {
+            for(int i = 0; i < 10 && dates != null; ++i) {
                 dates = Util.getStartTimeForRunningCoordinators(cluster, bundleId);
                 TimeUnit.SECONDS.sleep(10);
-            } while (dates == null);
-
+            }
+            Assert.assertNotNull(dates, String.format("Start time for running coordinators of bundle: %s should not be null.", bundleId));
             logger.info("Start time: " + formatter.print(startDate));
             logger.info("End time: " + formatter.print(endDate));
             logger.info("candidate nominal time:" + formatter.print(dates.get(0)));
@@ -797,9 +795,10 @@ public class NewRetryTest extends BaseTestClass {
             //now wait till the process is over
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            while (!validateFailureRetries(clusterOC, bundleId, 1)) {
+            for (int attempt = 0; attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
                 TimeUnit.SECONDS.sleep(10);
             }
+            Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1), "Failure Retry validation failed");
 
             logger.info("now suspending the process altogether....");
 
@@ -877,10 +876,11 @@ public class NewRetryTest extends BaseTestClass {
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             List<DateTime> dates = null;
 
-            do {
+            for(int i = 0; i < 10 && dates != null; ++i) {
                 dates = Util.getStartTimeForRunningCoordinators(cluster, bundleId);
                 TimeUnit.SECONDS.sleep(10);
-            } while (dates == null);
+            }
+            Assert.assertNotNull(dates, String.format("Start time for running coordinators of bundle: %s should not be null.", bundleId));
 
             logger.info("Start time: " + formatter.print(startDate));
             logger.info("End time: " + formatter.print(endDate));
@@ -896,25 +896,19 @@ public class NewRetryTest extends BaseTestClass {
 
             boolean inserted = false;
 
-            int tryingToInsertData = 0;
-
-            while (true) {
-                //keep dancing
-                String insertionFolder = Util.findFolderBetweenGivenTimeStamps(now, now.plusMinutes(5), initialData);
-
-                if (!inserted && validateFailureRetries(clusterOC, bundleId,
-                                bundles[0].getProcessObject().getRetry().getAttempts())) {
-                    logger.info("inserting data in folder " + insertionFolder + " at " + DateTime.now());
-                    Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
-                    inserted = true;
-                    break;
-                }
-
+            for (int attempt = 0; attempt < 10 && !validateFailureRetries(
+                    clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
+                 ++attempt) {
                 TimeUnit.SECONDS.sleep(10);
-                tryingToInsertData++;
-                status = Util.getBundleStatus(cluster, bundleId);
             }
+            Assert.assertTrue(
+                    validateFailureRetries(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts()),
+                    "Failure Retry validation failed");
 
+            String insertionFolder = Util.findFolderBetweenGivenTimeStamps(now, now.plusMinutes(5), initialData);
+            logger.info("inserting data in folder " + insertionFolder + " at " + DateTime.now());
+            Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
+            status = Util.getBundleStatus(cluster, bundleId);
             //now to validate all failed instances to check if they were retried or not.
             validateRetry(clusterOC, bundleId,
                     bundles[0].getProcessObject().getRetry().getAttempts());
@@ -991,7 +985,7 @@ public class NewRetryTest extends BaseTestClass {
         final CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         Assert.assertNotNull(defaultCoordinator, "Unexpected value of defaultCoordinator");
 
-        for(int i = 0; i < 60 && validateFailureRetries(oozieClient, bundleId, maxNumberOfRetries); ++i) {
+        for(int i = 0; i < 60 && !validateFailureRetries(oozieClient, bundleId, maxNumberOfRetries); ++i) {
             logger.info("desired state not reached, attempt number: " + i);
             TimeUnit.SECONDS.sleep(10);
         }
@@ -1099,6 +1093,7 @@ public class NewRetryTest extends BaseTestClass {
 
         for (int i = 0; i < 120 && defaultCoordinator.getStatus() == CoordinatorJob.Status.PREP; ++i) {
             TimeUnit.SECONDS.sleep(10);
+            defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         }
         Assert.assertNotEquals(defaultCoordinator.getStatus(), CoordinatorJob.Status.PREP,
                 "Unexpected state for coordinator job: " + defaultCoordinator.getId());
@@ -1110,12 +1105,12 @@ public class NewRetryTest extends BaseTestClass {
             int doneBynow = 0;
             for (CoordinatorAction action : defaultCoordinator.getActions()) {
                 CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
-                if (actionInfo.getStatus().equals(CoordinatorAction.Status.RUNNING)) {
+                if (actionInfo.getStatus() == CoordinatorAction.Status.RUNNING) {
                     doneBynow++;
-                    if (doneBynow == percentageConversion) {
-                        return;
-                    }
                 }
+            }
+            if (doneBynow >= percentageConversion) {
+                break;
             }
             TimeUnit.SECONDS.sleep(10);
         }
