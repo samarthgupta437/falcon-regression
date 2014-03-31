@@ -50,8 +50,8 @@ public class PrismFeedDeleteTest extends BaseTestClass {
     private boolean restartRequired;
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
-    private String cluster1Colo = cluster1.getClusterHelper().getColo().split("=")[1];
-    private String cluster2Colo = cluster2.getClusterHelper().getColo().split("=")[1];
+    private String cluster1Colo = cluster1.getClusterHelper().getColoName();
+    private String cluster2Colo = cluster2.getClusterHelper().getColoName();
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {

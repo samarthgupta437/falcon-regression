@@ -304,11 +304,11 @@ public class PrismFeedSnSTest extends BaseTestClass {
 
         Assert.assertEquals(Util.parseResponse(prism.getFeedHelper()
                         .getStatus(URLS.STATUS_URL, bundles[0].getDataSets().get(0))).getMessage(),
-                cluster1.getClusterHelper().getColo().split("=")[1] + "/RUNNING");
+                cluster1.getClusterHelper().getColoName() + "/RUNNING");
 
         Assert.assertEquals(Util.parseResponse(prism.getFeedHelper()
                         .getStatus(URLS.STATUS_URL, bundles[1].getDataSets().get(0))).getMessage(),
-                cluster2.getClusterHelper().getColo().split("=")[1] + "/RUNNING");
+                cluster2.getClusterHelper().getColoName() + "/RUNNING");
     }
 
 
@@ -346,13 +346,13 @@ public class PrismFeedSnSTest extends BaseTestClass {
     public void testFeedSnSOn1ColoWhileThatColoIsDownUsingColoHelper() throws Exception {
         restartRequired = true;
 
-        bundles[0].setCLusterColo(cluster1.getClusterHelper().getColo().split("=")[1]);
+        bundles[0].setCLusterColo(cluster1.getClusterHelper().getColoName());
         Util.print("cluster bundles[0]: " + bundles[0].getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        bundles[1].setCLusterColo(cluster2.getClusterHelper().getColo().split("=")[1]);
+        bundles[1].setCLusterColo(cluster2.getClusterHelper().getColoName());
         Util.print("cluster bundles[1]: " + bundles[1].getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));

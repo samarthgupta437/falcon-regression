@@ -281,9 +281,9 @@ public class PrismFeedResumeTest extends BaseTestClass {
         AssertUtil.checkStatus(coloHelper.getFeedHelper().getOozieClient(), ENTITY_TYPE.FEED, bundle, expectedStatus);
         String entity = bundle.getDataSets().get(0);
         Assert.assertEquals(Util.parseResponse(prism.getFeedHelper().getStatus(Util.URLS.STATUS_URL, entity)).getMessage(),
-                coloHelper.getFeedHelper().getColo().split("=")[1] + "/" + expectedStatus);
+                coloHelper.getFeedHelper().getColoName() + "/" + expectedStatus);
         Assert.assertEquals(Util.parseResponse(prism.getFeedHelper().getStatus(Util.URLS.STATUS_URL, entity)).getMessage(),
-                coloHelper.getFeedHelper().getColo().split("=")[1] + "/"
+                coloHelper.getFeedHelper().getColoName() + "/"
                 + Util.parseResponse(coloHelper.getFeedHelper().getStatus(Util.URLS.STATUS_URL, entity)).getMessage());
     }
 
