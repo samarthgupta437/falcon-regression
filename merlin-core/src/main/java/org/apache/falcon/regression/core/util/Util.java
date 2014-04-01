@@ -339,11 +339,11 @@ public class Util {
   }
 
   public static File[] getFiles(String directoryPath) throws URISyntaxException {
-    if (directoryPath.contains("/test-classes"))
-      directoryPath = directoryPath.substring(directoryPath.indexOf("/test-classes")
-        + "/test-classes".length() + 1, directoryPath.length());
+    if (directoryPath.contains("test-classes"))
+      directoryPath = directoryPath.substring(directoryPath.indexOf("test-classes")
+        + "test-classes".length() + 1, directoryPath.length());
     logger.info("directoryPath: " + directoryPath);
-    URL url = Util.class.getResource("/" + directoryPath);
+    URL url = Util.class.getResource(OSUtil.SEPARATOR + directoryPath);
     logger.info("url" + url);
     File dir = new File(url.toURI());
     File[] files = dir.listFiles();
