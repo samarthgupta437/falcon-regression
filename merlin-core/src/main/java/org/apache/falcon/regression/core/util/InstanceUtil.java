@@ -1175,6 +1175,7 @@ public class InstanceUtil {
         final Status status = bundleJobInfo.getStatus();
         Assert.assertTrue(status == Status.RUNNING || status == Status.PREP || status == Status.SUCCEEDED,
                 String.format("Bundle job %s is should be prep/running but is %s", bundleId, status));
+        OozieUtil.waitForCoordinatorJobCreation(client, bundleId);
         List<CoordinatorJob> coords = bundleJobInfo.getCoordinators();
         List<String> cIds = new ArrayList<String>();
         if (entityType.equals(ENTITY_TYPE.PROCESS)) {

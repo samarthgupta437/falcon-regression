@@ -136,11 +136,7 @@ public class OozieUtil {
     throws OozieClientException, InterruptedException {
         List<String> jobIds = new ArrayList<String>();
         logger.info("using bundleId:" + bundleID);
-        for(int i=0; i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
-            Thread.sleep(2000);
-        }
-        Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
-                "Coordinator job should have got created by now.");
+        waitForCoordinatorJobCreation(oozieClient, bundleID);
         final String coordinatorId = oozieClient.getBundleJobInfo(bundleID).getCoordinators().get(0).getId();
         logger.info("using coordinatorId: " + coordinatorId);
 
@@ -174,5 +170,13 @@ public class OozieUtil {
 
         return jobIds;
 
+    }
+
+    public static void waitForCoordinatorJobCreation(OozieClient oozieClient, String bundleID) throws OozieClientException, InterruptedException {
+        for(int i=0; i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
+            Thread.sleep(2000);
+        }
+        Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
+                "Coordinator job should have got created by now.");
     }
 }
