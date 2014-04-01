@@ -61,7 +61,6 @@ public class FeedReplicationTest extends BaseTestClass {
     FileSystem cluster1FS = serverFS.get(0);
     OozieClient cluster2OC = serverOC.get(1);
     OozieClient cluster3OC = serverOC.get(2);
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String baseTestDir = baseHDFSDir + "/FeedReplicationTest";
     String sourcePath = baseTestDir + "/source";

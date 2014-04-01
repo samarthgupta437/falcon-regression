@@ -23,11 +23,13 @@ import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -42,7 +44,12 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
     String baseTestDir = baseHDFSDir + "/FeedDelayParallelTimeoutTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     String feedOutputPath = baseTestDir + "Target/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
@@ -52,6 +59,8 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[1].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod

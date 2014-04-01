@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -61,24 +62,19 @@ public class InstanceSummaryTest extends BaseTestClass {
 
 
 
-  String testDir = "/ProcessInstanceKillsTest";
-  String baseTestHDFSDir = baseHDFSDir + testDir;
+  String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceKillsTest";
   String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+  String aggregateWorkflowDir = baseTestHDFSDir + "/PrismProcessSuspendTest/aggregator";
   String startTime ;
   String endTime ;
 
-  ColoHelper cluster1 = servers.get(0);
-  ColoHelper cluster2 = servers.get(1);
   ColoHelper cluster3 = servers.get(2);
 
   Bundle processBundle ;
-  Bundle bundle1 ;
-  Bundle bundle2 ;
-  Bundle bundle3 ;
 
   @BeforeClass(alwaysRun = true)
   public void createTestData() throws Exception {
-
+    uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     startTime = TimeUtil.get20roundedTime(InstanceUtil
       .getTimeWrtSystemTime
         (-20));
@@ -99,7 +95,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
     for(FileSystem fs : serverFS) {
       HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath),fs);
-      HadoopUtil.flattenAndPutDataInFolder(fs, "src/test/resources/OozieExampleInputData/normalInput", dataFolder);
+      HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT, dataFolder);
     }
   }
 
@@ -110,10 +106,13 @@ public class InstanceSummaryTest extends BaseTestClass {
     processBundle = new Bundle(processBundle, cluster3.getEnvFileName(),
       cluster3.getPrefix());
     processBundle.setInputFeedDataPath(feedInputPath);
+    processBundle.setProcessWorkflow(aggregateWorkflowDir);
 
-    bundle1 = new Bundle(processBundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-    bundle2 = new Bundle(processBundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-    bundle3 = new Bundle(processBundle, cluster3.getEnvFileName(), cluster3.getPrefix());
+      for (int i = 0; i < 3; i++) {
+          bundles[i] = new Bundle(processBundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+          bundles[i].generateUniqueBundle();
+          bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+      }
   }
 
   @Test(enabled = true,timeOut = 1200000 )
@@ -209,9 +208,9 @@ public class InstanceSummaryTest extends BaseTestClass {
   public void testSummaryMultiClusterProcess() throws JAXBException,
     ParseException, InterruptedException, IOException, URISyntaxException, AuthenticationException {
     processBundle.setProcessValidity(startTime,endTime);
-    processBundle.addClusterToBundle(bundle2.getClusters().get(0),
+    processBundle.addClusterToBundle(bundles[1].getClusters().get(0),
       ClusterType.SOURCE, null, null);
-    processBundle.addClusterToBundle(bundle3.getClusters().get(0),
+    processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
       ClusterType.SOURCE, null, null);
     processBundle.submitAndScheduleBundle(prism);
     InstancesSummaryResult r = prism.getProcessHelper()
@@ -253,12 +252,12 @@ public class InstanceSummaryTest extends BaseTestClass {
     @Test(enabled = true, timeOut = 1200000 )
     public void testSummaryMultiClusterFeed() throws JAXBException,
       ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, AuthenticationException {
-      bundle1.generateUniqueBundle();
-      bundle2.generateUniqueBundle();
-      bundle3.generateUniqueBundle();
+      bundles[0].generateUniqueBundle();
+      bundles[1].generateUniqueBundle();
+      bundles[2].generateUniqueBundle();
 
       //create desired feed
-      String feed = bundle1.getDataSets().get(0);
+      String feed = bundles[0].getDataSets().get(0);
 
       //cluster_1 is target, cluster_2 is source and cluster_3 is neutral
 
@@ -269,21 +268,21 @@ public class InstanceSummaryTest extends BaseTestClass {
 
       feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-10-01T12:10Z"),
         XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-        Util.readClusterName(bundle3.getClusters().get(0)), null, null);
+        Util.readClusterName(bundles[2].getClusters().get(0)), null, null);
 
       feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-10-01T12:25Z"),
         XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-        Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+        Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
         null,
         feedInputPath);
 
       feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
         XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-        Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
         null, feedInputPath);
 
       //submit clusters
-      Bundle.submitCluster(bundle1, bundle2, bundle3);
+      Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
       //create test data on cluster_2
       /*InstanceUtil.createDataWithinDatesAndPrefix(cluster2,
@@ -311,6 +310,7 @@ public class InstanceSummaryTest extends BaseTestClass {
   @AfterMethod
   public void tearDown() throws IOException {
     processBundle.deleteBundle(prism);
+    removeBundles();
     for(FileSystem fs : serverFS) {
       HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
     }

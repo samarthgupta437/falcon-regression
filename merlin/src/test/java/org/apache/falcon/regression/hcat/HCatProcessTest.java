@@ -68,16 +68,16 @@ public class HCatProcessTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
     HCatClient clusterHC = cluster.getClusterHelper().getHCatClient();
 
-    String hiveScriptDir = baseWorkflowDir + "/hive";
+    final String testDir = "/HCatProcessTest";
+    final String baseTestHDFSDir = baseHDFSDir + testDir;
+    String hiveScriptDir = baseTestHDFSDir + "/hive";
     String hiveScriptFile = hiveScriptDir + "/script.hql";
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String hiveScriptFileNonHCatInput = hiveScriptDir + "/script_non_hcat_input.hql";
     String hiveScriptFileNonHCatOutput = hiveScriptDir + "/script_non_hcat_output.hql";
     String hiveScriptTwoHCatInputOneHCatOutput = hiveScriptDir + "/script_two_hcat_input_one_hcat_output.hql";
     String hiveScriptOneHCatInputTwoHCatOutput = hiveScriptDir + "/script_one_hcat_input_two_hcat_output.hql";
     String hiveScriptTwoHCatInputTwoHCatOutput = hiveScriptDir + "/script_two_hcat_input_two_hcat_output.hql";
-    final String testDir = "/HCatProcessTest";
-    final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String inputHDFSDir = baseTestHDFSDir + "/input";
     final String inputHDFSDir2 = baseTestHDFSDir + "/input2";
     final String outputHDFSDir = baseTestHDFSDir + "/output";

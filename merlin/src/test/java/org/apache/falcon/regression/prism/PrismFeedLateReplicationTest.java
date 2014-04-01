@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.oozie.client.WorkflowJob;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -49,22 +50,24 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
     FileSystem cluster1FS = serverFS.get(0);
     FileSystem cluster2FS = serverFS.get(1);
     FileSystem cluster3FS = serverFS.get(2);
-    private String normalInputPath = OSUtil.NORMAL_INPUT;
-    private String inputPath = baseHDFSDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
+    private String baseTestDir = baseHDFSDir + "/PrismFeedLateReplicationTest";
+    private String inputPath = baseTestDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
+    private String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+    }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
-
-        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
-
-        bundles[0].generateUniqueBundle();
-        bundles[1].generateUniqueBundle();
-        bundles[2].generateUniqueBundle();
+        for (int i = 0; i < 3; i++) {
+            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i].generateUniqueBundle();
+            bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+        }
     }
 
     @AfterMethod
@@ -146,9 +149,9 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Util.print("folder list 1: " + inputFolderListForColo1.toString());
         Util.print("folder list 2: " + inputFolderListForColo2.toString());
 
-        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, normalInputPath,
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
                 HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
-        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, normalInputPath,
+        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
                 HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
 
         Util.print("test");
@@ -236,9 +239,9 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Util.print("folder list 1: " + inputFolderListForColo1.toString());
         Util.print("folder list 2: " + inputFolderListForColo2.toString());
 
-        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, normalInputPath,
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
                 HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
-        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, normalInputPath,
+        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
                 HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
 
         //sleep till late starts
@@ -425,8 +428,8 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Util.print("folder list 1: " + inputFolderListForColo1.toString());
         Util.print("folder list 2: " + inputFolderListForColo2.toString());
 
-        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, normalInputPath, inputFolderListForColo1);
-        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, normalInputPath, inputFolderListForColo2);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT, inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT, inputFolderListForColo2);
 
         //sleep till late starts
         InstanceUtil.sleepTill(cluster1, InstanceUtil.addMinsToTime(startTime, 4));
@@ -606,8 +609,8 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Util.print("folder list 1: " + inputFolderListForColo1.toString());
         Util.print("folder list 2: " + inputFolderListForColo2.toString());
 
-        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, normalInputPath, inputFolderListForColo1);
-        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, normalInputPath, inputFolderListForColo2);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT, inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT, inputFolderListForColo2);
 
         //sleep till late starts
         InstanceUtil.sleepTill(cluster1, InstanceUtil.addMinsToTime(startTime, 4));

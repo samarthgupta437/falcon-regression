@@ -73,15 +73,14 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     String baseTestDir = baseHDFSDir + "/NewPrismProcessUpdateTest";
     String inputFeedPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String WORKFLOW_PATH = baseWorkflowDir + "/falcon-oozie-wf";
-    String WORKFLOW_PATH2 = baseWorkflowDir + "/falcon-oozie-wf2";
-    String aggreagator1Path = baseWorkflowDir + "/aggregator1";
+    String WORKFLOW_PATH = baseTestDir + "/falcon-oozie-wf";
+    String WORKFLOW_PATH2 = baseTestDir + "/falcon-oozie-wf2";
+    String aggregatorPath = baseTestDir + "/aggregator";
+    String aggregator1Path = baseTestDir + "/aggregator1";
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     ColoHelper cluster3 = servers.get(2);
     FileSystem cluster1FS = serverFS.get(0);
-    FileSystem cluster2FS = serverFS.get(1);
-    FileSystem cluster3FS = serverFS.get(2);
     OozieClient cluster2OC = serverOC.get(1);
     OozieClient cluster3OC = serverOC.get(2);
 
@@ -101,9 +100,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     @BeforeClass
     public void setup() throws Exception {
-        for (FileSystem fs : new FileSystem[]{cluster1FS, cluster2FS, cluster3FS}) {
-            HadoopUtil.deleteDirIfExists(baseHDFSDir, fs);
-            setupOozieData(fs, WORKFLOW_PATH, WORKFLOW_PATH2, aggreagator1Path);
+        for (String wfPath : new String[]{WORKFLOW_PATH, WORKFLOW_PATH2, aggregatorPath, aggregator1Path}) {
+            uploadDirToClusters(wfPath, OSUtil.RESOURCES_OOZIE);
         }
        Util.restartService(cluster3.getClusterHelper());
 
@@ -113,22 +111,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     public void tearDown() throws Exception {
         removeBundles();
     }
-
-    public void setupOozieData(FileSystem fs, String... workflowPaths) throws IOException {
-        for (String workflowPath : workflowPaths) {
-            HadoopUtil.deleteDirIfExists(workflowPath, fs);
-            //create dir on hdfs
-            fs.mkdirs(new Path(workflowPath));
-            fs.setPermission(new Path(workflowPath), new FsPermission("777"));
-            fs.mkdirs(new Path(workflowPath + "/lib"));
-            fs.copyFromLocalFile(new Path(OSUtil.RESOURCES_OOZIE + "workflow.xml"),
-                    new Path(workflowPath + "/workflow.xml"));
-            fs.copyFromLocalFile(new Path(OSUtil.RESOURCES_OOZIE
-                    + OSUtil.getPath("lib", "oozie-examples-3.1.5.jar")),
-                    new Path(workflowPath + "/lib/oozie-examples-3.1.5.jar"));
-        }
-    }
-
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessFrequencyInEachColoWithOneProcessRunning_Monthly()
@@ -798,7 +780,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int initialConcurrency = bundles[1].getProcessObject().getParallel();
 
         bundles[1].setProcessConcurrency(bundles[1].getProcessObject().getParallel() + 3);
-        bundles[1].setProcessWorkflow(aggreagator1Path);
+        bundles[1].setProcessWorkflow(aggregator1Path);
         bundles[1].getProcessObject().setOrder(getRandomExecutionType(bundles[1]));
 
         //now to update
@@ -816,7 +798,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
                 initialConcurrency + 3);
         Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                aggreagator1Path);
+                aggregator1Path);
         Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
                 bundles[1].getProcessObject().getOrder());
         dualComparison(bundles[1], cluster3);
@@ -869,7 +851,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int initialConcurrency = bundles[1].getProcessObject().getParallel();
 
         bundles[1].setProcessConcurrency(bundles[1].getProcessObject().getParallel() + 3);
-        bundles[1].setProcessWorkflow(aggreagator1Path);
+        bundles[1].setProcessWorkflow(aggregator1Path);
         bundles[1].getProcessObject().setOrder(getRandomExecutionType(bundles[1]));
         //suspend
         Util.assertSucceeded(
@@ -893,7 +875,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
                 initialConcurrency + 3);
         Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                aggreagator1Path);
+                aggregator1Path);
         Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
                 bundles[1].getProcessObject().getOrder());
         dualComparison(bundles[1], cluster3);
@@ -1409,7 +1391,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         //now to schedule in 1 colo and let it remain in another
         Util.assertSucceeded(
                 cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData())
+        );
         String oldBundleId = InstanceUtil
                 .getLatestBundleID(cluster3,
                         Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
@@ -1418,19 +1401,23 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int coordCount = Util.getNumberOfWorkflowInstances(cluster3, oldBundleId);
         String oldStartTime = InstanceUtil.dateToOozieDate(
                 bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart());
+                        .getStart()
+        );
         String newStartTime = InstanceUtil.addMinsToTime(InstanceUtil.dateToOozieDate(
                 bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart()), 3);
+                        .getStart()
+        ), 3);
         bundles[1].setProcessValidity(newStartTime, InstanceUtil.dateToOozieDate(
                 bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()));
+                        .getEnd()
+        ));
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         Util.assertSucceeded(
                 cluster3.getProcessHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
+                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData())
+        );
 
         Util.assertSucceeded(
                 prism.getProcessHelper()

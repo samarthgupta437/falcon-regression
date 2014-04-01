@@ -51,7 +51,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     private final String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceColoMixedTest";
     private final String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     private final String feedPath = baseTestHDFSDir + "/feed0%d" + datePattern;
-    private String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     FileSystem cluster1FS = serverFS.get(0);

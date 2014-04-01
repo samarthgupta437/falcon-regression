@@ -54,7 +54,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
     private String baseTestDir = baseHDFSDir + "/ProcessPartitionExpVariableTest";
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
     
     @BeforeClass
     public void uploadWorkflow() throws Exception {

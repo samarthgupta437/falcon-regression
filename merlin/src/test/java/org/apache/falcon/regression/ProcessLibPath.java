@@ -47,7 +47,7 @@ public class ProcessLibPath extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
-    String testLibDir = baseWorkflowDir + "/TestLib";
+    String testLibDir = baseHDFSDir + "/ProcessLibPath/TestLib";
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {

@@ -45,9 +45,9 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
-    String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
     String testDir = "/ProcessInstanceKillsTest";
     String baseTestHDFSDir = baseHDFSDir + testDir;
+    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 

@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -56,9 +57,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   static Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
 
-  Bundle bundle1 = new Bundle();
-  Bundle bundle2 = new Bundle();
-  Bundle bundle3 = new Bundle();
   Bundle processBundle = new Bundle();
 
   ColoHelper cluster_1 = servers.get(0);
@@ -66,28 +64,36 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   ColoHelper cluster_3 = servers.get(2);
 
   private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-  private final String inputPath = baseHDFSDir +
-    "/UpdateAtSpecificTimeTest-data";
+  private final String baseTestDir = baseHDFSDir + "/UpdateAtSpecificTimeTest-data";
+  String aggregateWorkflowDir = baseHDFSDir + "/aggregator";
+
+  public void uploadWorkflow() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+  }
 
 
   @BeforeMethod(alwaysRun = true)
   public void setup(Method method) throws IOException, JAXBException {
-    Util.print("test name: " + method.getName());
-    Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
-    bundle1 = new Bundle(bundle, cluster_1.getEnvFileName(), cluster_1.getPrefix());
-    bundle2 = new Bundle(bundle, cluster_2.getEnvFileName(), cluster_2.getPrefix());
-    bundle3 = new Bundle(bundle, cluster_3.getEnvFileName(), cluster_3.getPrefix());
+      Util.print("test name: " + method.getName());
+      Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+      bundles[0] = new Bundle(bundle, cluster_1.getEnvFileName(), cluster_1.getPrefix());
+      bundles[1] = new Bundle(bundle, cluster_2.getEnvFileName(), cluster_2.getPrefix());
+      bundles[2] = new Bundle(bundle, cluster_3.getEnvFileName(), cluster_3.getPrefix());
 
-    bundle1.generateUniqueBundle();
-    bundle2.generateUniqueBundle();
-    bundle3.generateUniqueBundle();
+      bundles[0].generateUniqueBundle();
+      bundles[1].generateUniqueBundle();
+      bundles[2].generateUniqueBundle();
 
-    processBundle = Util.readELBundles()[0][0];
-    processBundle = new Bundle(processBundle, cluster_1.getEnvFileName(),
-      cluster_1.getPrefix());
-    processBundle.generateUniqueBundle();
+      processBundle = Util.readELBundles()[0][0];
+      processBundle = new Bundle(processBundle, cluster_1.getEnvFileName(), cluster_1.getPrefix());
+      processBundle.generateUniqueBundle();
+      processBundle.setProcessWorkflow(aggregateWorkflowDir);
   }
 
+  public void tearDown() throws Exception {
+      removeBundles();
+      removeBundles(processBundle);
+  }
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
@@ -229,9 +235,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
     processBundle.setProcessValidity(startTime,
       InstanceUtil.getTimeWrtSystemTime(60));
-    processBundle.addClusterToBundle(bundle2.getClusters().get(0),
+    processBundle.addClusterToBundle(bundles[1].getClusters().get(0),
       ClusterType.SOURCE, null, null);
-    processBundle.addClusterToBundle(bundle3.getClusters().get(0),
+    processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
       ClusterType.SOURCE, null, null);
     processBundle.submitBundle(prism);
 
@@ -488,7 +494,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, endTime),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE),
       Util.readClusterName(processBundle.getClusters().get(0)), ClusterType.SOURCE,
-      null, inputPath + "/replication" + dateTemplate);
+      null, baseTestDir + "/replication" + dateTemplate);
 
 
     ServiceResponse r = prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL,
@@ -571,9 +577,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     //create multi cluster bundle
     processBundle.setProcessValidity(startTime_cluster1,
       endTime_cluster1);
-    processBundle.addClusterToBundle(bundle2.getClusters().get(0),
+    processBundle.addClusterToBundle(bundles[1].getClusters().get(0),
       ClusterType.SOURCE,startTime_cluster2,endTime_cluster2);
-    processBundle.addClusterToBundle(bundle3.getClusters().get(0),
+    processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
       ClusterType.SOURCE,startTime_cluster3,endTime_cluster3);
 
     //submit and schedule
@@ -676,10 +682,10 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
   private String getMultiClusterFeed(String startTimeCluster_source, String startTimeCluster_target) throws ParseException, IOException, InterruptedException, JAXBException, URISyntaxException, AuthenticationException {
-    String testDataDir = inputPath + "/replication";
+    String testDataDir = baseTestDir + "/replication";
 
     //create desired feed
-    String feed = bundle1.getDataSets().get(0);
+    String feed = bundles[0].getDataSets().get(0);
 
     //cluster_1 is target, cluster_2 is source and cluster_3 is neutral
 
@@ -690,21 +696,21 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_source, "2099-10-01T12:10Z"),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-      Util.readClusterName(bundle3.getClusters().get(0)), null, null);
+      Util.readClusterName(bundles[2].getClusters().get(0)), null, null);
 
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_target, "2099-10-01T12:25Z"),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-      Util.readClusterName(bundle1.getClusters().get(0)), ClusterType.TARGET,
+      Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
       null,
       testDataDir + dateTemplate);
 
     feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTimeCluster_source, "2099-01-01T00:00Z"),
       XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-      Util.readClusterName(bundle2.getClusters().get(0)), ClusterType.SOURCE,
+      Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
       null, testDataDir + dateTemplate);
 
     //submit clusters
-    Bundle.submitCluster(bundle1, bundle2, bundle3);
+    Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
     //create test data on cluster_2
     InstanceUtil.createDataWithinDatesAndPrefix(cluster_2,
@@ -719,7 +725,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
     Util.print("tearDown " + method.getName());
     processBundle.deleteBundle(prism);
-    bundle1.deleteBundle(prism);
+    bundles[0].deleteBundle(prism);
     processBundle.deleteBundle(prism);
   }
 }

@@ -23,16 +23,21 @@ import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import org.apache.hadoop.fs.Path;
 import java.util.concurrent.TimeUnit;
 
 @Test(groups = "embedded")
@@ -40,7 +45,17 @@ public class FeedRetentionTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
+    String impressionrcWorkflowDir = baseHDFSDir + "/FeedRetentionTest/impressionrc/";
 
+    @BeforeClass
+    public void uploadWorkflow() throws Exception {
+        for (FileSystem fs : serverFS) {
+            HadoopUtil.createDir(impressionrcWorkflowDir + "lib");
+            fs.copyFromLocalFile(new Path(impressionrcWorkflowDir + "workflow.xml"),
+                    new Path(OSUtil.RESOURCES + OSUtil.getPath("workflows", "impression_rc_workflow.xml")));
+            HadoopUtil.uploadDir(fs, impressionrcWorkflowDir + "lib", OSUtil.RESOURCES_OOZIE + "lib");
+        }
+    }
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
@@ -48,10 +63,12 @@ public class FeedRetentionTest extends BaseTestClass {
         bundles[0] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0].setProcessWorkflow(impressionrcWorkflowDir);
 
         bundles[1] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[1].generateUniqueBundle();
         bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[1].setProcessWorkflow(impressionrcWorkflowDir);
     }
 
     @AfterMethod

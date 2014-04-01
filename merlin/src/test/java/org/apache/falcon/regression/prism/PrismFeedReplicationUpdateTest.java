@@ -52,16 +52,15 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     String cluster1Colo = cluster1.getClusterHelper().getColoName();
     String cluster2Colo = cluster2.getClusterHelper().getColoName();
     String cluster3Colo = cluster3.getClusterHelper().getColoName();
-    private final String inputPath = baseHDFSDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private String alternativeInputPath = baseHDFSDir + "/newFeedPath/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private String aggregateWorkflowDir = baseWorkflowDir + "/aggregator";
+    private final String baseTestDir = baseHDFSDir + "/PrismFeedReplicationUpdateTest";
+    private final String inputPath = baseTestDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String alternativeInputPath = baseTestDir + "/newFeedPath/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
     @BeforeClass
     public void prepareCluster() throws IOException, InterruptedException {
         // upload workflow to hdfs
-        HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        HadoopUtil.uploadDir(cluster3FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -69,18 +68,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
 
-        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
-
-        bundles[0].generateUniqueBundle();
-        bundles[1].generateUniqueBundle();
-        bundles[2].generateUniqueBundle();
-
-        //set the workflow path for the bundles
-        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
-        bundles[1].setProcessWorkflow(aggregateWorkflowDir);
-        bundles[2].setProcessWorkflow(aggregateWorkflowDir);
+        for (int i = 0; i < 3; i++) {
+            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i].generateUniqueBundle();
+            bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+        }
     }
 
     @AfterMethod

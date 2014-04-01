@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -44,8 +45,8 @@ import java.lang.reflect.Method;
 @Test(groups = "distributed")
 public class FeedClusterUpdateTest extends BaseTestClass {
 
-    String testDir = "/FeedClusterUpdateTest";
-    String baseTestDir = baseHDFSDir + testDir;
+    String baseTestDir = baseHDFSDir + "/FeedClusterUpdateTest";
+    String aggregateWorkflowDir = baseTestDir + "/aggregator";
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     ColoHelper cluster3 = servers.get(2);
@@ -59,24 +60,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        Bundle b1 = Util.readELBundles()[0][0];
-        b1.generateUniqueBundle();
-        Bundle b2 = Util.readELBundles()[0][0];
-        b2.generateUniqueBundle();
-        Bundle b3 = Util.readELBundles()[0][0];
-        b3.generateUniqueBundle();
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+        Bundle bundle = Util.readELBundles()[0][0];
+        for (int i = 0; i < 3; i++) {
+            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i].generateUniqueBundle();
+            bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+        }
         try {
-            b1 = new Bundle(b1, cluster1.getEnvFileName(), cluster1.getPrefix());
-            b2 = new Bundle(b2, cluster2.getEnvFileName(), cluster2.getPrefix());
-            b3 = new Bundle(b3, cluster3.getEnvFileName(), cluster3.getPrefix());
-            String postFix = "/US/" + b2.getClusterHelper().getColoName();
+            String postFix = "/US/" + bundles[1].getClusterHelper().getColoName();
             HadoopUtil.deleteDirIfExists(baseTestDir, cluster2FS);
             Util.lateDataReplenish(cluster2, 80, 1, baseTestDir, postFix);
-            postFix = "/UK/" + b3.getClusterHelper().getColoName();
+            postFix = "/UK/" + bundles[2].getClusterHelper().getColoName();
             HadoopUtil.deleteDirIfExists(baseTestDir, cluster3FS);
             Util.lateDataReplenish(cluster3, 80, 1, baseTestDir, postFix);
         } finally {
-            removeBundles(b1, b2, b3);
+            removeBundles();
         }
     }
 
@@ -84,16 +83,12 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
 
-        bundles[0] = Util.readELBundles()[0][0];
-        bundles[0].generateUniqueBundle();
-        bundles[1] = Util.readELBundles()[0][0];
-        bundles[1].generateUniqueBundle();
-        bundles[2] = Util.readELBundles()[0][0];
-        bundles[2].generateUniqueBundle();
-
-        bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundles[2], cluster3.getEnvFileName(), cluster3.getPrefix());
+        Bundle bundle = Util.readELBundles()[0][0];
+        for (int i = 0; i < 3; i++) {
+            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i].generateUniqueBundle();
+            bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+        }
         Util.submitAllClusters(bundles[0], bundles[1], bundles[2]);
         feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,

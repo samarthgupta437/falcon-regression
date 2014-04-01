@@ -59,10 +59,11 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     OozieClient cluster1OC = serverOC.get(0);
     OozieClient cluster2OC = serverOC.get(1);
     private String testDate = "/2012/10/01/12/";
-    private String testBaseDir1 = baseHDFSDir + "/localDC/rc/billing";
-    private String testBaseDir2 = baseHDFSDir + "/clusterPath/localDC/rc/billing";
-    private String testBaseDir3 = baseHDFSDir + "/dataBillingRC/fetlrc/billing";
-    private String testBaseDir4 = baseHDFSDir + "/data/fetlrc/billing";
+    private String baseTestDir = baseHDFSDir + "/PrismFeedReplicationPartitionExpTest";
+    private String testBaseDir1 = baseTestDir + "/localDC/rc/billing";
+    private String testBaseDir2 = baseTestDir + "/clusterPath/localDC/rc/billing";
+    private String testBaseDir3 = baseTestDir + "/dataBillingRC/fetlrc/billing";
+    private String testBaseDir4 = baseTestDir + "/data/fetlrc/billing";
     private String testDirWithDate = testBaseDir1 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String testFile1 = OSUtil.RESOURCES
@@ -104,51 +105,38 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         uploadDataToServer3(testDirWithDate + "00/ua2/", testFile1);
         uploadDataToServer3(testDirWithDate + "05/ua2/", testFile2);
         uploadDataToServer3(testDirWithDate + "10/ua2/", testFile3);
-        uploadDataToServer3(testDirWithDate + "15/ua2/",
-                testFile4);
+        uploadDataToServer3(testDirWithDate + "15/ua2/", testFile4);
 
         uploadDataToServer3(testDirWithDate + "00/ua1/", testFile1);
         uploadDataToServer3(testDirWithDate + "05/ua1/", testFile2);
-        uploadDataToServer3(testDirWithDate + "10/ua1/",
-                testFile3);
+        uploadDataToServer3(testDirWithDate + "10/ua1/", testFile3);
         uploadDataToServer3(testDirWithDate + "15/ua1/", testFile4);
 
         uploadDataToServer3(testDirWithDate + "00/ua3/", testFile1);
         uploadDataToServer3(testDirWithDate + "05/ua3/", testFile2);
-        uploadDataToServer3(testDirWithDate + "10/ua3/",
-                testFile3);
-        uploadDataToServer3(testDirWithDate + "15/ua3/",
-                testFile4);
+        uploadDataToServer3(testDirWithDate + "10/ua3/", testFile3);
+        uploadDataToServer3(testDirWithDate + "15/ua3/", testFile4);
 
 
         uploadDataToServer3(testBaseDir3 + testDate + "00/ua2/", testFile1);
         uploadDataToServer3(testBaseDir3 + testDate + "05/ua2/", testFile2);
-        uploadDataToServer3(testBaseDir3 + testDate + "10/ua2/",
-                testFile3);
-        uploadDataToServer3(testBaseDir3 + testDate + "15/ua2/",
-                testFile4);
-        uploadDataToServer3(testBaseDir3 + testDate + "20/ua2/",
-                testFile4);
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua2/", testFile3);
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua2/", testFile4);
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua2/", testFile4);
 
 
         uploadDataToServer3(testBaseDir3 + testDate + "00/ua1/", testFile1);
         uploadDataToServer3(testBaseDir3 + testDate + "05/ua1/", testFile2);
-        uploadDataToServer3(testBaseDir3 + testDate + "10/ua1/",
-                testFile3);
-        uploadDataToServer3(testBaseDir3 + testDate + "15/ua1/",
-                testFile4);
-        uploadDataToServer3(testBaseDir3 + testDate + "20/ua1/",
-                testFile4);
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua1/", testFile3);
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua1/", testFile4);
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua1/", testFile4);
 
 
         uploadDataToServer3(testBaseDir3 + testDate + "00/ua3/", testFile1);
         uploadDataToServer3(testBaseDir3 + testDate + "05/ua3/", testFile2);
-        uploadDataToServer3(testBaseDir3 + testDate + "10/ua3/",
-                testFile3);
-        uploadDataToServer3(testBaseDir3 + testDate + "15/ua3/",
-                testFile4);
-        uploadDataToServer3(testBaseDir3 + testDate + "20/ua3/",
-                testFile4);
+        uploadDataToServer3(testBaseDir3 + testDate + "10/ua3/", testFile3);
+        uploadDataToServer3(testBaseDir3 + testDate + "15/ua3/", testFile4);
+        uploadDataToServer3(testBaseDir3 + testDate + "20/ua3/", testFile4);
 
         Util.print("completed creating test data");
 
@@ -159,13 +147,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
 
-        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
-
-        bundles[0].generateUniqueBundle();
-        bundles[1].generateUniqueBundle();
-        bundles[2].generateUniqueBundle();
+        for (int i = 0; i < 3; i++) {
+            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i].generateUniqueBundle();
+        }
     }
 
     @AfterMethod(alwaysRun = true)
