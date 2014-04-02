@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Random;
 
 
-@Test(groups = "distributed")
+@Test(groups = "embedded")
 public class PrismFeedUpdateTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
