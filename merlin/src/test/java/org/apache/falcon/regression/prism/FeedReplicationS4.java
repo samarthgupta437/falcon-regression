@@ -50,8 +50,8 @@ public class FeedReplicationS4 extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setupTest() throws Exception {
         Bundle bundle = (Bundle) Bundle.readBundle("S4Replication")[0][0];
-        bundles[0] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[1] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster1);
+        bundles[1] = new Bundle(bundle, cluster2);
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);

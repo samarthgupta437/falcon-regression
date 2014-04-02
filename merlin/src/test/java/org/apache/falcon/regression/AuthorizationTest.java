@@ -80,7 +80,7 @@ public class AuthorizationTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }

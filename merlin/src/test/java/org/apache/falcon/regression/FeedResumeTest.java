@@ -58,7 +58,7 @@ public class FeedResumeTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[0].submitClusters(prism);
         feed = Util.getInputFeedFromBundle(bundles[0]);

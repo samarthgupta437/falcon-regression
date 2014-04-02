@@ -53,7 +53,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
-        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster1);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }

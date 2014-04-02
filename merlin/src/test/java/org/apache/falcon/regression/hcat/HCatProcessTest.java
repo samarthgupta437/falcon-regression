@@ -105,7 +105,7 @@ public class HCatProcessTest extends BaseTestClass {
     @BeforeMethod
     public void setUp() throws Exception {
         bundles[0] = Util.readHCatBundle();
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(hiveScriptFile, EngineType.HIVE);
         bundles[0].setClusterInterface(Interfacetype.REGISTRY, cluster.getClusterHelper().getHCatEndpoint());

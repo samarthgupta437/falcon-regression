@@ -57,7 +57,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b = new Bundle(b, cluster);
 
         String startDate = InstanceUtil.getTimeWrtSystemTime(-150);
         String endDate = InstanceUtil.getTimeWrtSystemTime(100);
@@ -87,7 +87,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setInputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");

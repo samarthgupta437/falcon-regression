@@ -1502,7 +1502,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     HadoopFileEditor hadoopFileEditor = null;
     try {
 
-      b = new Bundle(b, cluster1.getEnvFileName(), cluster1.getPrefix());
+      b = new Bundle(b, cluster1);
       b.submitBundle(prism);
 
       b.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-10),

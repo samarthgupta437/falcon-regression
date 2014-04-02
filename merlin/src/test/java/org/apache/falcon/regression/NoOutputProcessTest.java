@@ -61,7 +61,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b = new Bundle(b, cluster);
 
         String startDate = "2010-01-03T00:00Z";
         String endDate = "2010-01-03T03:00Z";
@@ -93,7 +93,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");

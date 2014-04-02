@@ -75,8 +75,8 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         bundles[1].generateUniqueBundle();
 
         //generate bundles according to config files
-        bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundles[1], cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster1);
+        bundles[1] = new Bundle(bundles[1], cluster2);
 
         //set cluster colos
         bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColoName());

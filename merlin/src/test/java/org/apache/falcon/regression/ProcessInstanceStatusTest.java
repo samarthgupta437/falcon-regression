@@ -66,7 +66,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
 
         Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundle = new Bundle(bundle, cluster);
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -98,7 +98,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(feedInputPath);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }

@@ -74,9 +74,9 @@ public class FeedReplicationTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
 
-        bundles[0] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
-        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster1);
+        bundles[1] = new Bundle(bundle, cluster2);
+        bundles[2] = new Bundle(bundle, cluster3);
 
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();

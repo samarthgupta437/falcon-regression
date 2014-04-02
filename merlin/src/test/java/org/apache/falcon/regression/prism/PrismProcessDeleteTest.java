@@ -58,7 +58,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         bundle = Util.readBundles("LateDataBundles")[0][0];
         for (int i = 0; i < 2; i++) {
-            bundles[i] = new Bundle(bundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+            bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
         }
