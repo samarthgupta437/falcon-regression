@@ -103,13 +103,12 @@ public class InstanceSummaryTest extends BaseTestClass {
   public void setup(Method method) throws Exception {
     Util.print("test name: " + method.getName());
     processBundle = Util.readELBundles()[0][0];
-    processBundle = new Bundle(processBundle, cluster3.getEnvFileName(),
-      cluster3.getPrefix());
+    processBundle = new Bundle(processBundle, cluster3);
     processBundle.setInputFeedDataPath(feedInputPath);
     processBundle.setProcessWorkflow(aggregateWorkflowDir);
 
       for (int i = 0; i < 3; i++) {
-          bundles[i] = new Bundle(processBundle, servers.get(i).getEnvFileName(), servers.get(i).getPrefix());
+          bundles[i] = new Bundle(processBundle, servers.get(i));
           bundles[i].generateUniqueBundle();
           bundles[i].setProcessWorkflow(aggregateWorkflowDir);
       }

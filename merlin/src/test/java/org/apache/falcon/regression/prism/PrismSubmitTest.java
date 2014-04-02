@@ -57,7 +57,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Util.print("test name: " + method.getName());
         restartRequired = false;
         bundles[0] = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundles[0], cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster1);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
@@ -307,7 +307,7 @@ public class PrismSubmitTest extends BaseTestClass {
     @Test(groups = {"prism", "0.2", "distributed"})
     public void submitCluster_resubmitAlreadyPARTIAL() throws Exception {
         restartRequired = true;
-        bundles[1] = new Bundle(bundles[0], cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[1] = new Bundle(bundles[0], cluster2);
         bundles[1].generateUniqueBundle();
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
 

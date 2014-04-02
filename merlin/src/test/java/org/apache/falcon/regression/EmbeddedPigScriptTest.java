@@ -68,7 +68,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
         Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundle = new Bundle(bundle, cluster);
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -96,7 +96,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(pigTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setOutputFeedLocationData(pigTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessWorkflow(pigScriptLocation);

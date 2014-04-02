@@ -76,16 +76,16 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void setup(Method method) throws IOException, JAXBException {
       Util.print("test name: " + method.getName());
       Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
-      bundles[0] = new Bundle(bundle, cluster_1.getEnvFileName(), cluster_1.getPrefix());
-      bundles[1] = new Bundle(bundle, cluster_2.getEnvFileName(), cluster_2.getPrefix());
-      bundles[2] = new Bundle(bundle, cluster_3.getEnvFileName(), cluster_3.getPrefix());
+      bundles[0] = new Bundle(bundle, cluster_1);
+      bundles[1] = new Bundle(bundle, cluster_2);
+      bundles[2] = new Bundle(bundle, cluster_3);
 
       bundles[0].generateUniqueBundle();
       bundles[1].generateUniqueBundle();
       bundles[2].generateUniqueBundle();
 
       processBundle = Util.readELBundles()[0][0];
-      processBundle = new Bundle(processBundle, cluster_1.getEnvFileName(), cluster_1.getPrefix());
+      processBundle = new Bundle(processBundle, cluster_1);
       processBundle.generateUniqueBundle();
       processBundle.setProcessWorkflow(aggregateWorkflowDir);
   }

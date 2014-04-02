@@ -58,7 +58,7 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b = new Bundle(b, cluster);
         b.setProcessWorkflow(aggregateWorkflowDir);
 
         String startDate = "2010-01-01T20:00Z";
@@ -89,7 +89,7 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);

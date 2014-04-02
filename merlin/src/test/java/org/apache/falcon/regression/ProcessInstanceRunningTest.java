@@ -57,7 +57,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
         Bundle bundle = Util.readELBundles()[0][0];
         bundle.generateUniqueBundle();
-        bundle = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundle = new Bundle(bundle, cluster);
 
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
@@ -85,7 +85,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(feedInputPath);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
@@ -134,7 +134,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
-        bundles[0] = new Bundle(bundles[0], cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setCLusterColo("ua2");
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -196,7 +196,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void deleteData() throws Exception {
         Util.print("in @AfterClass");
         Bundle b = Util.readELBundles()[0][0];
-        b = new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        b = new Bundle(b, cluster);
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);

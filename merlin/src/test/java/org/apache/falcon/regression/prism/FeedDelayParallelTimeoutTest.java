@@ -54,8 +54,8 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         Util.print("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
-        bundles[0] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
-        bundles[1] = new Bundle(bundle, cluster1.getEnvFileName(), cluster1.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster1);
+        bundles[1] = new Bundle(bundle, cluster2);
 
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();
