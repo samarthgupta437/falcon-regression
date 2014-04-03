@@ -327,7 +327,7 @@ public class Util {
   public static File[] getFiles(String directoryPath) throws URISyntaxException {
     directoryPath = directoryPath.replaceFirst("^.*test-classes[\\\\/]","");
     logger.info("directoryPath: " + directoryPath);
-    URL url = Util.class.getResource(OSUtil.SEPARATOR + directoryPath);
+    URL url = Util.class.getResource("/" + directoryPath);
     logger.info("url" + url);
     File dir = new File(url.toURI());
     File[] files = dir.listFiles();
@@ -651,11 +651,6 @@ public class Util {
     return null;
   }
 
-  public static List<String> getHadoopLateData(ColoHelper helper, String feed)
-    throws JAXBException, IOException {
-    return getHadoopDataFromDir(helper, feed, "/lateDataTest/testFolders/");
-  }
-
 
   public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
     throws JAXBException, IOException {
@@ -962,27 +957,14 @@ public class Util {
     }
 
   public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
-                                       String directory)
+                                       String directory, String folderPrefix)
     throws IOException, InterruptedException {
     logger.info("copying data into folders....");
-
-    Configuration conf = new Configuration();
-    conf.set("fs.default.name", "hdfs://" + prismHelper.getClusterHelper().getHadoopURL() + "");
-
-    final FileSystem fs = FileSystem.get(conf);
-
-    for (final String folder : folderList) {
-      File[] dirFiles = new File(directory).listFiles();
-      assert dirFiles != null;
-      for (final File file : dirFiles) {
-        if (!file.isDirectory()) {
-          fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-            new Path("/lateDataTest/testFolders/" + folder));
-        }
-      }
+    List<String> fileLocations = new ArrayList<String>();
+    for (final File file : new File(directory).listFiles()) {
+        fileLocations.add(file.toString());
     }
-
-    logger.info("copied data into latedata folders....");
+    copyDataToFolders(prismHelper, folderPrefix, folderList, fileLocations.toArray(new String[0]));
   }
 
     public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
@@ -1015,11 +997,12 @@ public class Util {
             if (!r)
                 System.out.println("delete was not successful");
 
-
-            for (final String file : fileLocations) {
-                logger.info("copying  " + file + " to " + folderPrefix + folder);
-                fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
+            Path[] srcPaths = new Path[fileLocations.length];
+            for(int i = 0; i < srcPaths.length; ++i) {
+                srcPaths[i] = new Path(fileLocations[i]);
             }
+            logger.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder);
+            fs.copyFromLocalFile(false, true, srcPaths, new Path(folderPrefix + folder));
         }
     }
 
@@ -1126,12 +1109,12 @@ public class Util {
   }
 
   public static void lateDataReplenish(PrismHelper prismHelper, int interval,
-                                       int minuteSkip) throws IOException, InterruptedException {
+                                       int minuteSkip, String folderPrefix) throws IOException, InterruptedException {
     List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFolders(prismHelper, folderData);
         Util.copyDataToFolders(prismHelper, folderData,
-                OSUtil.NORMAL_INPUT);
+                OSUtil.NORMAL_INPUT, folderPrefix);
     }
 
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
