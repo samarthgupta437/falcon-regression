@@ -327,7 +327,7 @@ public class Util {
   public static File[] getFiles(String directoryPath) throws URISyntaxException {
     directoryPath = directoryPath.replaceFirst("^.*test-classes[\\\\/]","");
     logger.info("directoryPath: " + directoryPath);
-    URL url = Util.class.getResource(OSUtil.SEPARATOR + directoryPath);
+    URL url = Util.class.getResource("/" + directoryPath);
     logger.info("url" + url);
     File dir = new File(url.toURI());
     File[] files = dir.listFiles();
