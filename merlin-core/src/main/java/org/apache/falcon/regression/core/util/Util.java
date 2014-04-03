@@ -1109,12 +1109,12 @@ public class Util {
   }
 
   public static void lateDataReplenish(PrismHelper prismHelper, int interval,
-                                       int minuteSkip) throws IOException, InterruptedException {
+                                       int minuteSkip, String folderPrefix) throws IOException, InterruptedException {
     List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFolders(prismHelper, folderData);
         Util.copyDataToFolders(prismHelper, folderData,
-                OSUtil.NORMAL_INPUT, "/lateDataTest/testFolders/");
+                OSUtil.NORMAL_INPUT, folderPrefix);
     }
 
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
