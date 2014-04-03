@@ -651,9 +651,9 @@ public class Util {
     return null;
   }
 
-  public static List<String> getHadoopLateData(ColoHelper helper, String feed)
+  public static List<String> getHadoopLateData(ColoHelper helper, String feed, String lateDataTestFolders)
     throws JAXBException, IOException {
-    return getHadoopDataFromDir(helper, feed, "/lateDataTest/testFolders/");
+    return getHadoopDataFromDir(helper, feed, lateDataTestFolders);
   }
 
 
