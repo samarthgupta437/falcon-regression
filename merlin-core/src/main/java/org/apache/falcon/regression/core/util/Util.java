@@ -957,7 +957,7 @@ public class Util {
     }
 
   public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
-                                       String directory)
+                                       String directory, String folderPrefix)
     throws IOException, InterruptedException {
     logger.info("copying data into folders....");
 
@@ -972,7 +972,7 @@ public class Util {
       for (final File file : dirFiles) {
         if (!file.isDirectory()) {
           fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-            new Path("/lateDataTest/testFolders/" + folder));
+            new Path(folderPrefix + folder));
         }
       }
     }
@@ -1126,7 +1126,7 @@ public class Util {
 
         Util.createLateDataFolders(prismHelper, folderData);
         Util.copyDataToFolders(prismHelper, folderData,
-                OSUtil.NORMAL_INPUT);
+                OSUtil.NORMAL_INPUT, "/lateDataTest/testFolders/");
     }
 
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
