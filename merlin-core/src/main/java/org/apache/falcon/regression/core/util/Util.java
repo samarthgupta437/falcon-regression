@@ -997,11 +997,12 @@ public class Util {
             if (!r)
                 System.out.println("delete was not successful");
 
-
-            for (final String file : fileLocations) {
-                logger.info("copying  " + file + " to " + folderPrefix + folder);
-                fs.copyFromLocalFile(new Path(file), new Path(folderPrefix + folder));
+            Path[] srcPaths = new Path[fileLocations.length];
+            for(int i = 0; i < srcPaths.length; ++i) {
+                srcPaths[i] = new Path(fileLocations[i]);
             }
+            logger.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder);
+            fs.copyFromLocalFile(false, true, srcPaths, new Path(folderPrefix + folder));
         }
     }
 
