@@ -960,24 +960,11 @@ public class Util {
                                        String directory, String folderPrefix)
     throws IOException, InterruptedException {
     logger.info("copying data into folders....");
-
-    Configuration conf = new Configuration();
-    conf.set("fs.default.name", "hdfs://" + prismHelper.getClusterHelper().getHadoopURL() + "");
-
-    final FileSystem fs = FileSystem.get(conf);
-
-    for (final String folder : folderList) {
-      File[] dirFiles = new File(directory).listFiles();
-      assert dirFiles != null;
-      for (final File file : dirFiles) {
-        if (!file.isDirectory()) {
-          fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-            new Path(folderPrefix + folder));
-        }
-      }
+    List<String> fileLocations = new ArrayList<String>();
+    for (final File file : new File(directory).listFiles()) {
+        fileLocations.add(file.toString());
     }
-
-    logger.info("copied data into latedata folders....");
+    copyDataToFolders(prismHelper, folderPrefix, folderList, fileLocations.toArray(new String[0]));
   }
 
     public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
