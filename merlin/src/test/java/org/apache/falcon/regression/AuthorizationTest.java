@@ -288,7 +288,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -358,7 +358,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
@@ -410,7 +410,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -477,7 +477,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 4 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 4, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 4, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //4 instances should be running , 1 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util

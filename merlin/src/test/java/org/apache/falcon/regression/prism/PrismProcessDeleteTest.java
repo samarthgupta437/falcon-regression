@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+@Test(groups = "distributed")
 public class PrismProcessDeleteTest extends BaseTestClass {
 
     Bundle bundle;
@@ -75,7 +76,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         .testUA1ProcessDeleteAlreadyDeletedProcess */
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteInBothColos() throws Exception {
         //now submit the thing to prism
         bundles[0].submitFeedsScheduleProcess();
@@ -122,7 +123,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         compareDataStoresForEquality(finalUA2ArchiveStore, initialUA2ArchiveStore);
     }
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteWhen1ColoIsDown() throws Exception {
         try {
             //now submit the thing to prism
@@ -199,7 +200,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteAlreadyDeletedProcess() throws Exception {
         try {
             //now submit the thing to prism
@@ -255,7 +256,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteTwiceWhen1ColoIsDownDuring1stDelete()
     throws Exception {
         try {
@@ -321,7 +322,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         }
     }
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteNonExistent() throws Exception {
         try {
             //now lets get the final states
@@ -373,7 +374,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testUA1ProcessDeleteNonExistentWhen1ColoIsDownDuringDelete()
     throws Exception {
         try {
@@ -439,7 +440,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessScheduledInOneColo() throws Exception {
         bundles[0].submitFeedsScheduleProcess();
         bundles[1].submitFeedsScheduleProcess();
@@ -487,7 +488,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         compareDataStoresForEquality(finalUA2ArchiveStore, initialUA2ArchiveStore);
     }
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColo() throws Exception {
         //create a UA1 bundle
         bundles[0].submitFeedsScheduleProcess();
@@ -541,7 +542,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileBothProcessesAreSuspended()
     throws Exception {
         bundles[0].submitFeedsScheduleProcess();
@@ -596,7 +597,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         compareDataStoresForEquality(finalUA2ArchiveStore, initialUA2ArchiveStore);
     }
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileThatColoIsDown()
     throws Exception {
         try {
@@ -661,7 +662,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessScheduledInOneColoWhileThatColoIsDown()
     throws Exception {
         try {
@@ -740,7 +741,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         }
     }
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDown()
     throws Exception {
         try {
@@ -807,7 +808,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDownWithFeedSuspended() throws Exception {
         try {
             bundles[0].submitFeedsScheduleProcess();
@@ -875,7 +876,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         }
     }
 
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testDeleteProcessScheduledInOneColoWhileAnotherColoIsDown()
     throws Exception {
         try {
