@@ -482,7 +482,7 @@ public class Util {
       }
 
     }
-    if (!(processData.isEmpty() || clusterData.isEmpty())) {
+    if (!clusterData.isEmpty() && !dataSets.isEmpty()) {
       bundleList.add(new Bundle(dataSets, processData, clusterData));
     }
 
