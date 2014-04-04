@@ -59,7 +59,8 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.List;
 
-@Test(groups = "embedded")
+//disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+@Test(groups = "embedded", enabled = false)
 public class AuthorizationTest extends BaseTestClass {
     private static final Logger logger = Logger.getLogger(AuthorizationTest.class);
 
