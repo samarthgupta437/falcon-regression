@@ -782,10 +782,17 @@ public class Bundle {
     }
 
     public void setProcessWorkflow(String wfPath, EngineType engineType) throws JAXBException {
+        setProcessWorkflow(wfPath, null, engineType);
+    }
+
+    public void setProcessWorkflow(String wfPath, String libPath, EngineType engineType) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow w = processElement.getWorkflow();
         if(engineType != null) {
             w.setEngine(engineType);
+        }
+        if(libPath != null) {
+            w.setLib(libPath);
         }
         w.setPath(wfPath);
         processElement.setWorkflow(w);
