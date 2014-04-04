@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -46,6 +47,7 @@ public class PrismConcurrentRequest extends BaseTestClass {
     private int failedResponse = 0;
     private int succeedeResponse = 0;
     String aggregateWorkflowDir = baseHDFSDir + "/PrismConcurrentRequest/aggregator";
+    private static final Logger logger = Logger.getLogger(PrismConcurrentRequest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -54,7 +56,7 @@ public class PrismConcurrentRequest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);

@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -50,6 +51,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     OozieClient cluster2OC = serverOC.get(1);
     private boolean restartRequired;
     String aggregateWorkflowDir = baseHDFSDir + "/PrismFeedSnSTest/aggregator";
+    private static final Logger logger = Logger.getLogger(PrismFeedSnSTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -58,7 +60,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readELBundles()[0][0];
         for (int i = 0; i < 2; i++) {
@@ -355,13 +357,13 @@ public class PrismFeedSnSTest extends BaseTestClass {
         restartRequired = true;
 
         bundles[0].setCLusterColo(cluster1.getClusterHelper().getColoName());
-        Util.print("cluster bundles[0]: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundles[0]: " + bundles[0].getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         bundles[1].setCLusterColo(cluster2.getClusterHelper().getColoName());
-        Util.print("cluster bundles[1]: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundles[1]: " + bundles[1].getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
@@ -385,7 +387,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
                 baseHDFSDir + "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         Util.shutDownService(cluster1.getFeedHelper());
 

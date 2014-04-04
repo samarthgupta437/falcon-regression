@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -54,6 +55,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
     ColoHelper cluster3 = servers.get(2);
     FileSystem cluster2FS = serverFS.get(1);
     FileSystem cluster3FS = serverFS.get(2);
+    private static final Logger logger = Logger.getLogger(FeedInstanceStatusTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -61,7 +63,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -80,7 +82,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(feedInputPath);
 
         bundles[0].setCLusterColo("ua1");
-        Util.print("cluster bundle1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundle1: " + bundles[0].getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
@@ -88,14 +90,14 @@ public class FeedInstanceStatusTest extends BaseTestClass {
 
 
         bundles[1].setCLusterColo("ua2");
-        Util.print("cluster bundle2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundle2: " + bundles[1].getClusters().get(0));
         r = prism.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
 
         bundles[2].setCLusterColo("ua3");
-        Util.print("cluster bundle3: " + bundles[2].getClusters().get(0));
+        logger.info("cluster bundle3: " + bundles[2].getClusters().get(0));
         r = prism.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundles[2].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -127,7 +129,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
                 "UK/${cluster.colo}");
 
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         //status before submit
         prism.getFeedHelper()
@@ -216,7 +218,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
                         .addMinsToTime(startTime, 40));
 
 
-        Util.print("Wait till feed goes into running ");
+        logger.info("Wait till feed goes into running ");
 
 
         //suspend instances -10
@@ -291,6 +293,6 @@ public class FeedInstanceStatusTest extends BaseTestClass {
                         "?start=" + startTime + "&end=" + InstanceUtil
                                 .addMinsToTime(startTime, 110));
 
-        Util.print(responseInstance.getMessage());
+        logger.info(responseInstance.getMessage());
     }
 }

@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -56,6 +57,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     String startTime;
     String feedOriginalSubmit;
     String feedUpdated;
+    private static final Logger logger = Logger.getLogger(FeedClusterUpdateTest.class);
 
 
     @BeforeClass(alwaysRun = true)
@@ -81,7 +83,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
 
         Bundle bundle = Util.readELBundles()[0][0];
         for (int i = 0; i < 3; i++) {
@@ -117,7 +119,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
 
-        Util.print("Feed: " + feedOriginalSubmit);
+        logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
@@ -215,7 +217,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
 
-        Util.print("Feed: " + feedOriginalSubmit);
+        logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
@@ -271,7 +273,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
 
-        Util.print("Updated Feed: " + feedUpdated);
+        logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
@@ -310,7 +312,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
 
-        Util.print("Feed: " + feedOriginalSubmit);
+        logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
@@ -365,7 +367,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
 
-        Util.print("Updated Feed: " + feedUpdated);
+        logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
@@ -404,7 +406,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
 
-        Util.print("Feed: " + feedOriginalSubmit);
+        logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
@@ -459,7 +461,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
-        Util.print("Updated Feed: " + feedUpdated);
+        logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
@@ -498,7 +500,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
 
-        Util.print("Feed: " + feedOriginalSubmit);
+        logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
@@ -554,7 +556,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
 
-        Util.print("Updated Feed: " + feedUpdated);
+        logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
@@ -604,7 +606,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
 
-        Util.print("Feed: " + feedOriginalSubmit);
+        logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
@@ -735,7 +737,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
       ClusterType.SOURCE,
       "UK/${cluster.colo}");
 
-    Util.print("Feed: " + feedOriginalSubmit);
+    logger.info("Feed: " + feedOriginalSubmit);
 
     ServiceResponse response =
       prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
@@ -788,7 +790,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     ClusterType.SOURCE,
       "UK/${cluster.colo}");
 
-    Util.print("Feed: " + feedUpdated);
+    logger.info("Feed: " + feedUpdated);
 
     response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
     Thread.sleep(20000);

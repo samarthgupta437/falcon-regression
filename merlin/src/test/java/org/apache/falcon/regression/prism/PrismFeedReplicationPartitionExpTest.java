@@ -34,6 +34,7 @@ import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -73,18 +74,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             + OSUtil.getPath("ReplicationResources", "cluster-0.1.xml");
     private String testFile4 = OSUtil.RESOURCES
             + OSUtil.getPath("ReplicationResources", "log4testng.properties");
-
-    public PrismFeedReplicationPartitionExpTest(){
-        super();
-        cluster1 = servers.get(0);
-        cluster2 = servers.get(1);
-        cluster3 = servers.get(2);
-        cluster1FS = serverFS.get(0);
-        cluster2FS = serverFS.get(1);
-        cluster3FS = serverFS.get(2);
-        cluster1OC = serverOC.get(0);
-        cluster2OC = serverOC.get(1);
-    }
+    private static final Logger logger = Logger.getLogger(PrismFeedReplicationPartitionExpTest.class);
 
 
 // pt : partition in target
@@ -138,13 +128,13 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         uploadDataToServer3(testBaseDir3 + testDate + "15/ua3/", testFile4);
         uploadDataToServer3(testBaseDir3 + testDate + "20/ua3/", testFile4);
 
-        Util.print("completed creating test data");
+        logger.info("completed creating test data");
 
     }
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
 
         for (int i = 0; i < 3; i++) {
@@ -198,7 +188,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
       ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -242,7 +232,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "${cluster.colo}",testBaseDir1 + dateTemplate);
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -331,7 +321,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null,
                 testBaseDir1 + dateTemplate);
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -416,7 +406,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -514,7 +504,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
         //clean target if old data exists
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         AssertUtil.assertFailed(r, "Submission of feed should have failed.");
@@ -568,7 +558,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "${cluster.colo}");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -662,7 +652,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "${cluster.colo}", testBaseDir1 + dateTemplate);
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -742,7 +732,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "${cluster.colo}");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -825,7 +815,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);

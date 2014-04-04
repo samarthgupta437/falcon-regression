@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -56,6 +57,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     private final String inputPath = baseTestDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String alternativeInputPath = baseTestDir + "/newFeedPath/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private static final Logger logger = Logger.getLogger(PrismFeedReplicationUpdateTest.class);
 
     @BeforeClass
     public void prepareCluster() throws IOException, InterruptedException {
@@ -65,7 +67,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
 
         for (int i = 0; i < 3; i++) {
@@ -127,7 +129,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -138,7 +140,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //change feed location path
         feed = InstanceUtil.setFeedFilePath(feed, alternativeInputPath);
 
-        Util.print("updated feed: " + feed);
+        logger.info("updated feed: " + feed);
 
         //update feed
         prism.getFeedHelper().update(feed, feed);
@@ -166,11 +168,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
         bundles[0].setCLusterColo(cluster1Colo);
-        Util.print("cluster bundles[0]: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundles[0]: " + bundles[0].getClusters().get(0));
         bundles[1].setCLusterColo(cluster2Colo);
-        Util.print("cluster bundles[1]: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundles[1]: " + bundles[1].getClusters().get(0));
         bundles[2].setCLusterColo(cluster3Colo);
-        Util.print("cluster bundles[2]: " + bundles[2].getClusters().get(0));
+        logger.info("cluster bundles[2]: " + bundles[2].getClusters().get(0));
 
         //submit 3 clusters
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
@@ -246,9 +248,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
 
         //submit and schedule feeds
-        Util.print("feed01: " + feed01);
-        Util.print("feed02: " + feed02);
-        Util.print("outputFeed: " + outputFeed);
+        logger.info("feed01: " + feed01);
+        logger.info("feed02: " + feed02);
+        logger.info("outputFeed: " + outputFeed);
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
@@ -275,11 +277,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         process = InstanceUtil.addProcessInputFeed(process, Util.readDatasetName(feed02), Util.readDatasetName(feed02));
 
         //submit and schedule process
-        Util.print("process: " + process);
+        logger.info("process: " + process);
 
         prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
-        Util.print("Wait till process goes into running ");
+        logger.info("Wait till process goes into running ");
 
         for (int i = 0; i < 30; i++) {
             Status status1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
@@ -302,7 +304,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         }
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
-        Util.print("updated feed: " + feed01);
+        logger.info("updated feed: " + feed01);
         prism.getFeedHelper().update(feed01, feed01);
     }
 }

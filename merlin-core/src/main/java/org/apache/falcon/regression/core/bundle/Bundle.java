@@ -96,6 +96,7 @@ public class Bundle {
     public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public static final String PRISM_PREFIX = "prism";
     static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
+    private static final Logger logger = Logger.getLogger(Bundle.class);
 
     public List<String> dataSets;
     String processData;
@@ -176,7 +177,6 @@ public class Bundle {
     IEntityManagerHelper feedHelper;
 
     private ColoHelper colohelper;
-    private Logger logger = Logger.getLogger(this.getClass());
 
     public IEntityManagerHelper getClusterHelper() {
         return clusterHelper;
@@ -406,7 +406,7 @@ public class Bundle {
             Marshaller marshaller = jc.createMarshaller();
             marshaller.marshal(processElement, sw);
 
-            Util.print("process after late input set: " + sw.toString());
+            logger.info("process after late input set: " + sw.toString());
 
             return sw.toString();
         }
@@ -630,11 +630,11 @@ public class Bundle {
 
 
         String oldLocation = dataElement.getLocations().getLocation().get(0).getPath();
-        Util.print("oldlocation: " + oldLocation);
+        logger.info("oldlocation: " + oldLocation);
         dataElement.getLocations().getLocation().get(0).setPath(
                 oldLocation.substring(0, oldLocation.indexOf('$')) + "invalid/" +
                         oldLocation.substring(oldLocation.indexOf('$')));
-        Util.print("new location: " + dataElement.getLocations().getLocation().get(0).getPath());
+        logger.info("new location: " + dataElement.getLocations().getLocation().get(0).getPath());
 
         //lets marshall it back and return
         java.io.StringWriter sw = new StringWriter();
@@ -678,15 +678,15 @@ public class Bundle {
 
     public Date getStartInstanceProcess(Calendar time) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
-        Util.print("start instance: " + processElement.getInputs().getInput().get(0).getStart());
+        logger.info("start instance: " + processElement.getInputs().getInput().get(0).getStart());
         return ELUtil.getMinutes(processElement.getInputs().getInput().get(0).getStart(), time);
     }
 
     public Date getEndInstanceProcess(Calendar time) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
-        Util.print("end instance: " + processElement.getInputs().getInput().get(0).getEnd());
-        Util.print("timezone in getendinstance: " + time.getTimeZone().toString());
-        Util.print("time in getendinstance: " + time.getTime());
+        logger.info("end instance: " + processElement.getInputs().getInput().get(0).getEnd());
+        logger.info("timezone in getendinstance: " + time.getTimeZone().toString());
+        logger.info("time in getendinstance: " + time.getTime());
         return ELUtil.getMinutes(processElement.getInputs().getInput().get(0).getEnd(), time);
     }
 
@@ -736,7 +736,7 @@ public class Bundle {
         marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         marshaller.marshal(feedElement, sw);
         dataSets.set(datasetIndex, sw.toString());
-        Util.print("modified o/p dataSet is: " + dataSets.get(datasetIndex));
+        logger.info("modified o/p dataSet is: " + dataSets.get(datasetIndex));
     }
 
     public int getProcessConcurrency() throws JAXBException {
@@ -768,7 +768,7 @@ public class Bundle {
         marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         marshaller.marshal(feedElement, sw);
         dataSets.set(datasetIndex, sw.toString());
-        Util.print("modified location path dataSet is: " + dataSets.get(datasetIndex));
+        logger.info("modified location path dataSet is: " + dataSets.get(datasetIndex));
     }
 
     public void setProcessConcurrency(int concurrency) throws JAXBException {
@@ -1200,7 +1200,7 @@ public class Bundle {
     throws IOException, URISyntaxException, AuthenticationException {
 
         for (Bundle bundle : bundles) {
-            Util.print("cluster b1: " + bundle.getClusters().get(0));
+            logger.info("cluster b1: " + bundle.getClusters().get(0));
             ServiceResponse r =
                     prismHelper.getClusterHelper()
                             .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
@@ -1214,7 +1214,7 @@ public class Bundle {
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
         for (Bundle bundle : bundles) {
-            Util.print("cluster b1: " + bundle.getClusters().get(0));
+            logger.info("cluster b1: " + bundle.getClusters().get(0));
             prismHelper.getClusterHelper().delete(URLS.DELETE_URL, bundle.getClusters().get(0));
         }
 
@@ -1460,7 +1460,6 @@ public class Bundle {
 
     public static Object[][] readBundle(String bundleLocation) throws IOException {
         sBundleLocation = bundleLocation;
-        Util u = new Util();
 
         List<Bundle> bundleSet = Util.getDataFromFolder(bundleLocation);
 

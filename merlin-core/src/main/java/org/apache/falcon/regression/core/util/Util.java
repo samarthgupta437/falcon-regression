@@ -568,12 +568,6 @@ public class Util {
     Assert.assertNotNull(Util.parseResponse(response).getRequestId());
   }
 
-  @Deprecated
-  public static void print(String message) {
-    logger.info(message);
-  }
-
-
     public static String getDatasetPath(Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
 

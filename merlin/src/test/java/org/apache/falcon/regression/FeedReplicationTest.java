@@ -34,6 +34,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
@@ -68,10 +69,11 @@ public class FeedReplicationTest extends BaseTestClass {
     String targetPath = baseTestDir + "/target";
     String targetDataLocation = targetPath + dateTemplate;
     int timeout = 3;
+    private static final Logger logger = Logger.getLogger(FeedReplicationTest.class);
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws JAXBException, IOException {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
 
         bundles[0] = new Bundle(bundle, cluster1);
@@ -90,7 +92,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Time range between : " + startTime + " and " + endTime);
+        logger.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
         String feed = bundles[0].getDataSets().get(0);
@@ -114,7 +116,7 @@ public class FeedReplicationTest extends BaseTestClass {
                 ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        Util.print("Feed : " + feed);
+        logger.info("Feed : " + feed);
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                         feed));
@@ -155,7 +157,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Time range between : " + startTime + " and " + endTime);
+        logger.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
         String feed = bundles[0].getDataSets().get(0);
@@ -185,7 +187,7 @@ public class FeedReplicationTest extends BaseTestClass {
                 ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        Util.print("Feed : " + feed);
+        logger.info("Feed : " + feed);
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                         feed));
@@ -237,7 +239,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Time range between : " + startTime + " and " + endTime);
+        logger.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
         String availabilityFlagName = "README.md";
@@ -266,7 +268,7 @@ public class FeedReplicationTest extends BaseTestClass {
                 ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        Util.print("Feed : " + feed);
+        logger.info("Feed : " + feed);
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                         feed));
@@ -293,7 +295,7 @@ public class FeedReplicationTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
                 "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 1, 0, 0, 1, 0);
-        Util.print("Replication didn't start.");
+        logger.info("Replication didn't start.");
 
         //create availability flag on source
         HadoopUtil.copyDataToFolder(cluster1, toSource, availabilityFlagName);
@@ -309,10 +311,10 @@ public class FeedReplicationTest extends BaseTestClass {
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster1, toSource);
-        Util.print("Data on source cluster: " + cluster1ReplicatedData);
+        logger.info("Data on source cluster: " + cluster1ReplicatedData);
         List<Path> cluster2ReplicatedData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
-        Util.print("Data on target cluster: " + cluster2ReplicatedData);
+        logger.info("Data on target cluster: " + cluster2ReplicatedData);
         AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
     }
 

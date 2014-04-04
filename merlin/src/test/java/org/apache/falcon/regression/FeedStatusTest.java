@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -47,6 +48,7 @@ public class FeedStatusTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
     private String feed;
     String aggregateWorkflowDir = baseHDFSDir + "/FeedStatusTest/aggregator";
+    private static final Logger logger = Logger.getLogger(FeedStatusTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -54,7 +56,7 @@ public class FeedStatusTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -76,7 +78,7 @@ public class FeedStatusTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void getStatusForScheduledFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Util.print(feed);
+        logger.info(feed);
         Util.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);

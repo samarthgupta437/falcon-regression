@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -46,6 +47,7 @@ public class FeedRetentionTest extends BaseTestClass {
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     String impressionrcWorkflowDir = baseHDFSDir + "/FeedRetentionTest/impressionrc/";
+    private static final Logger logger = Logger.getLogger(FeedRetentionTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -58,7 +60,7 @@ public class FeedRetentionTest extends BaseTestClass {
     }
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         //getImpressionRC bundle
         bundles[0] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[0].generateUniqueBundle();
@@ -192,7 +194,7 @@ public class FeedRetentionTest extends BaseTestClass {
         process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundles[1].getClusters().get(0)),
                 XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2), InstanceUtil.getTimeWrtSystemTime(5)));
 
-        Util.print("process: " + process);
+        logger.info("process: " + process);
 
         AssertUtil.assertSucceeded(prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process));
 

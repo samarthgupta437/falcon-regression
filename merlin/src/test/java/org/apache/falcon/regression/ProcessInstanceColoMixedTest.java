@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -56,17 +57,18 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     ColoHelper cluster2 = servers.get(1);
     FileSystem cluster1FS = serverFS.get(0);
     FileSystem cluster2FS = serverFS.get(1);
+    private static final Logger logger = Logger.getLogger(ProcessInstanceColoMixedTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void prepareClusters() throws Exception {
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
 
         //get 3 unique bundles
         bundles[0] = Util.readELBundles()[0][0];
@@ -80,9 +82,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         //set cluster colos
         bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColoName());
-        Util.print("cluster b1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster b1: " + bundles[0].getClusters().get(0));
         bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColoName());
-        Util.print("cluster b2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster b2: " + bundles[1].getClusters().get(0));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
@@ -92,7 +94,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
-        Util.print("tearDown " + method.getName());
+        logger.info("tearDown " + method.getName());
         removeBundles();
     }
 
@@ -180,9 +182,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
-        Util.print("feed01: " + feed01);
-        Util.print("feed02: " + feed02);
-        Util.print("outputFeed: " + outputFeed);
+        logger.info("feed01: " + feed01);
+        logger.info("feed02: " + feed02);
+        logger.info("outputFeed: " + outputFeed);
 
         ServiceResponse r = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
@@ -221,12 +223,12 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
 
         //submit and schedule process
-        Util.print("process: " + process);
+        logger.info("process: " + process);
 
         prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
-        Util.print("Wait till process goes into running ");
+        logger.info("Wait till process goes into running ");
 
         int i;
 
