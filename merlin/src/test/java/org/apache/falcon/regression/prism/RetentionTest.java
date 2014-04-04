@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -254,7 +255,7 @@ public class RetentionTest extends BaseTestClass {
             logger.info(pathString);
             clusterFS.mkdirs(new Path(pathString));
             if(uploadData) {
-                clusterFS.copyFromLocalFile(new Path("log_01.txt"), new Path(pathString));
+                clusterFS.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"), new Path(pathString));
             }
         }
     }

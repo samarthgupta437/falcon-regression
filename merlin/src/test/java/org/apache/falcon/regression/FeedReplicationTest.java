@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -131,8 +132,8 @@ public class FeedReplicationTest extends BaseTestClass {
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
-        HadoopUtil.copyDataToFolder(cluster1, toSource, "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(cluster1, toSource, "log_01.txt");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
@@ -202,8 +203,8 @@ public class FeedReplicationTest extends BaseTestClass {
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
-        HadoopUtil.copyDataToFolder(cluster1, toSource, "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(cluster1, toSource, "log_01.txt");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
@@ -283,8 +284,8 @@ public class FeedReplicationTest extends BaseTestClass {
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
-        HadoopUtil.copyDataToFolder(cluster1, toSource, "feed-s4Replication.xml");
-        HadoopUtil.copyDataToFolder(cluster1, toSource, "log_01.txt");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
