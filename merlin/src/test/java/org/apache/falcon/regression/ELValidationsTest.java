@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -36,11 +37,12 @@ import java.lang.reflect.Method;
 public class ELValidationsTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
+    private static final Logger logger = Logger.getLogger(ELValidationsTest.class);
 
     //test for instance when process time line is subset of feed time
     @BeforeMethod
     public void testName(Method method) {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
     }
 
     @Test(groups = {"0.1", "0.2"})

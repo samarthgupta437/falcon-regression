@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -42,6 +43,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     String aggregateWorkflowDir = baseHDFSDir + "/PrismClusterDeleteTest/aggregator";
+    private static final Logger logger = Logger.getLogger(PrismClusterDeleteTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -50,7 +52,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
         bundles[0] = new Bundle(bundle, cluster1);

@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -44,6 +45,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
     OozieClient cluster2OC = serverOC.get(1);
     private boolean restartRequired;
     String aggregateWorkflowDir = baseHDFSDir + "/PrismProcessSuspendTest/aggregator";
+    private static final Logger logger = Logger.getLogger(PrismProcessSuspendTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -52,7 +54,7 @@ public class PrismProcessSuspendTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
         for (int i = 0; i < 2; i++) {

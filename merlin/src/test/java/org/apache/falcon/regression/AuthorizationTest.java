@@ -259,7 +259,7 @@ public class AuthorizationTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
         String midTime = InstanceUtil.addMinsToTime(startTime, 2);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -270,20 +270,20 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
 
         //provide necessary data for first 3 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -329,7 +329,7 @@ public class AuthorizationTest extends BaseTestClass {
     public void U1ScheduleU2KillProcessInstances() throws Exception {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -340,20 +340,20 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
 
         //provide necessary data for first 3 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -381,7 +381,7 @@ public class AuthorizationTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
         String midTime = InstanceUtil.addMinsToTime(startTime, 2);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -392,20 +392,20 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
 
         //provide necessary data for first 3 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -448,7 +448,7 @@ public class AuthorizationTest extends BaseTestClass {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
         String midTime = InstanceUtil.addMinsToTime(startTime, 2);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -459,20 +459,20 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,3)"));
 
         //provide necessary data for first 4 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 4 running instances

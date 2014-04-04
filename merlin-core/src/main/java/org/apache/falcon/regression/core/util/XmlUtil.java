@@ -55,7 +55,7 @@ public class XmlUtil {
 
         org.apache.falcon.regression.core.generated.process.Validity v =
                 new org.apache.falcon.regression.core.generated.process.Validity();
-        Util.print("instanceUtil.oozieDateToDate(endTime).toDate(): "
+        logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
                 + InstanceUtil.oozieDateToDate(endTime).toDate());
         v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
         v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());

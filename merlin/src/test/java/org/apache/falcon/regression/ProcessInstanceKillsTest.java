@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -50,11 +51,12 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private static final Logger logger = Logger.getLogger(ProcessInstanceKillsTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
@@ -87,7 +89,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
 
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -97,7 +99,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws Exception {
-        Util.print("tearDown " + method.getName());
+        logger.info("tearDown " + method.getName());
         removeBundles();
     }
 
@@ -151,7 +153,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
                         "?start=2010-01-02T00:03Z&end=2010-01-02T00:30Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         Thread.sleep(15000);
-        Util.print(r.toString());
+        logger.info(r.toString());
     }
 
 
@@ -180,7 +182,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + startTimeRequest + "&end=" + endTimeRequest);
-        Util.print(r.toString());
+        logger.info(r.toString());
     }
 
 
@@ -204,7 +206,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
                 .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + startTime + "&end=" + endTime);
         Thread.sleep(15000);
-        Util.print(r.getMessage());
+        logger.info(r.getMessage());
         Assert.assertEquals(r.getInstances(), null);
     }
 
@@ -293,7 +295,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        Util.print("in @AfterClass");
+        logger.info("in @AfterClass");
 
         Bundle b = Util.readELBundles()[0][0];
         b = new Bundle(b, cluster);

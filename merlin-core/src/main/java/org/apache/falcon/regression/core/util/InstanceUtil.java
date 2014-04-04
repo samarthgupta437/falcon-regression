@@ -337,11 +337,11 @@ public class InstanceUtil {
         List<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
             WorkflowJob wfJob = oozieClient.getJobInfo(jobID);
-            Util.print("wa.getExternalId(): " + wfJob.getId() + " wa" +
+            logger.info("wa.getExternalId(): " + wfJob.getId() + " wa" +
                     ".getExternalStatus" +
                     "():  " +
                     wfJob.getStartTime());
-            Util.print("wf id: " + jobID + "  wf status: " + wfJob.getStatus());
+            logger.info("wf id: " + jobID + "  wf status: " + wfJob.getStatus());
             if (ws.length == 0)
                 toBeReturned.add(jobID);
             else {

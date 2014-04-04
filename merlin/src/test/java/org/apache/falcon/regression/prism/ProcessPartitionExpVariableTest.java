@@ -55,7 +55,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
     private String baseTestDir = baseHDFSDir + "/ProcessPartitionExpVariableTest";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    
+
     @BeforeClass
     public void uploadWorkflow() throws Exception {
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -63,7 +63,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
@@ -96,9 +96,9 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),

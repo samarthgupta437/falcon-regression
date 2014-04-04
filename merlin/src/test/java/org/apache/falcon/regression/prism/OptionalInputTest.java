@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.testng.annotations.AfterMethod;
@@ -45,6 +46,7 @@ public class OptionalInputTest extends BaseTestClass {
     String baseTestDir = baseHDFSDir + "/OptionalInputTest";
     String inputPath = baseTestDir + "/input";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private static final Logger logger = Logger.getLogger(OptionalInputTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -53,7 +55,7 @@ public class OptionalInputTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -75,12 +77,12 @@ public class OptionalInputTest extends BaseTestClass {
                 "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
@@ -105,19 +107,19 @@ public class OptionalInputTest extends BaseTestClass {
                 "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
         Thread.sleep(20000);
 
 
-        Util.print("instanceShouldStillBeInWaitingState");
+        logger.info("instanceShouldStillBeInWaitingState");
         InstanceUtil
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 5, ENTITY_TYPE.PROCESS);
@@ -146,12 +148,12 @@ public class OptionalInputTest extends BaseTestClass {
                 "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
@@ -184,12 +186,12 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         InstanceUtil.createDataWithinDatesAndPrefix(cluster,
                 InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
@@ -222,12 +224,12 @@ public class OptionalInputTest extends BaseTestClass {
 
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
@@ -255,12 +257,12 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
 
@@ -281,11 +283,11 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].setProcessData(bundles[0].setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
 
-        Util.print("modified process:" + bundles[0].getProcessData());
+        logger.info("modified process:" + bundles[0].getProcessData());
 
         prism.getProcessHelper().update(bundles[0].getProcessData(), bundles[0].getProcessData());
 
-        Util.print("modified process:" + bundles[0].getProcessData());
+        logger.info("modified process:" + bundles[0].getProcessData());
         //from now on ... it should wait of input0 also
 
         Thread.sleep(60000);
@@ -319,12 +321,12 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            Util.print(bundles[0].getDataSets().get(i));
+            logger.info(bundles[0].getDataSets().get(i));
 
-        Util.print(bundles[0].getProcessData());
+        logger.info(bundles[0].getProcessData());
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
 
@@ -349,12 +351,12 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
 
-        Util.print("modified process:" + bundles[0].getProcessData());
+        logger.info("modified process:" + bundles[0].getProcessData());
 
 
         prism.getProcessHelper().update(bundles[0].getProcessData(), bundles[0].getProcessData());
 
-        Util.print("modified process:" + bundles[0].getProcessData());
+        logger.info("modified process:" + bundles[0].getProcessData());
         //from now on ... it should wait of input0 also
 
         Thread.sleep(30000);

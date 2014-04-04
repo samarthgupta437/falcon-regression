@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -45,6 +46,7 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     String feedOutputPath = baseTestDir + "Target/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private static final Logger logger = Logger.getLogger(FeedDelayParallelTimeoutTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -52,7 +54,7 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
     }
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundle, cluster1);
         bundles[1] = new Bundle(bundle, cluster2);

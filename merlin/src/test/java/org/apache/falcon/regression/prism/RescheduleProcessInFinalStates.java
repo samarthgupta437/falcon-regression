@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -49,11 +50,12 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
     FileSystem clusterFS = serverFS.get(0);
     String baseTestDir = baseHDFSDir + "/RescheduleProcessInFinalStates";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private static final Logger logger = Logger.getLogger(RescheduleProcessInFinalStates.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
@@ -87,7 +89,7 @@ public class RescheduleProcessInFinalStates extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
