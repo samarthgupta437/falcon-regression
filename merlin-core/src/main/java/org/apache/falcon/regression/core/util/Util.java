@@ -955,10 +955,14 @@ public class Util {
     throws IOException, InterruptedException {
     logger.info("copying data into folders....");
     List<String> fileLocations = new ArrayList<String>();
-    for (final File file : new File(directory).listFiles()) {
-        fileLocations.add(file.toString());
+    File[] files = new File(directory).listFiles();
+    if (files != null) {
+        for (final File file : files) {
+            fileLocations.add(file.toString());
+        }
     }
-    copyDataToFolders(prismHelper, folderPrefix, folderList, fileLocations.toArray(new String[0]));
+    copyDataToFolders(prismHelper, folderPrefix, folderList,
+            fileLocations.toArray(new String[fileLocations.size()]));
   }
 
     public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
