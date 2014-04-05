@@ -92,7 +92,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
     }
 
-    @Test(groups = "embedded")
+    @Test(groups = "distributed")
     public void submitCluster_resubmitDiffContent() throws Exception {
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
