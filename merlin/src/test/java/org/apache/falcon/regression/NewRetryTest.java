@@ -1003,7 +1003,7 @@ public class NewRetryTest extends BaseTestClass {
 
         HashMap<String, Boolean> workflowMap = new HashMap<String, Boolean>();
 
-        if (coordinator.getActions().size() == 0) {
+        if (coordinator == null || coordinator.getActions().size() == 0) {
             return false;
         }
 
