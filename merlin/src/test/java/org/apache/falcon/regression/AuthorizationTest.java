@@ -59,8 +59,7 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.List;
 
-//disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
-@Test(groups = "embedded", enabled = false)
+@Test(groups = "embedded")
 public class AuthorizationTest extends BaseTestClass {
     private static final Logger logger = Logger.getLogger(AuthorizationTest.class);
 
@@ -72,7 +71,7 @@ public class AuthorizationTest extends BaseTestClass {
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + datePattern;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
@@ -89,7 +88,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Delete test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2DeleteCluster() throws Exception {
         bundles[0].submitClusters(prism);
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -99,7 +99,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Entity submitted by first user should not be deletable by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2DeleteProcess() throws Exception {
         bundles[0].submitClusters(prism);
         bundles[0].submitProcess(true);
@@ -110,7 +111,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Entity submitted by first user should not be deletable by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2DeleteFeed() throws Exception {
         bundles[0].submitClusters(prism);
         bundles[0].submitFeed();
@@ -121,7 +123,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Entity submitted by first user should not be deletable by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2DeleteProcess()
     throws Exception {
         //submit, schedule process by U1
@@ -136,7 +139,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process scheduled by first user should not be deleted by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2DeleteFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule feed by U1
@@ -152,7 +156,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed scheduled by first user should not be deleted by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2DeleteProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
@@ -170,7 +175,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process suspended by first user should not be deleted by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2DeleteFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule, suspend feed by U1
@@ -190,7 +196,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Suspend test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2SuspendFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule by U1
@@ -206,7 +213,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed scheduled by first user should not be suspended by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2SuspendProcess() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
@@ -222,7 +230,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Resume test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2ResumeFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule and then suspend feed by User1
@@ -239,7 +248,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed suspended by first user should not be resumed by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2ResumeProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
@@ -255,7 +265,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process suspended by first user should not be resumed by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2ResumeProcessInstances() throws Exception {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
@@ -326,7 +337,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Kill test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2KillProcessInstances() throws Exception {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
@@ -377,7 +389,8 @@ public class AuthorizationTest extends BaseTestClass {
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2KillProcessInstances() throws Exception {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
@@ -442,7 +455,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Rerun test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1KillSomeU2RerunAllProcessInstances()
             throws ParseException, IOException, JAXBException, InterruptedException,
             AuthenticationException, URISyntaxException, OozieClientException {
@@ -507,7 +521,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Update test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2UpdateFeed()
             throws URISyntaxException, IOException, AuthenticationException, JAXBException {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
@@ -532,7 +547,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed submitted by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2UpdateFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit and schedule feed
@@ -552,7 +568,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed scheduled by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2UpdateProcess() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         String processName = bundles[0].getProcessName();
@@ -575,7 +592,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process submitted by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2UpdateProcess() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         //submit, schedule process by U1
@@ -594,7 +612,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process scheduled by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleFeedU2ScheduleDependantProcessU1UpdateFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         String process = bundles[0].getProcessData();

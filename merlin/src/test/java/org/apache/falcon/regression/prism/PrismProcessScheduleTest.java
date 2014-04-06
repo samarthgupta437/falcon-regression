@@ -75,16 +75,16 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   public void testProcessScheduleOnBothColos() throws Exception {
     //schedule both bundles
     bundles[0].submitAndScheduleProcess();
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-    AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+    AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
     bundles[1].submitAndScheduleProcess();
 
     //now check if they have been scheduled correctly or not
-    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
     //check if there is no criss cross
-    AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+    AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
 
   }
 
@@ -95,20 +95,20 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     bundles[1].submitAndScheduleProcess();
 
     //now check if they have been scheduled correctly or not
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
     //check if there is no criss cross
-    AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
-    AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+    AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+    AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
 
     Util.assertSucceeded(cluster2.getProcessHelper()
       .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
     Util.assertSucceeded(cluster1.getProcessHelper()
       .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
     //now check if they have been scheduled correctly or not
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
   }
 
@@ -120,21 +120,21 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
     Util.assertSucceeded(cluster2.getProcessHelper()
       .suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
-    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
+    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     //now check if they have been scheduled correctly or not
 
     Util.assertSucceeded(cluster2.getProcessHelper()
       .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
     Util.assertSucceeded(cluster2.getProcessHelper()
       .resume(URLS.RESUME_URL, bundles[0].getProcessData()));
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
 
     Util.assertSucceeded(cluster1.getProcessHelper()
       .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
-    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
   }
 
   @Test(groups = {"prism", "0.2", "embedded"})
@@ -145,13 +145,13 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
     Util.assertSucceeded(
       prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData()));
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
+    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
     Util.assertSucceeded(
       prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[1].getProcessData()));
-    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
+    AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
+    AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
 
     Util.assertFailed(cluster2.getProcessHelper()
       .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
@@ -171,7 +171,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"prism", "0.2", "embedded"})
+  @Test(groups = {"prism", "0.2", "distributed"})
   public void testProcessScheduleOn1ColoWhileOtherColoIsDown() throws Exception {
     try {
       bundles[1].submitProcess(true);
@@ -182,10 +182,10 @@ public class PrismProcessScheduleTest extends BaseTestClass {
         .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getProcessData()));
 
       //now check if they have been scheduled correctly or not
-      AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+      AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
       //check if there is no criss cross
-      AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+      AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
     } catch (Exception e) {
       e.printStackTrace();
       throw new TestNGException(e.getMessage());
@@ -204,7 +204,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
       Util.assertFailed(prism.getProcessHelper()
         .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
-      AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+      AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
     } catch (Exception e) {
       e.printStackTrace();
       throw new TestNGException(e.getMessage());
@@ -214,20 +214,20 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-  @Test(groups = {"prism", "0.2", "distributed"})
+  @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOn1ColoWhileAnotherColoHasSuspendedProcess()
     throws Exception {
     try {
       bundles[0].submitAndScheduleProcess();
       Util.assertSucceeded(bundles[0].getProcessHelper()
         .suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
-      AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
+      AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
 
       bundles[1].submitAndScheduleProcess();
-      AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
-      AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-      AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
-      AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+      AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+      AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+      AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
+      AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -243,20 +243,20 @@ public class PrismProcessScheduleTest extends BaseTestClass {
       bundles[0].submitAndScheduleProcess();
       Util.assertSucceeded(prism.getProcessHelper()
         .delete(URLS.DELETE_URL, bundles[0].getProcessData()));
-      AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
+      AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
 
       bundles[1].submitAndScheduleProcess();
-      AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
-      AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-      AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-      AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+      AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+      AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+      AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
+      AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     } catch (Exception e) {
       e.printStackTrace();
       throw new TestNGException(e.getMessage());
     }
   }
 
-  @Test(groups = {"prism", "0.2", "distributed"}, enabled = true, timeOut = 1800000)
+  @Test(groups = {"prism", "0.2", "embedded"}, enabled = true, timeOut = 1800000)
   public void testRescheduleKilledProcess() throws Exception {
 
     /*

@@ -510,7 +510,7 @@ public class Util {
     throws OozieClientException, InterruptedException {
     for (int seconds = 0; seconds < 20; seconds++) {
       Job.Status status = getOozieJobStatus(client, processName, entityType);
-      logger.debug("Current status: " + status);
+      logger.info("Current status: " + status);
       if (status == expectedStatus) {
         return true;
       }
