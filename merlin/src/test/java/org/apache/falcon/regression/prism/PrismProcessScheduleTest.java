@@ -214,7 +214,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-  @Test(groups = {"prism", "0.2", "distributed"})
+  @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOn1ColoWhileAnotherColoHasSuspendedProcess()
     throws Exception {
     try {
@@ -256,7 +256,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     }
   }
 
-  @Test(groups = {"prism", "0.2", "distributed"}, enabled = true, timeOut = 1800000)
+  @Test(groups = {"prism", "0.2", "embedded"}, enabled = true, timeOut = 1800000)
   public void testRescheduleKilledProcess() throws Exception {
 
     /*
