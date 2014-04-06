@@ -171,7 +171,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   }
 
 
-  @Test(groups = {"prism", "0.2", "embedded"})
+  @Test(groups = {"prism", "0.2", "distributed"})
   public void testProcessScheduleOn1ColoWhileOtherColoIsDown() throws Exception {
     try {
       bundles[1].submitProcess(true);
