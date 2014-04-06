@@ -49,7 +49,7 @@ public class PrismSubmitTest extends BaseTestClass {
     boolean restartRequired = false;
     private static final Logger logger = Logger.getLogger(PrismSubmitTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
@@ -92,7 +92,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
     }
 
-    @Test(groups = "embedded")
+    @Test(groups = "distributed")
     public void submitCluster_resubmitDiffContent() throws Exception {
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));

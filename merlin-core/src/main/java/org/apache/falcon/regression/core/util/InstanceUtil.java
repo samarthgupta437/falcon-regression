@@ -993,20 +993,19 @@ public class InstanceUtil {
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
                                             String feedName, String coordType) throws OozieClientException {
-
+        logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
         if (Util.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED).size() == 0)
             return 0;
-
-
         List<String> bundleID = Util.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED);
+        logger.info("bundleID: " + bundleID);
 
         for (String aBundleID : bundleID) {
-
+            logger.info("aBundleID: " + aBundleID);
             List<CoordinatorJob> coords =
                     InstanceUtil.getBundleCoordinators(aBundleID, helper);
-
+            logger.info("coords: " + coords);
             for (CoordinatorJob coord : coords) {
                 if (coord.getAppName().contains(coordType))
                     numberOfCoord++;

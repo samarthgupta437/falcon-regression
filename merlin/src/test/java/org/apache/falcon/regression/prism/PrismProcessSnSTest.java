@@ -50,7 +50,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
     String aggregateWorkflowDir = baseHDFSDir + "/PrismProcessSnSTest/aggregator";
     private static final Logger logger = Logger.getLogger(PrismProcessSnSTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }

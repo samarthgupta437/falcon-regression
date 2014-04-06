@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.KerberosHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.OozieClient;
 
 import java.io.IOException;
@@ -35,6 +36,7 @@ import java.util.Properties;
 
 public class BaseTestClass {
     private static String[] serverNames;
+    private Logger logger = Logger.getLogger(BaseTestClass.class);
 
     static {
         try {
@@ -94,6 +96,7 @@ public class BaseTestClass {
 
     public void uploadDirToClusters(final String dstHdfsDir, final String localLocation)
             throws IOException, InterruptedException {
+        logger.info(String.format("Uploading local dir: %s to all the clusters at: %s", localLocation, dstHdfsDir));
         for (FileSystem fs : serverFS) {
             HadoopUtil.uploadDir(fs, dstHdfsDir, localLocation);
         }
