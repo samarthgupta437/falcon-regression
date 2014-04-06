@@ -49,7 +49,7 @@ public class PrismSubmitTest extends BaseTestClass {
     boolean restartRequired = false;
     private static final Logger logger = Logger.getLogger(PrismSubmitTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
