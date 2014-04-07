@@ -36,6 +36,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -58,11 +59,12 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
     String pigTestDir = baseHDFSDir + "/EmbeddedPigScriptTest";
     String pigScriptDir = pigTestDir + "/EmbeddedPigScriptTest/pig";
     String pigScriptLocation = pigScriptDir + "/id.pig";
+    private static final Logger logger = Logger.getLogger(EmbeddedPigScriptTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         //copy pig script
         HadoopUtil.uploadDir(clusterFS, pigScriptDir, OSUtil.RESOURCES + "pig");
 
@@ -94,7 +96,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(pigTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
@@ -249,7 +251,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        Util.print("in @AfterClass");
+        logger.info("in @AfterClass");
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 }

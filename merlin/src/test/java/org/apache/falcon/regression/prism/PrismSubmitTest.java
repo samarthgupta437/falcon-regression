@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.PrismUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -46,15 +47,16 @@ public class PrismSubmitTest extends BaseTestClass {
     String randomHDFSPath = baseTestDir + "/someRandomPath";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
     boolean restartRequired = false;
+    private static final Logger logger = Logger.getLogger(PrismSubmitTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         restartRequired = false;
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster1);
@@ -72,7 +74,7 @@ public class PrismSubmitTest extends BaseTestClass {
         removeBundles();
     }
 
-    @Test(groups = "embedded")
+    @Test(groups = "distributed")
     public void submitCluster_1prism1coloPrismdown() throws Exception {
         restartRequired = true;
         Util.shutDownService(prism.getClusterHelper());
@@ -90,7 +92,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
     }
 
-    @Test(groups = "embedded")
+    @Test(groups = "distributed")
     public void submitCluster_resubmitDiffContent() throws Exception {
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -98,7 +100,7 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
 
         bundles[0].setCLusterWorkingPath( bundles[0].getClusters().get(0), randomHDFSPath);
-        Util.print("modified cluster Data: " +  bundles[0].getClusters().get(0));
+        logger.info("modified cluster Data: " +  bundles[0].getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
@@ -318,7 +320,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Util.shutDownService(cluster1.getFeedHelper());
 
         bundles[1].setCLusterColo(cluster2.getClusterHelper().getColoName());
-        Util.print("cluster b2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster b2: " + bundles[1].getClusters().get(0));
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
@@ -335,7 +337,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Util.restartService(cluster1.getFeedHelper());
 
          bundles[0].setCLusterColo(cluster1.getClusterHelper().getColoName());
-        Util.print("cluster b1: " +  bundles[0].getClusters().get(0));
+        logger.info("cluster b1: " +  bundles[0].getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 

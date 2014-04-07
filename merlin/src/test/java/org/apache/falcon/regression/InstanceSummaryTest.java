@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.apache.oozie.client.OozieClientException;
 import org.testng.annotations.AfterMethod;
@@ -71,6 +72,7 @@ public class InstanceSummaryTest extends BaseTestClass {
   ColoHelper cluster3 = servers.get(2);
 
   Bundle processBundle ;
+  private static final Logger logger = Logger.getLogger(InstanceSummaryTest.class);
 
   @BeforeClass(alwaysRun = true)
   public void createTestData() throws Exception {
@@ -101,7 +103,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
   @BeforeMethod(alwaysRun = true)
   public void setup(Method method) throws Exception {
-    Util.print("test name: " + method.getName());
+    logger.info("test name: " + method.getName());
     processBundle = Util.readELBundles()[0][0];
     processBundle = new Bundle(processBundle, cluster3);
     processBundle.setInputFeedDataPath(feedInputPath);

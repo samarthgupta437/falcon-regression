@@ -67,14 +67,14 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   private final String baseTestDir = baseHDFSDir + "/UpdateAtSpecificTimeTest-data";
   String aggregateWorkflowDir = baseHDFSDir + "/aggregator";
 
-  public void uploadWorkflow() throws Exception {
+    public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
   }
 
 
   @BeforeMethod(alwaysRun = true)
   public void setup(Method method) throws IOException, JAXBException {
-      Util.print("test name: " + method.getName());
+      logger.info("test name: " + method.getName());
       Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
       bundles[0] = new Bundle(bundle, cluster_1);
       bundles[1] = new Bundle(bundle, cluster_2);
@@ -181,7 +181,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_target);
 
-    Util.print("feed: " + feed);
+    logger.info("feed: " + feed);
 
     //submit and schedule feed
     ServiceResponse r = prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed);
@@ -347,7 +347,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_source);
 
-    Util.print("feed: " + feed);
+    logger.info("feed: " + feed);
 
     //submit feed on all 3 clusters
     ServiceResponse r = prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed);
@@ -723,7 +723,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @AfterMethod(alwaysRun = true)
   public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
-    Util.print("tearDown " + method.getName());
+    logger.info("tearDown " + method.getName());
     processBundle.deleteBundle(prism);
     bundles[0].deleteBundle(prism);
     processBundle.deleteBundle(prism);

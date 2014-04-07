@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -44,6 +45,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     String aggregateWorkflowDir = baseHDFSDir + "/RescheduleKilledProcessTest/aggregator";
+    private static final Logger logger = Logger.getLogger(RescheduleKilledProcessTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -52,7 +54,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);

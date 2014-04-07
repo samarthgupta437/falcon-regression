@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -35,10 +36,11 @@ import java.lang.reflect.Method;
 public class ELTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
+    private static final Logger logger = Logger.getLogger(ELTest.class);
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
     }
 
     @Test(groups = {"singleCluster"}, dataProvider = "EL-DP")

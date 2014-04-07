@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.WorkflowJob;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -53,6 +54,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
     private String baseTestDir = baseHDFSDir + "/PrismFeedLateReplicationTest";
     private String inputPath = baseTestDir + "/input-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private static final Logger logger = Logger.getLogger(PrismFeedLateReplicationTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -61,7 +63,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -116,7 +118,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                         "UK/${cluster.colo}");
 
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -146,15 +148,15 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 InstanceUtil.getInputFoldersForInstanceForReplication(cluster1,
                         replicationCoordIDTarget.get(1), 1);
 
-        Util.print("folder list 1: " + inputFolderListForColo1.toString());
-        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+        logger.info("folder list 1: " + inputFolderListForColo1.toString());
+        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
                 HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
                 HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
 
-        Util.print("test");
+        logger.info("test");
     }
 
     @Test(groups = {"multiCluster"})
@@ -188,7 +190,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                         "UK/${cluster.colo}");
 
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -218,7 +220,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                     == WorkflowJob.Status.SUCCEEDED) {
                 break;
             }
-            Util.print("still in for loop");
+            logger.info("still in for loop");
             Thread.sleep(20000);
         }
 
@@ -236,8 +238,8 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         List<String> inputFolderListForColo2 = InstanceUtil
                 .getInputFoldersForInstanceForReplication(cluster1, replicationCoordIDTarget.get(1), 1);
 
-        Util.print("folder list 1: " + inputFolderListForColo1.toString());
-        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+        logger.info("folder list 1: " + inputFolderListForColo1.toString());
+        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
                 HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
@@ -263,7 +265,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                     == WorkflowJob.Status.SUCCEEDED) {
                 break;
             }
-            Util.print("still in for loop");
+            logger.info("still in for loop");
             Thread.sleep(20000);
         }
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
@@ -372,7 +374,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Util.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
 
         //submit and schedule feed
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -389,7 +391,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                     == WorkflowJob.Status.SUCCEEDED) {
                 break;
             }
-            Util.print("still in for loop");
+            logger.info("still in for loop");
             Thread.sleep(20000);
         }
 
@@ -425,8 +427,8 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
 
-        Util.print("folder list 1: " + inputFolderListForColo1.toString());
-        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+        logger.info("folder list 1: " + inputFolderListForColo1.toString());
+        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT, inputFolderListForColo1);
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT, inputFolderListForColo2);
@@ -448,7 +450,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                     == WorkflowJob.Status.SUCCEEDED) {
                 break;
             }
-            Util.print("still in for loop");
+            logger.info("still in for loop");
             Thread.sleep(20000);
         }
 
@@ -551,7 +553,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Thread.sleep(15000);
 
         //submit and schedule feed
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -569,7 +571,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
 
-            Util.print("still in for loop");
+            logger.info("still in for loop");
             Thread.sleep(20000);
         }
 
@@ -606,8 +608,8 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
 
-        Util.print("folder list 1: " + inputFolderListForColo1.toString());
-        Util.print("folder list 2: " + inputFolderListForColo2.toString());
+        logger.info("folder list 1: " + inputFolderListForColo1.toString());
+        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT, inputFolderListForColo1);
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT, inputFolderListForColo2);

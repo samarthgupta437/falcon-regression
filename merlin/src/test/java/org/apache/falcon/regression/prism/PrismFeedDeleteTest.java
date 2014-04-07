@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -55,6 +56,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
     private String cluster1Colo = cluster1.getClusterHelper().getColoName();
     private String cluster2Colo = cluster2.getClusterHelper().getColoName();
     String aggregateWorkflowDir = baseHDFSDir + "/PrismFeedDeleteTest/aggregator";
+    private static final Logger logger = Logger.getLogger(PrismFeedDeleteTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -63,7 +65,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         restartRequired = false;
         Bundle bundle = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundle, cluster1);
@@ -355,14 +357,14 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         bundles[1] = new Bundle(bundles[1], cluster2);
 
         bundles[0].setCLusterColo(cluster1Colo);
-        Util.print("cluster bundle1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundle1: " + bundles[0].getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         bundles[1].setCLusterColo(cluster2Colo);
-        Util.print("cluster bundle2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundle2: " + bundles[1].getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
@@ -763,13 +765,13 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         restartRequired = true;
 
         bundles[0].setCLusterColo(cluster1Colo);
-        Util.print("cluster bundle1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundle1: " + bundles[0].getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         bundles[1].setCLusterColo(cluster2Colo);
-        Util.print("cluster bundle2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundle2: " + bundles[1].getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
@@ -793,7 +795,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
                         baseHDFSDir + "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
 
@@ -859,13 +861,13 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         restartRequired = true;
 
         bundles[0].setCLusterColo(cluster1Colo);
-        Util.print("cluster bundle1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundle1: " + bundles[0].getClusters().get(0));
 
         ServiceResponse r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         bundles[1].setCLusterColo(cluster2Colo);
-        Util.print("cluster bundle2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundle2: " + bundles[1].getClusters().get(0));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
@@ -890,7 +892,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
                         baseHDFSDir + "/clusterPath/localDC/rc/billing/${YEAR}/${MONTH}/${DAY}/${HOUR}/$" +
                                 "{MINUTE}");
 
-        Util.print("feed: " + feed);
+        logger.info("feed: " + feed);
 
         r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
 

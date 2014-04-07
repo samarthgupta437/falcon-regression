@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -40,7 +41,7 @@ import java.util.List;
 import java.util.Random;
 
 
-@Test(groups = "distributed")
+@Test(groups = "embedded")
 public class PrismFeedUpdateTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -50,6 +51,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
     public final String cluster1colo = cluster1.getClusterHelper().getColoName();
     public final String cluster2colo = cluster2.getClusterHelper().getColoName();
+    private static final Logger logger = Logger.getLogger(PrismFeedUpdateTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
@@ -58,7 +60,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle bundle = Util.readELBundles()[0][0];
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -79,10 +81,10 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //get 3 unique bundles
         //set cluster colos
         bundles[0].setCLusterColo(cluster1colo);
-        Util.print("cluster bundles[0]: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundles[0]: " + bundles[0].getClusters().get(0));
 
         bundles[1].setCLusterColo(cluster2colo);
-        Util.print("cluster bundles[1]: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundles[1]: " + bundles[1].getClusters().get(0));
 
         //submit 3 clusters
 
@@ -141,8 +143,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
 
         //submit and schedule feeds
-        Util.print("feed01: " + feed01);
-        Util.print("outputFeed: " + outputFeed);
+        logger.info("feed01: " + feed01);
+        logger.info("outputFeed: " + outputFeed);
 
         //create 2 process with 2 clusters
 
@@ -175,16 +177,16 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
 
         //submit and schedule both process
-        Util.print("process: " + process01);
-        Util.print("process: " + process02);
+        logger.info("process: " + process01);
+        logger.info("process: " + process02);
 
 
-        Util.print("Wait till process goes into running ");
+        logger.info("Wait till process goes into running ");
 
 			        //change feed location path
         outputFeed = Util.setFeedProperty(outputFeed, "queueName", "myQueue");
 
-        Util.print("updated feed: " + outputFeed);
+        logger.info("updated feed: " + outputFeed);
 
         //update feed first time
         prism.getFeedHelper().update(outputFeed, outputFeed);

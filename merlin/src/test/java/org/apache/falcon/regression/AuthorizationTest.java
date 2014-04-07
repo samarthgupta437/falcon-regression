@@ -71,7 +71,7 @@ public class AuthorizationTest extends BaseTestClass {
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + datePattern;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
@@ -88,7 +88,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Delete test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2DeleteCluster() throws Exception {
         bundles[0].submitClusters(prism);
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -98,7 +99,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Entity submitted by first user should not be deletable by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2DeleteProcess() throws Exception {
         bundles[0].submitClusters(prism);
         bundles[0].submitProcess(true);
@@ -109,7 +111,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Entity submitted by first user should not be deletable by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2DeleteFeed() throws Exception {
         bundles[0].submitClusters(prism);
         bundles[0].submitFeed();
@@ -120,7 +123,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Entity submitted by first user should not be deletable by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2DeleteProcess()
     throws Exception {
         //submit, schedule process by U1
@@ -135,7 +139,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process scheduled by first user should not be deleted by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2DeleteFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule feed by U1
@@ -151,7 +156,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed scheduled by first user should not be deleted by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2DeleteProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
@@ -169,7 +175,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process suspended by first user should not be deleted by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2DeleteFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule, suspend feed by U1
@@ -189,7 +196,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Suspend test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2SuspendFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule by U1
@@ -205,7 +213,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed scheduled by first user should not be suspended by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2SuspendProcess() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
@@ -221,7 +230,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Resume test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2ResumeFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule and then suspend feed by User1
@@ -238,7 +248,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed suspended by first user should not be resumed by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2ResumeProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
@@ -254,12 +265,13 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process suspended by first user should not be resumed by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2ResumeProcessInstances() throws Exception {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
         String midTime = InstanceUtil.addMinsToTime(startTime, 2);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -270,25 +282,25 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
 
         //provide necessary data for first 3 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -325,11 +337,12 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Kill test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2KillProcessInstances() throws Exception {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -340,25 +353,25 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
 
         //provide necessary data for first 3 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
@@ -376,12 +389,13 @@ public class AuthorizationTest extends BaseTestClass {
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SuspendU2KillProcessInstances() throws Exception {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
         String midTime = InstanceUtil.addMinsToTime(startTime, 2);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -392,25 +406,25 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
 
         //provide necessary data for first 3 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -441,14 +455,15 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Rerun test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1KillSomeU2RerunAllProcessInstances()
             throws ParseException, IOException, JAXBException, InterruptedException,
             AuthenticationException, URISyntaxException, OozieClientException {
         String startTime = InstanceUtil.getTimeWrtSystemTime(0);
         String endTime = InstanceUtil.addMinsToTime(startTime, 5);
         String midTime = InstanceUtil.addMinsToTime(startTime, 2);
-        Util.print("Start time: " + startTime + "\tEnd time: " + endTime);
+        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -459,25 +474,25 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,3)"));
 
         //provide necessary data for first 4 instances to run
-        Util.print("Creating necessary data...");
+        logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         DateTime startDate = new DateTime(InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime
                 (startTime, -2)));
         DateTime endDate = new DateTime(InstanceUtil.oozieDateToDate(endTime));
         List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        Util.print("Creating data in folders: \n" + dataDates);
+        logger.info("Creating data in folders: \n" + dataDates);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        Util.print("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 4 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 4, CoordinatorAction.Status.RUNNING, 1, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 4, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
 
         //4 instances should be running , 1 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
@@ -506,7 +521,8 @@ public class AuthorizationTest extends BaseTestClass {
     /**
      * U2Update test cases
      */
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2UpdateFeed()
             throws URISyntaxException, IOException, AuthenticationException, JAXBException {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
@@ -531,7 +547,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed submitted by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2UpdateFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit and schedule feed
@@ -551,7 +568,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Feed scheduled by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1SubmitU2UpdateProcess() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         String processName = bundles[0].getProcessName();
@@ -574,7 +592,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process submitted by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleU2UpdateProcess() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         //submit, schedule process by U1
@@ -593,7 +612,8 @@ public class AuthorizationTest extends BaseTestClass {
                 "Process scheduled by first user should not be updated by second user");
     }
 
-    @Test
+    //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
+    @Test(enabled = false)
     public void U1ScheduleFeedU2ScheduleDependantProcessU1UpdateFeed() throws Exception {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         String process = bundles[0].getProcessData();

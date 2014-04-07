@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.testng.Assert;
@@ -51,10 +52,11 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
+    private static final Logger logger = Logger.getLogger(ProcessInstanceSuspendTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle bundle = Util.readELBundles()[0][0];
@@ -80,7 +82,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(feedInputPath);
@@ -130,7 +132,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
                     .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
 
-            Util.print("still in for loop: testProcessInstanceSuspend_succeeded");
+            logger.info("still in for loop: testProcessInstanceSuspend_succeeded");
             Thread.sleep(20000);
         }
         ProcessInstancesResult r = prism.getProcessHelper()
@@ -263,7 +265,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        Util.print("in @AfterClass");
+        logger.info("in @AfterClass");
         Bundle bundle = Util.readELBundles()[0][0];
         bundle = new Bundle(bundle, cluster);
         bundle.setInputFeedDataPath(feedInputPath);

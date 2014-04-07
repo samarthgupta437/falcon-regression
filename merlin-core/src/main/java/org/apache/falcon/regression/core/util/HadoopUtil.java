@@ -244,12 +244,14 @@ public class HadoopUtil {
     public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
                                          final String srcFileLocation)
     throws IOException, InterruptedException {
+        logger.info(String.format("Copying local dir %s to hdfs location %s", srcFileLocation, dstHdfsDir));
         fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
     }
 
     public static void uploadDir(final FileSystem fs, final String dstHdfsDir,
                                  final String localLocation)
     throws IOException, InterruptedException {
+        logger.info(String.format("Uploading local dir %s to hdfs location %s", localLocation, dstHdfsDir));
         HadoopUtil.deleteDirIfExists(dstHdfsDir, fs);
         HadoopUtil.copyDataToFolder(fs, dstHdfsDir, localLocation);
     }
@@ -385,8 +387,11 @@ public class HadoopUtil {
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
         if (fs.exists(path)) {
-          logger.info("Deleting HDFS path: "+ path + " on "+fs.getConf().get("fs.default.name"));
+          logger.info(String.format("Deleting HDFS path: %s on %s", path, fs.getConf().get("fs.default.name")));
             fs.delete(path, true);
+        } else {
+            logger.info(String.format(
+                    "Not deleting non-existing HDFS path: %s on %s", path, fs.getConf().get("fs.default.name")));
         }
     }
 

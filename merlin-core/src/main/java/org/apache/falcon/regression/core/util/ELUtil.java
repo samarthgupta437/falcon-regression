@@ -121,7 +121,7 @@ public class ELUtil {
             }
             Assert.assertTrue(bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
-            Util.print("coord id: " + coordID);
+            logger.info("coord id: " + coordID);
             List<String> missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
             for(int i=0; i < 10 && missingDependencies == null; ++i) {
                 Thread.sleep(30000);
@@ -129,15 +129,15 @@ public class ELUtil {
             }
             Assert.assertNotNull(missingDependencies, "Missing dependencies not found.");
             for (String dependency : missingDependencies) {
-                Util.print("dependency from job: " + dependency);
+                logger.info("dependency from job: " + dependency);
             }
             Date jobNominalTime = Util.getNominalTime(prismHelper, coordID);
 
             Calendar time = Calendar.getInstance();
             time.setTime(jobNominalTime);
-            Util.print("nominalTime:" + jobNominalTime);
+            logger.info("nominalTime:" + jobNominalTime);
             SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-            Util.print("nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
+            logger.info("nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
 
             TimeZone z = time.getTimeZone();
             int offset = z.getRawOffset();
@@ -159,7 +159,7 @@ public class ELUtil {
                             bundle.getEndInstanceProcess(time),
                             frequency, bundle);
             for (String qaDependency : qaDependencyList)
-                Util.print("qa qaDependencyList: " + qaDependency);
+                logger.info("qa qaDependencyList: " + qaDependency);
 
 
             Assert.assertTrue(matchDependencies(missingDependencies, qaDependencyList));
@@ -186,8 +186,8 @@ public class ELUtil {
                                                        Date endRef, int frequency,
                                                        Bundle bundle) throws JAXBException {
 
-        Util.print("start ref:" + startRef);
-        Util.print("end ref:" + endRef);
+        logger.info("start ref:" + startRef);
+        logger.info("end ref:" + endRef);
 
         Calendar initialTime = Calendar.getInstance();
         initialTime.setTime(startRef);
@@ -199,15 +199,15 @@ public class ELUtil {
 
         TimeZone tz = TimeZone.getTimeZone("GMT");
         nominalTime.setTimeZone(tz);
-        Util.print("nominalTime: " + initialTime.getTime());
+        logger.info("nominalTime: " + initialTime.getTime());
 
 
-        Util.print("finalTime: " + finalTime.getTime());
+        logger.info("finalTime: " + finalTime.getTime());
 
         List<String> returnList = new ArrayList<String>();
 
         while (!initialTime.getTime().equals(finalTime.getTime())) {
-            Util.print("initialTime: " + initialTime.getTime());
+            logger.info("initialTime: " + initialTime.getTime());
             returnList.add(getPath(path, initialTime));
             initialTime.add(Calendar.MINUTE, frequency);
         }
