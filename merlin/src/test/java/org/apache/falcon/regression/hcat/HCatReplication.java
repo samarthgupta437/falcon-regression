@@ -166,30 +166,13 @@ public class HCatReplication extends BaseTestClass {
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
-        ServiceResponse r = prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
-        AssertUtil.assertSucceeded(r);
-
-        r = prism.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, feed);
-        AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
-
-        //check if all coordinators exist
-        Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
-                        "REPLICATION"), 1);
+        bundles[0].submitFeedsScheduleProcess();
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
 
         /*
-        bundles[0].submitFeedsScheduleProcess();
-
-        InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5,
-                ENTITY_TYPE.PROCESS);
-
         List<Path> inputData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir + "/" + dataDates.get(0)));
         List<Path> outputData = HadoopUtil
