@@ -65,7 +65,7 @@ public class HCatProcessTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    HCatClient clusterHC = cluster.getClusterHelper().getHCatClient();
+    HCatClient clusterHC;
 
     final String testDir = "/HCatProcessTest";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
@@ -97,6 +97,7 @@ public class HCatProcessTest extends BaseTestClass {
 
     @BeforeMethod
     public void setUp() throws Exception {
+        clusterHC = cluster.getClusterHelper().getHCatClient();
         bundles[0] = Util.readHCatBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
