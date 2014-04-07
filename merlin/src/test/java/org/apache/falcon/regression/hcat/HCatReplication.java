@@ -113,17 +113,18 @@ public class HCatReplication extends BaseTestClass {
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
 
         Bundle.submitCluster(bundles[0], bundles[1]);
-        String startDate = "2009-02-01T00:00Z";
-        String endDate = "2009-02-02T00:00Z";
-        String endDate2 = "2099-02-02T00:00Z";
+        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
+        String endTime = InstanceUtil.addMinsToTime(startTime, 6*60);
+        logger.info("Time range between : " + startTime + " and " + endTime);
+
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
-        bundles[0].setInputFeedValidity(startDate, endDate2);
+        bundles[0].setInputFeedValidity(startTime, endTime);
         bundles[0].setInputFeedTableUri(tableUri);
 
         String feed = bundles[0].getDataSets().get(0);
         // set the cluster 2 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
-                XmlUtil.createValidity(startDate, endDate2),
+                XmlUtil.createValidity(startTime, endTime),
                 XmlUtil.createRtention("months(9000)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
                 tableUri, null);
@@ -131,7 +132,7 @@ public class HCatReplication extends BaseTestClass {
 
         final String datePattern = StringUtils
                 .join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
-        List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
+        List<String> dataDates = getDatesList(startTime, endTime, datePattern, 60);
 
         final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
         final String col1Name = "id";
@@ -166,14 +167,10 @@ public class HCatReplication extends BaseTestClass {
 
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
-        ServiceResponse r = prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
-        AssertUtil.assertSucceeded(r);
-
-        r = prism.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, feed);
-        AssertUtil.assertSucceeded(r);
+        AssertUtil.assertSucceeded(
+                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
+                        feed));
         Thread.sleep(15000);
-
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
