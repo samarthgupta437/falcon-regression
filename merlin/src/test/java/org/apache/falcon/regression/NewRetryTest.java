@@ -186,7 +186,7 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
 
-            for (int attempt = 0; attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
+            for (int attempt = 0; attempt < 20 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
                 TimeUnit.SECONDS.sleep(10);
             }
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1), "Failure Retry validation failed");
