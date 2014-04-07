@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
@@ -52,11 +53,12 @@ public class NoOutputProcessTest extends BaseTestClass {
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
     String aggregateWorkflowDir = baseHDFSDir + "/NoOutputProcessTest/aggregator";
+    private static final Logger logger = Logger.getLogger(NoOutputProcessTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
@@ -90,7 +92,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -108,7 +110,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
     @Test(enabled = true, groups = {"singleCluster"})
     public void checkForJMSMsgWhenNoOutput() throws Exception {
-        Util.print("attaching consumer to:   " + "FALCON.ENTITY.TOPIC");
+        logger.info("attaching consumer to:   " + "FALCON.ENTITY.TOPIC");
         Consumer consumer =
                 new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         consumer.start();

@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
@@ -83,10 +84,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     FileSystem cluster1FS = serverFS.get(0);
     OozieClient cluster2OC = serverOC.get(1);
     OozieClient cluster3OC = serverOC.get(2);
+    private static final Logger logger = Logger.getLogger(NewPrismProcessUpdateTest.class);
 
     @BeforeMethod(alwaysRun = true)
     public void testSetup(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
         b.generateUniqueBundle();
         bundles[0] = new Bundle(b, cluster1);
@@ -141,7 +143,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 .setProcessFrequency(bundles[1].getProcessData(),
                         new Frequency(5, TimeUnit.minutes));
 
-        Util.print("updated process: " + updatedProcess);
+        logger.info("updated process: " + updatedProcess);
 
         //now to update
         while (Util
@@ -341,13 +343,13 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = Util.getActionsNominalTime(cluster3, oldBundleId,
                 ENTITY_TYPE.PROCESS);
-        Util.print("original process: " + bundles[1].getProcessData());
+        logger.info("original process: " + bundles[1].getProcessData());
 
         String updatedProcess = InstanceUtil
                 .setProcessFrequency(bundles[1].getProcessData(),
                         new Frequency(7, TimeUnit.minutes));
 
-        Util.print("updated process: " + updatedProcess);
+        logger.info("updated process: " + updatedProcess);
 
         //now to update
 
@@ -1259,13 +1261,13 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = Util.getActionsNominalTime(cluster3,oldBundleId, ENTITY_TYPE.PROCESS);
 
-        Util.print("original process: " + bundles[1].getProcessData());
+        logger.info("original process: " + bundles[1].getProcessData());
 
         String updatedProcess = InstanceUtil
                 .setProcessFrequency(bundles[1].getProcessData(),
                         new Frequency(5, TimeUnit.minutes));
 
-        Util.print("updated process: " + updatedProcess);
+        logger.info("updated process: " + updatedProcess);
 
         //now to update
         String updatedTime = new DateTime(DateTimeZone.UTC).plusMinutes(2).toString();
@@ -1314,7 +1316,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         List<String> oldNominalTimes = Util.getActionsNominalTime(cluster3, oldBundleId,
                 ENTITY_TYPE.PROCESS);
 
-        Util.print("original process: " + bundles[1].getProcessData());
+        logger.info("original process: " + bundles[1].getProcessData());
 
         String updatedProcess = InstanceUtil
                 .setProcessFrequency(bundles[1].getProcessData(),
@@ -1323,7 +1325,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 .setProcessValidity(updatedProcess, InstanceUtil.getTimeWrtSystemTime(10),
                         endTime);
 
-        Util.print("updated process: " + updatedProcess);
+        logger.info("updated process: " + updatedProcess);
 
         //now to update
         String updatedTime = new DateTime(DateTimeZone.UTC).plusMinutes(2).toString();

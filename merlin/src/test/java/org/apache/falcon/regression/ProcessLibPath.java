@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
@@ -48,11 +49,12 @@ public class ProcessLibPath extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     String testLibDir = baseHDFSDir + "/ProcessLibPath/TestLib";
+    private static final Logger logger = Logger.getLogger(ProcessLibPath.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         //common lib for both test cases
         HadoopUtil.uploadDir(clusterFS, testLibDir, OSUtil.RESOURCES_OOZIE + "lib");
 
@@ -87,7 +89,7 @@ public class ProcessLibPath extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
@@ -110,7 +112,7 @@ public class ProcessLibPath extends BaseTestClass {
         String workflowDir = testLibDir + "/aggregatorLib1/";
         HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.deleteDirIfExists(workflowDir + "/lib", clusterFS);
-        Util.print("processData: " + bundles[0].getProcessData());
+        logger.info("processData: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
@@ -121,7 +123,7 @@ public class ProcessLibPath extends BaseTestClass {
         HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.deleteFile(cluster, new Path(workflowDir + "/lib/oozie-examples-3.1.5.jar"));
         HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib", OSUtil.RESOURCES + "ivory-oozie-lib-0.1.jar");
-        Util.print("processData: " + bundles[0].getProcessData());
+        logger.info("processData: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }

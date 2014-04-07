@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
@@ -51,6 +52,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     OozieClient clusterOC = serverOC.get(0);
     String aggregateWorkflowDir = baseHDFSDir + "/FeedSubmitAndScheduleTest/aggregator";
+    private static final Logger logger = Logger.getLogger(FeedSubmitAndScheduleTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -58,7 +60,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();

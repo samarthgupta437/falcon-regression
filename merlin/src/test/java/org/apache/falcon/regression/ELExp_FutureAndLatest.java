@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
@@ -49,10 +50,11 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
     private String prefix;
     private String baseTestDir = baseHDFSDir + "/ELExp_FutureAndLatest";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private static final Logger logger = Logger.getLogger(ELExp_FutureAndLatest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        Util.print("in @BeforeClass");
+        logger.info("in @BeforeClass");
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
@@ -85,7 +87,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
@@ -93,7 +95,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
         bundles[0].setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
         String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
         String processEnd = InstanceUtil.getTimeWrtSystemTime(8);
-        Util.print("processStart: " + processStart + " processEnd: " + processEnd);
+        logger.info("processStart: " + processStart + " processEnd: " + processEnd);
         bundles[0].setProcessValidity(processStart, processEnd);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -122,7 +124,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        Util.print("in @AfterClass");
+        logger.info("in @AfterClass");
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 }

@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -46,29 +47,31 @@ public class FeedRetentionTest extends BaseTestClass {
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     String impressionrcWorkflowDir = baseHDFSDir + "/FeedRetentionTest/impressionrc/";
+    String impressionrcWorkflowLibPath = impressionrcWorkflowDir + "lib";
+    private static final Logger logger = Logger.getLogger(FeedRetentionTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
         for (FileSystem fs : serverFS) {
-            HadoopUtil.createDir(impressionrcWorkflowDir + "lib");
-            fs.copyFromLocalFile(new Path(impressionrcWorkflowDir + "workflow.xml"),
-                    new Path(OSUtil.RESOURCES + OSUtil.getPath("workflows", "impression_rc_workflow.xml")));
-            HadoopUtil.uploadDir(fs, impressionrcWorkflowDir + "lib", OSUtil.RESOURCES_OOZIE + "lib");
+            HadoopUtil.createDir(impressionrcWorkflowLibPath);
+            fs.copyFromLocalFile(new Path(OSUtil.getPath(OSUtil.RESOURCES, "workflows", "impression_rc_workflow.xml")),
+                    new Path(impressionrcWorkflowDir + "workflow.xml"));
+            HadoopUtil.uploadDir(fs, impressionrcWorkflowLibPath, OSUtil.RESOURCES_OOZIE + "lib");
         }
     }
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        Util.print("test name: " + method.getName());
+        logger.info("test name: " + method.getName());
         //getImpressionRC bundle
         bundles[0] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster1);
-        bundles[0].setProcessWorkflow(impressionrcWorkflowDir);
+        bundles[0].setProcessWorkflow(impressionrcWorkflowDir, impressionrcWorkflowLibPath, null);
 
         bundles[1] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[1].generateUniqueBundle();
         bundles[1] = new Bundle(bundles[1], cluster2);
-        bundles[1].setProcessWorkflow(impressionrcWorkflowDir);
+        bundles[1].setProcessWorkflow(impressionrcWorkflowDir, impressionrcWorkflowLibPath, null);
     }
 
     @AfterMethod
@@ -192,7 +195,7 @@ public class FeedRetentionTest extends BaseTestClass {
         process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundles[1].getClusters().get(0)),
                 XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2), InstanceUtil.getTimeWrtSystemTime(5)));
 
-        Util.print("process: " + process);
+        logger.info("process: " + process);
 
         AssertUtil.assertSucceeded(prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process));
 
