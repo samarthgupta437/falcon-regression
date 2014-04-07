@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.feed.CatalogTable;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
@@ -730,6 +731,16 @@ public class InstanceUtil {
                                                 v1,
                                         Retention r1, String n1, ClusterType t1, String partition,
                                         String... locations) throws JAXBException {
+        return setFeedClusterWithTable(feed, v1, r1, n1, t1, partition, null, locations);
+    }
+
+
+    public static String setFeedClusterWithTable(String feed,
+                                        org.apache.falcon.regression.core.generated.feed.Validity
+                                                v1,
+                                        Retention r1, String n1, ClusterType t1,
+                                        String partition, String tableUri,
+                                        String... locations) throws JAXBException {
 
         org.apache.falcon.regression.core.generated.feed.Cluster c1 =
                 new org.apache.falcon.regression.core.generated.feed.Cluster();
@@ -740,6 +751,12 @@ public class InstanceUtil {
         c1.setValidity(v1);
         if (partition != null)
             c1.setPartition(partition);
+        // if table uri is not empty or null then set it.
+        if (StringUtils.isNotEmpty(tableUri)) {
+            CatalogTable catalogTable = new CatalogTable();
+            catalogTable.setUri(tableUri);
+            c1.setTable(catalogTable);
+        }
 
 
         org.apache.falcon.regression.core.generated.feed.Locations ls =
