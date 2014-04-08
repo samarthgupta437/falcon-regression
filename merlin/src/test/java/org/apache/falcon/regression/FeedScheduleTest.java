@@ -42,7 +42,7 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class FeedScheduleTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);;
+    ColoHelper cluster = servers.get(0);
     OozieClient clusterOC = serverOC.get(0);
     private String feed;
     String aggregateWorkflowDir = baseHDFSDir + "/FeedScheduleTest/aggregator";
