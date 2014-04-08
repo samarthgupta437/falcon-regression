@@ -66,17 +66,17 @@ public class HCatReplication extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    HCatClient clusterHC = cluster.getClusterHelper().getHCatClient();
+    HCatClient clusterHC;
 
     ColoHelper cluster2 = servers.get(1);
     FileSystem cluster2FS = serverFS.get(1);
     OozieClient cluster2OC = serverOC.get(1);
-    HCatClient cluster2HC = cluster2.getClusterHelper().getHCatClient();
+    HCatClient cluster2HC;
 
     ColoHelper cluster3 = servers.get(2);
     FileSystem cluster3FS = serverFS.get(2);
     OozieClient cluster3OC = serverOC.get(2);
-    HCatClient cluster3HC = cluster3.getClusterHelper().getHCatClient();
+    HCatClient cluster3HC;
 
     final String baseTestHDFSDir = baseHDFSDir + "/HCatReplication";
 
@@ -85,6 +85,9 @@ public class HCatReplication extends BaseTestClass {
 
     @BeforeClass
     public void beforeClass() throws IOException {
+        clusterHC = cluster.getClusterHelper().getHCatClient();
+        cluster2HC = cluster2.getClusterHelper().getHCatClient();
+        cluster3HC = cluster3.getClusterHelper().getHCatClient();
         // create the base dir on all clusters.
         // method will delete the dir if it exists.
         HadoopUtil.createDir(baseTestHDFSDir, clusterFS, cluster2FS, cluster3FS);
