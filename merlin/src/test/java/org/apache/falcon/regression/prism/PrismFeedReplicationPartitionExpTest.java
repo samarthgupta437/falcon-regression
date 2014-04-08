@@ -248,7 +248,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "00/ua3/"),
                 "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "05/ua3/"),
-                "log_01.txt");
+                OSUtil.RESOURCES + "log_01.txt");
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);

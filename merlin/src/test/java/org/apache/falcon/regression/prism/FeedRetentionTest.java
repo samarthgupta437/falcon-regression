@@ -93,12 +93,12 @@ public class FeedRetentionTest extends BaseTestClass {
                 InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster1,
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
-                        inputPath, 1), "thriftRRMar0602.gz");
+                        inputPath, 1), OSUtil.RESOURCES + "thriftRRMar0602.gz");
         InstanceUtil.putFileInFolders(cluster2,
                 InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster2,
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
                         InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
-                        inputPath, 1), "thriftRRMar0602.gz");
+                        inputPath, 1), OSUtil.RESOURCES + "thriftRRMar0602.gz");
 
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
