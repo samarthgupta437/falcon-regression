@@ -32,6 +32,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import java.util.Properties;
 
 @Test(groups = "embedded")
 public class FeedReplicationS4 extends BaseTestClass {
@@ -39,8 +40,13 @@ public class FeedReplicationS4 extends BaseTestClass {
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     String baseTestHDFSDir = baseHDFSDir + "/FeedReplicationS4/${YEAR}/${MONTH}/${DAY}/${HOUR}";
-    String s4location = "s4://inmobi-iat-data/userplatform/${YEAR}/${MONTH}/${DAY}/${HOUR}";
     String aggregateWorkflowDir = baseHDFSDir + "/FeedReplicationS4/aggregator";
+    String s4location;
+
+    public FeedReplicationS4(){
+        Properties merlinProp = Util.getPropertiesObj(MERLIN_PROPERTIES);
+        s4location = merlinProp.getProperty("base_s4_location");
+    }
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
