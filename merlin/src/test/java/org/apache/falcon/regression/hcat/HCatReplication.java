@@ -26,7 +26,6 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -99,7 +98,8 @@ public class HCatReplication extends BaseTestClass {
         bundle = Util.readHCatBundle();
         bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].generateUniqueBundle();
-        bundles[0].setClusterInterface(Interfacetype.REGISTRY, cluster.getClusterHelper().getHCatEndpoint());
+        bundles[0].setClusterInterface(Interfacetype.REGISTRY,
+                cluster.getClusterHelper().getHCatEndpoint());
 
         bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
         bundles[1].generateUniqueBundle();
@@ -117,7 +117,7 @@ public class HCatReplication extends BaseTestClass {
     public String[][] generateSeparators() {
         //disabling till FALCON-372 is fixed
         //return new String[][] {{"-"}, {"/"}};
-        return new String[][] {{"-"}, };
+        return new String[][]{{"-"},};
     }
 
     // make sure oozie changes mentioned FALCON-389 are done on the clusters. Otherwise the test
@@ -134,14 +134,17 @@ public class HCatReplication extends BaseTestClass {
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS);
-        final String tableUriPartitionFragment = StringUtils.join(new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        final String tableUriPartitionFragment = StringUtils
+                .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
@@ -152,7 +155,8 @@ public class HCatReplication extends BaseTestClass {
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         // create table on cluster 1 and add data to it.
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
@@ -175,7 +179,8 @@ public class HCatReplication extends BaseTestClass {
 
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
-                        feed));
+                        feed)
+        );
         Thread.sleep(15000);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
@@ -204,14 +209,17 @@ public class HCatReplication extends BaseTestClass {
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS, cluster3FS);
-        final String tableUriPartitionFragment = StringUtils.join(new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        final String tableUriPartitionFragment = StringUtils
+                .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
@@ -222,7 +230,8 @@ public class HCatReplication extends BaseTestClass {
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         // create table on cluster 1 and add data to it.
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
@@ -253,7 +262,8 @@ public class HCatReplication extends BaseTestClass {
 
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
-                        feed));
+                        feed)
+        );
         Thread.sleep(15000);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
@@ -278,7 +288,8 @@ public class HCatReplication extends BaseTestClass {
         //TODO: Add mode checks. Currently job fails because of HIVE-6848
     }
 
-    private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations, String partitionCol,
+    private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations,
+                                      String partitionCol,
                                       String dbName, String tableName, HCatClient hc) throws
     HCatException {
         Assert.assertEquals(partitions.size(), partitionLocations.size(),
@@ -289,12 +300,15 @@ public class HCatReplication extends BaseTestClass {
             final Map<String, String> onePartition = new HashMap<String, String>();
             onePartition.put(partitionCol, partition);
             final String partitionLoc = partitionLocations.get(i);
-            partitionDesc.add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition).build());
+            partitionDesc
+                    .add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition)
+                            .build());
         }
         hc.addPartitions(partitionDesc);
     }
 
-    private ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData, FileSystem fileSystem,
+    private ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
+                                                    FileSystem fileSystem,
                                                     String baseHDFSLocation) throws IOException {
         ArrayList<String> dataFolder = new ArrayList<String>();
 
@@ -310,7 +324,8 @@ public class HCatReplication extends BaseTestClass {
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
         DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);
-        logger.info("generating data between " + formatter.print(startDateJoda) + " and " + formatter.print(endDateJoda));
+        logger.info("generating data between " + formatter.print(startDateJoda) + " and " +
+                formatter.print(endDateJoda));
         List<String> dates = new ArrayList<String>();
         dates.add(formatter.print(startDateJoda));
         while (!startDateJoda.isAfter(endDateJoda)) {
@@ -321,8 +336,8 @@ public class HCatReplication extends BaseTestClass {
     }
 
     private static void createTable(HCatClient hcatClient, String dbName, String tblName,
-                               List<HCatFieldSchema> cols, List<HCatFieldSchema> partitionCols,
-                               String hdfsDir) throws HCatException {
+                                    List<HCatFieldSchema> cols, List<HCatFieldSchema> partitionCols,
+                                    String hdfsDir) throws HCatException {
         hcatClient.dropTable(dbName, tblName, true);
         hcatClient.createTable(HCatCreateTableDesc
                 .create(dbName, tblName, cols)
