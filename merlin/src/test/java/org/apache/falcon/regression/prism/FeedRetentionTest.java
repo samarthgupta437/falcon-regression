@@ -66,12 +66,12 @@ public class FeedRetentionTest extends BaseTestClass {
         bundles[0] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster1);
-        bundles[0].setProcessWorkflow(impressionrcWorkflowDir, impressionrcWorkflowLibPath, null);
+        bundles[0].setProcessWorkflow(impressionrcWorkflowDir);
 
         bundles[1] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
         bundles[1].generateUniqueBundle();
         bundles[1] = new Bundle(bundles[1], cluster2);
-        bundles[1].setProcessWorkflow(impressionrcWorkflowDir, impressionrcWorkflowLibPath, null);
+        bundles[1].setProcessWorkflow(impressionrcWorkflowDir);
     }
 
     @AfterMethod
