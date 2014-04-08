@@ -82,6 +82,7 @@ public class HCatReplication extends BaseTestClass {
 
     final String dbName = "default";
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
+    Bundle bundle;
 
     @BeforeClass
     public void beforeClass() throws IOException {
@@ -95,7 +96,7 @@ public class HCatReplication extends BaseTestClass {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        Bundle bundle = Util.readHCatBundle();
+        bundle = Util.readHCatBundle();
         bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].generateUniqueBundle();
         bundles[0].setClusterInterface(Interfacetype.REGISTRY, cluster.getClusterHelper().getHCatEndpoint());
@@ -150,27 +151,13 @@ public class HCatReplication extends BaseTestClass {
         cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        clusterHC.dropTable(dbName, tblName, true);
+        // create table on cluster 1 and add data to it.
         partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
-        // create the table on cluster 1
-        clusterHC.createTable(HCatCreateTableDesc
-                .create(dbName, tblName, cols)
-                .partCols(partitionCols)
-                .ifNotExists(true)
-                .isTableExternal(true)
-                .location(testHdfsDir)
-                .build());
+        createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
-        // create table on cluster 2 if we are copying data from cluster 1 to cluster2 then the
-        // table also needs to exist on cluster 2
-        cluster2HC.dropTable(dbName, tblName, true);
-        cluster2HC.createTable(HCatCreateTableDesc
-                .create(dbName, tblName, cols)
-                .partCols(partitionCols)
-                .ifNotExists(true)
-                .isTableExternal(true)
-                .location(testHdfsDir)
-                .build());
+
+        // create table on target cluster.
+        createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
 
         Bundle.submitCluster(bundles[0], bundles[1]);
 
@@ -197,6 +184,94 @@ public class HCatReplication extends BaseTestClass {
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+                CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
+
+
+        //TODO: Add mode checks. Currently job fails because of HIVE-6848
+    }
+
+    // make sure oozie changes mentioned FALCON-389 are done on the clusters. Otherwise the test
+    // will fail.
+    // HIVE-6848 also needs to be available in hive for the test to work.
+    @Test(dataProvider = "generateSeparators")
+    public void oneSourceTwoTarget(String separator) throws Exception {
+        String tcName = "HCatReplication_oneSourceTwoTarget";
+        if (separator.equals("-")) {
+            tcName += "_hyphen";
+        } else {
+            tcName += "_slash";
+        }
+        String tblName = tcName;
+        String testHdfsDir = baseTestHDFSDir + "/" + tcName;
+        HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS, cluster3FS);
+        final String tableUriPartitionFragment = StringUtils.join(new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
+        final String startDate = "2010-01-01T20:00Z";
+        final String endDate = "2010-01-02T04:00Z";
+        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
+
+        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+        final String col1Name = "id";
+        final String col2Name = "value";
+        final String partitionColumn = "dt";
+
+        ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
+        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
+        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
+
+        // create table on cluster 1 and add data to it.
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
+        addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
+
+        // create table on target cluster.
+        createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
+        createTable(cluster3HC, dbName, tblName, cols, partitionCols, testHdfsDir);
+
+        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
+
+        bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setInputFeedValidity(startDate, "2099-01-01T00:00Z");
+        bundles[0].setInputFeedTableUri(tableUri);
+
+        String feed = bundles[0].getDataSets().get(0);
+        // set the cluster 2 as the target.
+        feed = InstanceUtil.setFeedClusterWithTable(feed,
+                XmlUtil.createValidity(startDate, endDate),
+                XmlUtil.createRtention("months(9000)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+                tableUri, null);
+
+        // set the cluster 2 as the target.
+        feed = InstanceUtil.setFeedClusterWithTable(feed,
+                XmlUtil.createValidity(startDate, endDate),
+                XmlUtil.createRtention("months(9000)", ActionType.DELETE),
+                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
+                tableUri, null);
+
+        AssertUtil.assertSucceeded(
+                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
+                        feed));
+        Thread.sleep(15000);
+        //check if all coordinators exist
+        Assert.assertEquals(InstanceUtil
+                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+                        "REPLICATION"), 1);
+
+        //check if all coordinators exist
+        Assert.assertEquals(InstanceUtil
+                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+                        "REPLICATION"), 1);
+
+        //replication should start, wait while it ends
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+                CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
+
+
+        //replication should start, wait while it ends
+        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
 
 
@@ -245,8 +320,21 @@ public class HCatReplication extends BaseTestClass {
         return dates;
     }
 
+    private static void createTable(HCatClient hcatClient, String dbName, String tblName,
+                               List<HCatFieldSchema> cols, List<HCatFieldSchema> partitionCols,
+                               String hdfsDir) throws HCatException {
+        hcatClient.dropTable(dbName, tblName, true);
+        hcatClient.createTable(HCatCreateTableDesc
+                .create(dbName, tblName, cols)
+                .partCols(partitionCols)
+                .ifNotExists(true)
+                .isTableExternal(true)
+                .location(hdfsDir)
+                .build());
+    }
+
     @AfterMethod
     public void tearDown() throws Exception {
-        removeBundles();
+        removeBundles(bundle);
     }
 }
