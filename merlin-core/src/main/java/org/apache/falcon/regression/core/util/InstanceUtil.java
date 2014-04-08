@@ -1170,12 +1170,11 @@ public class InstanceUtil {
         String bundleId = OozieUtil.getMaxId(bundleIds);
         logger.info(String.format("Using bundle %s", bundleId));
         final String coordId ;
-        final BundleJob bundleJobInfo = client.getBundleJobInfo(bundleId);
-        final Status status = bundleJobInfo.getStatus();
-        Assert.assertTrue(status == Status.RUNNING || status == Status.PREP || status == Status.SUCCEEDED,
-                String.format("Bundle job %s is should be prep/running but is %s", bundleId, status));
+        final Status bundleStatus = client.getBundleJobInfo(bundleId).getStatus();
+        Assert.assertTrue(bundleStatus == Status.RUNNING || bundleStatus == Status.PREP || bundleStatus == Status.SUCCEEDED,
+                String.format("Bundle job %s is should be prep/running but is %s", bundleId, bundleStatus));
         OozieUtil.waitForCoordinatorJobCreation(client, bundleId);
-        List<CoordinatorJob> coords = bundleJobInfo.getCoordinators();
+        List<CoordinatorJob> coords = client.getBundleJobInfo(bundleId).getCoordinators();
         List<String> cIds = new ArrayList<String>();
         if (entityType.equals(ENTITY_TYPE.PROCESS)) {
             for (CoordinatorJob coord : coords) {
