@@ -29,6 +29,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -91,13 +92,15 @@ public class HCatReplication extends BaseTestClass {
     }
 
     @DataProvider
-    /*public String[][] generateSeparators() {
-        return new String[][] {{"-"}, {"/"}};
-    } */
     public String[][] generateSeparators() {
-        return new String[][] {{"-"}};
+        //disabling till FALCON-372 is fixed
+        //return new String[][] {{"-"}, {"/"}};
+        return new String[][] {{"-"}, };
     }
 
+    // make sure oozie changes mentioned FALCON-389 are done on the clusters. Otherwise the test
+    // will fail.
+    // HIVE-6848 also needs to be available in hive for the test to work.
     @Test(dataProvider = "generateSeparators")
     public void oneSourceOneTarget(String separator) throws Exception {
         String tcName = "HCatReplication_oneSourceOneTarget";
@@ -111,28 +114,10 @@ public class HCatReplication extends BaseTestClass {
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS);
         final String tableUriPartitionFragment = StringUtils.join(new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
-
-        Bundle.submitCluster(bundles[0], bundles[1]);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
-        String endTime = InstanceUtil.addMinsToTime(startTime, 6*60);
-        logger.info("Time range between : " + startTime + " and " + endTime);
-
-        bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
-        bundles[0].setInputFeedValidity(startTime, endTime);
-        bundles[0].setInputFeedTableUri(tableUri);
-
-        String feed = bundles[0].getDataSets().get(0);
-        // set the cluster 2 as the target.
-        feed = InstanceUtil.setFeedClusterWithTable(feed,
-                XmlUtil.createValidity(startTime, endTime),
-                XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
-                tableUri, null);
-
-
-        final String datePattern = StringUtils
-                .join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
-        List<String> dataDates = getDatesList(startTime, endTime, datePattern, 60);
+        final String startDate = "2010-01-01T20:00Z";
+        final String endDate = "2010-01-02T04:00Z";
+        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
         final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
         final String col1Name = "id";
@@ -154,6 +139,7 @@ public class HCatReplication extends BaseTestClass {
                 .isTableExternal(true)
                 .location(testHdfsDir)
                 .build());
+        addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
         // create table on cluster 2 if we are copying data from cluster 1 to cluster2 then the
         // table also needs to exist on cluster 2
         cluster2HC.dropTable(dbName, tblName, true);
@@ -165,7 +151,19 @@ public class HCatReplication extends BaseTestClass {
                 .location(testHdfsDir)
                 .build());
 
-        addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
+        Bundle.submitCluster(bundles[0], bundles[1]);
+
+        bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
+        bundles[0].setInputFeedValidity(startDate, "2099-01-01T00:00Z");
+        bundles[0].setInputFeedTableUri(tableUri);
+
+        String feed = bundles[0].getDataSets().get(0);
+        // set the cluster 2 as the target.
+        feed = InstanceUtil.setFeedClusterWithTable(feed,
+                XmlUtil.createValidity(startDate, endDate),
+                XmlUtil.createRtention("months(9000)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+                tableUri, null);
 
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
@@ -180,20 +178,8 @@ public class HCatReplication extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
 
-        /*
-        bundles[0].submitFeedsScheduleProcess();
 
-        InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5,
-                ENTITY_TYPE.PROCESS);
-
-        List<Path> inputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir + "/" + dataDates.get(0)));
-        List<Path> outputData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir + "/dt=" + dataDates
-                        .get(0)));
-        AssertUtil.checkForPathsSizes(inputData, outputData);
-        */
+        //TODO: Add mode checks. Currently job fails because of HIVE-6848
     }
 
     private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations, String partitionCol,
@@ -238,10 +224,8 @@ public class HCatReplication extends BaseTestClass {
         return dates;
     }
 
-    /*
     @AfterMethod
     public void tearDown() throws Exception {
         removeBundles();
     }
-    */
 }
