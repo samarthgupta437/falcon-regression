@@ -65,7 +65,7 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

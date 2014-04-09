@@ -33,7 +33,7 @@ public class SubmitClusterHcat extends BaseTestClass {
 
     // private HCatClient client;
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

@@ -620,7 +620,7 @@ public class HCatProcessTest extends BaseTestClass {
         return dates;
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

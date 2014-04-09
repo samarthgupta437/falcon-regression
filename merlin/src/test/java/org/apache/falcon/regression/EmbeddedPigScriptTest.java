@@ -106,7 +106,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].setProcessData(bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() {
         removeBundles();
     }
