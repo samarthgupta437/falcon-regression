@@ -309,10 +309,10 @@ public class InstanceUtil {
                 actualKilledInstances++;
         }
 
-        Assert.assertEquals(actualRunningInstances, runningInstances);
-        Assert.assertEquals(actualSuspendedInstances, suspendedInstances);
-        Assert.assertEquals(actualWaitingInstances, waitingInstances);
-        Assert.assertEquals(actualKilledInstances, killedInstances);
+        Assert.assertEquals(actualRunningInstances, runningInstances, "Running Instances");
+        Assert.assertEquals(actualSuspendedInstances, suspendedInstances, "Suspended Instances");
+        Assert.assertEquals(actualWaitingInstances, waitingInstances, "Waiting Instances");
+        Assert.assertEquals(actualKilledInstances, killedInstances, "Killed Instances");
     }
 
     public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
