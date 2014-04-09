@@ -81,7 +81,6 @@ public class HCatReplication extends BaseTestClass {
 
     final String dbName = "default";
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
-    Bundle bundle;
 
     @BeforeClass
     public void beforeClass() throws IOException {
@@ -95,7 +94,7 @@ public class HCatReplication extends BaseTestClass {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        bundle = Util.readHCatBundle();
+        Bundle bundle = Util.readHCatBundle();
         bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].generateUniqueBundle();
         bundles[0].setClusterInterface(Interfacetype.REGISTRY,
@@ -350,6 +349,6 @@ public class HCatReplication extends BaseTestClass {
 
     @AfterMethod
     public void tearDown() throws Exception {
-        removeBundles(bundle);
+        removeBundles();
     }
 }
