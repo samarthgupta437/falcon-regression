@@ -1091,9 +1091,8 @@ public class NewRetryTest extends BaseTestClass {
         CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
 
         // make sure default coordinator is not null before we proceed
-        for (int i = 0; i < 120 && (defaultCoordinator == null ||  defaultCoordinator.getStatus()
-                == CoordinatorJob.Status.PREP);
-             ++i) {
+        for (int i = 0; i < 120 && (defaultCoordinator == null || defaultCoordinator.getStatus()
+                == CoordinatorJob.Status.PREP); ++i) {
             TimeUnit.SECONDS.sleep(10);
             defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         }
