@@ -174,7 +174,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.PROCESS);
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
 
         checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
     }
