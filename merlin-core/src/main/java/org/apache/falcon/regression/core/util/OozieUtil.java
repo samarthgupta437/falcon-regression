@@ -45,11 +45,13 @@ public class OozieUtil {
 
   public static List<BundleJob> getBundles(OozieClient client, String filter, int start, int len)
     throws OozieClientException {
+    logger.info("Connecting to oozie: " + client.getOozieUrl());
     return client.getBundleJobsInfo(filter, start, len);
   }
 
   public static List<String> getBundleIds(OozieClient client, String filter, int start, int len)
     throws OozieClientException {
+    logger.info("Connecting to oozie: " + client.getOozieUrl());
     List<BundleJob> bundles = getBundles(client, filter, start, len);
     return getBundleIds(bundles);
   }
@@ -134,6 +136,7 @@ public class OozieUtil {
      */
     public static List<String> waitForRetentionWorkflowToSucceed(String bundleID, OozieClient oozieClient)
     throws OozieClientException, InterruptedException {
+        logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         List<String> jobIds = new ArrayList<String>();
         logger.info("using bundleId:" + bundleID);
         waitForCoordinatorJobCreation(oozieClient, bundleID);
@@ -173,6 +176,7 @@ public class OozieUtil {
     }
 
     public static void waitForCoordinatorJobCreation(OozieClient oozieClient, String bundleID) throws OozieClientException, InterruptedException {
+        logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         for(int i=0; i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
             Thread.sleep(2000);
         }
