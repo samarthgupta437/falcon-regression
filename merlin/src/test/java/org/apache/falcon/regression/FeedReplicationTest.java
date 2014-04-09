@@ -69,7 +69,7 @@ public class FeedReplicationTest extends BaseTestClass {
     String feedDataLocation = baseTestDir + "/source" + dateTemplate;
     String targetPath = baseTestDir + "/target";
     String targetDataLocation = targetPath + dateTemplate;
-    int timeout = 3;
+    int defaultTimeout = OSUtil.IS_WINDOWS ? 6 : 3;
     private static final Logger logger = Logger.getLogger(FeedReplicationTest.class);
 
     @BeforeMethod(alwaysRun = true)
@@ -142,7 +142,7 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, timeout, ENTITY_TYPE.FEED);
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -213,17 +213,13 @@ public class FeedReplicationTest extends BaseTestClass {
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
                         "REPLICATION"), 1);
-        int timeout = 1;
-        if (OSUtil.IS_WINDOWS) {
-            timeout = 3;
-        }
-        //replication on cluster 2 should start, wait till it ends
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), timeout,
-                CoordinatorAction.Status.SUCCEEDED, timeout, ENTITY_TYPE.FEED);
+         //replication on cluster 2 should start, wait till it ends
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //replication on cluster 3 should start, wait till it ends
-        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), timeout,
-                CoordinatorAction.Status.SUCCEEDED, timeout, ENTITY_TYPE.FEED);
+        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -306,11 +302,11 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //check if instance become running
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.RUNNING, timeout, ENTITY_TYPE.FEED);
+                CoordinatorAction.Status.RUNNING, defaultTimeout, ENTITY_TYPE.FEED);
 
         //wait till instance succeed
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, timeout, ENTITY_TYPE.FEED);
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
