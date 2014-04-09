@@ -90,7 +90,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].setProcessValidity(startDate, endDate);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
 
         removeBundles();

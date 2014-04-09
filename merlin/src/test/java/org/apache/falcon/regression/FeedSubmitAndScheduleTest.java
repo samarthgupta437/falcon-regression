@@ -67,7 +67,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

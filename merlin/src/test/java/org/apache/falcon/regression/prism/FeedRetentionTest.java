@@ -74,7 +74,7 @@ public class FeedRetentionTest extends BaseTestClass {
         bundles[1].setProcessWorkflow(impressionrcWorkflowDir);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

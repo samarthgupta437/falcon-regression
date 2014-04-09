@@ -66,7 +66,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         }
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

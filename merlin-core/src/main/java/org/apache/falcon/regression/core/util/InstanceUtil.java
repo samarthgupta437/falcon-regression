@@ -616,13 +616,14 @@ public class InstanceUtil {
         if(!fs.exists(remotePath))
           fs.mkdirs(remotePath);
 
+        List<Path> localPaths = new ArrayList<Path>();
         for (final File file : files) {
             if (!file.isDirectory()) {
-                logger.info("putDataInFolder: " + remoteLocation);
-                fs.mkdirs(new Path(remoteLocation));
-                fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(remoteLocation));
+                localPaths.add(new Path(file.getAbsolutePath()));
             }
         }
+        logger.info("putting: " + Arrays.toString(files) + " to hdfs " + fs.getUri() + remoteLocation);
+        fs.copyFromLocalFile(false, false, localPaths.toArray(new Path[localPaths.size()]), new Path(remoteLocation));
     }
 
     public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord) throws ParseException, IOException, JSchException {

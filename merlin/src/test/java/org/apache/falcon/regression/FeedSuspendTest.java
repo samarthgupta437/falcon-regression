@@ -69,7 +69,7 @@ public class FeedSuspendTest extends BaseTestClass {
         feed = Util.getInputFeedFromBundle(bundles[0]);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }
