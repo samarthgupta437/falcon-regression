@@ -135,7 +135,9 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
-        //check if all coordinators exist
+        //check if coordinator exists
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
                         "REPLICATION"), 1);
@@ -207,6 +209,10 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if all coordinators exist
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, feed, 0, defaultTimeout);
+
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
                         "REPLICATION"), 1);
@@ -286,7 +292,10 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
-        //check if all coordinators exist
+        //check while instance is got created
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+
+        //check if coordinator exists
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(), feedName, "REPLICATION"), 1);
 

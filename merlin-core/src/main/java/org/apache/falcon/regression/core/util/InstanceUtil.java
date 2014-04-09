@@ -1311,7 +1311,7 @@ public class InstanceUtil {
 
       if(coordInfo.getActions().size() > 0)
           break;
-      logger.info("Coord "+ coordInfo.getId() + " still dosent have " +
+      logger.info("Coord "+ coordInfo.getId() + " still doesn't have " +
         "instance created on oozie: " + coloHelper.getProcessHelper()
         .getOozieClient().getOozieUrl());
       try {
