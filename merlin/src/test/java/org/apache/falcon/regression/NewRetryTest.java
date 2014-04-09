@@ -1094,7 +1094,7 @@ public class NewRetryTest extends BaseTestClass {
             TimeUnit.SECONDS.sleep(10);
             defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         }
-        Assert.assertNotNull(defaultCoordinator, "default coordinator is not null");
+        Assert.assertNotNull(defaultCoordinator, "default coordinator is null");
 
         for (int i = 0; i < 120 && defaultCoordinator.getStatus() == CoordinatorJob.Status.PREP; ++i) {
             TimeUnit.SECONDS.sleep(10);
