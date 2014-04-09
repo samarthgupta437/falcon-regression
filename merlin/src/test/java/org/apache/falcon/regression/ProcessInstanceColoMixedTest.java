@@ -233,7 +233,11 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         int i;
 
         Status sUa1 = null, sUa2 = null;
-        for (i = 0; i < 30; i++) {
+        int counter = 30;
+        if (OSUtil.IS_WINDOWS) {
+            counter = 60;
+        }
+        for (i = 0; i < counter; i++) {
             sUa1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
             sUa2 = InstanceUtil.getInstanceStatus(cluster2, Util.getProcessName(process), 0, 0);
             if (sUa1 != null && sUa2 != null &&

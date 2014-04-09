@@ -309,10 +309,10 @@ public class InstanceUtil {
                 actualKilledInstances++;
         }
 
-        Assert.assertEquals(actualRunningInstances, runningInstances);
-        Assert.assertEquals(actualSuspendedInstances, suspendedInstances);
-        Assert.assertEquals(actualWaitingInstances, waitingInstances);
-        Assert.assertEquals(actualKilledInstances, killedInstances);
+        Assert.assertEquals(actualRunningInstances, runningInstances, "Running Instances");
+        Assert.assertEquals(actualSuspendedInstances, suspendedInstances, "Suspended Instances");
+        Assert.assertEquals(actualWaitingInstances, waitingInstances, "Waiting Instances");
+        Assert.assertEquals(actualKilledInstances, killedInstances, "Killed Instances");
     }
 
     public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
@@ -734,6 +734,11 @@ public class InstanceUtil {
         return setFeedClusterWithTable(feed, v1, r1, n1, t1, partition, null, locations);
     }
 
+    public static CatalogTable getCatalogTable(String tableUri) {
+        CatalogTable catalogTable = new CatalogTable();
+        catalogTable.setUri(tableUri);
+        return catalogTable;
+    }
 
     public static String setFeedClusterWithTable(String feed,
                                         org.apache.falcon.regression.core.generated.feed.Validity
@@ -753,9 +758,7 @@ public class InstanceUtil {
             c1.setPartition(partition);
         // if table uri is not empty or null then set it.
         if (StringUtils.isNotEmpty(tableUri)) {
-            CatalogTable catalogTable = new CatalogTable();
-            catalogTable.setUri(tableUri);
-            c1.setTable(catalogTable);
+            c1.setTable(getCatalogTable(tableUri));
         }
 
 

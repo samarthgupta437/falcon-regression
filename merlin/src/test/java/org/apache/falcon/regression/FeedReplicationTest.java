@@ -213,13 +213,16 @@ public class FeedReplicationTest extends BaseTestClass {
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
                         "REPLICATION"), 1);
-
+        int timeout = 1;
+        if (OSUtil.IS_WINDOWS) {
+            timeout = 3;
+        }
         //replication on cluster 2 should start, wait till it ends
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), timeout,
                 CoordinatorAction.Status.SUCCEEDED, timeout, ENTITY_TYPE.FEED);
 
         //replication on cluster 3 should start, wait till it ends
-        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
+        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), timeout,
                 CoordinatorAction.Status.SUCCEEDED, timeout, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly

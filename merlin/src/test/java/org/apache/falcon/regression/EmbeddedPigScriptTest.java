@@ -232,7 +232,12 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
 
         Job.Status status = null;
-        for (int i = 0; i < 100; i++) {
+        int counter = 100;
+        // increase the wait for windows
+        if (OSUtil.IS_WINDOWS) {
+            counter = 200;
+        }
+        for (int i = 0; i < counter; i++) {
             status = InstanceUtil.getDefaultCoordinatorStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED) {
                 break;

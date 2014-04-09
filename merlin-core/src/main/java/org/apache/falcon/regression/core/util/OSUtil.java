@@ -22,6 +22,9 @@ import org.apache.commons.lang.StringUtils;
 
 public class OSUtil {
 
+    public static boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith
+            ("windows") ? true : false;
+
     public static String SEPARATOR = System.getProperty("file.separator", "/");
     public static String RESOURCES = String.format("src%stest%sresources%s", SEPARATOR, SEPARATOR, SEPARATOR);
     public static String RESOURCES_OOZIE = String.format(RESOURCES + "oozie%s", SEPARATOR);
