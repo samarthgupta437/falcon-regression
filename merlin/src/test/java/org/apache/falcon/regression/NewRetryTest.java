@@ -1000,13 +1000,13 @@ public class NewRetryTest extends BaseTestClass {
         if (maxNumberOfRetries < 0) {
             maxNumberOfRetries = 0;
         }
-
+        logger.info("coordinator: " + coordinator);
         HashMap<String, Boolean> workflowMap = new HashMap<String, Boolean>();
 
         if (coordinator == null || coordinator.getActions().size() == 0) {
             return false;
         }
-
+        logger.info("coordinator.getActions(): " + coordinator.getActions());
         for (CoordinatorAction action : coordinator.getActions()) {
 
             if (null == action.getExternalId()) {
@@ -1015,13 +1015,11 @@ public class NewRetryTest extends BaseTestClass {
 
 
             WorkflowJob actionInfo = oozieClient.getJobInfo(action.getExternalId());
+            logger.info("actionInfo: " + actionInfo + " actionInfo.getRun(): " + actionInfo.getRun());
 
 
             if (!(actionInfo.getStatus() == WorkflowJob.Status.SUCCEEDED ||
                     actionInfo.getStatus() == WorkflowJob.Status.RUNNING)) {
-
-                logger.info("workflow " + actionInfo.getId() + " has action number: " +
-                        actionInfo.getRun());
                 if (actionInfo.getRun() == maxNumberOfRetries) {
                     workflowMap.put(actionInfo.getId(), true);
                 } else {
