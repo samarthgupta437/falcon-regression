@@ -1089,17 +1089,15 @@ public class NewRetryTest extends BaseTestClass {
 
     private void waitTillCertainPercentageOfProcessHasStarted(OozieClient oozieClient, String bundleId, int percentage) throws Exception {
         CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
+
         // make sure default coordinator is not null before we proceed
-        for (int i=0; null == defaultCoordinator && i < 10; i++) {
+        for (int i = 0; i < 120 && (defaultCoordinator == null ||  defaultCoordinator.getStatus()
+                == CoordinatorJob.Status.PREP);
+             ++i) {
             TimeUnit.SECONDS.sleep(10);
             defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         }
         Assert.assertNotNull(defaultCoordinator, "default coordinator is null");
-
-        for (int i = 0; i < 120 && defaultCoordinator.getStatus() == CoordinatorJob.Status.PREP; ++i) {
-            TimeUnit.SECONDS.sleep(10);
-            defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
-        }
         Assert.assertNotEquals(defaultCoordinator.getStatus(), CoordinatorJob.Status.PREP,
                 "Unexpected state for coordinator job: " + defaultCoordinator.getId());
         int totalCount = defaultCoordinator.getActions().size();
