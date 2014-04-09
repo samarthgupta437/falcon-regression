@@ -1012,7 +1012,7 @@ public class InstanceUtil {
     }
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
-                                            String feedName, String coordType) throws OozieClientException {
+                                            String feedName, String coordType) throws OozieClientException, InterruptedException {
         logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
@@ -1023,6 +1023,7 @@ public class InstanceUtil {
 
         for (String aBundleID : bundleID) {
             logger.info("aBundleID: " + aBundleID);
+            OozieUtil.waitForCoordinatorJobCreation(helper.getOozieClient(), aBundleID);
             List<CoordinatorJob> coords =
                     InstanceUtil.getBundleCoordinators(aBundleID, helper);
             logger.info("coords: " + coords);
