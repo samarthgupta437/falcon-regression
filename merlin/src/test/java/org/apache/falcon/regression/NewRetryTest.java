@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -1088,6 +1089,7 @@ public class NewRetryTest extends BaseTestClass {
     }
 
     private void waitTillCertainPercentageOfProcessHasStarted(OozieClient oozieClient, String bundleId, int percentage) throws Exception {
+        OozieUtil.waitForCoordinatorJobCreation(oozieClient, bundleId);
         CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
 
         // make sure default coordinator is not null before we proceed
