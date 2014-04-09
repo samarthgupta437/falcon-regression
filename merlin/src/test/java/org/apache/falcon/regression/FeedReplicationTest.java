@@ -135,14 +135,15 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
+        //replication should start, wait while it ends
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
                         "REPLICATION"), 1);
 
-        //replication should start, wait while it ends
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -206,6 +207,14 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
+        //replication on cluster 2 should start, wait till it ends
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+
+        //replication on cluster 3 should start, wait till it ends
+        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
@@ -213,13 +222,6 @@ public class FeedReplicationTest extends BaseTestClass {
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
                         "REPLICATION"), 1);
-         //replication on cluster 2 should start, wait till it ends
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
-
-        //replication on cluster 3 should start, wait till it ends
-        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
