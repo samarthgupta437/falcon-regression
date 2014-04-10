@@ -44,6 +44,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -84,6 +85,11 @@ public class FeedReplicationTest extends BaseTestClass {
         bundles[0].generateUniqueBundle();
         bundles[1].generateUniqueBundle();
         bundles[2].generateUniqueBundle();
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws Exception {
+        removeBundles();
     }
 
     @Test
