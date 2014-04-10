@@ -29,6 +29,7 @@ import com.jcraft.jsch.UserInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
@@ -1573,64 +1574,85 @@ public class Util {
   }
 
 
-
-  public static String getEnvClusterXML(String filename, String cluster, String prefix)
+    public static String getEnvClusterXML(String filename, String cluster, String prefix)
     throws JAXBException {
 
-    Cluster clusterObject =
-      getClusterObject(cluster);
+        Cluster clusterObject =
+                getClusterObject(cluster);
         if ((null == prefix) || prefix.isEmpty())
-      prefix = "";
-    else prefix = prefix + ".";
+            prefix = "";
+        else prefix = prefix + ".";
 
-    //now read and set relevant values
-    for (Interface iface : clusterObject.getInterfaces().getInterface()) {
-      if (iface.getType().equals(Interfacetype.READONLY)) {
-        iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_readonly"));
-      } else if (iface.getType().equals(Interfacetype.WRITE)) {
-        iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_write"));
-      } else if (iface.getType().equals(Interfacetype.EXECUTE)) {
-        iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_execute"));
-      } else if (iface.getType().equals(Interfacetype.WORKFLOW)) {
-        iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
-      } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
-        iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
-      } else if (iface.getType().equals(Interfacetype.REGISTRY)) {
-          iface.setEndpoint(readPropertiesFile(filename, prefix + "hcat_endpoint"));
-      }
+        String hcat_endpoint = readPropertiesFile(filename, prefix + "hcat_endpoint");
+
+        //now read and set relevant values
+        for (Interface iface : clusterObject.getInterfaces().getInterface()) {
+            if (iface.getType().equals(Interfacetype.READONLY)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_readonly"));
+            } else if (iface.getType().equals(Interfacetype.WRITE)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_write"));
+            } else if (iface.getType().equals(Interfacetype.EXECUTE)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_execute"));
+            } else if (iface.getType().equals(Interfacetype.WORKFLOW)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
+            } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
+                iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
+            } else if (iface.getType().equals(Interfacetype.REGISTRY)) {
+                iface.setEndpoint(hcat_endpoint);
+            }
+        }
+
+        //set colo name:
+        clusterObject.setColo(readPropertiesFile(filename, prefix + "colo"));
+        // properties in the cluster needed when secure mode is on
+        if (MerlinConstants.IS_SECURE) {
+            // get the properties object for the cluster
+            org.apache.falcon.regression.core.generated.cluster.Properties clusterProperties =
+                    clusterObject.getProperties();
+            // add the namenode principal to the properties object
+            clusterProperties.getProperty().add(getFalconClusterPropertyObject(
+                    "dfs.namenode.kerberos.principal",
+                    readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none")));
+
+            // add the hive meta store principal to the properties object
+            clusterProperties.getProperty().add(getFalconClusterPropertyObject(
+                    "hive.metastore.kerberos" +
+                            ".principal",
+                    readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
+                            ".principal", "none")
+            ));
+
+            // Until oozie has better integration with secure hive we need to send the properites to
+            // falcon.
+            // hive.metastore.sasl.enabled = true
+            clusterProperties.getProperty()
+                    .add(getFalconClusterPropertyObject("hive.metastore.sasl" +
+                            ".enabled", "true"));
+            // Only set the metastore uri if its not empty or null.
+            if (null != hcat_endpoint && !hcat_endpoint.isEmpty()) {
+                //hive.metastore.uris
+                clusterProperties.getProperty()
+                        .add(getFalconClusterPropertyObject("hive.metastore.uris", hcat_endpoint));
+            }
+        }
+
+
+        JAXBContext context = JAXBContext.newInstance(Cluster.class);
+        Marshaller m = context.createMarshaller();
+        StringWriter writer = new StringWriter();
+
+        m.marshal(clusterObject, writer);
+        return writer.toString();
     }
 
-    //set colo name:
-    clusterObject.setColo(readPropertiesFile(filename, prefix + "colo"));
-
-        // get the properties object for the cluster
-        org.apache.falcon.regression.core.generated.cluster.Properties clusterProperties =
-                clusterObject.getProperties();
-        // create the property object for the namenode princpal
-        org.apache.falcon.regression.core.generated.cluster.Property namenodePrincipal = new org
+    public static org.apache.falcon.regression.core.generated.cluster.Property getFalconClusterPropertyObject
+            (String name, String value) {
+        org.apache.falcon.regression.core.generated.cluster.Property property = new org
                 .apache.falcon.regression.core.generated.cluster.Property();
-        namenodePrincipal.setName("dfs.namenode.kerberos.principal");
-        namenodePrincipal
-                .setValue(readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none"));
-        // add the namenode principal to the properties object
-        clusterProperties.getProperty().add(namenodePrincipal);
-
-        // create the property for the hive meta store principal
-        org.apache.falcon.regression.core.generated.cluster.Property hivePrincipal = new org
-                .apache.falcon.regression.core.generated.cluster.Property();
-        hivePrincipal.setName("hive.metastore.kerberos.principal");
-        hivePrincipal.setValue(readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
-                ".principal", "none"));
-        // add the hive meta store principal to the properties object
-        clusterProperties.getProperty().add(hivePrincipal);
-
-    JAXBContext context = JAXBContext.newInstance(Cluster.class);
-    Marshaller m = context.createMarshaller();
-    StringWriter writer = new StringWriter();
-
-    m.marshal(clusterObject, writer);
-    return writer.toString();
-  }
+        property.setName(name);
+        property.setValue(value);
+        return property;
+    }
 
   public static void verifyNewBundleCreation(ColoHelper cluster,
                                              String originalBundleId,
