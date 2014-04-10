@@ -109,7 +109,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

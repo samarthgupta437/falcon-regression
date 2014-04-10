@@ -103,7 +103,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

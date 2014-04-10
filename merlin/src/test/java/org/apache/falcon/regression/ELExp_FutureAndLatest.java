@@ -101,7 +101,7 @@ public class ELExp_FutureAndLatest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() {
         removeBundles();
     }

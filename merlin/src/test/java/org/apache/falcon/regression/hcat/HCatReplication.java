@@ -347,7 +347,7 @@ public class HCatReplication extends BaseTestClass {
                 .build());
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }

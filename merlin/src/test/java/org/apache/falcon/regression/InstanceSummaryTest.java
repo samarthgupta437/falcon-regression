@@ -308,7 +308,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
 
 
-  @AfterMethod
+  @AfterMethod(alwaysRun = true)
   public void tearDown() throws IOException {
     processBundle.deleteBundle(prism);
     removeBundles();
