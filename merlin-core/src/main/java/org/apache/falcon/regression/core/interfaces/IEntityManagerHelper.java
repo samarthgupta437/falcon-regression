@@ -36,7 +36,6 @@ import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.oozie.client.AuthOozieClient;
-import org.testng.TestNGException;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
@@ -93,7 +92,7 @@ public abstract class IEntityManagerHelper {
     public HCatClient getHCatClient() {
         if (null == this.hCatClient) {
             try {
-                this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint);
+                this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint, hiveMetaStorePrincipal);
             } catch (HCatException e) {
                 Assert.fail("Unable to create hCatClient because of exception:\n" + ExceptionUtils.getStackTrace(e));
             }
