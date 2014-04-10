@@ -64,7 +64,6 @@ public class HCatReplication extends BaseTestClass {
     private static Logger logger = Logger.getLogger(HCatReplication.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
-    OozieClient clusterOC = serverOC.get(0);
     HCatClient clusterHC;
 
     ColoHelper cluster2 = servers.get(1);
@@ -81,6 +80,7 @@ public class HCatReplication extends BaseTestClass {
 
     final String dbName = "default";
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
+    int defaultTimeout = OSUtil.IS_WINDOWS ? 10 : 5;
 
     @BeforeClass
     public void beforeClass() throws IOException {
@@ -121,7 +121,9 @@ public class HCatReplication extends BaseTestClass {
 
     // make sure oozie changes mentioned FALCON-389 are done on the clusters. Otherwise the test
     // will fail.
-    // HIVE-6848 also needs to be available in hive for the test to work.
+    // Noticed with hive 0.13 we need the following issues resolved to work HIVE-6848 and
+    // HIVE-6868. Also oozie share libs need to have hive jars that have these jira's resolved and
+    // the maven depenendcy you are using to run the tests has to have hcat that has these fixed.
     @Test(dataProvider = "generateSeparators")
     public void oneSourceOneTarget(String separator) throws Exception {
         String tcName = "HCatReplication_oneSourceOneTarget";
@@ -188,7 +190,7 @@ public class HCatReplication extends BaseTestClass {
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
 
         //TODO: Add mode checks. Currently job fails because of HIVE-6848
@@ -196,7 +198,10 @@ public class HCatReplication extends BaseTestClass {
 
     // make sure oozie changes mentioned FALCON-389 are done on the clusters. Otherwise the test
     // will fail.
-    // HIVE-6848 also needs to be available in hive for the test to work.
+    // Noticed with hive 0.13 we need the following issues resolved to work HIVE-6848 and
+    // HIVE-6868. Also oozie share libs need to have hive jars that have these jira's resolved
+    // and the maven depenendcy you are using to run the tests has to have hcat that has these
+    // fixed.
     @Test(dataProvider = "generateSeparators")
     public void oneSourceTwoTarget(String separator) throws Exception {
         String tcName = "HCatReplication_oneSourceTwoTarget";
@@ -276,12 +281,12 @@ public class HCatReplication extends BaseTestClass {
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
-                CoordinatorAction.Status.SUCCEEDED, 5, ENTITY_TYPE.FEED);
+                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
 
         //TODO: Add mode checks. Currently job fails because of HIVE-6848
@@ -347,8 +352,10 @@ public class HCatReplication extends BaseTestClass {
                 .build());
     }
 
-    @AfterMethod(alwaysRun = true)
+    /*
+    @8AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }
+    */
 }
