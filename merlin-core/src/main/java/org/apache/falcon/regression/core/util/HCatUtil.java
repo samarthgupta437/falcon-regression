@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -34,19 +35,17 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.hcatalog.api.HCatClient;
-import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hive.hcatalog.common.HCatException;
 
 public class HCatUtil {
 
     public static HCatClient client;
 
-    public static HCatClient getHCatClient(String hCatEndPoint) throws HCatException {
+    public static HCatClient getHCatClient(String hCatEndPoint, String hiveMetaStorePrinciple) throws HCatException {
         HiveConf hcatConf = new HiveConf();
         hcatConf.set("hive.metastore.local", "false");
         hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, hCatEndPoint);
+        hcatConf.setVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL, hiveMetaStorePrinciple);
+        hcatConf.setBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL, MerlinConstants.IS_SECURE);
         hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
         hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
                 HCatSemanticAnalyzer.class.getName());
@@ -58,7 +57,8 @@ public class HCatUtil {
     }
 
     public static HCatClient getHCatClient(ColoHelper helper) throws HCatException {
-        return getHCatClient(helper.getProcessHelper().getHCatEndpoint());
+        return getHCatClient(helper.getProcessHelper().getHCatEndpoint(),
+                helper.getProcessHelper().getHiveMetaStorePrincipal());
     }
 
     private static void createDB(HCatClient cli, String dbName) {
