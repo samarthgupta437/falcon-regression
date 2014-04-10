@@ -445,51 +445,52 @@ public class Util {
 
     public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
 
-    List<Bundle> bundleList = new ArrayList<Bundle>();
-    File[] files;
-    try {
-      files = Util.getFiles(folderPath);
-    } catch (URISyntaxException e) {
-      return bundleList;
-    }
-
-    List<String> dataSets = new ArrayList<String>();
-    String processData = "";
-    String clusterData = "";
-
-    for (File file : files) {
-
-      if (!file.getName().contains("svn") && !file.getName().startsWith(".DS")) {
-        if (file.isDirectory()) {
-          bundleList.addAll(getDataFromFolder(file.getAbsolutePath()));
-        } else {
-
-          String data = fileToString(new File(file.getAbsolutePath()));
-
-          if (data.contains("uri:ivory:process:0.1") ||
-            data.contains("uri:falcon:process:0.1")) {
-            logger.info("data been added to process: " + data);
-            processData = data;
-          } else if (data.contains("uri:ivory:cluster:0.1") ||
-            data.contains("uri:falcon:cluster:0.1")) {
-            logger.info("data been added to cluster: " + data);
-            clusterData = data;
-          } else if (data.contains("uri:ivory:feed:0.1") ||
-            data.contains("uri:falcon:feed:0.1")) {
-            logger.info("data been added to feed: " + data);
-            dataSets.add(data);
-          }
+        List<Bundle> bundleList = new ArrayList<Bundle>();
+        File[] files;
+        try {
+            files = Util.getFiles(folderPath);
+        } catch (URISyntaxException e) {
+            return bundleList;
         }
-      }
+
+        List<String> dataSets = new ArrayList<String>();
+        String processData = "";
+        String clusterData = "";
+
+        for (File file : files) {
+
+            if (!file.getName().contains("svn") && !file.getName().startsWith(".DS")) {
+                logger.info("Loading data from path: " + file.getAbsolutePath());
+                if (file.isDirectory()) {
+                    bundleList.addAll(getDataFromFolder(file.getAbsolutePath()));
+                } else {
+
+                    String data = fileToString(new File(file.getAbsolutePath()));
+
+                    if (data.contains("uri:ivory:process:0.1") ||
+                            data.contains("uri:falcon:process:0.1")) {
+                        logger.info("data been added to process");
+                        processData = data;
+                    } else if (data.contains("uri:ivory:cluster:0.1") ||
+                            data.contains("uri:falcon:cluster:0.1")) {
+                        logger.info("data been added to cluster");
+                        clusterData = data;
+                    } else if (data.contains("uri:ivory:feed:0.1") ||
+                            data.contains("uri:falcon:feed:0.1")) {
+                        logger.info("data been added to feed");
+                        dataSets.add(data);
+                    }
+                }
+            }
+
+        }
+        if (!clusterData.isEmpty() && !dataSets.isEmpty()) {
+            bundleList.add(new Bundle(dataSets, processData, clusterData));
+        }
+
+        return bundleList;
 
     }
-    if (!clusterData.isEmpty() && !dataSets.isEmpty()) {
-      bundleList.add(new Bundle(dataSets, processData, clusterData));
-    }
-
-    return bundleList;
-
-  }
 
   public static Bundle[][] readBundles() throws IOException {
     return readBundles("bundles");
