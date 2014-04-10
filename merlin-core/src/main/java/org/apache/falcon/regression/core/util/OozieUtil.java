@@ -73,7 +73,7 @@ public class OozieUtil {
   public static List<Job.Status> getBundleStatuses(List<BundleJob> bundles) {
     List<Job.Status> statuses = new ArrayList<Job.Status>();
     for (BundleJob bundle : bundles) {
-      logger.info("Bundle Id: " + bundle.getId());
+      logger.info("bundle: " + bundle);
       statuses.add(bundle.getStatus());
     }
     return statuses;
