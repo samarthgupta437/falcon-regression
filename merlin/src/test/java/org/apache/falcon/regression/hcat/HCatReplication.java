@@ -34,6 +34,8 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hive.hcatalog.api.HCatAddPartitionDesc;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatCreateTableDesc;
@@ -135,14 +137,15 @@ public class HCatReplication extends BaseTestClass {
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS);
+        final String startDate = "2010-01-01T20:00Z";
+        final String endDate = "2099-01-01T00:00Z";
         final String tableUriPartitionFragment = StringUtils
                 .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
-        final String startDate = "2010-01-01T20:00Z";
-        final String endDate = "2010-01-02T04:00Z";
         final String datePattern =
                 StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
-        List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
+        // use the start date for both as this will only generate 2 partitions.
+        List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
 
         final ArrayList<String> dataset =
                 createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
@@ -164,10 +167,19 @@ public class HCatReplication extends BaseTestClass {
         // create table on target cluster.
         createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
 
+        // change permission of the destination table. Hive is running with hive.metastore
+        // .execute.setugi = true and we have not yet determined how we can send that value
+        // through falcon. One workaround is to make sure oozie is running with this config set
+        // in hive.xml in action-conf dir. For now this change has been put in the tests until we
+        // determine the ideal solution.
+        Path path = new Path(testHdfsDir);
+        FsPermission dirPerm = new FsPermission("777");
+        cluster2FS.setPermission(path, dirPerm);
+
         Bundle.submitCluster(bundles[0], bundles[1]);
 
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
-        bundles[0].setInputFeedValidity(startDate, "2099-01-01T00:00Z");
+        bundles[0].setInputFeedValidity(startDate, endDate);
         bundles[0].setInputFeedTableUri(tableUri);
 
         String feed = bundles[0].getDataSets().get(0);
@@ -189,19 +201,26 @@ public class HCatReplication extends BaseTestClass {
                         "REPLICATION"), 1);
 
         //replication should start, wait while it ends
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+        // we will check for 2 instances so that both partitions are copied over.
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
+        //check if data was replicated correctly
+        List<Path> cluster1ReplicatedData = HadoopUtil
+                .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+        logger.info("Data on source cluster: " + cluster1ReplicatedData);
+        List<Path> cluster2ReplicatedData = HadoopUtil
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+        logger.info("Data on target cluster: " + cluster2ReplicatedData);
+        AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
 
-        //TODO: Add mode checks. Currently job fails because of HIVE-6848
     }
 
     // make sure oozie changes mentioned FALCON-389 are done on the clusters. Otherwise the test
     // will fail.
     // Noticed with hive 0.13 we need the following issues resolved to work HIVE-6848 and
-    // HIVE-6868. Also oozie share libs need to have hive jars that have these jira's resolved
-    // and the maven depenendcy you are using to run the tests has to have hcat that has these
-    // fixed.
+    // HIVE-6868. Also oozie share libs need to have hive jars that have these jira's resolved and
+    // the maven depenendcy you are using to run the tests has to have hcat that has these fixed.
     @Test(dataProvider = "generateSeparators")
     public void oneSourceTwoTarget(String separator) throws Exception {
         String tcName = "HCatReplication_oneSourceTwoTarget";
@@ -213,14 +232,15 @@ public class HCatReplication extends BaseTestClass {
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS, cluster3FS);
+        final String startDate = "2010-01-01T20:00Z";
+        final String endDate = "2099-01-01T00:00Z";
         final String tableUriPartitionFragment = StringUtils
                 .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
-        final String startDate = "2010-01-01T20:00Z";
-        final String endDate = "2010-01-02T04:00Z";
         final String datePattern =
                 StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
-        List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
+        // use the start date for both as this will only generate 2 partitions.
+        List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
 
         final ArrayList<String> dataset =
                 createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
@@ -243,10 +263,20 @@ public class HCatReplication extends BaseTestClass {
         createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
         createTable(cluster3HC, dbName, tblName, cols, partitionCols, testHdfsDir);
 
+        // change permission of the destination table. Hive is running with hive.metastore
+        // .execute.setugi = true and we have not yet determined how we can send that value
+        // through falcon. One workaround is to make sure oozie is running with this config set
+        // in hive.xml in action-conf dir. For now this change has been put in the tests until we
+        // determine the ideal solution.
+        Path path = new Path(testHdfsDir);
+        FsPermission dirPerm = new FsPermission("777");
+        cluster2FS.setPermission(path, dirPerm);
+        cluster3FS.setPermission(path, dirPerm);
+
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
-        bundles[0].setInputFeedValidity(startDate, "2099-01-01T00:00Z");
+        bundles[0].setInputFeedValidity(startDate, endDate);
         bundles[0].setInputFeedTableUri(tableUri);
 
         String feed = bundles[0].getDataSets().get(0);
@@ -256,8 +286,7 @@ public class HCatReplication extends BaseTestClass {
                 XmlUtil.createRtention("months(9000)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
                 tableUri, null);
-
-        // set the cluster 2 as the target.
+        // set the cluster 3 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
                 XmlUtil.createValidity(startDate, endDate),
                 XmlUtil.createRtention("months(9000)", ActionType.DELETE),
@@ -280,17 +309,32 @@ public class HCatReplication extends BaseTestClass {
                         "REPLICATION"), 1);
 
         //replication should start, wait while it ends
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+        // we will check for 2 instances so that both partitions are copied over.
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
-
 
         //replication should start, wait while it ends
-        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
+        // we will check for 2 instances so that both partitions are copied over.
+        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 2,
                 CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
-
-        //TODO: Add mode checks. Currently job fails because of HIVE-6848
+        //check if data was replicated correctly
+        List<Path> srcData = HadoopUtil
+                .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+        logger.info("Data on source cluster: " + srcData);
+        List<Path> cluster2TargetData = HadoopUtil
+                .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+        logger.info("Data on target cluster: " + cluster2TargetData);
+        AssertUtil.checkForPathsSizes(srcData, cluster2TargetData);
+        List<Path> cluster3TargetData = HadoopUtil
+                .getAllFilesRecursivelyHDFS(cluster3, new Path(testHdfsDir), "_SUCCESS");
+        logger.info("Data on target cluster: " + cluster3TargetData);
+        AssertUtil.checkForPathsSizes(srcData, cluster3TargetData);
     }
+
+    //TODO: More tests need to be added such as
+    // Tests to make sure new partitions that are added are replicated
+    // Tests to make sure partitions that do no match the pattern are not copied
 
     private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations,
                                       String partitionCol,
@@ -352,10 +396,8 @@ public class HCatReplication extends BaseTestClass {
                 .build());
     }
 
-    /*
-    @8AfterMethod(alwaysRun = true)
+    @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
     }
-    */
 }
