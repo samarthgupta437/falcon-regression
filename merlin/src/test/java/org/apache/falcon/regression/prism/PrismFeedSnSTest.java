@@ -44,6 +44,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 public class PrismFeedSnSTest extends BaseTestClass {
 
@@ -426,6 +427,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         bundles[1].submitAndScheduleFeed();
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
+        TimeUnit.MINUTES.sleep(1);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
         AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
     }
