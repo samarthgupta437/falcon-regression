@@ -87,7 +87,7 @@ public class AssertUtil {
 
     Assert.assertEquals(response.getStatus(),
       APIResult.Status.FAILED, message);
-    Assert.assertEquals(response.getStatus(), 400,
+    Assert.assertEquals(response.getStatusCode(), 400,
       message);
     Assert.assertNotNull(response.getRequestId());
   }
