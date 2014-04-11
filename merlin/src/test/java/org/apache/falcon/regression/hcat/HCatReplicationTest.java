@@ -189,7 +189,7 @@ public class HCatReplicationTest extends BaseTestClass {
                 XmlUtil.createValidity(startDate, endDate),
                 XmlUtil.createRtention("months(9000)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
-                tableUri, null);
+                tableUri);
 
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
@@ -287,13 +287,13 @@ public class HCatReplicationTest extends BaseTestClass {
                 XmlUtil.createValidity(startDate, endDate),
                 XmlUtil.createRtention("months(9000)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
-                tableUri, null);
+                tableUri);
         // set the cluster 3 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
                 XmlUtil.createValidity(startDate, endDate),
                 XmlUtil.createRtention("months(9000)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
-                tableUri, null);
+                tableUri);
 
         AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
