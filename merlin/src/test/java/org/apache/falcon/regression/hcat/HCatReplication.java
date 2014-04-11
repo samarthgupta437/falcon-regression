@@ -222,6 +222,7 @@ public class HCatReplication extends BaseTestClass {
     // Noticed with hive 0.13 we need the following issues resolved to work HIVE-6848 and
     // HIVE-6868. Also oozie share libs need to have hive jars that have these jira's resolved and
     // the maven depenendcy you are using to run the tests has to have hcat that has these fixed.
+    // This test can fail randomly because of https://issues.apache.org/jira/browse/FALCON-401
     @Test(dataProvider = "generateSeparators")
     public void oneSourceTwoTarget(String separator) throws Exception {
         String tcName = "HCatReplication_oneSourceTwoTarget";
