@@ -212,8 +212,7 @@ public class InstanceUtil {
 
     public static void validateSuccessWOInstances(ProcessInstancesResult r) {
         Util.assertSucceeded(r);
-        if (r.getInstances() != null)
-            Assert.assertTrue(false);
+        Assert.assertNull(r.getInstances(), "Expecting null");
     }
 
     public static void validateSuccessWithStatusCode(ProcessInstancesResult r,
