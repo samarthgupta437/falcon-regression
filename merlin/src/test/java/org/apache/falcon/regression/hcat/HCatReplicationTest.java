@@ -62,9 +62,9 @@ import java.util.List;
 import java.util.Map;
 
 @Test(groups = "embedded")
-public class HCatReplication extends BaseTestClass {
+public class HCatReplicationTest extends BaseTestClass {
 
-    private static Logger logger = Logger.getLogger(HCatReplication.class);
+    private static Logger logger = Logger.getLogger(HCatReplicationTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     HCatClient clusterHC;
@@ -79,7 +79,7 @@ public class HCatReplication extends BaseTestClass {
     OozieClient cluster3OC = serverOC.get(2);
     HCatClient cluster3HC;
 
-    final String baseTestHDFSDir = baseHDFSDir + "/HCatReplication";
+    final String baseTestHDFSDir = baseHDFSDir + "/HCatReplicationTest";
 
     final String dbName = "default";
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
