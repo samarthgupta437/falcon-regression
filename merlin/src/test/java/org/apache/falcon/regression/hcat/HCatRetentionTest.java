@@ -49,13 +49,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class HCatRetention extends BaseTestClass {
+public class HCatRetentionTest extends BaseTestClass {
 
-    static Logger logger = Logger.getLogger(HCatRetention.class);
+    static Logger logger = Logger.getLogger(HCatRetentionTest.class);
 
     private Bundle bundle;
     public static HCatClient cli;
-    final String testDir = "/HCatRetention/";
+    final String testDir = "/HCatRetentionTest/";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String dBName="default";
 
