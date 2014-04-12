@@ -1207,7 +1207,6 @@ public class Bundle {
     throws IOException, URISyntaxException, AuthenticationException {
 
         for (Bundle bundle : bundles) {
-            logger.info("cluster b1: " + bundle.getClusters().get(0));
             ServiceResponse r =
                     prismHelper.getClusterHelper()
                             .submitEntity(URLS.SUBMIT_URL, bundle.getClusters().get(0));
