@@ -585,12 +585,13 @@ public class InstanceUtil {
         if (coordInfo == null) {
             return null;
         }
+        logger.info("coordInfo = " + coordInfo);
         List<CoordinatorAction> actions = coordInfo.getActions();
         if(actions.size() == 0) {
             return null;
         }
+        logger.info("actions = " + actions);
         return actions.get(instanceNumber).getStatus();
-
     }
 
     public static void putDataInFolders(ColoHelper colo,
