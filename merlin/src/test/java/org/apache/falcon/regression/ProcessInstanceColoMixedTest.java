@@ -240,6 +240,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         for (i = 0; i < counter; i++) {
             sUa1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
             sUa2 = InstanceUtil.getInstanceStatus(cluster2, Util.getProcessName(process), 0, 0);
+            logger.info(String.format("i = %d sUa1 = %s sUa2 = %s", i, sUa1, sUa2));
             if (sUa1 != null && sUa2 != null &&
                     (sUa1 == Status.RUNNING || sUa1 == Status.SUCCEEDED || sUa1 == Status.KILLED) &&
                     (sUa2 == Status.RUNNING || sUa2 == Status.SUCCEEDED || sUa2 == Status.KILLED)) {
