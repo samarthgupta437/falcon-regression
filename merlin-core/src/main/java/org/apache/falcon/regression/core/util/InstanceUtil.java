@@ -212,7 +212,7 @@ public class InstanceUtil {
 
     public static void validateSuccessWOInstances(ProcessInstancesResult r) {
         Util.assertSucceeded(r);
-        Assert.assertNull(r.getInstances(), "Expecting null");
+        Assert.assertNull(r.getInstances(), "Unexpected :" + Arrays.toString(r.getInstances()));
     }
 
     public static void validateSuccessWithStatusCode(ProcessInstancesResult r,
@@ -288,6 +288,7 @@ public class InstanceUtil {
         int actualKilledInstances = 0;
         ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
         logger.info("pArray: " + Arrays.toString(pArray));
+        Assert.assertNotNull(pArray, "pArray should be not null");
         Assert.assertEquals(pArray.length, totalInstances);
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
             logger.info(
@@ -584,12 +585,13 @@ public class InstanceUtil {
         if (coordInfo == null) {
             return null;
         }
+        logger.info("coordInfo = " + coordInfo);
         List<CoordinatorAction> actions = coordInfo.getActions();
         if(actions.size() == 0) {
             return null;
         }
+        logger.info("actions = " + actions);
         return actions.get(instanceNumber).getStatus();
-
     }
 
     public static void putDataInFolders(ColoHelper colo,
