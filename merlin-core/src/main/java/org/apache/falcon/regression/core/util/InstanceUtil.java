@@ -288,6 +288,7 @@ public class InstanceUtil {
         int actualKilledInstances = 0;
         ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
         logger.info("pArray: " + Arrays.toString(pArray));
+        Assert.assertNotNull(pArray, "pArray should be not null");
         Assert.assertEquals(pArray.length, totalInstances);
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
             logger.info(
