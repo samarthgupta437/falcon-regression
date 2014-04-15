@@ -516,7 +516,7 @@ public class Util {
       if (status == expectedStatus) {
         return true;
       }
-      TimeUnit.SECONDS.sleep(1);
+      TimeUnit.SECONDS.sleep(5);
     }
     return false;
   }
