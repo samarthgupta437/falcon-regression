@@ -19,6 +19,7 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.generated.process.EngineType;
 import org.apache.falcon.regression.core.generated.process.Process;
@@ -29,6 +30,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -38,6 +40,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.AssertJUnit;
@@ -55,6 +58,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
+    OozieClient clusterOC = serverOC.get(0);
     private String prefix;
     String pigTestDir = baseHDFSDir + "/EmbeddedPigScriptTest";
     String pigScriptDir = pigTestDir + "/EmbeddedPigScriptTest/pig";
@@ -162,6 +166,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(10000);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+                Job.Status.SUSPENDED);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);

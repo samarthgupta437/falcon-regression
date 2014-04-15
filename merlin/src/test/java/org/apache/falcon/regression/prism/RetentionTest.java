@@ -206,7 +206,9 @@ public class RetentionTest extends BaseTestClass {
             }
             logger.info("*************************************");
         }
-
+        if(consumer.getMessageData().isEmpty()){
+            logger.info("Message data was empty!");
+        }
         //now look for cluster data
         List<String> finalData =
                 Util.getHadoopDataFromDir(cluster, inputFeed,
