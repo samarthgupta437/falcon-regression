@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
 import org.testng.ITestContext;
@@ -56,6 +57,8 @@ public class TestngListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
         logEndOfTest(result, "FAILED");
+        logger.info(ExceptionUtils.getStackTrace(result.getThrowable()));
+        logLine();
     }
 
     @Override
