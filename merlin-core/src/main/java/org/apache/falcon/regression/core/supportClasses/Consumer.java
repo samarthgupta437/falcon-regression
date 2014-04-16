@@ -88,7 +88,7 @@ public class Consumer extends Thread {
 
         List<String> messageList = new ArrayList<String>();
 
-        // Creating session for seding messages
+        // Creating session for sending messages
         Session session = connection.createSession(false,
                 Session.AUTO_ACKNOWLEDGE);
 
