@@ -28,7 +28,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 @Test(groups = "embedded")
-public class SubmitClusterHcat extends BaseTestClass {
+public class SubmitClusterHcatTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     private static Logger logger = Logger.getLogger(SubmitClusterHcat.class);

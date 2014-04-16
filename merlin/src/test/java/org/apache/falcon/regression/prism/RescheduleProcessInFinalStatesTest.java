@@ -44,13 +44,13 @@ import java.util.List;
 
 
 @Test(groups = "embedded")
-public class RescheduleProcessInFinalStates extends BaseTestClass {
+public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     String baseTestDir = baseHDFSDir + "/RescheduleProcessInFinalStates";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    private static final Logger logger = Logger.getLogger(RescheduleProcessInFinalStates.class);
+    private static final Logger logger = Logger.getLogger(RescheduleProcessInFinalStatesTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {

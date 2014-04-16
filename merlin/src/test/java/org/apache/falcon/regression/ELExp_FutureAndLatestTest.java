@@ -21,110 +21,110 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
-import org.apache.oozie.client.Job.Status;
+import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Process lib path tests.
+ * EL Expression test.
  */
 @Test(groups = "embedded")
-public class ProcessLibPath extends BaseTestClass {
+public class ELExp_FutureAndLatestTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
-    String testLibDir = baseHDFSDir + "/ProcessLibPath/TestLib";
-    private static final Logger logger = Logger.getLogger(ProcessLibPath.class);
+    OozieClient clusterOC = serverOC.get(0);
+    private String prefix;
+    private String baseTestDir = baseHDFSDir + "/ELExp_FutureAndLatest";
+    private String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private static final Logger logger = Logger.getLogger(ELExp_FutureAndLatestTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-
         logger.info("in @BeforeClass");
-        //common lib for both test cases
-        HadoopUtil.uploadDir(clusterFS, testLibDir, OSUtil.RESOURCES_OOZIE + "lib");
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = Util.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, cluster);
 
-        String startDate = "2010-01-01T22:00Z";
-        String endDate = "2010-01-02T03:00Z";
+        String startDate = InstanceUtil.getTimeWrtSystemTime(-150);
+        String endDate = InstanceUtil.getTimeWrtSystemTime(100);
 
-        b.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        String prefix = b.getFeedDataPathPrefix();
+        b.setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setProcessWorkflow(aggregateWorkflowDir);
+        prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 1);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
-        ArrayList<String> dataFolder = new ArrayList<String>();
+        List<String> dataFolder = new ArrayList<String>();
 
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
         }
-
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
 
-
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws Exception {
+    public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         bundles[0] = Util.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
-        bundles[0].generateUniqueBundle();
-        bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
+        bundles[0].setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedPeriodicity(5, TimeUnit.minutes);
+        bundles[0].setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
+        String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
+        String processEnd = InstanceUtil.getTimeWrtSystemTime(8);
+        logger.info("processStart: " + processStart + " processEnd: " + processEnd);
+        bundles[0].setProcessValidity(processStart, processEnd);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundles[0].setProcessConcurrency(1);
-        bundles[0].setProcessLibPath(testLibDir);
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
     @Test(groups = {"singleCluster"})
-    public void setDifferentLibPathWithNoLibFolderInWorkflowfLocaltion() throws Exception {
-        String workflowDir = testLibDir + "/aggregatorLib1/";
-        HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
-        HadoopUtil.deleteDirIfExists(workflowDir + "/lib", clusterFS);
-        logger.info("processData: " + bundles[0].getProcessData());
+    public void latestTest() throws Exception {
+        bundles[0].setDatasetInstances("latest(-3)", "latest(0)");
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
+                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
     @Test(groups = {"singleCluster"})
-    public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
-        String workflowDir = testLibDir + "/aggregatorLib2/";
-        HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
-        HadoopUtil.deleteFile(cluster, new Path(workflowDir + "/lib/oozie-examples-3.1.5.jar"));
-        HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib", OSUtil.RESOURCES + "ivory-oozie-lib-0.1.jar");
-        logger.info("processData: " + bundles[0].getProcessData());
+    public void futureTest() throws Exception {
+        bundles[0].setDatasetInstances("future(0,10)", "future(3,10)");
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
+                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void deleteData() throws Exception {
+        logger.info("in @AfterClass");
+        HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
     }
 }
