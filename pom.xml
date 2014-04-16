@@ -25,8 +25,7 @@
     <artifactId>falcon-regression</artifactId>
     <version>0.5-incubating-SNAPSHOT</version>
     <description>Data Management and Processing Platform over Hadoop</description>
-    <name>Apache Falcon</name>
-    <packaging>pom</packaging>
+    <name>Apache Falcon Regression</name>
     <url>http://falcon.incubator.apache.org/</url>
 
     <licenses>
@@ -112,18 +111,12 @@
         <hive.version>0.12.0</hive.version>
     </properties>
 
-    <modules>
-        <module>merlin-core</module>
-        <module>merlin</module>
-    </modules>
-
     <profiles>
         <profile>
             <id>hadoop-1</id>
             <properties>
                 <hadoop1.version>0.20.2-cdh3u3</hadoop1.version>
             </properties>
-            <dependencyManagement>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
@@ -151,7 +144,6 @@
                         <version>${hive.version}</version>
                     </dependency>
                 </dependencies>
-            </dependencyManagement>
         </profile>
 
         <profile>
@@ -159,7 +151,6 @@
             <properties>
                 <hadoop2.version>2.2.0</hadoop2.version>
             </properties>
-            <dependencyManagement>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
@@ -204,14 +195,12 @@
                         <version>${hive.version}</version>
                     </dependency>
                 </dependencies>
-            </dependencyManagement>
         </profile>
         <profile>
             <id>hadoop-cdh4</id>
             <properties>
                 <hadoop-cdh4.version>2.0.0-cdh4.6.0</hadoop-cdh4.version>
             </properties>
-            <dependencyManagement>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
@@ -230,7 +219,6 @@
                         <version>${hive.version}</version>
                     </dependency>
                 </dependencies>
-            </dependencyManagement>
         </profile>
     </profiles>
 
@@ -303,7 +291,6 @@
         </repository>
     </repositories>
 
-    <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -482,12 +469,6 @@
                         </dependency>
             -->
             <dependency>
-                <groupId>org.apache.falcon</groupId>
-                <artifactId>falcon-merlin-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>net.sourceforge.findbugs</groupId>
                 <artifactId>annotations</artifactId>
                 <version>1.3.2</version>
@@ -560,7 +541,6 @@
                 </exclusions>
             </dependency>
         </dependencies>
-    </dependencyManagement>
 
     <build>
         <directory>target</directory>
