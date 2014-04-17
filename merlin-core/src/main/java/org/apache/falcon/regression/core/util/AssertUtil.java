@@ -38,8 +38,7 @@ public class AssertUtil {
         for (Path path : paths) {
             for (String aShouldNotBePresent : shouldNotBePresent)
                 if (path.toUri().toString().contains(aShouldNotBePresent))
-                    Assert.assertTrue(false,
-                            "String " + aShouldNotBePresent + " was not expected in path " +
+                    Assert.fail("String " + aShouldNotBePresent + " was not expected in path " +
                                     path.toUri().toString());
         }
     }
@@ -53,16 +52,16 @@ public class AssertUtil {
 
     public static void assertSucceeded(ServiceResponse response) throws JAXBException {
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
-                APIResult.Status.SUCCEEDED);
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+                APIResult.Status.SUCCEEDED, "Status should be SUCCEEDED");
+        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200, "Status code should be 200");
+        Assert.assertNotNull(Util.parseResponse(response).getMessage(), "Status message is null");
 
     }
 
   public static void assertSucceeded(APIResult response) throws JAXBException {
-    Assert.assertEquals(response.getStatus(), APIResult.Status.SUCCEEDED);
-    Assert.assertEquals(response.getStatusCode(), 200);
-    Assert.assertNotNull(response.getMessage());
+    Assert.assertEquals(response.getStatus(), APIResult.Status.SUCCEEDED, "Status should be SUCCEEDED");
+    Assert.assertEquals(response.getStatusCode(), 200, "Status code should be 200");
+    Assert.assertNotNull(response.getMessage(), "Status message is null");
 
   }
 
@@ -73,13 +72,13 @@ public class AssertUtil {
 
     public static void assertFailedWithStatus(final ServiceResponse response, final int statusCode, final String message) throws JAXBException {
         if (response.message.equals("null"))
-            Assert.assertTrue(false, "response message should not be null");
+            Assert.fail("response message should not be null");
 
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
                 APIResult.Status.FAILED, message);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), statusCode,
                 message);
-        Assert.assertNotNull(Util.parseResponse(response).getRequestId());
+        Assert.assertNotNull(Util.parseResponse(response).getRequestId(), "RequestId is null");
     }
 
   public static void assertFailed(APIResult response, String message) throws JAXBException {
@@ -88,15 +87,15 @@ public class AssertUtil {
 
     Assert.assertEquals(response.getStatus(),
       APIResult.Status.FAILED, message);
-    Assert.assertEquals(response.getStatus(), 400,
+    Assert.assertEquals(response.getStatusCode(), 400,
       message);
     Assert.assertNotNull(response.getRequestId());
   }
 
   public static void assertPartial(ServiceResponse response) throws JAXBException {
-    Assert.assertEquals(Util.parseResponse(response).getStatus(),APIResult.Status.PARTIAL);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-    Assert.assertNotNull(Util.parseResponse(response).getMessage());
+    Assert.assertEquals(Util.parseResponse(response).getStatus(),APIResult.Status.PARTIAL, "Status should be PARTIAL");
+    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400, "Status code should be 400");
+    Assert.assertNotNull(Util.parseResponse(response).getMessage(), "Status message is null");
 
   }
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data, Job.Status expectedStatus) throws Exception {
@@ -106,7 +105,8 @@ public class AssertUtil {
         } else if(entityType == ENTITY_TYPE.PROCESS) {
             name = Util.readEntityName(data);
         }
-        Assert.assertEquals(Util.verifyOozieJobStatus(oozieClient, name, entityType, expectedStatus), true);
+        Assert.assertEquals(Util.verifyOozieJobStatus(oozieClient, name, entityType, expectedStatus), true,
+                "Status should be " + expectedStatus);
     }
 
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, Bundle bundle, Job.Status expectedStatus) throws Exception {
@@ -127,7 +127,7 @@ public class AssertUtil {
             processName = Util.readEntityName(data);
         }
         Assert.assertNotEquals(Util.getOozieJobStatus(oozieClient, processName,
-                entityType), expectedStatus);
+                entityType), expectedStatus, "Status should not be " + expectedStatus);
     }
 
     public static void checkNotStatus(OozieClient oozieClient, ENTITY_TYPE entityType, Bundle bundle, Job.Status expectedStatus) throws Exception {
