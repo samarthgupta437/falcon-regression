@@ -632,7 +632,7 @@ public class InstanceUtil {
         DateTime finalDate = new DateTime(InstanceUtil.oozieDateToDate(startTimeOfLateCoord));
 
         while (true) {
-            DateTime sysDate = new DateTime(Util.getSystemDate(prismHelper));
+            DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
             sysDate.withZoneRetainFields(DateTimeZone.UTC);
             logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
             if (sysDate.compareTo(finalDate) > 0)
