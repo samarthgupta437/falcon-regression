@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -421,22 +422,21 @@ public class HadoopUtil {
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  List<String> remoteLocations) throws IOException {
         File[] files = new File(inputPath).listFiles();
+        List<Path> filePaths = new ArrayList<Path>();
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
-                for (String remoteLocation : remoteLocations) {
-                    logger.info("copying to: " + remoteLocation + " " +
-                            "on:" +
-                            " " + fs
-                            .getConf().get("fs.default.name") + " file: " + file.getName());
-
-                    if (!fs.exists(new Path(remoteLocation)))
-                        fs.mkdirs(new Path(remoteLocation));
-
-                    fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                            new Path(remoteLocation));
-                }
+                final Path filePath = new Path(file.getAbsolutePath());
+                filePaths.add(filePath);
             }
+        }
+        for (String remoteLocation : remoteLocations) {
+            logger.info(String.format("copying to: %s files: %s",
+                    fs.getUri() + remoteLocation, Arrays.toString(files)));
+            if (!fs.exists(new Path(remoteLocation)))
+                fs.mkdirs(new Path(remoteLocation));
+
+            fs.copyFromLocalFile(false, true, filePaths.toArray(new Path[filePaths.size()]), new Path(remoteLocation));
         }
     }
 
