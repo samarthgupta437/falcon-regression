@@ -480,7 +480,7 @@ public class RetentionTest extends BaseTestClass {
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if ((testDate + appender).compareTo(startLimit) >= 0) {
+                if ((testDate + appender).compareTo(startLimit) > 0) {
                     finalData.add(testDate);
                 }
             } else {
