@@ -138,7 +138,9 @@ public class Util {
   public static String getExpectedErrorMessage(String filename) throws IOException {
 
     Properties properties = new Properties();
-    properties.load(Util.class.getResourceAsStream("/" + "errorMapping.properties"));
+      final InputStream resourceAsStream = Util.class.getResourceAsStream("/" + "errorMapping.properties");
+      properties.load(resourceAsStream);
+      resourceAsStream.close();
     return properties.getProperty(filename);
   }
 

@@ -96,7 +96,7 @@ public class Consumer extends Thread {
         try {
             while (true) {
                 Message m = consumer.receive();
-                logger.info(m.toString());
+                logger.info(m);
                 if (m != null) {
                     MapMessage message = (MapMessage) m;
                     Enumeration mapNames = message.getMapNames();

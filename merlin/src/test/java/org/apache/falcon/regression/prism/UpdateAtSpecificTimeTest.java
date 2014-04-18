@@ -39,6 +39,7 @@ import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
@@ -67,8 +68,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   private final String baseTestDir = baseHDFSDir + "/UpdateAtSpecificTimeTest-data";
   String aggregateWorkflowDir = baseHDFSDir + "/aggregator";
 
-    public void uploadWorkflow() throws Exception {
-        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+  @BeforeClass(alwaysRun = true)
+  public void uploadWorkflow() throws Exception {
+      uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
   }
 
 
