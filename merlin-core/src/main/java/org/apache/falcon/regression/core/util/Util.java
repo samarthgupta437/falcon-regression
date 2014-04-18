@@ -166,10 +166,6 @@ public class Util {
     return processElement.getName();
   }
 
-  public static String getProcessName(File file) throws IOException, JAXBException {
-    return getProcessName(fileToString(file));
-  }
-
   private static boolean isXML(String data) {
 
     if (data != null && data.trim().length() > 0) {
@@ -539,13 +535,6 @@ public class Util {
     Assert.assertNotNull(Util.parseResponse(response).getMessage());
   }
 
-  public static void assertSucceeded(ServiceResponse response, String message)
-    throws JAXBException {
-    Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.SUCCEEDED,
-      message);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200, message);
-  }
-
   public static void assertPartialSucceeded(ServiceResponse response) throws JAXBException {
     Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.PARTIAL);
     Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
@@ -558,16 +547,6 @@ public class Util {
 
     Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED);
     Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-  }
-
-  public static void assertFailed(ServiceResponse response, String message) throws JAXBException {
-    if (response.message.equals("null"))
-      Assert.assertTrue(false, "response message should not be null");
-
-    Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED,
-      message);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400, message);
-    Assert.assertNotNull(Util.parseResponse(response).getRequestId());
   }
 
     public static String getDatasetPath(Bundle bundle) throws JAXBException {
@@ -1091,16 +1070,6 @@ public class Util {
                 OSUtil.NORMAL_INPUT, folderPrefix);
     }
 
-    public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
-                                         int minuteSkip, String... files)
-    throws IOException, InterruptedException {
-        List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
-
-        Util.createLateDataFolders(prismHelper, folderData);
-        Util.copyDataToFolders(prismHelper, baseFolder, folderData, files);
-    }
-
-
   public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
                                              final String FolderPrefix)
     throws IOException, InterruptedException {
@@ -1457,12 +1426,6 @@ public class Util {
                     response.getStatus().toString().equals("SUCCEEDED"));
   }
 
-  public static void assertFailed(ProcessInstancesResult response) {
-    Assert.assertNotNull(response.getMessage());
-    Assert.assertTrue(response.getMessage().contains("FAILED") ||
-      response.getStatus().toString().equals("FAILED"));
-  }
-
    public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
     throws OozieClientException {
         XOozieClient client = coloHelper.getClusterHelper().getOozieClient();
@@ -1669,22 +1632,13 @@ public class Util {
     initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
 
     if (initialNominalTimes.size() != 0){
-      logger.info("Missing instance are : "+ Util
-        .getListElements(initialNominalTimes));
+      logger.info("Missing instance are : "+ initialNominalTimes);
       logger.info("Original Bundle ID   : "+originalBundleId);
       logger.info("New Bundle ID        : "+newBundleId);
 
       Assert.assertFalse(true, "some instances have gone missing after " +
         "update");
     }
-  }
-
-  private static String getListElements(List<String> list) {
-
-    String concatenated ="";
-    for(String curr : list)
-      concatenated = concatenated + " , " + curr;
-    return concatenated;
   }
 
   public static ENTITY_TYPE getEntityType(String entity) {

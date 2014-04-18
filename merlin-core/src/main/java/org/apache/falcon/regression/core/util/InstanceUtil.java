@@ -82,13 +82,7 @@ import java.util.TreeMap;
 
 public class InstanceUtil {
 
-    static OozieClient oozieClient = null;
-
-    public InstanceUtil(OozieClient oozieClient)  {
-        this.oozieClient = oozieClient;
-    }
-
-    static Logger logger = Logger.getLogger(InstanceUtil.class);
+  static Logger logger = Logger.getLogger(InstanceUtil.class);
 
   public static APIResult sendRequestProcessInstance(String
                                                                     url, String user)
@@ -434,23 +428,6 @@ public class InstanceUtil {
 
     }
 
-
-    public static List<WorkflowAction> getWorkflowActions(PrismHelper prismHelper,
-                                                               String processName) throws OozieClientException {
-        OozieClient oozieClient = prismHelper.getProcessHelper().getOozieClient();
-
-        String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
-                processName, ENTITY_TYPE.PROCESS).get(0);
-        List<WorkflowAction> was = new ArrayList<WorkflowAction>();
-        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
-
-        for (String jobID : workflows) {
-
-            was.add(oozieClient
-                    .getWorkflowActionInfo(oozieClient.getCoordActionInfo(jobID).getId()));
-        }
-        return was;
-    }
 
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
@@ -823,14 +800,6 @@ public class InstanceUtil {
         }
 
         return ReplicationCoordID;
-    }
-
-    public static void putDataInFolders(PrismHelper helper,
-                                        final List<String> inputFoldersForInstance) throws IOException, InterruptedException {
-
-        for (String anInputFoldersForInstance : inputFoldersForInstance)
-            putDataInFolder(helper, anInputFoldersForInstance);
-
     }
 
     public static void putDataInFolder(PrismHelper helper, final String remoteLocation) throws IOException, InterruptedException {

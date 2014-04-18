@@ -38,8 +38,6 @@ import java.util.Map;
 
 public class HCatUtil {
 
-    public static HCatClient client;
-
     public static HCatClient getHCatClient(String hCatEndPoint, String hiveMetaStorePrinciple)
     throws HCatException {
         HiveConf hcatConf = new HiveConf();
@@ -59,34 +57,6 @@ public class HCatUtil {
     public static HCatClient getHCatClient(ColoHelper helper) throws HCatException {
         return getHCatClient(helper.getProcessHelper().getHCatEndpoint(),
                 helper.getProcessHelper().getHiveMetaStorePrincipal());
-    }
-
-    private static void createDB(HCatClient cli, String dbName) {
-        HCatCreateDBDesc dbDesc;
-        try {
-            dbDesc = HCatCreateDBDesc.create(dbName)
-                    .ifNotExists(true).build();
-            cli.createDatabase(dbDesc);
-        } catch (HCatException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static void createEmptyTable(HCatClient cli, String dbName, String tabName) {
-        try {
-            ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-            cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
-            HCatCreateTableDesc tableDesc = HCatCreateTableDesc
-                    .create(dbName, tabName, cols)
-                    .fileFormat("rcfile")
-                    .ifNotExists(true)
-                    .isTableExternal(true)
-                    .build();
-            cli.createTable(tableDesc);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public static void deleteTable(HCatClient cli, String dbName, String tabName) {

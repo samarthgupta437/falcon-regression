@@ -41,8 +41,6 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class PrismFeedScheduleTest extends BaseTestClass {
 
-    ColoHelper cluster1 = servers.get(0);
-    ColoHelper cluster2 = servers.get(1);
     OozieClient cluster1OC = serverOC.get(0);
     OozieClient cluster2OC = serverOC.get(1);
     String aggregateWorkflowDir = baseHDFSDir + "/PrismFeedScheduleTest/aggregator";

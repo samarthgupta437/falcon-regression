@@ -36,9 +36,6 @@ public class PrismHelper {
     protected IEntityManagerHelper clusterHelper;
     protected IEntityManagerHelper processHelper;
     protected IEntityManagerHelper feedHelper;
-    protected InstanceUtil instanceUtil;
-
-    protected Util util;
 
     public IEntityManagerHelper getClusterHelper() {
         return clusterHelper;
@@ -76,7 +73,6 @@ public class PrismHelper {
                             .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
             feedHelper =
                     EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
-            instanceUtil = new InstanceUtil(this.clusterHelper.getOozieClient());
 
         } catch (Exception e) {
             logger.info(e.getMessage());

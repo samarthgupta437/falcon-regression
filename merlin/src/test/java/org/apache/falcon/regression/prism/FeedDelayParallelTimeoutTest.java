@@ -44,7 +44,6 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
     String baseTestDir = baseHDFSDir + "/FeedDelayParallelTimeoutTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
-    String feedOutputPath = baseTestDir + "Target/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
     private static final Logger logger = Logger.getLogger(FeedDelayParallelTimeoutTest.class);
 

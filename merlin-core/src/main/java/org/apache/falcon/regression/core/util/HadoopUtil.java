@@ -169,45 +169,6 @@ public class HadoopUtil {
 
     }
 
-    @SuppressWarnings("deprecation")
-    public static List<Path> getAllFilesRecursivelyHDFS(
-            Configuration conf, Path location, String... ignoreFolders) throws IOException {
-
-        List<Path> returnList = new ArrayList<Path>();
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        FileStatus[] stats = fs.listStatus(location);
-
-        //	Util.print("getAllFilesRecursivelyHDFS: "+location);
-
-        if (stats == null)
-            return returnList;
-        for (FileStatus stat : stats) {
-
-            //	Util.print("checking in DIR: "+stat.getPath());
-
-            if (!stat.isDir()) {
-                if (!checkIfIsIgnored(stat.getPath().toUri().toString(), ignoreFolders)) {
-                    //	Util.print("adding File: " +stat.getPath().toUri().getPath()); // gives
-                    // file name
-
-                    returnList.add(stat.getPath());
-                }
-            } else {
-                //Util.print("recursing for DIR: " +stat.getPath().toUri().getPath()); // gives
-                // directory name
-
-                returnList.addAll(getAllFilesRecursivelyHDFS(new Configuration(), stat.getPath(),
-                        ignoreFolders));
-            }
-        }
-
-        return returnList;
-
-    }
-
-
     private static boolean checkIfIsIgnored(String folder,
                                             String[] ignoreFolders) {
 
@@ -257,20 +218,6 @@ public class HadoopUtil {
                 dstHdfsDir));
         HadoopUtil.deleteDirIfExists(dstHdfsDir, fs);
         HadoopUtil.copyDataToFolder(fs, dstHdfsDir, localLocation);
-    }
-
-    @Deprecated
-    public static List<String> getHDFSSubFoldersName(ColoHelper prismHelper,
-                                                     String baseDir) throws IOException {
-
-        List<String> returnList = new ArrayList<String>();
-
-        logger.info("getHDFSSubFoldersName: " + baseDir);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-        return getHDFSSubFoldersName(fs, baseDir);
     }
 
     @SuppressWarnings("deprecation")
@@ -352,14 +299,6 @@ public class HadoopUtil {
         return dataFolder;
     }
 
-    @Deprecated
-    public static boolean isDirPresent(ColoHelper prismHelper, String path) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-        final FileSystem fs = FileSystem.get(conf);
-        return isDirPresent(fs, path);
-    }
-
     public static boolean isDirPresent(FileSystem fs, String path) throws IOException {
 
         boolean isPresent = fs.exists(new Path(path));
@@ -369,14 +308,6 @@ public class HadoopUtil {
             logger.info("dir does not exists");
         return isPresent;
 
-    }
-
-    @Deprecated
-    public static void createDir(ColoHelper prismHelper, String path) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-        final FileSystem fs = FileSystem.get(conf);
-        createDir(path, fs);
     }
 
     public static void createDir(String path, FileSystem... fileSystems) throws IOException {
