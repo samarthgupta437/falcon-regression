@@ -108,7 +108,7 @@ public class HCatRetentionTest extends BaseTestClass {
         }finally{
             try{
                 bundle.deleteBundle(prism);
-                Util.HDFSCleanup(serverFS.get(0), baseHDFSDir);
+                HadoopUtil.deleteDirIfExists(baseTestHDFSDir, serverFS.get(0));
                 HCatUtil.deleteTable(cli, dBName,tableName);
             }catch(Exception e){
                 e.printStackTrace();

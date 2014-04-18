@@ -68,8 +68,6 @@ public class BaseTestClass {
             try {
                 serverFS.add(server.getClusterHelper().getHadoopFS());
                 serverOC.add(server.getClusterHelper().getOozieClient());
-                HadoopUtil.createDir(baseHDFSDir, serverFS.get(serverFS.size
-                  ()-1));
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(1);
