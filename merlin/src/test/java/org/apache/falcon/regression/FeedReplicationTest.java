@@ -92,6 +92,11 @@ public class FeedReplicationTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Test demonstrates replication of stored data from one source cluster to one target cluster.
+     * It checks the lifecycle of replication workflow instance including its creation. When
+     * replication ends test checks if data was replicated correctly.
+     */
     @Test
     public void replicate1Source1Target()
     throws AuthenticationException, IOException, URISyntaxException, ParseException, JAXBException,
@@ -161,6 +166,11 @@ public class FeedReplicationTest extends BaseTestClass {
         AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
     }
 
+    /**
+     * Test demonstrates replication of stored data from one source cluster to two target clusters.
+     * It checks the lifecycle of replication workflow instances including their creation on both
+     * targets. When replication ends test checks if data was replicated correctly.
+     */
     @Test
     public void replicate1Source2Targets() throws Exception {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
@@ -245,6 +255,13 @@ public class FeedReplicationTest extends BaseTestClass {
         AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster3ReplicatedData);
     }
 
+    /**
+     * Test demonstrates how replication depends on availability flag. Scenario includes one
+     * source and one target cluster. When feed is submitted and scheduled and data is available,
+     * feed still waits for availability flag (file which name is defined as availability flag in
+     * feed definition). As soon as mentioned file is got uploaded in data directory,
+     * replication starts and when it ends test checks if data was replicated correctly.
+     */
     @Test
     public void availabilityFlagTest() throws Exception {
         //replicate1Source1Target scenario + set availability flag but don't upload required file
