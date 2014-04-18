@@ -85,7 +85,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         ServiceResponse response =
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, bundles[1].getProcessData());
-        System.out.println(response.getMessage());
+        logger.info(response.getMessage());
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
 
     }

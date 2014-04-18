@@ -985,7 +985,7 @@ public class Util {
             if (!f.exists()) {
                 r = f.createNewFile();
                 if (!r)
-                    System.out.println("file could not be created");
+                    logger.info("file could not be created");
             }
 
 
@@ -995,7 +995,7 @@ public class Util {
             fs.copyFromLocalFile(new Path(f.getAbsolutePath()), new Path(folderPrefix + folder));
             r = f.delete();
             if (!r)
-                System.out.println("delete was not successful");
+                logger.info("delete was not successful");
 
             Path[] srcPaths = new Path[fileLocations.length];
             for(int i = 0; i < srcPaths.length; ++i) {
@@ -1382,7 +1382,7 @@ public class Util {
       while(in.available()>0){
         int i=in.read(tmp, 0, 1024);
         if(i<0)break;
-        System.out.print(new String(tmp, 0, i));
+        logger.info(new String(tmp, 0, i));
       }
       if(channel.isClosed()){
         logger.info("exit-status: "+channel.getExitStatus());

@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.OozieClient;
@@ -27,6 +28,7 @@ import org.apache.oozie.client.WorkflowJob;
 import java.util.List;
 
 public class TestRunId {
+    private static Logger logger = Logger.getLogger(TestRunId.class);
 
     public static void main(String[] args) throws OozieClientException {
         OozieClient client = new OozieClient("http://mk-qa-63:11000/oozie/");
@@ -34,7 +36,7 @@ public class TestRunId {
         List<CoordinatorAction> actions = coordInfo.getActions();
         for (CoordinatorAction action : actions) {
             WorkflowJob job = client.getJobInfo(action.getExternalId());
-            System.out.println(job.getRun());
+            logger.info(job.getRun());
         }
     }
 }

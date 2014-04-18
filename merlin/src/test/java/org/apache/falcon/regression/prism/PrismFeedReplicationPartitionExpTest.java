@@ -90,7 +90,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
 
-        System.out.println("creating test data");
+        logger.info("creating test data");
 
         uploadDataToServer3(testDirWithDate + "00/ua2/", testFile1);
         uploadDataToServer3(testDirWithDate + "05/ua2/", testFile2);

@@ -98,7 +98,7 @@ public class Brother extends Thread {
         }
 
 
-        //System.out.println("Brother "+this.getName()+" will be executing "+operation);
+        //logger.info("Brother "+this.getName()+" will be executing "+operation);
         logger.info("Brother " + this.getName() + " will be executing " + operation);
 
         try {
@@ -107,19 +107,19 @@ public class Brother extends Thread {
 
             } else if (operation.equalsIgnoreCase("get")) {
                 output = entityManagerHelper.getEntityDefinition(url, data);
-                //System.out.println("Brother "+this.getName()+"'s response to the "+operation+"
+                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
                 // is: "+output);
             } else if (operation.equalsIgnoreCase("delete")) {
                 output = entityManagerHelper.delete(url, data);
-                //System.out.println("Brother "+this.getName()+"'s response to the "+operation+"
+                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
                 // is: "+output);
             } else if (operation.equalsIgnoreCase("suspend")) {
                 output = entityManagerHelper.suspend(url, data);
-                //System.out.println("Brother "+this.getName()+"'s response to the "+operation+"
+                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
                 // is: "+output);
             } else if (operation.equalsIgnoreCase("schedule")) {
                 output = entityManagerHelper.schedule(url, data);
-                //System.out.println("Brother "+this.getName()+"'s response to the "+operation+"
+                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
                 // is: "+output);
             } else if (operation.equalsIgnoreCase("resume")) {
                 output = entityManagerHelper.resume(url, data);
@@ -129,7 +129,7 @@ public class Brother extends Thread {
                 output = entityManagerHelper.getStatus(url, data);
             }
 
-            //System.out.println("Brother "+this.getName()+"'s response to the "+operation+" is:
+            //logger.info("Brother "+this.getName()+"'s response to the "+operation+" is:
             // "+output);
             logger.info("Brother " + this.getName() + "'s response to the " + operation + " is: " +
                     output);

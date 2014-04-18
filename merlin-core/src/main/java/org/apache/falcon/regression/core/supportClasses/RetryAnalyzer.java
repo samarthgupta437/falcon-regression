@@ -33,8 +33,7 @@ public class RetryAnalyzer implements IRetryAnalyzer {
 // of retry attempts will allow due to the retry
 // method being called twice for each retry
     private int maxCount = 6;
-    protected Logger log;
-    private static Logger testbaseLog;
+    protected static Logger logger = Logger.getLogger(RetryAnalyzer.class);
 
     static {
         //PropertyConfigurator.configure("test-config/log4j.properties");
@@ -55,7 +54,7 @@ public class RetryAnalyzer implements IRetryAnalyzer {
 //            + result.getName() 
 //            + "' on class " + this.getClass().getName() );
         if (count < maxCount) {
-            System.out.println(
+            logger.info(
                     ">>>>> Error in " + result.getName() + "with status " + (result.getStatus()) +
                             " Retrying " +
                             count + 1 + ". time\n");

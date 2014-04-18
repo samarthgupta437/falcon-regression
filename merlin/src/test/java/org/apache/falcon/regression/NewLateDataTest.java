@@ -80,7 +80,7 @@ package org.apache.falcon.regression;
 //            
 //            for(String cluster:bundle.getClusters())
 //            {
-//                    System.out.println(cluster);
+//                    logger.info(cluster);
 //                    Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
 // .SUBMIT_URL,cluster));
 //            }  
@@ -101,11 +101,11 @@ package org.apache.falcon.regression;
 //        bundle.setProcessWorkflow("/examples/apps/phailFs/workflow.xml");
 //    	
 //    	//submit and schedule process
-//        System.out.println(bundle.getProcessData());
+//        logger.info(bundle.getProcessData());
 //    	Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
 // bundle.getProcessData()));
 //    	
-//    	 System.out.println(bundle.getProcessData());
+//    	 logger.info(bundle.getProcessData());
 // 
 //        Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
 // bundle.getProcessData()));
@@ -133,9 +133,9 @@ package org.apache.falcon.regression;
 //        
 //        
 //        
-//         System.out.println("Start time: "+formatter.print(startDate));
-//         System.out.println("End time: "+formatter.print(endDate));
-//         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+//         logger.info("Start time: "+formatter.print(startDate));
+//         logger.info("End time: "+formatter.print(endDate));
+//         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
 //         DateTime now=dates.get(0);
 //        
 //        if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -143,7 +143,7 @@ package org.apache.falcon.regression;
 //        	now=startDate;
 //        }
 //        
-//        System.out.println("Now:"+formatter.print(now));
+//        logger.info("Now:"+formatter.print(now));
 //        
 //        //Assert.assertFalse(!(formatter.print(.plusMinutes(2)).compareTo(formatter.print
 // (endDate))<0),
@@ -160,18 +160,18 @@ package org.apache.falcon.regression;
 // now.plusMinutes(Integer.parseInt(delay)),
 // initialData);
 //        //insert data after all relevant workflows are over
-//        System.out.println("insertion folder is: "+insertionFolder);
+//        logger.info("insertion folder is: "+insertionFolder);
 //        while(!allRelevantWorkflowsAreOver(UA3ColoHelper,bundleId, insertionFolder))
 //        {
-//            //System.out.println("waiting for relevant workflows to be over before inserting
+//            //logger.info("waiting for relevant workflows to be over before inserting
 // folder
 // "+insertionFolder);
 //            //keep waiting
 //        }
 //        
-//        System.out.println("going to insert data at: "+insertionFolder);
+//        logger.info("going to insert data at: "+insertionFolder);
 //        insertionTime=new DateTime(DateTimeZone.UTC);
-//        System.out.println("insertion time is :"+insertionTime);
+//        logger.info("insertion time is :"+insertionTime);
 //        Util.injectMoreData(UA3ColoHelper,insertionFolder,
 // "src/test/resources/OozieExampleInputData/lateData");
 //        initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -238,10 +238,10 @@ package org.apache.falcon.regression;
 // .getStatus().equals
 // (CoordinatorAction.Status.FAILED))
 //                                                {
-//                                                    System.out.println("found folder
+//                                                    logger.info("found folder
 // "+insertionFolder+" in
 // workflow: "+actionMan.getId());
-//                                                    System.out.println("related workflow
+//                                                    logger.info("related workflow
 // "+actionMan.getId()+" is
 // over....");
 //                                                    workflowStatusMap.put(actionMan.getId(),
@@ -305,7 +305,7 @@ package org.apache.falcon.regression;
 //            else
 //            {
 //                Thread.sleep(1000);
-//                System.out.println("desired state not reached.This was attempt number: "+attempt);
+//                logger.info("desired state not reached.This was attempt number: "+attempt);
 //                attempt++;
 //            }
 //       }
@@ -396,7 +396,7 @@ package org.apache.falcon.regression;
 // (WorkflowJob.Status.RUNNING)))
 //          {
 //              
-//              System.out.println("workflow "+actionInfo.getId()+" has action number:
+//              logger.info("workflow "+actionInfo.getId()+" has action number:
 // "+actionInfo.getRun());
 //              if(actionInfo.getRun()==maxNumberOfRetries)
 //              {

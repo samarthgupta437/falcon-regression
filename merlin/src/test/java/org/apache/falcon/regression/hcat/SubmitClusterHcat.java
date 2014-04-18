@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.log4j.Logger;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
@@ -30,6 +31,7 @@ import org.testng.annotations.Test;
 public class SubmitClusterHcat extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
+    private static Logger logger = Logger.getLogger(SubmitClusterHcat.class);
 
     // private HCatClient client;
 
@@ -60,20 +62,20 @@ public class SubmitClusterHcat extends BaseTestClass {
 			createDB(dbName);
 			createSampleTable(dbName,tableName);
 */
-            System.out.println("Cluster: " + clusterData);
+            logger.info("Cluster: " + clusterData);
             ServiceResponse r =
                     prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, clusterData);
             Util.assertSucceeded(r);
 
-            System.out.println("Feed: " + feedData01);
+            logger.info("Feed: " + feedData01);
             r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedData01);
             Util.assertSucceeded(r);
 
-            System.out.println("Feed: " + feedData02);
+            logger.info("Feed: " + feedData02);
             r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedData02);
             Util.assertSucceeded(r);
 
-            System.out.println("process: " + processData);
+            logger.info("process: " + processData);
             r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, processData);
             Util.assertSucceeded(r);
 

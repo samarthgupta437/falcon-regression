@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.AuthOozieClient;
 
 import javax.xml.bind.JAXBException;
@@ -44,6 +45,8 @@ import java.util.List;
 import java.util.Properties;
 
 public abstract class IEntityManagerHelper {
+
+    private Logger logger = Logger.getLogger(IEntityManagerHelper.class);
 
     protected String CLIENT_LOCATION = OSUtil.RESOURCES
             + OSUtil.getPath("IvoryClient", "IvoryCLI.jar");
@@ -197,7 +200,7 @@ public abstract class IEntityManagerHelper {
         } else {
             prefix += ".";
         }
-        System.out.println("envFileName: " + envFileName);
+        logger.info("envFileName: " + envFileName);
         Properties prop = Util.getPropertiesObj(envFileName);
         this.qaHost = prop.getProperty(prefix + "qa_host");
         this.hostname = prop.getProperty(prefix + "ivory_hostname");
