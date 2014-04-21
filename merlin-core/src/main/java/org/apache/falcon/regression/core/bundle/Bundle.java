@@ -551,12 +551,12 @@ public class Bundle {
         Workflow wf = processElement.getWorkflow();
         File wfFile = new File(sBundleLocation + "/workflow/workflow.xml");
         if (!wfFile.exists()) {
-            System.out.println("workflow not provided along with process and feed xmls");
+            logger.info("workflow not provided along with process and feed xmls");
             return;
         }
         //is folder present
         if (!HadoopUtil.isDirPresent(colohelper.getClusterHelper().getHadoopFS(), wf.getPath())) {
-            System.out.println("workflowPath does not exists: creating path: " + wf.getPath());
+            logger.info("workflowPath does not exists: creating path: " + wf.getPath());
             HadoopUtil.createDir(wf.getPath(), colohelper.getClusterHelper().getHadoopFS());
         }
 
@@ -1482,7 +1482,7 @@ public class Bundle {
         Process p = InstanceUtil.getProcessElement(process);
         Outputs outputs = p.getOutputs();
         if (outputs.getOutput().size() != names.length) {
-            System.out.println("Number of output names not equal to output in processdef");
+            logger.info("Number of output names not equal to output in processdef");
             return null;
         }
 

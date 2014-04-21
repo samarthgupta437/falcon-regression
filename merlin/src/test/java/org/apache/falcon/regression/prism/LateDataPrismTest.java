@@ -96,7 +96,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -130,7 +130,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -155,9 +155,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -165,7 +165,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));            
+        logger.info("Now:"+formatter.print(now));
         
         String insertionFolder="";
         DateTime insertionTime=null;
@@ -175,7 +175,7 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
+        logger.info("insertion folder is: "+insertionFolder);
         
         int expectedsize=0;
         
@@ -184,16 +184,16 @@ public class LateDataPrismTest {
         
             while(!allRelevantWorkflowsAreOver(UA3ColoHelper,bundleId, insertionFolder))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
             	Thread.sleep(20000);
             }
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -202,9 +202,9 @@ public class LateDataPrismTest {
             Thread.sleep(120000*i);
         }
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -217,7 +217,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -268,7 +268,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -289,7 +289,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -314,9 +314,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -324,7 +324,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));            
+        logger.info("Now:"+formatter.print(now));
         
         String insertionFolder="";
         DateTime insertionTime=null;
@@ -334,7 +334,7 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
+        logger.info("insertion folder is: "+insertionFolder);
         
         int expectedsize=0;
         
@@ -343,15 +343,15 @@ public class LateDataPrismTest {
         
             while(!allRelevantWorkflowsAreOver(UA3ColoHelper,bundleId, insertionFolder))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
             }
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -360,9 +360,9 @@ public class LateDataPrismTest {
             Thread.sleep(120000);
         }
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -375,7 +375,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -426,7 +426,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -447,7 +447,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -472,9 +472,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -482,7 +482,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));            
+        logger.info("Now:"+formatter.print(now));
         
         String insertionFolder="";
         DateTime insertionTime=null;
@@ -492,7 +492,7 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
+        logger.info("insertion folder is: "+insertionFolder);
         
         int expectedsize=0;
         
@@ -501,7 +501,7 @@ public class LateDataPrismTest {
         
             while(!allRelevantWorkflowsAreOver(UA3ColoHelper,bundleId, insertionFolder))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
@@ -510,9 +510,9 @@ public class LateDataPrismTest {
             
             if(i%2==0)
             {
-                System.out.println("going to insert data at: "+insertionFolder);
+                logger.info("going to insert data at: "+insertionFolder);
                 insertionTime=new DateTime(DateTimeZone.UTC);
-                System.out.println("insertion time is :"+insertionTime);
+                logger.info("insertion time is :"+insertionTime);
                 Util.injectMoreData(UA3ColoHelper,insertionFolder,
                 "src/test/resources/OozieExampleInputData/lateData");
                 initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle
@@ -522,14 +522,14 @@ public class LateDataPrismTest {
             }
             else
             {
-                System.out.println("skipping data insertion this time....");
+                logger.info("skipping data insertion this time....");
             }
             Thread.sleep(120000);
         }
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -542,7 +542,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -594,7 +594,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -616,7 +616,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -641,9 +641,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -651,7 +651,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));  
+        logger.info("Now:"+formatter.print(now));
         DateTime lastCheck=now.plusMinutes(Integer.parseInt(delay));
         
         String insertionFolder="";
@@ -662,8 +662,8 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
-        System.out.println("last check time is: "+lastCheck);
+        logger.info("insertion folder is: "+insertionFolder);
+        logger.info("last check time is: "+lastCheck);
         
         
         int expectedsize=0;
@@ -673,7 +673,7 @@ public class LateDataPrismTest {
             insertionFolder) && lastCheck.isBefore(new
             DateTime(DateTimeZone.UTC))))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
@@ -681,9 +681,9 @@ public class LateDataPrismTest {
                 
             }
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -692,9 +692,9 @@ public class LateDataPrismTest {
             
         
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -707,7 +707,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -758,7 +758,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -780,7 +780,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -805,9 +805,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -815,7 +815,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));  
+        logger.info("Now:"+formatter.print(now));
         DateTime insertionTime=now.plusSeconds(30);
         
         String insertionFolder="";
@@ -826,27 +826,27 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
-        System.out.println("last insertion time is: "+insertionTime);
+        logger.info("insertion folder is: "+insertionFolder);
+        logger.info("last insertion time is: "+insertionTime);
         
         
         int expectedsize=1;
         
-            System.out.println("waiting to insert data...");
+            logger.info("waiting to insert data...");
             while(DateTime.now().isBefore(insertionTime)) {}
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
             toInsert=false;
             
-            System.out.println("Going to check on process @....."+DateTime.now(DateTimeZone.UTC)
+            logger.info("Going to check on process @....."+DateTime.now(DateTimeZone.UTC)
             .toString());
             while(!(DateTime.now(DateTimeZone.UTC).isAfter(now.plusMinutes(4).plusSeconds(30)))) {}
-            System.out.println("checking process @ "+DateTime.now(DateTimeZone.UTC));
+            logger.info("checking process @ "+DateTime.now(DateTimeZone.UTC));
             //Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(bundle.getProcessData
             ()),"RUNNING",
             UA3ColoHelper).get(0).contains("RUNNING"));
@@ -854,9 +854,9 @@ public class LateDataPrismTest {
             "run id was not correct!!!");
         
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -871,7 +871,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         Util.dumpConsumerData(consumer);  
@@ -925,7 +925,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -946,7 +946,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -971,9 +971,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -981,7 +981,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));            
+        logger.info("Now:"+formatter.print(now));
         
         String insertionFolder="";
         DateTime insertionTime=null;
@@ -991,7 +991,7 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
+        logger.info("insertion folder is: "+insertionFolder);
         
         int expectedsize=0;
         int initialSleep=0;
@@ -1001,15 +1001,15 @@ public class LateDataPrismTest {
         
             while(!allRelevantWorkflowsAreOver(UA3ColoHelper,bundleId, insertionFolder))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
             }
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -1021,9 +1021,9 @@ public class LateDataPrismTest {
             
         }
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -1036,7 +1036,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -1087,7 +1087,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -1109,7 +1109,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -1134,9 +1134,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -1144,7 +1144,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));  
+        logger.info("Now:"+formatter.print(now));
         DateTime lastCheck=now.plusMinutes(Integer.parseInt(delay));
         
         String insertionFolder="";
@@ -1155,8 +1155,8 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
-        System.out.println("last check time is: "+lastCheck);
+        logger.info("insertion folder is: "+insertionFolder);
+        logger.info("last check time is: "+lastCheck);
         
         
         int expectedsize=0;
@@ -1166,7 +1166,7 @@ public class LateDataPrismTest {
             insertionFolder) && lastCheck.isBefore(new
             DateTime(DateTimeZone.UTC))))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
@@ -1174,9 +1174,9 @@ public class LateDataPrismTest {
                 
             }
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -1185,9 +1185,9 @@ public class LateDataPrismTest {
             
         
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -1200,7 +1200,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -1253,7 +1253,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -1275,7 +1275,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -1300,9 +1300,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -1310,7 +1310,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));  
+        logger.info("Now:"+formatter.print(now));
         DateTime insertionTime=now.plusSeconds(30);
         
         String insertionFolder="";
@@ -1321,26 +1321,26 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
-        System.out.println("last insertion time is: "+insertionTime);
+        logger.info("insertion folder is: "+insertionFolder);
+        logger.info("last insertion time is: "+insertionTime);
         
         
         int expectedsize=1;
         
-            System.out.println("waiting to insert data...");
+            logger.info("waiting to insert data...");
             while(DateTime.now().isBefore(insertionTime)) {}
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
             toInsert=false;
             
-            System.out.println("Going to check on process.....");
+            logger.info("Going to check on process.....");
             while(!(DateTime.now(DateTimeZone.UTC).isAfter(now.plusMinutes(4).plusSeconds(20)))) {}
-            System.out.println("checking process @ "+DateTime.now(DateTimeZone.UTC));
+            logger.info("checking process @ "+DateTime.now(DateTimeZone.UTC));
             //Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(bundle.getProcessData
             ()),"RUNNING",
             UA3ColoHelper).get(0).contains("RUNNING"));
@@ -1348,9 +1348,9 @@ public class LateDataPrismTest {
             "run id was not correct!!!");
         
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -1365,7 +1365,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         Util.dumpConsumerData(consumer);  
@@ -1416,7 +1416,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -1437,7 +1437,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -1462,9 +1462,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -1472,7 +1472,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));            
+        logger.info("Now:"+formatter.print(now));
         
         String insertionFolder="";
         DateTime insertionTime=null;
@@ -1482,7 +1482,7 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
+        logger.info("insertion folder is: "+insertionFolder);
         
         int expectedsize=1;
         
@@ -1491,15 +1491,15 @@ public class LateDataPrismTest {
         
             while(!allRelevantWorkflowsAreOver(UA3ColoHelper,bundleId, insertionFolder))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
             }
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -1507,9 +1507,9 @@ public class LateDataPrismTest {
             Thread.sleep(120000);
         }
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -1522,7 +1522,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -1575,7 +1575,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -1597,7 +1597,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -1622,9 +1622,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -1632,7 +1632,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));  
+        logger.info("Now:"+formatter.print(now));
         DateTime lastCheck=now.plusMinutes(Integer.parseInt(delay));
         
         String insertionFolder="";
@@ -1643,8 +1643,8 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
-        System.out.println("last check time is: "+lastCheck);
+        logger.info("insertion folder is: "+insertionFolder);
+        logger.info("last check time is: "+lastCheck);
         
         
         int expectedsize=0;
@@ -1654,7 +1654,7 @@ public class LateDataPrismTest {
             insertionFolder) && lastCheck.isBefore(new
             DateTime(DateTimeZone.UTC))))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
@@ -1664,9 +1664,9 @@ public class LateDataPrismTest {
             
             Assert.assertEquals(consumer.getMessageData().size(),1,"where is the first response
             btw!!!");
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -1675,9 +1675,9 @@ public class LateDataPrismTest {
             
         
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -1690,7 +1690,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         //now parse the goddamn consumer data for info
@@ -1741,7 +1741,7 @@ public class LateDataPrismTest {
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -1763,7 +1763,7 @@ public class LateDataPrismTest {
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -1788,9 +1788,9 @@ public class LateDataPrismTest {
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -1798,7 +1798,7 @@ public class LateDataPrismTest {
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));  
+        logger.info("Now:"+formatter.print(now));
         DateTime insertionTime=now.plusSeconds(15);
         
         String insertionFolder="";
@@ -1809,18 +1809,18 @@ public class LateDataPrismTest {
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
-        System.out.println("last insertion time is: "+insertionTime);
+        logger.info("insertion folder is: "+insertionFolder);
+        logger.info("last insertion time is: "+insertionTime);
         
         
         int expectedsize=1;
         
-            System.out.println("waiting to insert data...");
+            logger.info("waiting to insert data...");
             while(DateTime.now().isBefore(insertionTime)) {}
         
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -1828,9 +1828,9 @@ public class LateDataPrismTest {
             
             
             
-            System.out.println("Going to check on process.....");
+            logger.info("Going to check on process.....");
             while(!(DateTime.now(DateTimeZone.UTC).isAfter(now.plusMinutes(3).plusSeconds(20)))) {}
-            System.out.println("checking process @ "+DateTime.now(DateTimeZone.UTC));
+            logger.info("checking process @ "+DateTime.now(DateTimeZone.UTC));
             //Assert.assertTrue(Util.getOozieJobStatus(Util.readEntityName(bundle.getProcessData
             ()),"RUNNING",
             UA3ColoHelper).get(0).contains("RUNNING"));
@@ -1838,9 +1838,9 @@ public class LateDataPrismTest {
             "run id was not correct!!!");
         
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -1855,7 +1855,7 @@ public class LateDataPrismTest {
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
         }
         
         Util.dumpConsumerData(consumer);  
@@ -1906,7 +1906,7 @@ Util.getInputFeedFromBundle(bundle));
 ////            
 ////            for(String cluster:bundle.getClusters())
 ////            {
-////                    System.out.println(cluster);
+////                    logger.info(cluster);
 ////                    Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
 .SUBMIT_URL,cluster));
 ////            }  
@@ -1927,7 +1927,7 @@ Util.getInputFeedFromBundle(bundle));
 ////            Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
 bundle.getProcessData()));
 ////    	
-////            System.out.println(bundle.getProcessData());
+////            logger.info(bundle.getProcessData());
 //// 
 ////            Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
 bundle.getProcessData()));
@@ -1953,9 +1953,9 @@ Util.readEntityName(bundle.getProcessData()),"NONE").get(0));
 ////            }while(dates==null);
 ////            
 ////            
-////         System.out.println("Start time: "+formatter.print(startDate));
-////         System.out.println("End time: "+formatter.print(endDate));
-////         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+////         logger.info("Start time: "+formatter.print(startDate));
+////         logger.info("End time: "+formatter.print(endDate));
+////         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
 ////         DateTime now=dates.get(0);
 ////        
 ////        if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -1963,7 +1963,7 @@ Util.readEntityName(bundle.getProcessData()),"NONE").get(0));
 ////        	now=startDate;
 ////        }
 ////        
-////        System.out.println("Now:"+formatter.print(now));            
+////        logger.info("Now:"+formatter.print(now));
 ////        
 ////        String insertionFolder="";
 ////        DateTime insertionTime=null;
@@ -1973,7 +1973,7 @@ Util.readEntityName(bundle.getProcessData()),"NONE").get(0));
 now.plusMinutes(Integer.parseInt(delay)),
 initialData);
 ////        //insert data after all relevant workflows are over
-////        System.out.println("insertion folder is: "+insertionFolder);
+////        logger.info("insertion folder is: "+insertionFolder);
 ////        
 ////        int expectedsize=0;
 ////        int skippedInstances=0;
@@ -1998,15 +1998,15 @@ bundle.getProcessData()));
 bundle.getProcessData()));
 ////                    
 ////                }
-////                //System.out.println("waiting for relevant workflows to be over before
+////                //logger.info("waiting for relevant workflows to be over before
 inserting folder
 "+insertionFolder);
 ////                //keep waiting
 ////            }
 ////        
-////            System.out.println("going to insert data at: "+insertionFolder);
+////            logger.info("going to insert data at: "+insertionFolder);
 ////            insertionTime=new DateTime(DateTimeZone.UTC);
-////            System.out.println("insertion time is :"+insertionTime);
+////            logger.info("insertion time is :"+insertionTime);
 ////            Util.injectMoreData(UA3ColoHelper,insertionFolder,
 "src/test/resources/OozieExampleInputData/lateData");
 ////            initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle
@@ -2018,9 +2018,9 @@ inserting folder
 ////            
 ////        }
 ////        
-////        System.out.println("precautionary sleep commencing....");
+////        logger.info("precautionary sleep commencing....");
 ////        Thread.sleep(180000);
-////        System.out.println("precautionary sleep ended....");
+////        logger.info("precautionary sleep ended....");
 ////        
 ////        //now wait till the total size of consumer queue is 2
 ////        int attempts=0;
@@ -2033,7 +2033,7 @@ there. please check!");
 ////            }
 ////            //keep waiting baby
 ////            Thread.sleep(1000);
-////            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180)
+////            attempts++; logger.info("attempt number: "+attempts); if(attempts==180)
 {break;}
 ////        }
 ////        
@@ -2084,7 +2084,7 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
             
             for(String cluster:bundle.getClusters())
             {
-                    System.out.println(cluster);
+                    logger.info(cluster);
                     Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS
                     .SUBMIT_URL,cluster));
             }  
@@ -2105,7 +2105,7 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
             Util.assertSucceeded(prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             bundle.getProcessData()));
     	
-            System.out.println(bundle.getProcessData());
+            logger.info(bundle.getProcessData());
  
             Util.assertSucceeded(UA3ColoHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL,
             bundle.getProcessData()));
@@ -2130,9 +2130,9 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
             }while(dates==null);
             
             
-         System.out.println("Start time: "+formatter.print(startDate));
-         System.out.println("End time: "+formatter.print(endDate));
-         System.out.println("candidate nominal time:"+formatter.print(dates.get(0)));
+         logger.info("Start time: "+formatter.print(startDate));
+         logger.info("End time: "+formatter.print(endDate));
+         logger.info("candidate nominal time:"+formatter.print(dates.get(0)));
          DateTime now=dates.get(0);
         
         if(formatter.print(startDate).compareToIgnoreCase(formatter.print(dates.get(0)))>0)
@@ -2140,7 +2140,7 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
         	now=startDate;
         }
         
-        System.out.println("Now:"+formatter.print(now));            
+        logger.info("Now:"+formatter.print(now));
         
         String insertionFolder="";
         DateTime insertionTime=null;
@@ -2150,7 +2150,7 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
         now.plusMinutes(Integer.parseInt(delay)),
         initialData);
         //insert data after all relevant workflows are over
-        System.out.println("insertion folder is: "+insertionFolder);
+        logger.info("insertion folder is: "+insertionFolder);
         
         int expectedsize=0;
         
@@ -2161,10 +2161,10 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
         
         for(int i=1;i<=5;i++)
         {
-            //System.out.println("i="+i+" and updated="+updated);
+            //logger.info("i="+i+" and updated="+updated);
             while(!allRelevantWorkflowsAreOver(UA3ColoHelper,bundleId, insertionFolder))
             {
-                //System.out.println("waiting for relevant workflows to be over before inserting
+                //logger.info("waiting for relevant workflows to be over before inserting
                 folder
                 "+insertionFolder);
                 //keep waiting
@@ -2173,7 +2173,7 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
             
                 if(i==3)
                 {
-                    System.out.println("going to update process now....");
+                    logger.info("going to update process now....");
                     LateProcess newlate=bundle.getProcessObject().getLateProcess();
                     newlate.setPolicy(PolicyType.EXP_BACKOFF);
                     
@@ -2184,9 +2184,9 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
                     updated=true;
                 }
             
-            System.out.println("going to insert data at: "+insertionFolder);
+            logger.info("going to insert data at: "+insertionFolder);
             insertionTime=new DateTime(DateTimeZone.UTC);
-            System.out.println("insertion time is :"+insertionTime);
+            logger.info("insertion time is :"+insertionTime);
             Util.injectMoreData(UA3ColoHelper,insertionFolder,
             "src/test/resources/OozieExampleInputData/lateData");
             initialData=Util.getHadoopLateData(UA3ColoHelper,Util.getInputFeedFromBundle(bundle));
@@ -2204,9 +2204,9 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
             expectedsize=i;
         }
         
-        System.out.println("precautionary sleep commencing....");
+        logger.info("precautionary sleep commencing....");
         Thread.sleep(180000);
-        System.out.println("precautionary sleep ended....");
+        logger.info("precautionary sleep ended....");
         
         //now wait till the total size of consumer queue is 2
         int attempts=0;
@@ -2219,8 +2219,8 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
             }
             //keep waiting baby
             Thread.sleep(1000);
-            attempts++; System.out.println("attempt number: "+attempts); if(attempts==180) {break;}
-            System.out.println("current attempt is "+attempts);
+            attempts++; logger.info("attempt number: "+attempts); if(attempts==180) {break;}
+            logger.info("current attempt is "+attempts);
         }
         
         //now parse the goddamn consumer data for info
@@ -2350,10 +2350,10 @@ expectedsize-skippedInstances+1,insertionFolder,expectedsize-skippedInstances+1)
                                                  actionMan.getStatus().equals(CoordinatorAction
                                                  .Status.FAILED))
                                                 {
-                                                    System.out.println("found folder
+                                                    logger.info("found folder
                                                     "+insertionFolder+" in workflow:
                                                      "+actionMan.getId());
-                                                    System.out.println("related workflow
+                                                    logger.info("related workflow
                                                     "+actionMan.getId()+" is
                                                     over....");
                                                     workflowStatusMap.put(actionMan.getId(),

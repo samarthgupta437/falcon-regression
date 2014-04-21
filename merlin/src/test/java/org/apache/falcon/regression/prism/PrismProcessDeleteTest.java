@@ -192,7 +192,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             compareDataStoreStates(systemPostUp.get("ua1Archive"), finalUA1ArchiveStore,
                     clusterName);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.info(e.getMessage());
             throw new TestNGException(e.getMessage());
         } finally {
             Util.restartService(cluster2.getClusterHelper());
@@ -250,7 +250,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             compareDataStoresForEquality(initialUA1Store, finalUA1Store);
             compareDataStoresForEquality(initialUA1ArchiveStore, finalUA1ArchiveStore);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.info(e.getMessage());
             throw new TestNGException(e.getMessage());
         }
     }
@@ -315,7 +315,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             compareDataStoreStates(finalUA1ArchiveStore, initialUA1ArchiveStore, clusterName);
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.info(e.getMessage());
             throw new TestNGException(e.getMessage());
         } finally {
             Util.restartService(cluster2.getClusterHelper());
@@ -368,7 +368,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             compareDataStoresForEquality(initialUA1Store, finalUA1Store);
             compareDataStoresForEquality(initialUA1ArchiveStore, finalUA1ArchiveStore);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.info(e.getMessage());
             throw new TestNGException(e.getMessage());
         }
     }
@@ -432,7 +432,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             );
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.info(e.getMessage());
             throw new TestNGException(e.getMessage());
         } finally {
             Util.restartService(cluster2.getClusterHelper());

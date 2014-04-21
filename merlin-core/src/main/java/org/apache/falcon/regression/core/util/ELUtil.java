@@ -144,8 +144,8 @@ public class ELUtil {
             int offsetHrs = offset / 1000 / 60 / 60;
             int offsetMins = offset / 1000 / 60 % 60;
 
-            System.out.println("offset: " + offsetHrs);
-            System.out.println("offset: " + offsetMins);
+            logger.info("offset: " + offsetHrs);
+            logger.info("offset: " + offsetMins);
 
             time.add(Calendar.HOUR_OF_DAY, (-offsetHrs));
             time.add(Calendar.MINUTE, (-offsetMins));

@@ -27,10 +27,12 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.log4j.Logger;
 
 
 public class PrismHelper {
 
+  private static Logger logger = Logger.getLogger(PrismHelper.class);
   protected IEntityManagerHelper clusterHelper;
   protected IEntityManagerHelper processHelper;
   protected IEntityManagerHelper feedHelper;
@@ -75,7 +77,7 @@ public class PrismHelper {
       instanceUtil = new InstanceUtil(this.clusterHelper.getOozieClient());
 
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      logger.info(e.getMessage());
     }
 
   }

@@ -22,6 +22,7 @@
  */
 package org.apache.falcon.regression.core.supportClasses;
 
+import org.apache.log4j.Logger;
 import org.testng.IResultMap;
 import org.testng.ITestContext;
 import org.testng.ITestNGMethod;
@@ -34,6 +35,7 @@ import java.util.List;
 
 public class RetryTestListener extends TestListenerAdapter {
 
+    private Logger logger = Logger.getLogger(RetryTestListener.class);
     private int count = 0;
     private int maxCount = 3;
 
@@ -46,16 +48,16 @@ public class RetryTestListener extends TestListenerAdapter {
             count++;
             result.setStatus(ITestResult.SKIP);
 
-            System.out.println("Error in " + result.getName() + " with status "
+            logger.info("Error in " + result.getName() + " with status "
                     + result.getStatus() + " Retrying " + count + " of 3 times");
             //log.warn("Error in " + result.getName() + " with status "
             // + result.getStatus()+ " Retrying " + count + " of 3 times");
             //log.info("Setting test run attempt status to Skipped");
-            System.out.println("Setting test run attempt status to Skipped");
+            logger.info("Setting test run attempt status to Skipped");
         } else {
             count = 0;
             //log.error("Retry limit exceeded for " + result.getName());
-            System.out.println("Retry limit exceeded for " + result.getName());
+            logger.info("Retry limit exceeded for " + result.getName());
         }
 
         Reporter.setCurrentTestResult(null);

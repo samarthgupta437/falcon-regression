@@ -150,7 +150,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 .parseResponse(prism.getProcessHelper()
                         .update((bundles[1].getProcessData()), updatedProcess))
                 .getStatus() != APIResult.Status.SUCCEEDED) {
-            System.out.println("update didnt SUCCEED in last attempt");
+            logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
 
@@ -198,12 +198,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
-        System.out.println("updated process: " + bundles[1].getProcessData());
+        logger.info("updated process: " + bundles[1].getProcessData());
         while (Util.parseResponse(
                 prism.getProcessHelper()
                         .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
                 .getStatus() != APIResult.Status.SUCCEEDED) {
-            System.out.println("update didnt SUCCEED in last attempt");
+            logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
 
@@ -291,7 +291,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                     prism.getProcessHelper()
                             .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
                     .getStatus() != APIResult.Status.SUCCEEDED) {
-                System.out.println("WARNING: update did not scceed, retyring ");
+                logger.info("WARNING: update did not scceed, retyring ");
                 Thread.sleep(20000);
             }
             prismString = getResponse(prism, bundles[1], true);
@@ -425,12 +425,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         DateTime updateTime = new DateTime(DateTimeZone.UTC);
         Thread.sleep(60000);
         List<String> oldNominalTimes = Util.getActionsNominalTime(cluster3,oldBundleId, ENTITY_TYPE.PROCESS);
-        System.out.println("updating at " + updateTime);
+        logger.info("updating at " + updateTime);
         while (Util
                 .parseResponse(updateProcessConcurrency(bundles[1],
                         bundles[1].getProcessObject().getParallel() + 3))
                 .getStatus() != APIResult.Status.SUCCEEDED) {
-            System.out.println("WARNING: update did not scceed, retyring ");
+            logger.info("WARNING: update did not scceed, retyring ");
             Thread.sleep(20000);
         }
 
@@ -595,7 +595,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 .parseResponse(updateProcessConcurrency(bundles[1],
                         bundles[1].getProcessObject().getParallel() + 3))
                 .getStatus() != APIResult.Status.SUCCEEDED) {
-            System.out.println("WARNING: update did not scceed, retyring ");
+            logger.info("WARNING: update did not scceed, retyring ");
             Thread.sleep(20000);
         }
 
@@ -663,7 +663,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             bundles[1].submitBundle(prism);
             //now to schedule in 1 colo and let it remain in another
 
-            System.out.println("process to be scheduled: " + bundles[1].getProcessData());
+            logger.info("process to be scheduled: " + bundles[1].getProcessData());
 
             Util.assertSucceeded(
                     cluster3.getProcessHelper()
@@ -702,7 +702,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                     .parseResponse(updateProcessConcurrency(bundles[1],
                             bundles[1].getProcessObject().getParallel() + 3))
                     .getStatus() != APIResult.Status.SUCCEEDED) {
-                System.out.println("WARNING: update did not scceed, retyring ");
+                logger.info("WARNING: update did not scceed, retyring ");
                 Thread.sleep(20000);
             }
             prismString = dualComparison(bundles[1], cluster3);
@@ -789,7 +789,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         String updateTime = new DateTime(DateTimeZone.UTC).plusMinutes(2).toString();
 
-        System.out.println("updating @ " + updateTime);
+        logger.info("updating @ " + updateTime);
 
         while (Util.parseResponse(
                 prism.getProcessHelper().update((bundles[1].getProcessData()), bundles[1]
@@ -862,7 +862,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         //now to update
         String updateTime = new DateTime(DateTimeZone.UTC).plusMinutes(2).toString();
-        System.out.println("updating @ " + updateTime);
+        logger.info("updating @ " + updateTime);
         while (Util.parseResponse(
                 prism.getProcessHelper()
                         .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
@@ -934,7 +934,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].addProcessInput(newFeedName, "inputData2");
         inputFeed = Util.setFeedName(inputFeed, newFeedName);
 
-        System.out.println(inputFeed);
+        logger.info(inputFeed);
         Util.assertSucceeded(
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
 
@@ -1085,7 +1085,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                             .update(updatedProcess, updatedProcess))
 
                     .getStatus() != APIResult.Status.SUCCEEDED) {
-                System.out.println("update didnt SUCCEED in last attempt");
+                logger.info("update didnt SUCCEED in last attempt");
                 Thread.sleep(10000);
             }
             dualComparison(bundles[1], cluster3);
@@ -1139,7 +1139,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 (prism.getProcessHelper()
                         .update(bundles[1].getProcessData(), bundles[1].getProcessData())))
                 .getStatus() != APIResult.Status.SUCCEEDED) {
-            System.out.println("update didnt SUCCEED in last attempt");
+            logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
         Util.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
@@ -1207,7 +1207,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 prism.getProcessHelper()
                         .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
                 .getStatus() != APIResult.Status.SUCCEEDED) {
-            System.out.println("update didnt SUCCEED in last attempt");
+            logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
         Util.assertSucceeded(cluster3.getProcessHelper()
@@ -1691,7 +1691,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int wait = 0;
         while (!Util.isBundleOver(coloHelper, bundleId)) {
             //keep waiting
-            System.out.println("bundle not over .. waiting");
+            logger.info("bundle not over .. waiting");
             Thread.sleep(60000);
             wait++;
             if (wait == minutes) {
@@ -1705,7 +1705,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int wait = 0;
         while (!Util.isBundleOver(coloHelper, bundleId)) {
             //keep waiting
-            System.out.println("bundle not over .. waiting, bundleId: " + bundleId);
+            logger.info("bundle not over .. waiting, bundleId: " + bundleId);
             Thread.sleep(60000);
             wait++;
             if (wait == 15) {

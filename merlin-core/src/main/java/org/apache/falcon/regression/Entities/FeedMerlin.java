@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hive.hcatalog.api.HCatClient;
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -44,13 +45,13 @@ import java.util.ArrayList;
 
 public class FeedMerlin extends Feed {
 
-
+  private static Logger logger = Logger.getLogger(FeedMerlin.class);
   public FeedMerlin(String entity) throws JAXBException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Feed element = InstanceUtil.getFeedElement(entity);
 
     Field[] fields = Feed.class.getDeclaredFields();
     for (Field fld : fields) {
-      System.out.println("current field: " + fld.getName());
+      logger.info("current field: " + fld.getName());
         if ("acl".equals(fld.getName())){
             this.setACL(element.getACL());
             continue;

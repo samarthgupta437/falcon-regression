@@ -36,13 +36,13 @@ import java.util.Properties;
 
 public class BaseTestClass {
     private static String[] serverNames;
-    private Logger logger = Logger.getLogger(BaseTestClass.class);
+    private static Logger logger = Logger.getLogger(BaseTestClass.class);
 
     static {
         try {
             prepareProperties();
         } catch (Exception e) {
-            System.out.println(e.getMessage());  //To change body of catch statement use
+            logger.error(e.getMessage());  //To change body of catch statement use
             System.exit(1);
         }
     }

@@ -177,7 +177,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     /*@Override
     public String submitEntityViaCLI(String filePath)  {
 
-        //System.out.println(BASE_COMMAND+ " entity -submit -url "+this.hostname+" -type cluster
+        //logger.info(BASE_COMMAND+ " entity -submit -url "+this.hostname+" -type cluster
         // -file "+filePath);
         return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -submit -url " + this.hostname + " -type cluster -file " +
@@ -344,7 +344,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
                                                    String string
                                                    ) throws
     IOException, URISyntaxException {
-    System.out.println("Not Valid for Cluster Entity");
+    logger.info("Not Valid for Cluster Entity");
     return null;
   }
 

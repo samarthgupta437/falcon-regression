@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.generated.feed.Retention;
 import org.apache.falcon.regression.core.generated.feed.Validity;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBContext;
@@ -38,6 +39,7 @@ import java.util.List;
 public class PrismUtil {
 
     String cluster2Data = null;
+    private static Logger logger = Logger.getLogger(PrismUtil.class);
 
 /*
     public static void verifyClusterSubmission(ServiceResponse r, String clusterData, String env,
@@ -151,7 +153,7 @@ public class PrismUtil {
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(clusterElement, sw);
-        System.out.println("modified cluster 2 is: " + sw);
+        logger.info("modified cluster 2 is: " + sw);
         cluster2Data = sw.toString();
         return bundle;
     }
@@ -164,7 +166,7 @@ public class PrismUtil {
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(clusterElement, sw);
-        System.out.println("modified cluster is: " + sw);
+        logger.info("modified cluster is: " + sw);
         bundle.setClusterData(sw.toString());
     }
 
@@ -180,7 +182,7 @@ public class PrismUtil {
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(feedElement, sw);
         List<String> bundleData = new ArrayList<String>();
-        System.out.println("modified dataset is: " + sw);
+        logger.info("modified dataset is: " + sw);
         bundleData.add(sw.toString());
         bundleData.add(bundle.getDataSets().get(1));
         bundle.setDataSets(bundleData);

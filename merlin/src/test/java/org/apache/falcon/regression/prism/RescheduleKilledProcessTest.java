@@ -108,7 +108,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         Util.lateDataReplenish(cluster, 40, 1, prefix, null);
 
-        System.out.println("process: " + bundles[0].getProcessData());
+        logger.info("process: " + bundles[0].getProcessData());
 
         bundles[0].submitAndScheduleBundle(prism);
 
