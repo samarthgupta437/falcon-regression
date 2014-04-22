@@ -37,7 +37,7 @@ package org.apache.falcon.regression;
 //import com.inmobi.qa.airavatqa.core.instanceUtil;
 //import com.inmobi.qa.airavatqa.generated.coordinator.COORDINATORAPP;
 //
-//public class reunWithLate {
+//public class ReunWithLateTest {
 //
 //	@BeforeMethod
 //	public void testName(Method method)

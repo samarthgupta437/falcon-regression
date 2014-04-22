@@ -23,7 +23,6 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Brother;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -39,7 +38,7 @@ import java.lang.reflect.Method;
 
 
 @Test(groups = "embedded")
-public class PrismConcurrentRequest extends BaseTestClass {
+public class PrismConcurrentRequestTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
     private ThreadGroup brotherGrimm = null;
@@ -47,7 +46,7 @@ public class PrismConcurrentRequest extends BaseTestClass {
     private int failedResponse = 0;
     private int succeedeResponse = 0;
     String aggregateWorkflowDir = baseHDFSDir + "/PrismConcurrentRequest/aggregator";
-    private static final Logger logger = Logger.getLogger(PrismConcurrentRequest.class);
+    private static final Logger logger = Logger.getLogger(PrismConcurrentRequestTest.class);
 
     @BeforeClass
     public void uploadWorkflow() throws Exception {
