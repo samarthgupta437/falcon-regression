@@ -82,12 +82,6 @@ import java.util.TreeMap;
 
 public class InstanceUtil {
 
-    static OozieClient oozieClient = null;
-
-    public InstanceUtil(OozieClient oozieClient)  {
-        this.oozieClient = oozieClient;
-    }
-
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
   public static APIResult sendRequestProcessInstance(String
