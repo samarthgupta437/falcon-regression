@@ -332,7 +332,7 @@ public class HadoopUtil {
     }
 
     public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix, String... copyFrom)throws Exception{
-        Util.HDFSCleanup(fs, prefix);
+        deleteDirIfExists(prefix, fs);
 
         ArrayList<String> dataFolder = new ArrayList<String>();
         for (int i = 0; i < dataDates.size(); i++){

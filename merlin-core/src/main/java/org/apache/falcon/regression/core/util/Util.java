@@ -1096,18 +1096,6 @@ public class Util {
     return null;
   }
 
-  @Deprecated
-  public static void HDFSCleanup(PrismHelper prismHelper, String hdfsPath) throws IOException {
-    Configuration conf = new Configuration();
-    conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
-    final FileSystem fs = FileSystem.get(conf);
-    HDFSCleanup(fs, hdfsPath);
-  }
-
-  public static void HDFSCleanup(FileSystem fs, String hdfsPath) throws IOException {
-    HadoopUtil.deleteDirIfExists(hdfsPath, fs);
-  }
-
   public static void lateDataReplenish(PrismHelper prismHelper, int interval,
                                        int minuteSkip, String folderPrefix) throws IOException, InterruptedException {
     List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
