@@ -18,7 +18,6 @@
 
 package org.apache.falcon.request;
 
-import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.security.FalconAuthorizationToken;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
