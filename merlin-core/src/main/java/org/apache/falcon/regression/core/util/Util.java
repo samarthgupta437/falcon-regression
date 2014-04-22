@@ -257,71 +257,7 @@ public class Util {
                                              String command,
                                              String identityFile)
     throws JSchException, IOException {
-    JSch jsch = new JSch();
-    Session session = jsch.getSession(userName, hostName, 22);
-
-    logger.info(
-      "host_name: " + hostName + " user_name: " + userName + " password: " + password +
-        " command: " +
-        command);
-    // only set the password if its not empty
-    if (null != password && !password.isEmpty()) {
-      session.setUserInfo(new HardcodedUserInfo(password));
-    }
-    Properties config = new Properties();
-    config.setProperty("StrictHostKeyChecking", "no");
-    config.setProperty("UserKnownHostsFile", "/dev/null");
-    // only set the password if its not empty
-    if (null == password || password.isEmpty()) {
-      jsch.addIdentity(identityFile);
-    }
-    session.setConfig(config);
-
-
-    session.connect();
-
-
-    Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
-
-    ChannelExec channel = (ChannelExec) session.openChannel("exec");
-
-
-    logger.info("executing the command..." + command);
-    channel.setCommand(command);
-    channel.setPty(true);
-    channel.connect();
-    Assert.assertTrue(channel.isConnected(), "The channel was not connected correctly!");
-    logger.info("now reading the line....");
-
-    //now to read output
-    List<String> data = new ArrayList<String>();
-
-    InputStream in = channel.getInputStream();
-
-    Assert.assertTrue(channel.isConnected(), "The channel was not connected correctly!");
-
-    BufferedReader r = new BufferedReader(new InputStreamReader(in));
-
-    String line;
-    while (true) {
-
-      while ((line = r.readLine()) != null) {
-        data.add(line);
-      }
-      if (channel.isClosed()) {
-
-        break;
-      }
-
-    }
-
-    in.close();
-    r.close();
-
-    channel.disconnect();
-    session.disconnect();
-
-    return data;
+    return runRemoteScriptAsSudo(hostName, userName, password, command, userName, identityFile);
   }
 
   public static File[] getFiles(String directoryPath) throws URISyntaxException {
