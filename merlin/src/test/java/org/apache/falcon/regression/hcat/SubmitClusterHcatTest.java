@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
 public class SubmitClusterHcatTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
-    private static Logger logger = Logger.getLogger(SubmitClusterHcat.class);
+    private static Logger logger = Logger.getLogger(SubmitClusterHcatTest.class);
 
     // private HCatClient client;
 
