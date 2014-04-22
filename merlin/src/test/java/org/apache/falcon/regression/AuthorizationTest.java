@@ -145,7 +145,7 @@ public class AuthorizationTest extends BaseTestClass {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule feed by U1
         bundles[0].submitClusters(prism);
-        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         //delete feed by U2
@@ -163,7 +163,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.RUNNING);
-        Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
+        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
                 bundles[0].getProcessData()));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.SUSPENDED);
@@ -181,9 +181,9 @@ public class AuthorizationTest extends BaseTestClass {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule, suspend feed by U1
         bundles[0].submitClusters(prism);
-        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         //delete feed by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -202,7 +202,7 @@ public class AuthorizationTest extends BaseTestClass {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule by U1
         bundles[0].submitClusters(prism);
-        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         //try to suspend by U2
@@ -236,9 +236,9 @@ public class AuthorizationTest extends BaseTestClass {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit, schedule and then suspend feed by User1
         bundles[0].submitClusters(prism);
-        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        Util.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         //try to resume feed by User2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -253,7 +253,7 @@ public class AuthorizationTest extends BaseTestClass {
     public void U1SuspendU2ResumeProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        Util.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
+        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
                 bundles[0].getProcessData()));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
                 Job.Status.SUSPENDED);
@@ -528,7 +528,7 @@ public class AuthorizationTest extends BaseTestClass {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit feed
         bundles[0].submitClusters(prism);
-        Util.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed));
         String definition = prism.getFeedHelper()
                 .getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION,
                         feed).getMessage();
@@ -553,7 +553,7 @@ public class AuthorizationTest extends BaseTestClass {
         String feed = Util.getInputFeedFromBundle(bundles[0]);
         //submit and schedule feed
         bundles[0].submitClusters(prism);
-        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
                 Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         //update feed definition
@@ -621,7 +621,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         bundles[0].submitFeeds(prism);
         //schedule input feed by U1
-        Util.assertSucceeded(prism.getFeedHelper().schedule(
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(
                 Util.URLS.SCHEDULE_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
 
@@ -629,7 +629,7 @@ public class AuthorizationTest extends BaseTestClass {
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         ServiceResponse serviceResponse = prism.getProcessHelper().submitAndSchedule(Util
                 .URLS.SUBMIT_AND_SCHEDULE_URL, process, MerlinConstants.USER2_NAME);
-        Util.assertSucceeded(serviceResponse);
+        AssertUtil.assertSucceeded(serviceResponse);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, process, Job.Status.RUNNING);
 
         //get old process details

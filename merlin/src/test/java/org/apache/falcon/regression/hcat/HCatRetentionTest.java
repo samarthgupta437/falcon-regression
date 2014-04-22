@@ -21,6 +21,7 @@ package org.apache.falcon.regression.hcat;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -88,7 +89,7 @@ public class HCatRetentionTest extends BaseTestClass {
             bundle.submitClusters(prism);
 
             if (p > 0) {
-                Util.assertSucceeded(prism.getFeedHelper()
+                AssertUtil.assertSucceeded(prism.getFeedHelper()
                         .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
 
                 feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
@@ -100,7 +101,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
                 check(dataType.getValue(), unit.getValue(), p, tableName);
             } else {
-                Util.assertFailed(prism.getFeedHelper()
+                AssertUtil.assertFailed(prism.getFeedHelper()
                         .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
             }
         }catch(Exception e){
@@ -129,7 +130,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
             List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
-            Util.assertSucceeded(prism.getFeedHelper()
+            AssertUtil.assertSucceeded(prism.getFeedHelper()
                     .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle)));
             InstanceUtil.waitTillRetentionSucceeded(servers.get(0),bundle,expectedStatus,0,2,5);
 

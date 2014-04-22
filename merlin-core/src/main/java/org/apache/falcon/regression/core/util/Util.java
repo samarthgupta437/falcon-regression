@@ -45,7 +45,6 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
@@ -531,43 +530,6 @@ public class Util {
     } else {
       return statuses.get(0);
     }
-  }
-
-  public static void assertSucceeded(ServiceResponse response) throws JAXBException {
-    Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.SUCCEEDED);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-    Assert.assertNotNull(Util.parseResponse(response).getMessage());
-  }
-
-  public static void assertSucceeded(ServiceResponse response, String message)
-    throws JAXBException {
-    Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.SUCCEEDED,
-      message);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200, message);
-  }
-
-  public static void assertPartialSucceeded(ServiceResponse response) throws JAXBException {
-    Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.PARTIAL);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-    Assert.assertNotNull(Util.parseResponse(response).getMessage());
-  }
-
-  public static void assertFailed(ServiceResponse response) throws JAXBException {
-    if (response.message.equals("null"))
-      Assert.assertTrue(false, "response message should not be null");
-
-    Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-  }
-
-  public static void assertFailed(ServiceResponse response, String message) throws JAXBException {
-    if (response.message.equals("null"))
-      Assert.assertTrue(false, "response message should not be null");
-
-    Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED,
-      message);
-    Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400, message);
-    Assert.assertNotNull(Util.parseResponse(response).getRequestId());
   }
 
     public static String getDatasetPath(Bundle bundle) throws JAXBException {
@@ -1449,20 +1411,6 @@ public class Util {
                 OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-
-  public static void assertSucceeded(ProcessInstancesResult response) {
-    Assert.assertNotNull(response.getMessage());
-    Assert.assertTrue(
-            response.getMessage().contains("SUCCEEDED") ||
-                    response.getStatus().toString().equals("SUCCEEDED"));
-  }
-
-  public static void assertFailed(ProcessInstancesResult response) {
-    Assert.assertNotNull(response.getMessage());
-    Assert.assertTrue(response.getMessage().contains("FAILED") ||
-      response.getStatus().toString().equals("FAILED"));
-  }
-
    public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
     throws OozieClientException {
         XOozieClient client = coloHelper.getClusterHelper().getOozieClient();
@@ -1898,9 +1846,9 @@ public class Util {
       .GET_ENTITY_DEFINITION, entity);
 
     if (shouldReturn)
-      Util.assertSucceeded(response);
+      AssertUtil.assertSucceeded(response);
     else
-      Util.assertFailed(response);
+      AssertUtil.assertFailed(response);
     String result = response.getMessage();
     Assert.assertNotNull(result);
 

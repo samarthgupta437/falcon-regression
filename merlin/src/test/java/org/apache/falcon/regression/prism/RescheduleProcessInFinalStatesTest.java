@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -121,11 +122,11 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         ServiceResponse r = prism.getProcessHelper()
                 .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        Util.assertFailed(r);
+        AssertUtil.assertFailed(r);
 
         //submit and schedule process again
         r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
 
@@ -143,11 +144,11 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         ServiceResponse r = prism.getProcessHelper()
                         .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        Util.assertFailed(r);
+        AssertUtil.assertFailed(r);
 
         //submit and schedule process again
         r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
@@ -170,11 +171,11 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         ServiceResponse r = prism.getProcessHelper()
                         .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        Util.assertFailed(r);
+        AssertUtil.assertFailed(r);
 
         //submit and schedule process again
         r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
 
@@ -195,11 +196,11 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         ServiceResponse r = prism.getProcessHelper()
                         .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        Util.assertFailed(r);
+        AssertUtil.assertFailed(r);
 
         //submit and schedule process again
         r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }

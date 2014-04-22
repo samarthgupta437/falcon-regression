@@ -73,10 +73,10 @@ public class FeedResumeTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void resumeSuspendedFeed() throws Exception {
-        Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        Util.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
+        AssertUtil.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
-        Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
+        AssertUtil.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
 
@@ -88,26 +88,26 @@ public class FeedResumeTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void resumeNonExistentFeed() throws Exception {
-        Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
+        AssertUtil.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
 
     @Test(groups = {"singleCluster"})
     public void resumeDeletedFeed() throws Exception {
-        Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
-        Util.assertSucceeded(feedHelper.delete(URLS.DELETE_URL, feed));
+        AssertUtil.assertSucceeded(feedHelper.delete(URLS.DELETE_URL, feed));
 
-        Util.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
+        AssertUtil.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
 
     @Test(groups = {"singleCluster"})
     public void resumeScheduledFeed() throws Exception {
-        Util.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
-        Util.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
+        AssertUtil.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
 
 
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);

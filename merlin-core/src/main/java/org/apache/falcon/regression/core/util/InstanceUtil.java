@@ -211,7 +211,7 @@ public class InstanceUtil {
     }
 
     public static void validateSuccessWOInstances(ProcessInstancesResult r) {
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         Assert.assertNull(r.getInstances(), "Unexpected :" + Arrays.toString(r.getInstances()));
     }
 
@@ -316,7 +316,7 @@ public class InstanceUtil {
     }
 
     public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         int counter = 0;
         for (ProcessInstancesResult.ProcessInstance processInstance : r.getInstances()) {
             if(processInstance.getStatus() == ProcessInstancesResult.WorkflowStatus.FAILED)

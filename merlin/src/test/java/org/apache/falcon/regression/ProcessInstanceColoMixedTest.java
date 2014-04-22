@@ -258,7 +258,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                 .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + processStartTime + "&end=" + InstanceUtil
                                 .addMinsToTime(processStartTime, 45));
-        Util.assertSucceeded(responseInstance);
+        AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
@@ -266,7 +266,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                         "?start=" + InstanceUtil
                                 .addMinsToTime(processStartTime, 37) + "&end=" +
                                 InstanceUtil.addMinsToTime(processStartTime, 44));
-        Util.assertSucceeded(responseInstance);
+        AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
@@ -274,14 +274,14 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                         "?start=" + InstanceUtil
                                 .addMinsToTime(processStartTime, 37) + "&end=" +
                                 InstanceUtil.addMinsToTime(processStartTime, 44));
-        Util.assertSucceeded(responseInstance);
+        AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + processStartTime + "&end=" + InstanceUtil
                                 .addMinsToTime(processStartTime, 7));
-        Util.assertSucceeded(responseInstance);
+        AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
@@ -289,21 +289,21 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                         "?start=" + InstanceUtil
                                 .addMinsToTime(processStartTime, 16) + "&end=" +
                                 InstanceUtil.addMinsToTime(processStartTime, 45));
-        Util.assertSucceeded(responseInstance);
+        AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = cluster1.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + processStartTime + "&end=" + InstanceUtil
                                 .addMinsToTime(processStartTime, 7));
-        Util.assertSucceeded(responseInstance);
+        AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=" + processStartTime + "&end=" + InstanceUtil
                                 .addMinsToTime(processStartTime, 7));
-        Util.assertSucceeded(responseInstance);
+        AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
     }
 }

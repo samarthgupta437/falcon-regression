@@ -20,6 +20,7 @@ package org.apache.falcon.regression.hcat;
 
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -65,22 +66,22 @@ public class SubmitClusterHcatTest extends BaseTestClass {
             logger.info("Cluster: " + clusterData);
             ServiceResponse r =
                     prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, clusterData);
-            Util.assertSucceeded(r);
+            AssertUtil.assertSucceeded(r);
 
             logger.info("Feed: " + feedData01);
             r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedData01);
-            Util.assertSucceeded(r);
+            AssertUtil.assertSucceeded(r);
 
             logger.info("Feed: " + feedData02);
             r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedData02);
-            Util.assertSucceeded(r);
+            AssertUtil.assertSucceeded(r);
 
             logger.info("process: " + processData);
             r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, processData);
-            Util.assertSucceeded(r);
+            AssertUtil.assertSucceeded(r);
 
             r = prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData);
-            Util.assertSucceeded(r);
+            AssertUtil.assertSucceeded(r);
 
         } catch (Exception e) {
             e.printStackTrace();

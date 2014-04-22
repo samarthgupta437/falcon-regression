@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -142,7 +143,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T05:00Z");
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         Assert.assertEquals(r.getInstances(), null);
     }
 

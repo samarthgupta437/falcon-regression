@@ -22,6 +22,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -74,17 +75,17 @@ public class FeedSubmitTest extends BaseTestClass {
     public void submitValidFeed() throws Exception {
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
     }
 
     @Test(groups = {"singleCluster"})
     public void submitValidFeedPostDeletion() throws Exception {
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
     }
@@ -93,22 +94,22 @@ public class FeedSubmitTest extends BaseTestClass {
     public void submitValidFeedPostGet() throws Exception {
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
     }
 
     @Test(groups = {"singleCluster"})
     public void submitValidFeedTwice() throws Exception {
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
     }
 }

@@ -79,11 +79,11 @@ public class FeedStatusTest extends BaseTestClass {
     public void getStatusForScheduledFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         logger.info(feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
 
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
@@ -98,10 +98,10 @@ public class FeedStatusTest extends BaseTestClass {
     public void getStatusForSuspendedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
 
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
 
@@ -117,7 +117,7 @@ public class FeedStatusTest extends BaseTestClass {
     public void getStatusForSubmittedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
 
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
 
@@ -133,10 +133,10 @@ public class FeedStatusTest extends BaseTestClass {
     public void getStatusForDeletedFeed() throws Exception {
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);

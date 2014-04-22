@@ -77,7 +77,7 @@ public class PrismFeedScheduleTest extends BaseTestClass {
         logger.info("feed: " + bundles[0].getDataSets().get(0));
 
         bundles[0].submitAndScheduleFeed();
-        Util.assertSucceeded(prism.getFeedHelper()
+        AssertUtil.assertSucceeded(prism.getFeedHelper()
                 .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
         bundles[1].submitAndScheduleFeed();

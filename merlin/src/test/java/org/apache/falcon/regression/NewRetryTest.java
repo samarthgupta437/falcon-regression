@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -107,7 +108,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
@@ -116,16 +117,16 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             // lets create data now:
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
 
             //schedule process
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
 
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
@@ -167,7 +168,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
@@ -175,14 +176,14 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
             //now wait till the process is over
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             String bundleId = Util.getBundles(clusterOC,
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = Util.getBundleStatus(cluster, bundleId);
@@ -231,7 +232,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
@@ -239,14 +240,14 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
 
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);;
@@ -293,7 +294,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
@@ -301,13 +302,13 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
 
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
@@ -357,7 +358,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
@@ -365,13 +366,13 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
 
@@ -417,20 +418,20 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
 
@@ -475,7 +476,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(
+            AssertUtil.assertSucceeded(
                     prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
@@ -485,13 +486,13 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
 
@@ -538,7 +539,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
@@ -547,13 +548,13 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
 
@@ -599,7 +600,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         bundles[0].setProcessLatePolicy(null);
@@ -607,13 +608,13 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
 
@@ -644,7 +645,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         logger.info("process dates: " + startDate + "," + endDate);
@@ -653,13 +654,13 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
 
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
@@ -703,7 +704,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         logger.info("process dates: " + startDate + "," + endDate);
@@ -712,13 +713,13 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
             Util.readEntityName(bundles[0].getProcessData()),
@@ -760,20 +761,20 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             String bundleId = Util.getBundles(clusterOC,
 
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
@@ -803,7 +804,7 @@ public class NewRetryTest extends BaseTestClass {
 
             logger.info("now suspending the process altogether....");
 
-            Util.assertSucceeded(cluster.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(cluster.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
 
             HashMap<String, Integer> initialMap = getFailureRetriesForEachWorkflow(
                     clusterOC, getDefaultOozieCoordinator(clusterOC, bundleId));
@@ -831,7 +832,7 @@ public class NewRetryTest extends BaseTestClass {
             }
 
             logger.info("now resuming the process...");
-            Util.assertSucceeded(cluster.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(cluster.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData()));
 
             //now to validate all failed instances to check if they were retried or not.
             validateRetry(clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
@@ -858,20 +859,20 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             String bundleId = Util.getBundles(clusterOC,
 
             Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
@@ -934,7 +935,7 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
-            Util.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
         
@@ -942,13 +943,13 @@ public class NewRetryTest extends BaseTestClass {
         //submit and schedule process
         ServiceResponse response = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
         if (retryAttempts <= 0 || delay <= 0) {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         } else {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData = Util.getHadoopDataFromDir(cluster, Util.getInputFeedFromBundle(bundles[0]), lateDir);
-            Util.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = Util.getBundles(clusterOC,
 
@@ -957,7 +958,7 @@ public class NewRetryTest extends BaseTestClass {
 
             validateRetry(clusterOC, bundleId, (bundles[0].getProcessObject().getRetry().getAttempts()) / 2);
 
-            Util.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL, (bundles[0].getProcessData())));
+            AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL, (bundles[0].getProcessData())));
 
             if (retryType.equals("exp-backoff")) {
                 TimeUnit.MINUTES.sleep(delay * ((retryAttempts -
