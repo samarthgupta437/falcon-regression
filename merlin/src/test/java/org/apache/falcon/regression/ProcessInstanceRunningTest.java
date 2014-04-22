@@ -35,7 +35,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
 import org.testng.Assert;
-import org.testng.AssertJUnit;
 import org.testng.annotations.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -153,8 +152,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         ProcessInstancesResult r =
                 prism.getProcessHelper()
                         .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
-        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
-            AssertJUnit.assertTrue(false);
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND, "Unexpected status code");
     }
 
 
@@ -166,8 +164,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
                         Util.readEntityName(bundles[0].getProcessData()));
-        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
-            AssertJUnit.assertTrue(false);
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND, "Unexpected status code");
     }
 
 
