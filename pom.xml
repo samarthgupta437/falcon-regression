@@ -177,14 +177,12 @@
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-hdfs</artifactId>
                         <version>${hadoop2.version}</version>
-                        <classifier>tests</classifier>
                     </dependency>
 
                     <dependency>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-common</artifactId>
                         <version>${hadoop2.version}</version>
-                        <classifier>tests</classifier>
                     </dependency>
 
                     <dependency>

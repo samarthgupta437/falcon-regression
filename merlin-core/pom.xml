@@ -64,27 +64,9 @@
         <profile>
             <id>hadoop-2</id>
             <dependencies>
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-client</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.glassfish</groupId>
-                            <artifactId>javax.servlet</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-hdfs</artifactId>
-                    <classifier>tests</classifier>
-                </dependency>
-
             	<dependency>
                 	<groupId>org.apache.hadoop</groupId>
                 	<artifactId>hadoop-common</artifactId>
-                	<classifier>tests</classifier>
             	</dependency>
 
                 <dependency>
