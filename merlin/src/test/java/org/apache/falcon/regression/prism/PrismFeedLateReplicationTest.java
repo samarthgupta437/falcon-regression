@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -101,7 +102,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-30);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
@@ -173,7 +174,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 ClusterType.SOURCE, null);
 
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(3);
+        String startTime = TimeUtil.getTimeWrtSystemTime(3);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
@@ -248,7 +249,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
 
         //sleep till late starts
-        InstanceUtil.sleepTill(cluster1, InstanceUtil.addMinsToTime(startTime, 4));
+        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 4));
 
         //check for run id to  be 1
         Assert.assertEquals(
@@ -285,7 +286,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2), 2);
 
         //sleep till late 2 starts
-        InstanceUtil.sleepTill(cluster1, InstanceUtil.addMinsToTime(startTime, 9));
+        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 9));
 
         //check for run id to be 2
         Assert.assertEquals(
@@ -328,7 +329,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 ClusterType.SOURCE, null);
 
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(3);
+        String startTime = TimeUtil.getTimeWrtSystemTime(3);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
@@ -435,7 +436,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT, inputFolderListForColo2);
 
         //sleep till late starts
-        InstanceUtil.sleepTill(cluster1, InstanceUtil.addMinsToTime(startTime, 4));
+        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 4));
 
         //check for run id to  be 1
         Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(cluster1, replicationCoordIDTarget.get(0), 0) == 1
@@ -463,7 +464,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         InstanceUtil.putLateDataInFolders(cluster3, inputFolderListForColo2, 2);
 
         //sleep till late 2 starts
-        InstanceUtil.sleepTill(cluster1, InstanceUtil.addMinsToTime(startTime, 9));
+        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 9));
 
         //check for run id to be 2
         Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(cluster1, replicationCoordIDTarget.get(0), 0) == 2
@@ -505,7 +506,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
                 ClusterType.SOURCE, null);
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(3);
+        String startTime = TimeUtil.getTimeWrtSystemTime(3);
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
@@ -616,7 +617,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT, inputFolderListForColo2);
 
         //sleep till late starts
-        InstanceUtil.sleepTill(cluster1, InstanceUtil.addMinsToTime(startTime, 4));
+        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 4));
 
         //check for run id to  be 1
         Assert.assertTrue(InstanceUtil.getInstanceRunIdFromCoord(cluster1, replicationCoordIDTarget.get(0), 0) == 1

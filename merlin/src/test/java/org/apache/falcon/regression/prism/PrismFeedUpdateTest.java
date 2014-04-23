@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -118,7 +119,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
         Util.lateDataReplenish(cluster1, 70, 1, prefix, null);
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 
         //set clusters for feed01
         feed01 = InstanceUtil
@@ -154,8 +155,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         //add clusters to process
 
-        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-        String processEndTime = InstanceUtil.getTimeWrtSystemTime(70);
+        String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
+        String processEndTime = TimeUtil.getTimeWrtSystemTime(70);
 
 
         process01 = InstanceUtil

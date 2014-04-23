@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -133,20 +134,20 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster1,
-                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-100)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(100)), prefix,
+        TimeUtil.createDataWithinDatesAndPrefix(cluster1,
+                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-100)),
+                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(100)), prefix,
                 1);
 
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster2,
-                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-100)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(100)), prefix,
+        TimeUtil.createDataWithinDatesAndPrefix(cluster2,
+                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-100)),
+                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(100)), prefix,
                 1);
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-70);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-70);
 
         //set clusters for feed01
         feed01 = InstanceUtil
@@ -203,7 +204,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         //add clusters to process
 
-        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-16);
+        String processStartTime = TimeUtil.getTimeWrtSystemTime(-16);
         // String processEndTime = InstanceUtil.getTimeWrtSystemTime(20);
 
         process = InstanceUtil
@@ -212,12 +213,12 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         process = InstanceUtil
                 .setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
                         XmlUtil.createProcessValidity(processStartTime,
-                                InstanceUtil.addMinsToTime(processStartTime, 35)));
+                                TimeUtil.addMinsToTime(processStartTime, 35)));
         process = InstanceUtil
                 .setProcessCluster(process, Util.readClusterName(bundles[1].getClusters().get(0)),
                         XmlUtil.createProcessValidity(
-                                InstanceUtil.addMinsToTime(processStartTime, 16),
-                                InstanceUtil.addMinsToTime(processStartTime, 45)));
+                                TimeUtil.addMinsToTime(processStartTime, 16),
+                                TimeUtil.addMinsToTime(processStartTime, 45)));
         process = InstanceUtil
                 .addProcessInputFeed(process, Util.readDatasetName(feed02),
                         Util.readDatasetName(feed02));
@@ -257,52 +258,52 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         ProcessInstancesResult responseInstance = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + processStartTime + "&end=" + InstanceUtil
+                        "?start=" + processStartTime + "&end=" + TimeUtil
                                 .addMinsToTime(processStartTime, 45));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + InstanceUtil
+                        "?start=" + TimeUtil
                                 .addMinsToTime(processStartTime, 37) + "&end=" +
-                                InstanceUtil.addMinsToTime(processStartTime, 44));
+                                TimeUtil.addMinsToTime(processStartTime, 44));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + InstanceUtil
+                        "?start=" + TimeUtil
                                 .addMinsToTime(processStartTime, 37) + "&end=" +
-                                InstanceUtil.addMinsToTime(processStartTime, 44));
+                                TimeUtil.addMinsToTime(processStartTime, 44));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + processStartTime + "&end=" + InstanceUtil
+                        "?start=" + processStartTime + "&end=" + TimeUtil
                                 .addMinsToTime(processStartTime, 7));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + InstanceUtil
+                        "?start=" + TimeUtil
                                 .addMinsToTime(processStartTime, 16) + "&end=" +
-                                InstanceUtil.addMinsToTime(processStartTime, 45));
+                                TimeUtil.addMinsToTime(processStartTime, 45));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = cluster1.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + processStartTime + "&end=" + InstanceUtil
+                        "?start=" + processStartTime + "&end=" + TimeUtil
                                 .addMinsToTime(processStartTime, 7));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + processStartTime + "&end=" + InstanceUtil
+                        "?start=" + processStartTime + "&end=" + TimeUtil
                                 .addMinsToTime(processStartTime, 7));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);

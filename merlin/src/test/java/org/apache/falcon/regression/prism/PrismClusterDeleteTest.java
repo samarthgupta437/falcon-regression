@@ -140,7 +140,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         Util.shutDownService(cluster1.getClusterHelper());
 
         //lets now delete the cluster from both colos
-        AssertUtil.assertPartialSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundles[0].getClusters().get(0)));
+        AssertUtil.assertPartial(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundles[0].getClusters().get(0)));
 
         //now lets get the final states
         List<String> finalPrismStore = prism.getClusterHelper().getStoreInfo();
@@ -246,7 +246,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         Util.shutDownService(cluster1.getClusterHelper());
 
         //lets now delete the cluster from both colos
-        AssertUtil.assertPartialSucceeded(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundles[0].getClusters().get(0)));
+        AssertUtil.assertPartial(prism.getClusterHelper().delete(Util.URLS.DELETE_URL, bundles[0].getClusters().get(0)));
 
         //now lets get the final states
         List<String> initialPrismStore = prism.getClusterHelper().getStoreInfo();

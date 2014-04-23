@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -79,8 +80,8 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
     @Test(enabled = true)
     public void ProcessPartitionExpVariableTest_OptionalCompulsaryPartition() throws Exception {
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(30);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-4);
+        String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, baseTestDir, 1, startTime,
                 endTime);
@@ -102,8 +103,8 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         logger.info(bundles[0].getProcessData());
 
         createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
                 baseTestDir + "/input1/", 1);
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);

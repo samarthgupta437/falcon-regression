@@ -72,6 +72,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.sql.Time;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -195,7 +196,8 @@ public class InstanceUtil {
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
             logger.info(
                     "pArray[" + instanceIndex + "]: " + pArray[instanceIndex].getStatus() + " , " +
-                            pArray[instanceIndex].getInstance());
+                            pArray[instanceIndex].getInstance()
+            );
 
             if (pArray[instanceIndex].getStatus().equals(ws)) {
                 runningCount++;
@@ -472,7 +474,7 @@ public class InstanceUtil {
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         DateTimeZone tz = DateTimeZone.getDefault();
-        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(),false));
+        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(), false));
     }
 
     public static String addMinsToTime(String time, int minutes) throws ParseException {
@@ -621,32 +623,6 @@ public class InstanceUtil {
         fs.copyFromLocalFile(false, false, localPaths.toArray(new Path[localPaths.size()]), new Path(remoteLocation));
     }
 
-    public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord) throws ParseException, IOException, JSchException {
-
-        DateTime finalDate = new DateTime(InstanceUtil.oozieDateToDate(startTimeOfLateCoord));
-
-        while (true) {
-            DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
-            sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
-            if (sysDate.compareTo(finalDate) > 0)
-                break;
-
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-        }
-
-    }
-
-    public static DateTime oozieDateToDate(String time) throws ParseException {
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        fmt = fmt.withZoneUTC();
-        return fmt.parseDateTime(time);
-    }
-
     public static void createHDFSFolders(PrismHelper helper, List<String> folderList) throws IOException, InterruptedException {
         logger.info("creating folders.....");
 
@@ -683,7 +659,7 @@ public class InstanceUtil {
                                                       DateTime endDateJoda, String prefix,
                                                       int interval) throws IOException, InterruptedException {
         List<String> dataDates =
-                Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
         if(!prefix.endsWith("/"))
           prefix = prefix+"/";
@@ -1057,9 +1033,9 @@ public class InstanceUtil {
 
         for (int i = 0; i < processElement.getClusters().getCluster().size(); i++) {
             processElement.getClusters().getCluster().get(i).getValidity().setStart(
-                    InstanceUtil.oozieDateToDate(startTime).toDate());
+                    TimeUtil.oozieDateToDate(startTime).toDate());
             processElement.getClusters().getCluster().get(i).getValidity()
-                    .setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+                    .setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
 
         }
 
@@ -1107,7 +1083,8 @@ public class InstanceUtil {
 
         return InstanceUtil.getReplicatedFolderFromInstanceRunConf(
                 oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId())
-                        .getConf());
+                        .getConf()
+        );
     }
 
     private static String getReplicatedFolderFromInstanceRunConf(
@@ -1270,7 +1247,7 @@ public class InstanceUtil {
                                                                 String prefix,
                                                                 int interval) throws IOException, InterruptedException {
     List<String> dataDates =
-      Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
     for (int i = 0; i < dataDates.size(); i++)
       dataDates.set(i, prefix + dataDates.get(i));

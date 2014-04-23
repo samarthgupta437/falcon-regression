@@ -394,9 +394,9 @@ public class PrismFeedSnSTest extends BaseTestClass {
         Util.shutDownService(cluster1.getFeedHelper());
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        AssertUtil.assertPartialSucceeded(response);
+        AssertUtil.assertPartial(response);
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-        AssertUtil.assertPartialSucceeded(response);
+        AssertUtil.assertPartial(response);
         Util.startService(cluster1.getFeedHelper());
         prism.getClusterHelper().delete(URLS.DELETE_URL, bundles[0].getClusters().get(0));
         prism.getClusterHelper().delete(URLS.DELETE_URL, bundles[1].getClusters().get(0));

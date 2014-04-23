@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -102,15 +103,15 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void invalidChar_Process()
   throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException,
   AuthenticationException, OozieClientException {
-    processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
-      InstanceUtil.getTimeWrtSystemTime(20));
+    processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
+      TimeUtil.getTimeWrtSystemTime(20));
     processBundle.submitAndScheduleBundle(prism);
     InstanceUtil.waitTillInstancesAreCreated(cluster_1, processBundle.getProcessData(), 0,
             10);
       String oldProcess =
               processBundle.getProcessData();
-    processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(5),
-      InstanceUtil.getTimeWrtSystemTime(100));
+    processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(5),
+      TimeUtil.getTimeWrtSystemTime(100));
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
       processBundle.getProcessData(),"abc", null);
     Assert.assertTrue(r.getMessage().contains("java.lang.IllegalArgumentException: abc is not a valid UTC string"));
@@ -137,8 +138,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
   public void updateTimeInPast_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
-    processBundle.setProcessValidity(InstanceUtil.getTimeWrtSystemTime(0),
-      InstanceUtil.getTimeWrtSystemTime(20));
+    processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
+      TimeUtil.getTimeWrtSystemTime(20));
     processBundle.submitAndScheduleBundle(prism);
     Thread.sleep(15000);
     //get old process details
@@ -156,7 +157,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     // update process by adding property
     processBundle.setProcessProperty("someProp","someValue");
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-      processBundle.getProcessData(), InstanceUtil.getTimeWrtSystemTime(-10000));
+      processBundle.getProcessData(), TimeUtil.getTimeWrtSystemTime(-10000));
     AssertUtil.assertSucceeded(r);
 
     //check new coord created with current tim   
@@ -178,8 +179,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void updateTimeInPast_Feed() throws InterruptedException, JAXBException, ParseException, IOException, OozieClientException, URISyntaxException, AuthenticationException {
 
 
-    String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-10);
-    String startTimeCluster_target = InstanceUtil.getTimeWrtSystemTime(10);
+    String startTimeCluster_source = TimeUtil.getTimeWrtSystemTime(-10);
+    String startTimeCluster_target = TimeUtil.getTimeWrtSystemTime(10);
 
     String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_target);
 
@@ -197,7 +198,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String updatedFeed = InstanceUtil.setFeedFrequency(feed, f);
 
     r = prism.getFeedHelper().update(feed, updatedFeed,
-      InstanceUtil.getTimeWrtSystemTime(-10000),null);
+      TimeUtil.getTimeWrtSystemTime(-10000),null);
     AssertUtil.assertSucceeded(r);
 
     InstanceUtil.waitTillInstancesAreCreated(cluster_1, feed, 1, 10);
@@ -234,9 +235,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
      */
 
       try {
-    String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
+    String startTime = TimeUtil.getTimeWrtSystemTime(-15);
     processBundle.setProcessValidity(startTime,
-      InstanceUtil.getTimeWrtSystemTime(60));
+      TimeUtil.getTimeWrtSystemTime(60));
     processBundle.addClusterToBundle(bundles[1].getClusters().get(0),
       ClusterType.SOURCE, null, null);
     processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
@@ -277,7 +278,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     processBundle.setProcessProperty("someProp","someValue");
 
     //send update request
-    String updateTime = InstanceUtil.getTimeWrtSystemTime(5);
+    String updateTime = TimeUtil.getTimeWrtSystemTime(5);
     ServiceResponse r = prism.getProcessHelper().update(oldProcess, processBundle.getProcessData(), updateTime
     );
     AssertUtil.assertPartial(r);
@@ -327,7 +328,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             oldProcess, true, false);
 
     //wait till update time is reached
-    InstanceUtil.sleepTill(cluster_1, updateTime);
+    TimeUtil.sleepTill(cluster_1, updateTime);
 
     OozieUtil.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
             oldNominalTimes_cluster2,
@@ -345,7 +346,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     enabled = true)
   public void inNextFewMinutesUpdate_RollForward_Feed() throws InterruptedException, JAXBException, ParseException, IOException, URISyntaxException, JSchException, OozieClientException, SAXException, AuthenticationException {
     try {
-    String startTimeCluster_source = InstanceUtil.getTimeWrtSystemTime(-18);
+    String startTimeCluster_source = TimeUtil.getTimeWrtSystemTime(-18);
 
     String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_source);
 
@@ -379,7 +380,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
                     oldBundle_cluster1, ENTITY_TYPE.FEED);
 
     //send update command with +5 mins in future
-    String updateTime = InstanceUtil.getTimeWrtSystemTime(5);
+    String updateTime = TimeUtil.getTimeWrtSystemTime(5);
     r = prism.getFeedHelper().update(feed, updatedFeed, updateTime, null);
     AssertUtil.assertPartial(r);
 
@@ -410,7 +411,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     OozieUtil.verifyNewBundleCreation(cluster_1, newBundle_cluster1, oldNominalTimes_cluster1,
             feed, false, false);
     //wait till update time is reached
-    InstanceUtil.sleepTill(cluster_1, updateTime);
+    TimeUtil.sleepTill(cluster_1, updateTime);
 
     //verify new bundle creation with instance matching
     OozieUtil.verifyNewBundleCreation(cluster_1, oldBundle_cluster1, oldNominalTimes_cluster1,
@@ -432,8 +433,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       submit and schedule process with end time after 60 mins. Set update time
        as with +60 from start mins.
      */
-    String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
-    String endTime = InstanceUtil.getTimeWrtSystemTime(60);
+    String startTime = TimeUtil.getTimeWrtSystemTime(-15);
+    String endTime = TimeUtil.getTimeWrtSystemTime(60);
     processBundle.setProcessValidity(startTime, endTime);
     processBundle.submitAndScheduleBundle(prism);
     Thread.sleep(10000);
@@ -454,7 +455,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     //update
     processBundle.setProcessProperty("someProp","someVal");
-    String updateTime = InstanceUtil.addMinsToTime(endTime, 60);
+    String updateTime = TimeUtil.addMinsToTime(endTime, 60);
 
     logger.info("Original Feed : "+ Util.prettyPrintXml(oldProcess));
     logger.info("Updated Feed :"+ Util.prettyPrintXml(processBundle.getProcessData()));
@@ -484,8 +485,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     +60
      in future.
      */
-    String startTime = InstanceUtil.getTimeWrtSystemTime(-15);
-    String endTime = InstanceUtil.getTimeWrtSystemTime(60);
+    String startTime = TimeUtil.getTimeWrtSystemTime(-15);
+    String endTime = TimeUtil.getTimeWrtSystemTime(60);
 
     String feed = processBundle.getDataSets().get(0);
     feed = InstanceUtil.setFeedCluster(feed,
@@ -513,7 +514,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       .getLatestBundleID(cluster_1,
         Util.readEntityName(feed), ENTITY_TYPE.FEED);
 
-    String updateTime = InstanceUtil.addMinsToTime(endTime, 60);
+    String updateTime = TimeUtil.addMinsToTime(endTime, 60);
     String updatedFeed = Util.setFeedProperty(feed, "someProp", "someVal");
 
     logger.info("Original Feed : "+ Util.prettyPrintXml(feed));
@@ -538,8 +539,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       submit and schedule process with start time +10 mins from now. Update
       with start time -4 and update time +2 mins
      */
-    String startTime = InstanceUtil.getTimeWrtSystemTime(10);
-    String endTime = InstanceUtil.getTimeWrtSystemTime(20);
+    String startTime = TimeUtil.getTimeWrtSystemTime(10);
+    String endTime = TimeUtil.getTimeWrtSystemTime(20);
     processBundle.setProcessValidity(startTime, endTime);
     processBundle.submitAndScheduleBundle(prism);
     //save old data
@@ -550,9 +551,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster_1, oldBundleID,
             ENTITY_TYPE.PROCESS);
 
-    processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime,-4),
+    processBundle.setProcessValidity(TimeUtil.addMinsToTime(startTime, -4),
       endTime);
-    String updateTime = InstanceUtil.getTimeWrtSystemTime(2);
+    String updateTime = TimeUtil.getTimeWrtSystemTime(2);
     ServiceResponse r = prism.getProcessHelper().update(oldProcess,
       processBundle.getProcessData(), updateTime);
     AssertUtil.assertSucceeded(r);
@@ -568,12 +569,12 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   public void updateDiffClusterDiffValidity_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, JSchException, AuthenticationException {
 
     //set start end process time for 3 clusters
-    String startTime_cluster1 = InstanceUtil.getTimeWrtSystemTime(-40);
-    String endTime_cluster1 = InstanceUtil.getTimeWrtSystemTime(6);
-    String startTime_cluster2 = InstanceUtil.getTimeWrtSystemTime(120);
-    String endTime_cluster2 = InstanceUtil.getTimeWrtSystemTime(240);
-    String startTime_cluster3 = InstanceUtil.getTimeWrtSystemTime(-30);
-    String endTime_cluster3 = InstanceUtil.getTimeWrtSystemTime(180);
+    String startTime_cluster1 = TimeUtil.getTimeWrtSystemTime(-40);
+    String endTime_cluster1 = TimeUtil.getTimeWrtSystemTime(6);
+    String startTime_cluster2 = TimeUtil.getTimeWrtSystemTime(120);
+    String endTime_cluster2 = TimeUtil.getTimeWrtSystemTime(240);
+    String startTime_cluster3 = TimeUtil.getTimeWrtSystemTime(-30);
+    String endTime_cluster3 = TimeUtil.getTimeWrtSystemTime(180);
 
 
     //create multi cluster bundle
@@ -611,7 +612,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
     //update process
-    String updateTime = InstanceUtil.addMinsToTime(endTime_cluster1,4);
+    String updateTime = TimeUtil.addMinsToTime(endTime_cluster1, 4);
     processBundle.setProcessProperty("someProp","someVal");
     ServiceResponse r = prism.getProcessHelper().update(processBundle.getProcessData(),
       processBundle.getProcessData(), updateTime);
@@ -639,17 +640,17 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String coordStartTime_cluster2 = OozieUtil.getCoordStartTime(cluster_2,
             processBundle.getProcessData(), 1);
 
-    if(!(InstanceUtil.oozieDateToDate(coordStartTime_cluster3).isAfter
-      (InstanceUtil.oozieDateToDate(updateTime)) || InstanceUtil
+    if(!(TimeUtil.oozieDateToDate(coordStartTime_cluster3).isAfter
+      (TimeUtil.oozieDateToDate(updateTime)) || TimeUtil
       .oozieDateToDate(coordStartTime_cluster3).isEqual
-        (InstanceUtil.oozieDateToDate(updateTime))))
+        (TimeUtil.oozieDateToDate(updateTime))))
       Assert.assertTrue(false,"new coord start time is not correct");
 
-    if(InstanceUtil.oozieDateToDate(coordStartTime_cluster2).isEqual
-      (InstanceUtil.oozieDateToDate(updateTime)))
+    if(TimeUtil.oozieDateToDate(coordStartTime_cluster2).isEqual
+      (TimeUtil.oozieDateToDate(updateTime)))
       Assert.assertTrue(false,"new coord start time is not correct");
 
-    InstanceUtil.sleepTill(cluster_3, updateTime);
+    TimeUtil.sleepTill(cluster_3, updateTime);
 
     InstanceUtil.waitTillInstancesAreCreated(cluster_3,
       processBundle.getProcessData(),1,10);
@@ -715,10 +716,10 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
     //create test data on cluster_2
-    InstanceUtil.createDataWithinDatesAndPrefix(cluster_2,
-      InstanceUtil.oozieDateToDate(startTimeCluster_source),
-      InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(60)),
-      testDataDir, 1);
+    TimeUtil.createDataWithinDatesAndPrefix(cluster_2,
+            TimeUtil.oozieDateToDate(startTimeCluster_source),
+            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(60)),
+            testDataDir, 1);
 
     return feed;
   }

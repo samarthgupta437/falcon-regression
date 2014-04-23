@@ -26,7 +26,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
-import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
@@ -66,18 +66,18 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         b.generateUniqueBundle();
         b = new Bundle(b, cluster);
 
-        String startDate = InstanceUtil.getTimeWrtSystemTime(-150);
-        String endDate = InstanceUtil.getTimeWrtSystemTime(100);
+        String startDate = TimeUtil.getTimeWrtSystemTime(-150);
+        String endDate = TimeUtil.getTimeWrtSystemTime(100);
 
         b.setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         b.setProcessWorkflow(aggregateWorkflowDir);
         prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 1);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -98,8 +98,8 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setInputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
-        String processStart = InstanceUtil.getTimeWrtSystemTime(-3);
-        String processEnd = InstanceUtil.getTimeWrtSystemTime(8);
+        String processStart = TimeUtil.getTimeWrtSystemTime(-3);
+        String processEnd = TimeUtil.getTimeWrtSystemTime(8);
         logger.info("processStart: " + processStart + " processEnd: " + processEnd);
         bundles[0].setProcessValidity(processStart, processEnd);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);

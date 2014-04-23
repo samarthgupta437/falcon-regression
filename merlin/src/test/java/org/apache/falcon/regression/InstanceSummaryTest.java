@@ -78,14 +78,15 @@ public class InstanceSummaryTest extends BaseTestClass {
   @BeforeClass(alwaysRun = true)
   public void createTestData() throws Exception {
     uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-    startTime = TimeUtil.get20roundedTime(InstanceUtil
+    startTime = TimeUtil.get20roundedTime(TimeUtil
       .getTimeWrtSystemTime
-        (-20));
-    endTime = InstanceUtil.getTimeWrtSystemTime(60);
-    String startTimeData = InstanceUtil.addMinsToTime(startTime,-100);
-    List<String> dataDates = Util.getMinuteDatesOnEitherSide(InstanceUtil
-      .oozieDateToDate(startTimeData),InstanceUtil.oozieDateToDate(endTime),
-      20);
+              (-20));
+    endTime = TimeUtil.getTimeWrtSystemTime(60);
+    String startTimeData = TimeUtil.addMinsToTime(startTime, -100);
+    List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(TimeUtil
+                    .oozieDateToDate(startTimeData), TimeUtil.oozieDateToDate(endTime),
+            20
+    );
 
     for (int i = 0; i < dataDates.size(); i++)
       dataDates.set(i, Util.getPathPrefix(feedInputPath) + dataDates.get(i));
@@ -138,26 +139,26 @@ public class InstanceSummaryTest extends BaseTestClass {
     //start only before process start
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime, -100));
+        "?start=" + TimeUtil.addMinsToTime(startTime, -100));
     //AssertUtil.assertFailed(r,"response should have failed");
 
     //start only after process end
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,120));
+        "?start=" + TimeUtil.addMinsToTime(startTime, 120));
 
 
     //start only at mid specific instance
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,
-          +10));
+        "?start=" + TimeUtil.addMinsToTime(startTime,
+                +10));
 
     //start only in between 2 instance
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,
-          7));
+        "?start=" + TimeUtil.addMinsToTime(startTime,
+                7));
 
     //start and end at start and end
      r = prism.getProcessHelper()
@@ -167,43 +168,43 @@ public class InstanceSummaryTest extends BaseTestClass {
     //start in between and end at end
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,
-          14) + "&end=" + endTime);
+        "?start=" + TimeUtil.addMinsToTime(startTime,
+                14) + "&end=" + endTime);
 
     //start at start and end between
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + startTime + "&end=" + InstanceUtil.addMinsToTime(endTime,
-          -20));
+        "?start=" + startTime + "&end=" + TimeUtil.addMinsToTime(endTime,
+                -20));
 
     // start and end in between
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,
-          20) + "&end=" + InstanceUtil.addMinsToTime(endTime, -13));
+        "?start=" + TimeUtil.addMinsToTime(startTime,
+                20) + "&end=" + TimeUtil.addMinsToTime(endTime, -13));
 
     //start before start with end in between
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,
-          -100) + "&end=" + InstanceUtil.addMinsToTime(endTime, -37));
+        "?start=" + TimeUtil.addMinsToTime(startTime,
+                -100) + "&end=" + TimeUtil.addMinsToTime(endTime, -37));
 
     //start in between and end after end
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,
-          60) + "&end=" + InstanceUtil.addMinsToTime(endTime, 100));
+        "?start=" + TimeUtil.addMinsToTime(startTime,
+                60) + "&end=" + TimeUtil.addMinsToTime(endTime, 100));
 
     // both start end out od range
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?start=" + InstanceUtil.addMinsToTime(startTime,
-          -100) + "&end=" + InstanceUtil.addMinsToTime(endTime, 100));
+        "?start=" + TimeUtil.addMinsToTime(startTime,
+                -100) + "&end=" + TimeUtil.addMinsToTime(endTime, 100));
 
     // end only
     r = prism.getProcessHelper()
       .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
-        "?end=" + InstanceUtil.addMinsToTime(endTime, -30));
+        "?end=" + TimeUtil.addMinsToTime(endTime, -30));
   }
 
   @Test(enabled = true, timeOut = 1200000 )
@@ -302,8 +303,8 @@ public class InstanceSummaryTest extends BaseTestClass {
 
       r = prism.getFeedHelper()
         .getInstanceSummary(Util.readEntityName(feed),
-          "?start=" + startTime + "&end=" + InstanceUtil.addMinsToTime(endTime,
-            -20));
+          "?start=" + startTime + "&end=" + TimeUtil.addMinsToTime(endTime,
+                  -20));
 
     }
 

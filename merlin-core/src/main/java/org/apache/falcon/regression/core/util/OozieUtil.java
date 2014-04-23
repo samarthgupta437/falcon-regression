@@ -130,8 +130,8 @@ public class OozieUtil {
   }
 
   public static String addMinsToTime(DateTime time, int difference) throws ParseException {
-    return InstanceUtil.addMinsToTime(InstanceUtil.dateToOozieDate(time.toDate()),
-      difference
+    return TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(time.toDate()),
+            difference
     );
   }
 
@@ -436,7 +436,7 @@ public class OozieUtil {
       CoordinatorJob coord = getDefaultOozieCoord(colo, bundleID,
               Util.getEntityType(entity));
   
-      return InstanceUtil.dateToOozieDate(coord.getStartTime()
+      return TimeUtil.dateToOozieDate(coord.getStartTime()
       );
     }
 }

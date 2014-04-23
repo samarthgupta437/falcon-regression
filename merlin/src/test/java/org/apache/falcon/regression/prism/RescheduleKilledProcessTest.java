@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -71,8 +72,8 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         // submit and schedule a process with error in workflow .
         //it will get killed
         //generate bundles according to config files
-        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-        String processEndTime = InstanceUtil.getTimeWrtSystemTime(06);
+        String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
+        String processEndTime = TimeUtil.getTimeWrtSystemTime(06);
         String process = bundles[0].getProcessData();
         process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
@@ -98,8 +99,8 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
     public void recheduleKilledProcess02() throws Exception {
         // submit and schedule a process with error in workflow .
         //it will get killed
-        bundles[0].setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-11),
-                InstanceUtil.getTimeWrtSystemTime(06));
+        bundles[0].setProcessValidity(TimeUtil.getTimeWrtSystemTime(-11),
+                TimeUtil.getTimeWrtSystemTime(06));
 
         bundles[0].setInputFeedDataPath(
                 baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");

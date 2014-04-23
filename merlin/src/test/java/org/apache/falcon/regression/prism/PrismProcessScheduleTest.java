@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -265,8 +266,8 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     add test data generator pending
      */
 
-    bundles[0].setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-1),
-      InstanceUtil.getTimeWrtSystemTime(1));
+    bundles[0].setProcessValidity(TimeUtil.getTimeWrtSystemTime(-1),
+      TimeUtil.getTimeWrtSystemTime(1));
     HadoopFileEditor hadoopFileEditor = null;
     try {
 

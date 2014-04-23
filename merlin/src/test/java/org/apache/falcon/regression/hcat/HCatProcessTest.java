@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.ContentSummary;
@@ -608,8 +609,8 @@ public class HCatProcessTest extends BaseTestClass {
 
     public static List<String> getDatesList(String startDate, String endDate, String datePattern,
                                             int skipMinutes) throws ParseException {
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
         DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);
         logger.info("generating data between " + formatter.print(startDateJoda) + " and " + formatter.print(endDateJoda));
         List<String> dates = new ArrayList<String>();

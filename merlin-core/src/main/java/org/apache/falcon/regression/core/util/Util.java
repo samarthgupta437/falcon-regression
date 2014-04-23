@@ -27,7 +27,6 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
@@ -426,54 +425,7 @@ public class Util {
     }
 
 
-  public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
-    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-    if (minuteSkip == 0) {
-      minuteSkip = 1;
-    }
-    DateTime today = new DateTime(DateTimeZone.UTC);
-    logger.info("today is: " + today.toString());
-
-    List<String> dates = new ArrayList<String>();
-    dates.add(formatter.print(today));
-
-    //first lets get all dates before today
-    for (int backward = 1; backward <= interval; backward += minuteSkip) {
-      dates.add(formatter.print(today.minusMinutes(backward)));
-    }
-
-    //now the forward dates
-    for (int i = 0; i <= interval; i += minuteSkip) {
-      dates.add(formatter.print(today.plusMinutes(i)));
-    }
-
-    return dates;
-  }
-
-  public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                        int minuteSkip) {
-    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-    formatter.withZoneUTC();
-    logger.info("generating data between " + formatter.print(startDate) + " and " +
-      formatter.print(endDate));
-
-    List<String> dates = new ArrayList<String>();
-
-
-    while (!startDate.isAfter(endDate)) {
-      dates.add(formatter.print(startDate.plusMinutes(minuteSkip)));
-      if (minuteSkip == 0) {
-        minuteSkip = 1;
-      }
-      startDate = startDate.plusMinutes(minuteSkip);
-    }
-
-    return dates;
-  }
-
-
-
-  public static int executeCommandGetExitCode(String command) {
+    public static int executeCommandGetExitCode(String command) {
     return executeCommand(command).getExitVal();
   }
 
@@ -482,59 +434,7 @@ public class Util {
     return executeCommand(command).getOutput();
   }
 
-  public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                          FEED_TYPE dataType) {
-        int counter=0, skip=0;
-        List<String> dates = new ArrayList<String>();
-
-        while (!startDate.isAfter(endDate) && counter<1000) {
-
-              if(counter == 1 && skip == 0){
-                  skip=1;
-              }
-              
-              switch(dataType){
-                  case MINUTELY:
-                        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-                        formatter.withZoneUTC();
-                        dates.add(formatter.print(startDate.plusMinutes(skip)));
-                        startDate = startDate.plusMinutes(skip);
-                        break;
-
-                  case HOURLY:
-                        formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
-                        formatter.withZoneUTC();
-                        dates.add(formatter.print(startDate.plusHours(skip)));
-                        startDate = startDate.plusHours(skip);
-                        break;
-
-                  case DAILY:
-                        formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-                        formatter.withZoneUTC();
-                        dates.add(formatter.print(startDate.plusDays(skip)));
-                        startDate = startDate.plusDays(skip);
-                        break;
-
-                  case MONTHLY:
-                        formatter = DateTimeFormat.forPattern("yyyy/MM");
-                        formatter.withZoneUTC();
-                        dates.add(formatter.print(startDate.plusMonths(skip)));
-                        startDate = startDate.plusMonths(skip);
-                        break;
-
-                  case YEARLY:
-                        formatter = DateTimeFormat.forPattern("yyyy");
-                        formatter.withZoneUTC();
-                        dates.add(formatter.print(startDate.plusYears(skip)));
-                        startDate = startDate.plusYears(skip);
-              }//end of switch
-            ++counter;
-        }//end of while
-
-        return dates;
-  }
-
-  public static String setFeedProperty(String feed, String propertyName, String propertyValue)
+    public static String setFeedProperty(String feed, String propertyName, String propertyValue)
     throws JAXBException {
 
     Feed feedObject = InstanceUtil.getFeedElement(feed);
@@ -742,7 +642,7 @@ public class Util {
 
   public static void lateDataReplenish(PrismHelper prismHelper, int interval,
                                        int minuteSkip, String folderPrefix) throws IOException, InterruptedException {
-    List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+    List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFolders(prismHelper, folderData);
         Util.copyDataToFolders(prismHelper, folderData,
@@ -752,7 +652,7 @@ public class Util {
     public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
                                          int minuteSkip, String... files)
     throws IOException, InterruptedException {
-        List<String> folderData = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFolders(prismHelper, folderData);
         Util.copyDataToFolders(prismHelper, baseFolder, folderData, files);
@@ -1019,7 +919,7 @@ public class Util {
                                          int minuteSkip,
                                          String folderPrefix, String postFix)
     throws IOException, InterruptedException {
-        List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
         logger.info("folderData: " + folderPaths.toString());
 
         if (postFix != null) {
@@ -1037,7 +937,7 @@ public class Util {
                                                         int minuteSkip, String folderPrefix,
                                                         String postFix)
     throws IOException, InterruptedException {
-        List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
         logger.info("folderData: " + folderPaths.toString());
 
         if (postFix != null) {
@@ -1054,7 +954,7 @@ public class Util {
   public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
                                          String folderPrefix, String fileToBePut)
     throws IOException, InterruptedException {
-    List<String> folderPaths = Util.getMinuteDatesOnEitherSide(interval, minuteSkip);
+    List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
     logger.info("folderData: " + folderPaths.toString());
 
     Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);

@@ -61,6 +61,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.Path;
@@ -653,9 +654,9 @@ public class Bundle {
 
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getClusters().getCluster().get(0).getValidity()
-                .setStart(InstanceUtil.oozieDateToDate(feedStart).toDate());
+                .setStart(TimeUtil.oozieDateToDate(feedStart).toDate());
         feedElement.getClusters().getCluster().get(0).getValidity()
-                .setEnd(InstanceUtil.oozieDateToDate(feedEnd).toDate());
+                .setEnd(TimeUtil.oozieDateToDate(feedEnd).toDate());
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
 
 
@@ -891,8 +892,8 @@ public class Bundle {
 
             org.apache.falcon.regression.core.generated.process.Validity validity =
                     new org.apache.falcon.regression.core.generated.process.Validity();
-            validity.setStart(InstanceUtil.oozieDateToDate(start).toDate());
-            validity.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
+            validity.setStart(TimeUtil.oozieDateToDate(start).toDate());
+            validity.setEnd(TimeUtil.oozieDateToDate(end).toDate());
             cluster.setValidity(validity);
 
         }
@@ -918,8 +919,8 @@ public class Bundle {
 
             org.apache.falcon.regression.core.generated.process.Validity validity =
                     new org.apache.falcon.regression.core.generated.process.Validity();
-            validity.setStart(InstanceUtil.oozieDateToDate(startDate).toDate());
-            validity.setEnd(InstanceUtil.oozieDateToDate(endDate).toDate());
+            validity.setStart(TimeUtil.oozieDateToDate(startDate).toDate());
+            validity.setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
             cluster.setValidity(validity);
 
         }
@@ -1122,9 +1123,9 @@ public class Bundle {
         org.apache.falcon.regression.core.generated.process.Validity v =
         processObject.getClusters().getCluster().get(0).getValidity();
         if(StringUtils.isNotEmpty(startTime))
-          v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
+          v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
         if(StringUtils.isNotEmpty(endTime))
-          v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+          v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
         cluster.setValidity(v);
         processObject.getClusters().getCluster().add(cluster);
         this.processData = processHelper.toString(processObject);
@@ -1358,8 +1359,8 @@ public class Bundle {
             c.setName(Util.readClusterName(newCluster));
             org.apache.falcon.regression.core.generated.process.Validity v =
                     new org.apache.falcon.regression.core.generated.process.Validity();
-            v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
+            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
             c.setValidity(v);
             cs.getCluster().add(c);
         }
@@ -1388,10 +1389,10 @@ public class Bundle {
             ls.getLocation().add(l);
             c.setLocations(ls);
             Validity v = new Validity();
-            startTime = InstanceUtil.addMinsToTime(startTime, -180);
-            endTime = InstanceUtil.addMinsToTime(endTime, 180);
-            v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+            startTime = TimeUtil.addMinsToTime(startTime, -180);
+            endTime = TimeUtil.addMinsToTime(endTime, 180);
+            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
+            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
             c.setValidity(v);
             Retention r = new Retention();
             r.setAction(ActionType.DELETE);
