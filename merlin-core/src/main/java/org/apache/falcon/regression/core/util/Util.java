@@ -661,7 +661,7 @@ public class Util {
     assert files != null;
     for (final File file : files) {
       if (!file.isDirectory()) {
-        String path = "/lateDataTest/testFolders/" + remoteLocation + "/" +
+        String path = remoteLocation + "/" +
           System.currentTimeMillis() / 1000 + "/";
         logger.info("inserting data@ " + path);
         fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(path));

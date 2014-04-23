@@ -910,7 +910,7 @@ public class NewRetryTest extends BaseTestClass {
 
             String insertionFolder = Util.findFolderBetweenGivenTimeStamps(now, now.plusMinutes(5), initialData);
             logger.info("inserting data in folder " + insertionFolder + " at " + DateTime.now());
-            Util.injectMoreData(cluster, insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
+            Util.injectMoreData(cluster, lateDir + insertionFolder, OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData");
             status = OozieUtil.getBundleStatus(cluster, bundleId);
             //now to validate all failed instances to check if they were retried or not.
             validateRetry(clusterOC, bundleId,
