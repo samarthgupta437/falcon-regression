@@ -45,142 +45,134 @@ import java.util.ArrayList;
 
 public class FeedMerlin extends Feed {
 
-  private static Logger logger = Logger.getLogger(FeedMerlin.class);
-  public FeedMerlin(String entity) throws JAXBException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-    Feed element = InstanceUtil.getFeedElement(entity);
+    private static Logger logger = Logger.getLogger(FeedMerlin.class);
 
-    Field[] fields = Feed.class.getDeclaredFields();
-    for (Field fld : fields) {
-      logger.info("current field: " + fld.getName());
-        if ("acl".equals(fld.getName())){
-            this.setACL(element.getACL());
-            continue;
+    public FeedMerlin(String entity)
+    throws JAXBException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Feed element = InstanceUtil.getFeedElement(entity);
+        Field[] fields = Feed.class.getDeclaredFields();
+        for (Field fld : fields) {
+            logger.info("current field: " + fld.getName());
+            if ("acl".equals(fld.getName())) {
+                this.setACL(element.getACL());
+                continue;
+            }
+            PropertyUtils.setProperty(this, fld.getName(),
+                    PropertyUtils.getProperty(element, fld.getName()));
         }
-      PropertyUtils.setProperty(this, fld.getName(),
-        PropertyUtils.getProperty(element, fld.getName()));
-    }
-  }
-
-  /*
-  all Merlin specific operations
-   */
-  public String getTargetCluster() {
-
-    for (Cluster c : getClusters().getCluster()) {
-      if (c.getType().equals(ClusterType.TARGET))
-        return c.getName();
     }
 
-    return "";
-  }
+    /*
+    all Merlin specific operations
+     */
+    public String getTargetCluster() {
+        for (Cluster c : getClusters().getCluster()) {
+            if (c.getType().equals(ClusterType.TARGET))
+                return c.getName();
+        }
+        return "";
+    }
 
-  public void generateData(HCatClient cli, FileSystem fs, String... copyFrom) throws Exception {
-    FEED_TYPE dataType;
-    ArrayList<String> dataFolder;
-    String ur = getTable().getUri();
-    if (ur.contains(";")) {
-      String[] parts = ur.split("#")[1].split(";");
-      int len = parts.length;
-      dataType = getDataType(len);
-    } else {
-      dataType = FEED_TYPE.YEARLY;
+    public void generateData(HCatClient cli, FileSystem fs, String... copyFrom) throws Exception {
+        FEED_TYPE dataType;
+        ArrayList<String> dataFolder;
+        String ur = getTable().getUri();
+        if (ur.contains(";")) {
+            String[] parts = ur.split("#")[1].split(";");
+            int len = parts.length;
+            dataType = getDataType(len);
+        } else {
+            dataType = FEED_TYPE.YEARLY;
+        }
+        String dbName = ur.split("#")[0].split(":")[1];
+        String tableName = ur.split("#")[0].split(":")[2];
+
+        String loc = cli.getTable(dbName, tableName).getLocation();
+        loc = loc + "/";
+
+        dataFolder = createTestData(fs, dataType, loc, copyFrom);
+        HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder);
+    }
+
+    public void generateData(FileSystem fs, String... copyFrom) throws Exception {
+        FEED_TYPE dataType;
+        String pathValue = "";
+        for (Location location : getLocations().getLocation()) {
+            if (location.getType().equals(LocationType.DATA)) {
+                pathValue = location.getPath();
+            }
+        }
+        String[] parts = pathValue.split("\\$");
+        int len = parts.length;
+        if (len != 2) {
+            dataType = getDataType(len - 1);
+        } else {
+            dataType = FEED_TYPE.YEARLY;
+        }
+        String loc = pathValue.substring(0, pathValue.indexOf("$"));
+        createTestData(fs, dataType, loc, copyFrom);
+    }
+
+    public ArrayList<String> createTestData(FileSystem fs, FEED_TYPE dataType, String loc,
+                                            String... copyFrom) throws Exception {
+        ArrayList<String> dataFolder;
+        DateTime start = new DateTime(getClusters().getCluster().get(0).getValidity()
+                .getStart(), DateTimeZone.UTC);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        String startDate = formatter.print(start);
+        DateTime end = new DateTime(getClusters().getCluster().get(0).getValidity().getEnd(),
+                DateTimeZone.UTC);
+        String endDate = formatter.print(end);
+        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+
+        dataFolder = HadoopUtil.createTestDataInHDFS(fs,
+                Util.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
+        return dataFolder;
     }
 
 
-    String dbName = ur.split("#")[0].split(":")[1];
-    String tableName = ur.split("#")[0].split(":")[2];
-
-    String loc = cli.getTable(dbName, tableName).getLocation();
-    loc = loc + "/";
-
-    dataFolder = createTestData(fs, dataType, loc, copyFrom);
-    HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder);
-  }
-
-  public void generateData(FileSystem fs, String... copyFrom) throws Exception {
-    FEED_TYPE dataType;
-    String pathValue = "";
-    for (Location location : getLocations().getLocation()) {
-      if (location.getType().equals(LocationType.DATA)) {
-        pathValue = location.getPath();
-      }
+    public FEED_TYPE getDataType(int len) {
+        if (len == 5) {
+            return FEED_TYPE.MINUTELY;
+        } else if (len == 4) {
+            return FEED_TYPE.HOURLY;
+        } else if (len == 3) {
+            return FEED_TYPE.DAILY;
+        } else if (len == 2) {
+            return FEED_TYPE.MONTHLY;
+        }
+        return null;
     }
 
-    String[] parts = pathValue.split("\\$");
-    int len = parts.length;
-    if (len != 2) {
-      dataType = getDataType(len - 1);
-    } else {
-      dataType = FEED_TYPE.YEARLY;
-    }
-
-    String loc = pathValue.substring(0, pathValue.indexOf("$"));
-    createTestData(fs, dataType, loc, copyFrom);
-  }
-
-  public ArrayList<String> createTestData(FileSystem fs, FEED_TYPE dataType, String loc, String... copyFrom) throws Exception {
-    ArrayList<String> dataFolder;
-
-    DateTime start = new DateTime(getClusters().getCluster().get(0).getValidity()
-            .getStart(), DateTimeZone.UTC);
-    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-    String startDate = formatter.print(start);
-    DateTime end = new DateTime(getClusters().getCluster().get(0).getValidity().getEnd(),
-            DateTimeZone.UTC);
-    String endDate = formatter.print(end);
-    DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-    DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
-
-    dataFolder = HadoopUtil.createTestDataInHDFS(fs, Util.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
-    return dataFolder;
-  }
-
-
-  public FEED_TYPE getDataType(int len) {
-
-    if (len == 5) {
-      return FEED_TYPE.MINUTELY;
-    } else if (len == 4) {
-      return FEED_TYPE.HOURLY;
-    } else if (len == 3) {
-      return FEED_TYPE.DAILY;
-    } else if (len == 2) {
-      return FEED_TYPE.MONTHLY;
-    }
-    return null;
-  }
-
-  public String insertRetentionValueInFeed(String retentionValue)
+    public String insertRetentionValueInFeed(String retentionValue)
     throws JAXBException {
+        //insert retentionclause
+        getClusters().getCluster().get(0).getRetention()
+                .setLimit(new Frequency(retentionValue));
 
-    //insert retentionclause
-    getClusters().getCluster().get(0).getRetention()
-      .setLimit(new Frequency(retentionValue));
-
-    for (org.apache.falcon.regression.core.generated.feed.Cluster cluster :
-      getClusters().getCluster()) {
-      cluster.getRetention().setLimit(new Frequency(retentionValue));
+        for (org.apache.falcon.regression.core.generated.feed.Cluster cluster :
+                getClusters().getCluster()) {
+            cluster.getRetention().setLimit(new Frequency(retentionValue));
+        }
+        return toString();
     }
 
-    return toString();
-  }
+    public String setTableValue(String pathValue, String dBName, String tableName)
+    throws Exception {
+        getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
+        //set the value
+        return toString();
+    }
 
-  public String setTableValue(String pathValue, String dBName, String tableName) throws Exception {
-
-    getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
-    //set the value
-    return toString();
-  }
-
-  @Override
+    @Override
     public String toString() {
-
         try {
             return InstanceUtil.feedElementToString(this);
         } catch (JAXBException e) {
             e.printStackTrace();
         }
-    return null;
+        return null;
     }
 
 }
