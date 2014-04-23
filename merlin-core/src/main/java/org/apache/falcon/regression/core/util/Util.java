@@ -524,7 +524,7 @@ public class Util {
     return sw.toString();
   }
 
-    public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList)
+    public static void createLateDataFoldersWithRandom(PrismHelper prismHelper, String folderPrefix, List<String> folderList)
     throws IOException, InterruptedException {
         logger.info("creating late data folders.....");
         Configuration conf = new Configuration();
@@ -535,7 +535,7 @@ public class Util {
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
-            fs.mkdirs(new Path("/lateDataTest/testFolders/" + folder));
+            fs.mkdirs(new Path(folderPrefix + folder));
         }
 
         logger.info("created all late data folders.....");
@@ -631,7 +631,7 @@ public class Util {
                                        int minuteSkip, String folderPrefix) throws IOException, InterruptedException {
     List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
-        Util.createLateDataFolders(prismHelper, folderData);
+        Util.createLateDataFoldersWithRandom(prismHelper, folderPrefix, folderData);
         Util.copyDataToFolders(prismHelper, folderData,
                 OSUtil.NORMAL_INPUT, folderPrefix);
     }
