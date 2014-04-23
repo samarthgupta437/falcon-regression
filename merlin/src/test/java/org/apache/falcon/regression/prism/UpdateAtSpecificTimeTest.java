@@ -27,8 +27,10 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -84,7 +86,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       bundles[1].generateUniqueBundle();
       bundles[2].generateUniqueBundle();
 
-      processBundle = Util.readELBundles()[0][0];
+      processBundle = BundleUtil.readELBundles()[0][0];
       processBundle = new Bundle(processBundle, cluster_1);
       processBundle.generateUniqueBundle();
       processBundle.setProcessWorkflow(aggregateWorkflowDir);
@@ -146,8 +148,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       .getLatestBundleID(cluster_1,
         Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
-    List<String> initialNominalTimes = Util.getActionsNominalTime(cluster_1,
-      oldBundleId, ENTITY_TYPE.PROCESS);
+    List<String> initialNominalTimes = OozieUtil.getActionsNominalTime(cluster_1,
+            oldBundleId, ENTITY_TYPE.PROCESS);
 
     InstanceUtil.waitTillInstancesAreCreated(cluster_1, oldProcess, 0, 10);
 
@@ -158,15 +160,15 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     AssertUtil.assertSucceeded(r);
 
     //check new coord created with current tim   
-    Util.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
-      processBundle.getProcessData(), true,
-      false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
+            processBundle.getProcessData(), true,
+            false);
 
     InstanceUtil.waitTillInstancesAreCreated(cluster_1,oldProcess,1,10);
 
-    Util.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
-      processBundle.getProcessData(), true,
-      true);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
+            processBundle.getProcessData(), true,
+            true);
 
   }
 
@@ -263,13 +265,13 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       .getLatestBundleID(cluster_2,
         Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
 
-    List<String> oldNominalTimes_cluster1 = Util.getActionsNominalTime
-      (cluster_1,
-        oldBundleID_cluster1, ENTITY_TYPE.PROCESS);
+    List<String> oldNominalTimes_cluster1 = OozieUtil.getActionsNominalTime
+            (cluster_1,
+                    oldBundleID_cluster1, ENTITY_TYPE.PROCESS);
 
-    List<String> oldNominalTimes_cluster2 = Util.getActionsNominalTime
-      (cluster_2,
-        oldBundleID_cluster2, ENTITY_TYPE.PROCESS);
+    List<String> oldNominalTimes_cluster2 = OozieUtil.getActionsNominalTime
+            (cluster_2,
+                    oldBundleID_cluster2, ENTITY_TYPE.PROCESS);
 
     //update process validity
     processBundle.setProcessProperty("someProp","someValue");
@@ -284,12 +286,12 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       processBundle.getProcessData(), 1, 10);
 
     //verify new bundle on cluster_1 and definition on cluster_3
-    Util.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
-      oldProcess, true, false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
+            oldProcess, true, false);
 
-    Util.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
-      oldNominalTimes_cluster2,
-      oldProcess, false, false);
+    OozieUtil.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
+            oldNominalTimes_cluster2,
+            oldProcess, false, false);
 
     String definition_cluster_3 = Util.getEntityDefinition(cluster_3,
       processBundle.getProcessData(), true);
@@ -317,22 +319,22 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     logger.info("def_cluster_2 : "+ Util.prettyPrintXml(def_cluster_2));
 
     // verify new bundle in cluster_2 and no new bundle in cluster_1  and
-    Util.verifyNewBundleCreation(cluster_1, newBundleID_cluster1, oldNominalTimes_cluster1,
-      oldProcess, false, false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, newBundleID_cluster1, oldNominalTimes_cluster1,
+            oldProcess, false, false);
 
-    Util.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
-      oldNominalTimes_cluster2,
-      oldProcess, true, false);
+    OozieUtil.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
+            oldNominalTimes_cluster2,
+            oldProcess, true, false);
 
     //wait till update time is reached
     InstanceUtil.sleepTill(cluster_1, updateTime);
 
-    Util.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
-      oldNominalTimes_cluster2,
-      oldProcess, true, true);
+    OozieUtil.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
+            oldNominalTimes_cluster2,
+            oldProcess, true, true);
 
-    Util.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
-      oldProcess, true, true);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, oldNominalTimes_cluster1,
+            oldProcess, true, true);
   }
    finally {
           Util.restartService(cluster_2.getProcessHelper());
@@ -372,9 +374,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String oldBundle_cluster1 = InstanceUtil.getLatestBundleID(cluster_1,
       Util.readEntityName(feed), ENTITY_TYPE.FEED);
 
-    List<String> oldNominalTimes_cluster1 = Util.getActionsNominalTime
-      (cluster_1,
-        oldBundle_cluster1, ENTITY_TYPE.FEED);
+    List<String> oldNominalTimes_cluster1 = OozieUtil.getActionsNominalTime
+            (cluster_1,
+                    oldBundle_cluster1, ENTITY_TYPE.FEED);
 
     //send update command with +5 mins in future
     String updateTime = InstanceUtil.getTimeWrtSystemTime(5);
@@ -382,8 +384,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     AssertUtil.assertPartial(r);
 
     //verify new bundle creation on cluster_1 and new definition on cluster_3
-    Util.verifyNewBundleCreation(cluster_1, oldBundle_cluster1, oldNominalTimes_cluster1,
-      feed, true, false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundle_cluster1, oldNominalTimes_cluster1,
+            feed, true, false);
 
 
     String definition = Util.getEntityDefinition(cluster_3, feed, true);
@@ -405,14 +407,14 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       .checkIfFeedCoordExist(cluster_2.getFeedHelper(), Util.readDatasetName(feed),
         "RETENTION"), 2);
 
-    Util.verifyNewBundleCreation(cluster_1, newBundle_cluster1, oldNominalTimes_cluster1,
-      feed, false, false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, newBundle_cluster1, oldNominalTimes_cluster1,
+            feed, false, false);
     //wait till update time is reached
     InstanceUtil.sleepTill(cluster_1, updateTime);
 
     //verify new bundle creation with instance matching
-    Util.verifyNewBundleCreation(cluster_1, oldBundle_cluster1, oldNominalTimes_cluster1,
-      feed, true , true);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundle_cluster1, oldNominalTimes_cluster1,
+            feed, true, true);
 
   }
 
@@ -447,8 +449,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       .getLatestBundleID(cluster_1,
         Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
 
-    List<String> oldNominalTimes = Util.getActionsNominalTime(cluster_1, oldBundleID,
-      ENTITY_TYPE.PROCESS);
+    List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster_1, oldBundleID,
+            ENTITY_TYPE.PROCESS);
 
     //update
     processBundle.setProcessProperty("someProp","someVal");
@@ -464,14 +466,14 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     AssertUtil.assertSucceeded(r);
 
     //verify new bundle creation with instances matching
-    Util.verifyNewBundleCreation(cluster_1,oldBundleID,oldNominalTimes,
-      oldProcess,true, false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID, oldNominalTimes,
+            oldProcess, true, false);
 
     InstanceUtil.waitTillInstancesAreCreated(cluster_1,
       processBundle.getProcessData(), 1, 10);
 
-    Util.verifyNewBundleCreation(cluster_1, oldBundleID, oldNominalTimes,
-      oldProcess, true, true);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID, oldNominalTimes,
+            oldProcess, true, true);
   }
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
@@ -523,8 +525,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     InstanceUtil.waitTillInstancesAreCreated(cluster_1, feed, 1, 10);
 
     //verify new bundle creation
-    Util.verifyNewBundleCreation(cluster_1,oldBundleID,null,
-      feed,true,false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID, null,
+            feed, true, false);
   }
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
@@ -545,8 +547,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String oldBundleID = InstanceUtil
       .getLatestBundleID(cluster_1,
         Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
-    List<String> oldNominalTimes = Util.getActionsNominalTime(cluster_1, oldBundleID,
-      ENTITY_TYPE.PROCESS);
+    List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster_1, oldBundleID,
+            ENTITY_TYPE.PROCESS);
 
     processBundle.setProcessValidity(InstanceUtil.addMinsToTime(startTime,-4),
       endTime);
@@ -556,8 +558,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     AssertUtil.assertSucceeded(r);
     Thread.sleep(10000);
     //verify new bundle creation
-    Util.verifyNewBundleCreation(cluster_1,oldBundleID,oldNominalTimes,
-      oldProcess,true,false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID, oldNominalTimes,
+            oldProcess, true, false);
 
   }
 
@@ -595,17 +597,17 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     String oldBundleID_cluster1 = InstanceUtil
       .getLatestBundleID(cluster_1,
         Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
-    List<String> nominalTimes_cluster1 = Util.getActionsNominalTime(cluster_1, oldBundleID_cluster1,
-      ENTITY_TYPE.PROCESS);
+    List<String> nominalTimes_cluster1 = OozieUtil.getActionsNominalTime(cluster_1, oldBundleID_cluster1,
+            ENTITY_TYPE.PROCESS);
     String oldBundleID_cluster2 = InstanceUtil
       .getLatestBundleID(cluster_2,
         Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
     String oldBundleID_cluster3 = InstanceUtil
       .getLatestBundleID(cluster_3,
         Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
-    List<String> nominalTimes_cluster3 = Util.getActionsNominalTime
-      (cluster_3, oldBundleID_cluster3,
-        ENTITY_TYPE.PROCESS);
+    List<String> nominalTimes_cluster3 = OozieUtil.getActionsNominalTime
+            (cluster_3, oldBundleID_cluster3,
+                    ENTITY_TYPE.PROCESS);
 
 
     //update process
@@ -616,26 +618,26 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     AssertUtil.assertSucceeded(r);
 
     //check for new bundle to be created
-    Util.verifyNewBundleCreation(cluster_1,oldBundleID_cluster1,nominalTimes_cluster1,
-      processBundle.getProcessData(),true,false);
-    Util.verifyNewBundleCreation(cluster_3,oldBundleID_cluster3,
-      nominalTimes_cluster3,
-      processBundle.getProcessData(),true,false);
-    Util.verifyNewBundleCreation(cluster_2,oldBundleID_cluster2,
-      nominalTimes_cluster3,
-      processBundle.getProcessData(),true,false);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, nominalTimes_cluster1,
+            processBundle.getProcessData(), true, false);
+    OozieUtil.verifyNewBundleCreation(cluster_3, oldBundleID_cluster3,
+            nominalTimes_cluster3,
+            processBundle.getProcessData(), true, false);
+    OozieUtil.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
+            nominalTimes_cluster3,
+            processBundle.getProcessData(), true, false);
 
     //wait till new coord are running on Cluster1
     InstanceUtil.waitTillInstancesAreCreated(cluster_1,
       processBundle.getProcessData(),1,10);
-    Util.verifyNewBundleCreation(cluster_1,oldBundleID_cluster1,nominalTimes_cluster1,
-      processBundle.getProcessData(),true,true);
+    OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID_cluster1, nominalTimes_cluster1,
+            processBundle.getProcessData(), true, true);
 
     //verify
-    String coordStartTime_cluster3 = Util.getCoordStartTime(cluster_3,
-      processBundle.getProcessData(),1);
-    String coordStartTime_cluster2 = Util.getCoordStartTime(cluster_2,
-      processBundle.getProcessData(),1);
+    String coordStartTime_cluster3 = OozieUtil.getCoordStartTime(cluster_3,
+            processBundle.getProcessData(), 1);
+    String coordStartTime_cluster2 = OozieUtil.getCoordStartTime(cluster_2,
+            processBundle.getProcessData(), 1);
 
     if(!(InstanceUtil.oozieDateToDate(coordStartTime_cluster3).isAfter
       (InstanceUtil.oozieDateToDate(updateTime)) || InstanceUtil
@@ -653,9 +655,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       processBundle.getProcessData(),1,10);
 
     //verify that no instance are missing
-    Util.verifyNewBundleCreation(cluster_3,oldBundleID_cluster3,
-      nominalTimes_cluster3,
-      processBundle.getProcessData(),true,true);
+    OozieUtil.verifyNewBundleCreation(cluster_3, oldBundleID_cluster3,
+            nominalTimes_cluster3,
+            processBundle.getProcessData(), true, true);
   }
 
   private String submitAndScheduleFeed(Bundle b) throws ParseException, JAXBException, IOException, URISyntaxException, AuthenticationException {

@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUn
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -59,7 +60,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         logger.info("in @BeforeClass");
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        Bundle b = Util.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundles()[0][0];
         b.generateUniqueBundle();
         b = new Bundle(b, cluster);
         b.setProcessWorkflow(aggregateWorkflowDir);
@@ -91,7 +92,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");

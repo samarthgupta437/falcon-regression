@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
@@ -82,7 +83,7 @@ public class RetentionTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws IOException, JAXBException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.getBundleData("RetentionBundles")[0];
+        Bundle bundle = BundleUtil.getBundleData("RetentionBundles")[0];
         bundles[0] = new Bundle(bundle, cluster);
         bundles[0].setInputFeedDataPath(testHDFSDir);
         bundles[0].generateUniqueBundle();
@@ -90,8 +91,8 @@ public class RetentionTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundles[0]));
-        verifyFeedDeletion(Util.getInputFeedFromBundle(bundles[0]));
+        prism.getFeedHelper().delete(URLS.DELETE_URL, BundleUtil.getInputFeedFromBundle(bundles[0]));
+        verifyFeedDeletion(BundleUtil.getInputFeedFromBundle(bundles[0]));
         removeBundles();
     }
 
@@ -104,7 +105,7 @@ public class RetentionTest extends BaseTestClass {
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
-        String inputFeed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
+        String inputFeed = setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]),
                 getFeedPathValue(dataType));
         inputFeed = insertRetentionValueInFeed(inputFeed, unit + "(" + period + ")");
 
@@ -191,7 +192,7 @@ public class RetentionTest extends BaseTestClass {
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = Util.getBundles(clusterOC,
+        String bundleId = OozieUtil.getBundles(clusterOC,
                 inputDataSetName, ENTITY_TYPE.FEED).get(0);
 
         List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
@@ -271,8 +272,8 @@ public class RetentionTest extends BaseTestClass {
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
-        List<String> jobIds = Util.getCoordinatorJobs(cluster,
-                Util.getBundles(clusterOC,
+        List<String> jobIds = OozieUtil.getCoordinatorJobs(cluster,
+                OozieUtil.getBundles(clusterOC,
                         feedName, ENTITY_TYPE.FEED).get(0)
         );
 

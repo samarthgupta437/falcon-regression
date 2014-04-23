@@ -30,10 +30,12 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.KerberosHelper;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -79,7 +81,7 @@ public class AuthorizationTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundle, cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -142,7 +144,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1ScheduleU2DeleteFeed() throws Exception {
-        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule feed by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -178,7 +180,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1SuspendU2DeleteFeed() throws Exception {
-        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule, suspend feed by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -199,7 +201,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1ScheduleU2SuspendFeed() throws Exception {
-        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -233,7 +235,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1SuspendU2ResumeFeed() throws Exception {
-        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule and then suspend feed by User1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -525,7 +527,7 @@ public class AuthorizationTest extends BaseTestClass {
     @Test(enabled = false)
     public void U1SubmitU2UpdateFeed()
             throws URISyntaxException, IOException, AuthenticationException, JAXBException {
-        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit feed
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed));
@@ -550,7 +552,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1ScheduleU2UpdateFeed() throws Exception {
-        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit and schedule feed
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -615,7 +617,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1ScheduleFeedU2ScheduleDependantProcessU1UpdateFeed() throws Exception {
-        String feed = Util.getInputFeedFromBundle(bundles[0]);
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         String process = bundles[0].getProcessData();
         //submit both feeds
         bundles[0].submitClusters(prism);
@@ -653,10 +655,10 @@ public class AuthorizationTest extends BaseTestClass {
         AssertUtil.assertSucceeded(serviceResponse);
 
         //new feed bundle should be created by by U1
-        Util.verifyNewBundleCreation(cluster, oldFeedBundleId, null, feed, true, false);
+        OozieUtil.verifyNewBundleCreation(cluster, oldFeedBundleId, null, feed, true, false);
 
         //new process bundle should be created by U2
-        Util.verifyNewBundleCreation(cluster, oldProcessBundleId, null, process, true, false);
+        OozieUtil.verifyNewBundleCreation(cluster, oldProcessBundleId, null, process, true, false);
         String newProcessUser = getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
         Assert.assertEquals(oldProcessUser, newProcessUser, "User should be the same");
     }
@@ -688,7 +690,7 @@ public class AuthorizationTest extends BaseTestClass {
         Process process = InstanceUtil.getProcessElement(bundle);
         Inputs inputs = new Inputs();
         Input input = new Input();
-        input.setFeed(Util.readEntityName(Util.getInputFeedFromBundle(bundle)));
+        input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(bundle)));
         input.setStart(startEl);
         input.setEnd(endEl);
         input.setName("inputData");

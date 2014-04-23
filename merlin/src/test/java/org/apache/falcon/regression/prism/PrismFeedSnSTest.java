@@ -26,8 +26,10 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -62,7 +64,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         restartRequired = false;
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -112,11 +114,11 @@ public class PrismFeedSnSTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         //ensure only one bundle is there
-        Assert.assertEquals(Util.getBundles(cluster1OC,
+        Assert.assertEquals(OozieUtil.getBundles(cluster1OC,
                 Util.readDatasetName(bundles[0].getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         AssertUtil.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getDataSets().get(0)));
-        Assert.assertEquals(Util.getBundles(cluster2OC,
+        Assert.assertEquals(OozieUtil.getBundles(cluster2OC,
                 Util.readDatasetName(bundles[1].getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         //now check if they have been scheduled correctly or not
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
@@ -138,7 +140,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
-        Assert.assertEquals(Util.getBundles(cluster1OC,
+        Assert.assertEquals(OozieUtil.getBundles(cluster1OC,
                 Util.readDatasetName(bundles[0].getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
 
         AssertUtil.assertSucceeded(cluster1.getFeedHelper()
@@ -153,7 +155,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.SUSPENDED);
-        Assert.assertEquals(Util.getBundles(cluster2OC,
+        Assert.assertEquals(OozieUtil.getBundles(cluster2OC,
                 Util.readDatasetName(bundles[1].getDataSets().get(0)), ENTITY_TYPE.FEED).size(), 1);
         AssertUtil.assertSucceeded(cluster2.getFeedHelper()
                 .resume(URLS.RESUME_URL, bundles[1].getDataSets().get(0)));

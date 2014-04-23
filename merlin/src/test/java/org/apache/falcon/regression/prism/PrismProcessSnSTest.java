@@ -23,7 +23,9 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -58,7 +60,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
+        Bundle bundle = BundleUtil.readBundles("LateDataBundles")[0][0];
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -154,7 +156,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
 
         AssertUtil.assertSucceeded(cluster2.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
-        Assert.assertEquals(Util.getBundles(cluster2.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(OozieUtil.getBundles(cluster2.getFeedHelper().getOozieClient(),
                 Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
@@ -173,7 +175,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         //now check if they have been scheduled correctly or not
         AssertUtil.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
-        Assert.assertEquals(Util.getBundles(cluster2.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(OozieUtil.getBundles(cluster2.getFeedHelper().getOozieClient(),
                 Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
         AssertUtil.assertSucceeded(cluster2.getProcessHelper()
                 .resume(URLS.SUSPEND_URL, bundles[0].getProcessData()));
@@ -183,7 +185,7 @@ public class PrismProcessSnSTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getProcessData()));
 
-        Assert.assertEquals(Util.getBundles(cluster1.getFeedHelper().getOozieClient(),
+        Assert.assertEquals(OozieUtil.getBundles(cluster1.getFeedHelper().getOozieClient(),
                 Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size(), 1);
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);

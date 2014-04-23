@@ -20,6 +20,7 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -55,7 +56,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
@@ -75,7 +76,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         String process = bundles[0].getProcessData();
         process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
-        feed.add(Util.getOutputFeedFromBundle(bundles[0]));
+        feed.add(BundleUtil.getOutputFeedFromBundle(bundles[0]));
         process = bundles[0].setProcessFeeds(process, feed, 0, 0, 1);
 
         process = InstanceUtil.setProcessCluster(process, null,
@@ -104,7 +105,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
                 baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
 
-        String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(bundles[0]));
+        String prefix = InstanceUtil.getFeedPrefix(BundleUtil.getInputFeedFromBundle(bundles[0]));
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         Util.lateDataReplenish(cluster, 40, 1, prefix, null);
 

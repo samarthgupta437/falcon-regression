@@ -21,7 +21,7 @@ package org.apache.falcon.regression.hcat;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
-import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
@@ -48,7 +48,7 @@ public class SubmitClusterHcatTest extends BaseTestClass {
         String feedData02 = "";
         String processData = "";
 
-        bundles[0] = Util.getBundle(cluster, "");
+        bundles[0] = BundleUtil.getBundle(cluster, "");
         try {
 
             clusterData = bundles[0].getClusters().get(0);

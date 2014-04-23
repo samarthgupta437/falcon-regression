@@ -54,11 +54,11 @@ public class ELUtil {
     throws IOException, JAXBException, ParseException, URISyntaxException, InterruptedException {
         HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
                 aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.generateUniqueBundle();
         bundle.setProcessWorkflow(aggregateWorkflowDir);
-        bundle.setFeedValidity(feedStart, feedEnd, Util.getInputFeedNameFromBundle(bundle));
+        bundle.setFeedValidity(feedStart, feedEnd, BundleUtil.getInputFeedNameFromBundle(bundle));
         bundle.setProcessValidity(processStart, processend);
         try {
             bundle.setInvalidData();
@@ -84,7 +84,7 @@ public class ELUtil {
     throws IOException, JAXBException, URISyntaxException, InterruptedException {
         HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
                 aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle = new Bundle(bundle, server1.getEnvFileName(), server1.getPrefix());
         bundle.generateUniqueBundle();
         bundle.setProcessWorkflow(aggregateWorkflowDir);
@@ -110,7 +110,7 @@ public class ELUtil {
         try {
             List<String> bundles = null;
             for (int i = 0; i < 10; ++i) {
-                bundles = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+                bundles = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                         Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
                 if (bundles.size() > 0) {
                     break;
@@ -120,16 +120,16 @@ public class ELUtil {
             Assert.assertTrue(bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
             logger.info("coord id: " + coordID);
-            List<String> missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
+            List<String> missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);
             for (int i = 0; i < 10 && missingDependencies == null; ++i) {
                 Thread.sleep(30000);
-                missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
+                missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);
             }
             Assert.assertNotNull(missingDependencies, "Missing dependencies not found.");
             for (String dependency : missingDependencies) {
                 logger.info("dependency from job: " + dependency);
             }
-            Date jobNominalTime = Util.getNominalTime(prismHelper, coordID);
+            Date jobNominalTime = OozieUtil.getNominalTime(prismHelper, coordID);
             Calendar time = Calendar.getInstance();
             time.setTime(jobNominalTime);
             logger.info("nominalTime:" + jobNominalTime);
@@ -185,7 +185,7 @@ public class ELUtil {
         Calendar finalTime = Calendar.getInstance();
 
         finalTime.setTime(endRef);
-        String path = Util.getDatasetPath(bundle);
+        String path = BundleUtil.getDatasetPath(bundle);
 
         TimeZone tz = TimeZone.getTimeZone("GMT");
         nominalTime.setTimeZone(tz);

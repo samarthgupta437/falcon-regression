@@ -27,6 +27,7 @@ import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -97,7 +98,7 @@ public class HCatReplicationTest extends BaseTestClass {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        Bundle bundle = Util.readHCatBundle();
+        Bundle bundle = BundleUtil.readHCatBundle();
         bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].generateUniqueBundle();
         bundles[0].setClusterInterface(Interfacetype.REGISTRY,

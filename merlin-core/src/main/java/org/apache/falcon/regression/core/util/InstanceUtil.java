@@ -323,11 +323,11 @@ public class InstanceUtil {
     public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
                                             WorkflowJob.Status... ws) throws OozieClientException {
 
-        String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+        String bundleID = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
         OozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
 
-        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
+        List<String> workflows = OozieUtil.getCoordinatorJobs(prismHelper, bundleID);
 
         List<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
@@ -433,10 +433,10 @@ public class InstanceUtil {
                                                                String processName) throws OozieClientException {
         OozieClient oozieClient = prismHelper.getProcessHelper().getOozieClient();
 
-        String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+        String bundleID = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
         List<WorkflowAction> was = new ArrayList<WorkflowAction>();
-        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
+        List<String> workflows = OozieUtil.getCoordinatorJobs(prismHelper, bundleID);
 
         for (String jobID : workflows) {
 
@@ -513,7 +513,7 @@ public class InstanceUtil {
                                            String entityName,ENTITY_TYPE entityType )
       throws OozieClientException {
 
-        List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), entityName, entityType);
+        List<String> bundleIds = OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), entityName, entityType);
 
         String max = "0";
         int maxID = -1;
@@ -530,7 +530,7 @@ public class InstanceUtil {
                                              ENTITY_TYPE entityType, int bundleNumber) throws OozieClientException {
 
         //sequence start from 0
-        List<String> bundleIds = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(), entityName, entityType);
+        List<String> bundleIds = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(), entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
         String bundleID;
         for (String strID : bundleIds) {
@@ -1012,9 +1012,9 @@ public class InstanceUtil {
         logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
-        if (Util.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED).size() == 0)
+        if (OozieUtil.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED).size() == 0)
             return 0;
-        List<String> bundleID = Util.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED);
+        List<String> bundleID = OozieUtil.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED);
         logger.info("bundleID: " + bundleID);
 
         for (String aBundleID : bundleID) {
@@ -1074,9 +1074,9 @@ public class InstanceUtil {
         List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
 
         logger.info("bundle size for process is " +
-                Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType).size());
+                OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType).size());
 
-        for (String bundleId : Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType)) {
+        for (String bundleId : OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType)) {
             BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
             List<CoordinatorJob> coords = bundleInfo.getCoordinators();
 
@@ -1326,7 +1326,7 @@ public class InstanceUtil {
                                                   expectedStatus, int instanceNumber,
                                                 int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
 
-    String entityName = Util.getInputFeedNameFromBundle(b);
+    String entityName = BundleUtil.getInputFeedNameFromBundle(b);
     boolean flag = false;
     int sleep1 = MinutesToWaitForStatus * 60 / 20;
     int sleep2 = MinutesToWaitForCoordAction * 60 / 20;

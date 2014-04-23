@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -104,7 +105,7 @@ public class InstanceSummaryTest extends BaseTestClass {
   @BeforeMethod(alwaysRun = true)
   public void setup(Method method) throws Exception {
     logger.info("test name: " + method.getName());
-    processBundle = Util.readELBundles()[0][0];
+    processBundle = BundleUtil.readELBundles()[0][0];
     processBundle = new Bundle(processBundle, cluster3);
     processBundle.setInputFeedDataPath(feedInputPath);
     processBundle.setProcessWorkflow(aggregateWorkflowDir);

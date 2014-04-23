@@ -68,7 +68,8 @@ public class AssertUtil {
         Assert.assertNotNull(response.getMessage());
         Assert.assertTrue(
                 response.getMessage().contains("SUCCEEDED") ||
-                        response.getStatus().toString().equals("SUCCEEDED"));
+                        response.getStatus().toString().equals("SUCCEEDED")
+        );
     }
 
     public static void assertFailed(final ServiceResponse response, final String message)
@@ -95,15 +96,6 @@ public class AssertUtil {
         Assert.assertEquals(response.getStatusCode(), 400,
                 message);
         Assert.assertNotNull(response.getRequestId());
-    }
-
-    public static void assertPartial(ServiceResponse response) throws JAXBException {
-        Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.PARTIAL,
-                "Status should be PARTIAL");
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400,
-                "Status code should be 400");
-        Assert.assertNotNull(Util.parseResponse(response).getMessage(), "Status message is null");
-
     }
 
     public static void assertPartialSucceeded(ServiceResponse response) throws JAXBException {

@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -68,7 +69,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
 
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -178,9 +179,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
         //get 2 unique feeds
-        String feed01 = Util.getInputFeedFromBundle(bundles[0]);
-        String feed02 = Util.getInputFeedFromBundle(bundles[1]);
-        String outputFeed = Util.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed02 = BundleUtil.getInputFeedFromBundle(bundles[1]);
+        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
 
         //set clusters to null;
         feed01 = InstanceUtil.setFeedCluster(feed01,

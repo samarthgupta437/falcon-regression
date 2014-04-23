@@ -24,8 +24,10 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.supportClasses.HadoopFileEditor;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -58,7 +60,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
   @BeforeMethod(alwaysRun = true)
   public void setUp(Method method) throws Exception {
     logger.info("test name: " + method.getName());
-    Bundle bundle = Util.readBundles("LateDataBundles")[0][0];
+    Bundle bundle = BundleUtil.readBundles("LateDataBundles")[0][0];
     for (int i = 0; i < 2; i++) {
         bundles[i] = new Bundle(bundle, servers.get(i));
         bundles[i].generateUniqueBundle();
@@ -291,10 +293,10 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
       bundles[0].submitAndScheduleProcess();
 
-      Util.verifyNewBundleCreation(cluster1, oldBundleID,
-        new ArrayList<String>(),
-        bundles[0].getProcessData(), true,
-        false);
+      OozieUtil.verifyNewBundleCreation(cluster1, oldBundleID,
+              new ArrayList<String>(),
+              bundles[0].getProcessData(), true,
+              false);
     } finally {
 
       hadoopFileEditor.restore();

@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -71,9 +72,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         logger.info("test name: " + method.getName());
 
         //get 3 unique bundles
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
-        bundles[1] = Util.readELBundles()[0][0];
+        bundles[1] = BundleUtil.readELBundles()[0][0];
         bundles[1].generateUniqueBundle();
 
         //generate bundles according to config files
@@ -102,9 +103,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     public void mixed01_C1sC2sC1eC2e() throws Exception {
         //ua1 and ua3 are source. ua2 target.   feed01 on ua1 , feed02 on ua3
         //get 2 unique feeds
-        String feed01 = Util.getInputFeedFromBundle(bundles[0]);
-        String feed02 = Util.getInputFeedFromBundle(bundles[1]);
-        String outputFeed = Util.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed02 = BundleUtil.getInputFeedFromBundle(bundles[1]);
+        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
         //set source and target for the 2 feeds
 
         //set clusters to null;

@@ -57,6 +57,7 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -606,13 +607,13 @@ public class Bundle {
     @DataProvider(name = "DP")
     public static Object[][] getTestData(Method m) throws IOException {
 
-        return Util.readBundles();
+        return BundleUtil.readBundles();
     }
 
     @DataProvider(name = "EL-DP")
     public static Object[][] getELTestData(Method m) throws IOException {
 
-        return Util.readELBundles();
+        return BundleUtil.readELBundles();
     }
 
     public void setInvalidData() throws JAXBException {
@@ -817,7 +818,7 @@ public class Bundle {
     }
 
     public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         Frequency frq = new Frequency(frequency, periodicity);
         feedElement.setFrequency(frq);
@@ -826,23 +827,23 @@ public class Bundle {
     }
 
     public void setInputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
     public void setOutputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
-        String feedName = Util.getOutputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getOutputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
     public void setInputFeedDataPath(String path) throws JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getLocations().getLocation().get(0).setPath(path);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
     public String getFeedDataPathPrefix() throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(this, Util.getInputFeedNameFromBundle(this));
+        Feed feedElement = InstanceUtil.getFeedElement(this, BundleUtil.getInputFeedNameFromBundle(this));
         return Util.getPathPrefix(feedElement.getLocations().getLocation().get(0)
           .getPath());
     }
@@ -1000,7 +1001,7 @@ public class Bundle {
     }
 
     public void setInputFeedAvailabilityFlag(String flag) throws JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.setAvailabilityFlag(flag);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
@@ -1040,7 +1041,7 @@ public class Bundle {
     }
 
     public void setInputFeedTableUri(String tableUri) throws ParseException, JAXBException {
-        final String feedStr = Util.getInputFeedFromBundle(this);
+        final String feedStr = BundleUtil.getInputFeedFromBundle(this);
         Feed feed = InstanceUtil.getFeedElement(feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
@@ -1049,7 +1050,7 @@ public class Bundle {
     }
 
     public void setOutputFeedTableUri(String tableUri) throws ParseException, JAXBException {
-        final String feedStr = Util.getOutputFeedFromBundle(this);
+        final String feedStr = BundleUtil.getOutputFeedFromBundle(this);
         Feed feed = InstanceUtil.getFeedElement(feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
@@ -1467,7 +1468,7 @@ public class Bundle {
     public static Object[][] readBundle(String bundleLocation) throws IOException {
         sBundleLocation = bundleLocation;
 
-        List<Bundle> bundleSet = Util.getDataFromFolder(bundleLocation);
+        List<Bundle> bundleSet = BundleUtil.getDataFromFolder(bundleLocation);
 
         Object[][] testData = new Object[bundleSet.size()][1];
 
