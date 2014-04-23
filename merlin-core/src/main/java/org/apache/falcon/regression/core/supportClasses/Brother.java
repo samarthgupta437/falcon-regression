@@ -25,7 +25,6 @@ package org.apache.falcon.regression.core.supportClasses;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
-import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -33,7 +32,6 @@ import org.testng.TestNGException;
 import org.apache.log4j.Logger;
 
 public class Brother extends Thread {
-
     String operation;
     String data;
     String url;
@@ -48,30 +46,15 @@ public class Brother extends Thread {
     PrismHelper p;
 
     public Brother(String threadName, String operation, ENTITY_TYPE entityType, ThreadGroup tGroup,
-                   String data,
-                   URLS url) {
-        super(tGroup, threadName);
-        this.operation = operation;
-        this.entityManagerHelper = EntityHelperFactory.getEntityHelper(entityType);
-        this.data = data;
-        this.url = url.getValue();
-        this.output = new ServiceResponse();
-    }
-
-
-    public Brother(String threadName, String operation, ENTITY_TYPE entityType, ThreadGroup tGroup,
                    Bundle b,
                    PrismHelper p, URLS url) {
         super(tGroup, threadName);
         this.operation = operation;
         this.p = p;
-
         if (entityType.equals(ENTITY_TYPE.PROCESS)) {
             this.data = b.getProcessData();
             this.entityManagerHelper = p.getProcessHelper();
-
         } else if (entityType.equals(ENTITY_TYPE.CLUSTER)) {
-
             this.entityManagerHelper = p.getClusterHelper();
             this.data = b.getClusters().get(0);
         } else {
@@ -83,11 +66,9 @@ public class Brother extends Thread {
         this.output = new ServiceResponse();
     }
 
-
     public String getData() {
         return data;
     }
-
 
     public void run() {
         try {
@@ -96,31 +77,18 @@ public class Brother extends Thread {
             e.printStackTrace();
             throw new TestNGException(e.getMessage());
         }
-
-
-        //logger.info("Brother "+this.getName()+" will be executing "+operation);
         logger.info("Brother " + this.getName() + " will be executing " + operation);
-
         try {
             if (operation.equalsIgnoreCase("submit")) {
                 output = entityManagerHelper.submitEntity(url, data);
-
             } else if (operation.equalsIgnoreCase("get")) {
                 output = entityManagerHelper.getEntityDefinition(url, data);
-                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
-                // is: "+output);
             } else if (operation.equalsIgnoreCase("delete")) {
                 output = entityManagerHelper.delete(url, data);
-                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
-                // is: "+output);
             } else if (operation.equalsIgnoreCase("suspend")) {
                 output = entityManagerHelper.suspend(url, data);
-                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
-                // is: "+output);
             } else if (operation.equalsIgnoreCase("schedule")) {
                 output = entityManagerHelper.schedule(url, data);
-                //logger.info("Brother "+this.getName()+"'s response to the "+operation+"
-                // is: "+output);
             } else if (operation.equalsIgnoreCase("resume")) {
                 output = entityManagerHelper.resume(url, data);
             } else if (operation.equalsIgnoreCase("SnS")) {
@@ -128,12 +96,8 @@ public class Brother extends Thread {
             } else if (operation.equalsIgnoreCase("status")) {
                 output = entityManagerHelper.getStatus(url, data);
             }
-
-            //logger.info("Brother "+this.getName()+"'s response to the "+operation+" is:
-            // "+output);
             logger.info("Brother " + this.getName() + "'s response to the " + operation + " is: " +
                     output);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
