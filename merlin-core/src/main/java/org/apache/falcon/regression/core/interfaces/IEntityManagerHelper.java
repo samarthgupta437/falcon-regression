@@ -19,7 +19,6 @@
 package org.apache.falcon.regression.core.interfaces;
 
 import com.jcraft.jsch.JSchException;
-import junit.framework.Assert;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
@@ -37,6 +36,7 @@ import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.AuthOozieClient;
+import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;

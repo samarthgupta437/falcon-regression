@@ -43,8 +43,11 @@ import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.testng.Assert;
-import org.testng.AssertJUnit;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -213,7 +216,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundles[0].getProcessData()));
-        AssertJUnit.assertTrue(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND);
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND, "Unexpected status code");
     }
 
     @Test(groups = {"singleCluster"})
