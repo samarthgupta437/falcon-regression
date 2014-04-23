@@ -88,7 +88,9 @@ public abstract class IEntityManagerHelper {
         return username;
     }
 
-    public String getHCatEndpoint() {return hcatEndpoint; }
+    public String getHCatEndpoint() {
+        return hcatEndpoint;
+    }
 
     protected HCatClient hCatClient;
 
@@ -97,12 +99,12 @@ public abstract class IEntityManagerHelper {
             try {
                 this.hCatClient = HCatUtil.getHCatClient(hcatEndpoint, hiveMetaStorePrincipal);
             } catch (HCatException e) {
-                Assert.fail("Unable to create hCatClient because of exception:\n" + ExceptionUtils.getStackTrace(e));
+                Assert.fail("Unable to create hCatClient because of exception:\n" +
+                        ExceptionUtils.getStackTrace(e));
             }
         }
         return this.hCatClient;
     }
-
 
     //basic properties
     protected String qaHost;
@@ -128,7 +130,6 @@ public abstract class IEntityManagerHelper {
     protected String coloName;
     protected String serviceStartCmd;
     protected String serviceStopCmd;
-    protected String serviceRestartCmd;
     protected String serviceStatusCmd;
     protected String hcatEndpoint = "";
 
@@ -170,10 +171,6 @@ public abstract class IEntityManagerHelper {
 
     public String getServiceUser() {
         return serviceUser;
-    }
-
-    public String getServiceRestartCmd() {
-        return serviceRestartCmd;
     }
 
     public String getServiceStopCmd() {
@@ -226,8 +223,6 @@ public abstract class IEntityManagerHelper {
                 prop.getProperty(prefix + "service_start_cmd", "/etc/init.d/tomcat6 start");
         this.serviceStopCmd = prop.getProperty(prefix + "service_stop_cmd",
                 "/etc/init.d/tomcat6 stop");
-        this.serviceRestartCmd = prop.getProperty(prefix + "service_restart_cmd",
-                "/etc/init.d/tomcat6 restart");
         this.serviceUser = prop.getProperty(prefix + "service_user", null);
         this.serviceStatusMsg = prop.getProperty(prefix + "service_status_msg",
                 "Tomcat servlet engine is running with pid");
@@ -243,21 +238,23 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse submitEntity(String url, String data)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return submitEntity(url, data, null);
     }
+
     public abstract ServiceResponse submitEntity(String url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse submitEntity(URLS url, String data)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return submitEntity(url, data, null);
     }
+
     public abstract ServiceResponse submitEntity(URLS url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse schedule(String url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return schedule(url, data, null);
     }
 
@@ -265,72 +262,82 @@ public abstract class IEntityManagerHelper {
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse submitAndSchedule(String url, String data)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return submitAndSchedule(url, data, null);
     }
+
     public abstract ServiceResponse submitAndSchedule(String url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse submitAndSchedule(URLS url, String data)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return submitAndSchedule(url, data, null);
     }
+
     public abstract ServiceResponse submitAndSchedule(URLS url, String data, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse delete(String url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return delete(url, data, null);
     }
+
     public abstract ServiceResponse delete(String url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse suspend(String url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return suspend(url, data, null);
     }
+
     public abstract ServiceResponse suspend(String url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse resume(String url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return resume(url, data, null);
     }
+
     public abstract ServiceResponse resume(String url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse resume(URLS url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return resume(url, data, null);
     }
+
     public abstract ServiceResponse resume(URLS url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse getStatus(String url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getStatus(url, data, null);
     }
+
     public abstract ServiceResponse getStatus(String url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse getStatus(URLS url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getStatus(url, data, null);
     }
+
     public abstract ServiceResponse getStatus(URLS url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse getEntityDefinition(String url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(url, data, null);
     }
+
     public abstract ServiceResponse getEntityDefinition(String url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse getEntityDefinition(URLS url, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(url, data, null);
     }
+
     public abstract ServiceResponse getEntityDefinition(URLS url, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
@@ -340,28 +347,31 @@ public abstract class IEntityManagerHelper {
             ;
 
     public ServiceResponse schedule(URLS scheduleUrl, String processData)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return schedule(scheduleUrl, processData, null);
     }
+
     public abstract ServiceResponse schedule(URLS scheduleUrl, String processData, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse delete(URLS deleteUrl, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return delete(deleteUrl, data, null);
     }
+
     public abstract ServiceResponse delete(URLS deleteUrl, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse suspend(URLS suspendUrl, String data)
-            throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return suspend(suspendUrl, data, null);
     }
+
     public abstract ServiceResponse suspend(URLS suspendUrl, String data, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException;
 
     public ProcessInstancesResult getRunningInstance(URLS processRunningInstance, String name)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return getRunningInstance(processRunningInstance, name, null);
     }
 
@@ -371,7 +381,7 @@ public abstract class IEntityManagerHelper {
 
     public ProcessInstancesResult getProcessInstanceStatus(
             String readEntityName, String params)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceStatus(readEntityName, params, null);
     }
 
@@ -381,7 +391,7 @@ public abstract class IEntityManagerHelper {
 
     public ProcessInstancesResult getProcessInstanceSuspend(
             String readEntityName, String params)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceSuspend(readEntityName, params, null);
 
     }
@@ -405,14 +415,17 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse update(String oldEntity,
-                                           String newEntity,
-                                           String updateTime) throws IOException, JAXBException, URISyntaxException, AuthenticationException {
+                                  String newEntity,
+                                  String updateTime)
+    throws IOException, JAXBException, URISyntaxException, AuthenticationException {
         return update(oldEntity, newEntity, updateTime, null);
     }
+
     public abstract ServiceResponse update(String oldEntity,
                                            String newEntity,
                                            String updateTime,
-                                           String user) throws IOException, JAXBException, URISyntaxException, AuthenticationException;
+                                           String user)
+    throws IOException, JAXBException, URISyntaxException, AuthenticationException;
 
     public ServiceResponse updateRequestHelper(String oldEntity,
                                                String newEntity,
@@ -423,47 +436,54 @@ public abstract class IEntityManagerHelper {
                 Util.readEntityName(oldEntity);
 
         if (org.apache.commons.lang.StringUtils.isEmpty(colo))
-            return Util.sendRequest(url + "?effective=" + updateTime,"post",
-              newEntity, null);
+            return Util.sendRequest(url + "?effective=" + updateTime, "post",
+                    newEntity, null);
 
-        return Util.sendRequest(url + colo + "&effective=" + updateTime,"post",
-          newEntity, null);
+        return Util.sendRequest(url + colo + "&effective=" + updateTime, "post",
+                newEntity, null);
     }
 
     public abstract String toString(Object object) throws JAXBException;
 
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName, String params)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceKill(readEntityName, params, null);
     }
+
     public abstract ProcessInstancesResult getProcessInstanceKill(String readEntityName,
                                                                   String string, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
     public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceRerun(EntityName, params, null);
     }
+
     public abstract ProcessInstancesResult getProcessInstanceRerun(String readEntityName,
                                                                    String string, String user)
     throws IOException, URISyntaxException, AuthenticationException
             ;
 
     public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
-            throws IOException, URISyntaxException, AuthenticationException {
+    throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceResume(EntityName, params, null);
     }
-    public abstract ProcessInstancesResult getProcessInstanceResume(String readEntityName, String string, String user)
+
+    public abstract ProcessInstancesResult getProcessInstanceResume(String readEntityName,
+                                                                    String string, String user)
     throws IOException, URISyntaxException, AuthenticationException
             ;
 
-  public abstract InstancesSummaryResult getInstanceSummary(String readEntityName,
-                                       String string) throws IOException, AuthenticationException,
+    public abstract InstancesSummaryResult getInstanceSummary(String readEntityName,
+                                                              String string)
+    throws IOException, AuthenticationException,
     URISyntaxException;
 
-  public String getColo() {
-    return colo;
-  }
+    public String getColo() {
+        return colo;
+    }
 
-  public String getColoName(){ return coloName; }
+    public String getColoName() {
+        return coloName;
+    }
 }
