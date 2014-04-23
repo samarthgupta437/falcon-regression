@@ -23,11 +23,11 @@ public enum RETENTION_UNITS {
 
     private String value;
 
-    private RETENTION_UNITS(String value){
+    private RETENTION_UNITS(String value) {
         this.value = value;
     }
 
-    public String getValue(){
+    public String getValue() {
         return value;
     }
 }

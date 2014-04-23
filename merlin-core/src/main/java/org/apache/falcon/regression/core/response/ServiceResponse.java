@@ -83,6 +83,7 @@ public class ServiceResponse {
         logger.info("The web service response is:\n" +
                 Util.prettyPrintXmlOrJson(message));
     }
+
     public ServiceResponse() {
     }
 }

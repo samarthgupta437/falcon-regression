@@ -32,54 +32,56 @@ import org.apache.log4j.Logger;
 
 public class PrismHelper {
 
-  private static Logger logger = Logger.getLogger(PrismHelper.class);
-  protected IEntityManagerHelper clusterHelper;
-  protected IEntityManagerHelper processHelper;
-  protected IEntityManagerHelper feedHelper;
-  protected InstanceUtil instanceUtil;
+    private static Logger logger = Logger.getLogger(PrismHelper.class);
+    protected IEntityManagerHelper clusterHelper;
+    protected IEntityManagerHelper processHelper;
+    protected IEntityManagerHelper feedHelper;
+    protected InstanceUtil instanceUtil;
 
-  protected Util util;
+    protected Util util;
 
-  public IEntityManagerHelper getClusterHelper() {
-    return clusterHelper;
-  }
-
-  public IEntityManagerHelper getFeedHelper() {
-    return feedHelper;
-  }
-
-  public IEntityManagerHelper getProcessHelper() {
-    return processHelper;
-  }
-
-  protected String envFileName;
-
-  public String getPrefix() {
-    return prefix;
-  }
-
-  protected String prefix;
-
-  public String getEnvFileName() {
-    return envFileName;
-  }
-
-  public PrismHelper(String envFileName, String prefix) {
-    try {
-      this.envFileName = envFileName;
-      this.prefix = prefix;
-      clusterHelper =
-        EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
-          prefix);
-      processHelper =
-        EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
-      feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
-      instanceUtil = new InstanceUtil(this.clusterHelper.getOozieClient());
-
-    } catch (Exception e) {
-      logger.info(e.getMessage());
+    public IEntityManagerHelper getClusterHelper() {
+        return clusterHelper;
     }
 
-  }
+    public IEntityManagerHelper getFeedHelper() {
+        return feedHelper;
+    }
+
+    public IEntityManagerHelper getProcessHelper() {
+        return processHelper;
+    }
+
+    protected String envFileName;
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    protected String prefix;
+
+    public String getEnvFileName() {
+        return envFileName;
+    }
+
+    public PrismHelper(String envFileName, String prefix) {
+        try {
+            this.envFileName = envFileName;
+            this.prefix = prefix;
+            clusterHelper =
+                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
+                            prefix);
+            processHelper =
+                    EntityHelperFactory
+                            .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
+            feedHelper =
+                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
+            instanceUtil = new InstanceUtil(this.clusterHelper.getOozieClient());
+
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+
+    }
 
 }

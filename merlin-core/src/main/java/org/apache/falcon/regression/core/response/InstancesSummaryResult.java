@@ -69,7 +69,7 @@ public class InstancesSummaryResult extends APIResult {
 
         @XmlElement
         public String cluster;
-        @XmlElementWrapper(name="map")
+        @XmlElementWrapper(name = "map")
         public Map<String, Long> summaryMap;
 
         public InstanceSummary() {

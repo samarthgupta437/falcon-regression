@@ -29,23 +29,23 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 public class ClusterMerlin extends org.apache.falcon.regression.core.generated
-  .cluster.Cluster {
+        .cluster.Cluster {
 
-
-  public ClusterMerlin(String clusterData) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-    Cluster element = InstanceUtil.getClusterElement(clusterData);
-    Field[] fields = Cluster.class.getDeclaredFields();
-    for (Field fld : fields) {
-      PropertyUtils.setProperty(this, fld.getName(),
-        PropertyUtils.getProperty(element, fld.getName()));
+    public ClusterMerlin(String clusterData)
+    throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        Cluster element = InstanceUtil.getClusterElement(clusterData);
+        Field[] fields = Cluster.class.getDeclaredFields();
+        for (Field fld : fields) {
+            PropertyUtils.setProperty(this, fld.getName(),
+                    PropertyUtils.getProperty(element, fld.getName()));
+        }
     }
-  }
 
-  public String getLocation(ClusterLocationTypes locationType) {
-    for(Location l : getLocations().getLocation()) {
-       if (locationType.getValue().equals(l.getName()))
-          return l.getPath();
+    public String getLocation(ClusterLocationTypes locationType) {
+        for (Location l : getLocations().getLocation()) {
+            if (locationType.getValue().equals(l.getName()))
+                return l.getPath();
+        }
+        return null;
     }
-    return null;
-  }
 }

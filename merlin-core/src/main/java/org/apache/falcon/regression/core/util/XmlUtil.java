@@ -32,9 +32,9 @@ import java.text.ParseException;
 
 public class XmlUtil {
 
-  static Logger logger = Logger.getLogger(XmlUtil.class);
+    static Logger logger = Logger.getLogger(XmlUtil.class);
 
-  public static Validity createValidity(String start, String end) throws ParseException {
+    public static Validity createValidity(String start, String end) throws ParseException {
         Validity v = new Validity();
         v.setStart(InstanceUtil.oozieDateToDate(start).toDate());
         v.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
@@ -48,11 +48,9 @@ public class XmlUtil {
         return r;
     }
 
-
     public static org.apache.falcon.regression.core.generated.process.Validity
     createProcessValidity(
             String startTime, String endTime) throws ParseException {
-
         org.apache.falcon.regression.core.generated.process.Validity v =
                 new org.apache.falcon.regression.core.generated.process.Validity();
         logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
@@ -60,14 +58,14 @@ public class XmlUtil {
         v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
         v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
         return v;
-
     }
 
-  public static boolean isIdentical(String expected, String actual) throws IOException, SAXException {
-    XMLUnit.setIgnoreWhitespace(true);
-    XMLUnit.setIgnoreAttributeOrder(true);
-    Diff diff = XMLUnit.compareXML(expected, actual);
-    logger.info(diff);
-    return diff.identical();
-  }
+    public static boolean isIdentical(String expected, String actual)
+    throws IOException, SAXException {
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreAttributeOrder(true);
+        Diff diff = XMLUnit.compareXML(expected, actual);
+        logger.info(diff);
+        return diff.identical();
+    }
 }
