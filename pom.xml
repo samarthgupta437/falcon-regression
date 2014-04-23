@@ -158,6 +158,7 @@
             <id>hadoop-2</id>
             <properties>
                 <hadoop2.version>2.2.0</hadoop2.version>
+                <hive.version>0.13.0</hive.version>
             </properties>
             <dependencyManagement>
                 <dependencies>
