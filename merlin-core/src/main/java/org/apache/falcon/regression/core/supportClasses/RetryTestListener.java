@@ -41,25 +41,17 @@ public class RetryTestListener extends TestListenerAdapter {
 
     @Override
     public void onTestFailure(ITestResult result) {
-        //Logger log = Logger.getLogger("transcript.test");
         Reporter.setCurrentTestResult(result);
-
         if (result.getMethod().getRetryAnalyzer().retry(result)) {
             count++;
             result.setStatus(ITestResult.SKIP);
-
             logger.info("Error in " + result.getName() + " with status "
                     + result.getStatus() + " Retrying " + count + " of 3 times");
-            //log.warn("Error in " + result.getName() + " with status "
-            // + result.getStatus()+ " Retrying " + count + " of 3 times");
-            //log.info("Setting test run attempt status to Skipped");
             logger.info("Setting test run attempt status to Skipped");
         } else {
             count = 0;
-            //log.error("Retry limit exceeded for " + result.getName());
             logger.info("Retry limit exceeded for " + result.getName());
         }
-
         Reporter.setCurrentTestResult(null);
     }
 
@@ -71,17 +63,14 @@ public class RetryTestListener extends TestListenerAdapter {
     private IResultMap removeIncorrectlyFailedTests(ITestContext test) {
         List<ITestNGMethod> failsToRemove = new ArrayList<ITestNGMethod>();
         IResultMap returnValue = test.getFailedTests();
-
         for (ITestResult result : test.getFailedTests().getAllResults()) {
             long failedResultTime = result.getEndMillis();
-
             for (ITestResult resultToCheck : test.getSkippedTests().getAllResults()) {
                 if (failedResultTime == resultToCheck.getEndMillis()) {
                     failsToRemove.add(resultToCheck.getMethod());
                     break;
                 }
             }
-
             for (ITestResult resultToCheck : test.getPassedTests().getAllResults()) {
                 if (failedResultTime == resultToCheck.getEndMillis()) {
                     failsToRemove.add(resultToCheck.getMethod());
@@ -89,11 +78,9 @@ public class RetryTestListener extends TestListenerAdapter {
                 }
             }
         }
-
         for (ITestNGMethod method : failsToRemove) {
             returnValue.removeResult(method);
         }
-
         return returnValue;
     }
 

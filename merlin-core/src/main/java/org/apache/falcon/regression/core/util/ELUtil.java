@@ -47,9 +47,11 @@ public class ELUtil {
     //TODO: Methods should be moved to tests
     static String aggregateWorkflowDir = "/tmp/falcon-regression/ELUtil/aggregator";
 
-    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String feedStart, String feedEnd, String processStart,
+    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String feedStart,
+                                  String feedEnd, String processStart,
                                   String processend,
-                                  String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, ParseException, URISyntaxException, InterruptedException {
+                                  String startInstance, String endInstance, boolean isMatch)
+    throws IOException, JAXBException, ParseException, URISyntaxException, InterruptedException {
         HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
                 aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = Util.readELBundles()[0][0];
@@ -59,7 +61,6 @@ public class ELUtil {
         bundle.setFeedValidity(feedStart, feedEnd, Util.getInputFeedNameFromBundle(bundle));
         bundle.setProcessValidity(processStart, processend);
         try {
-
             bundle.setInvalidData();
             bundle.setDatasetInstances(startInstance, endInstance);
             String submitResponse = bundle.submitAndScheduleBundle(prismHelper);
@@ -67,7 +68,6 @@ public class ELUtil {
             Thread.sleep(45000);
             if (isMatch)
                 getAndMatchDependencies(server1, bundle);
-
             return submitResponse;
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,11 +76,12 @@ public class ELUtil {
             logger.info("deleting entity:");
             bundle.deleteBundle(prismHelper);
         }
-
     }
 
 
-    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance, String endInstance, boolean isMatch) throws IOException, JAXBException, URISyntaxException, InterruptedException {
+    public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance,
+                                  String endInstance, boolean isMatch)
+    throws IOException, JAXBException, URISyntaxException, InterruptedException {
         HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
                 aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = Util.readELBundles()[0][0];
@@ -88,14 +89,12 @@ public class ELUtil {
         bundle.generateUniqueBundle();
         bundle.setProcessWorkflow(aggregateWorkflowDir);
         try {
-
             bundle.setInvalidData();
             bundle.setDatasetInstances(startInstance, endInstance);
             String submitResponse = bundle.submitAndScheduleBundle(prismHelper);
             Thread.sleep(45000);
             if (isMatch)
                 getAndMatchDependencies(server1, bundle);
-
             return submitResponse;
         } catch (Exception e) {
             e.printStackTrace();
@@ -107,14 +106,13 @@ public class ELUtil {
     }
 
 
-    public static void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle)
-             {
+    public static void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle) {
         try {
             List<String> bundles = null;
-            for(int i=0; i < 10; ++i) {
+            for (int i = 0; i < 10; ++i) {
                 bundles = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                         Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
-                if(bundles.size() > 0) {
+                if (bundles.size() > 0) {
                     break;
                 }
                 Thread.sleep(30000);
@@ -123,7 +121,7 @@ public class ELUtil {
             String coordID = bundles.get(0);
             logger.info("coord id: " + coordID);
             List<String> missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
-            for(int i=0; i < 10 && missingDependencies == null; ++i) {
+            for (int i = 0; i < 10 && missingDependencies == null; ++i) {
                 Thread.sleep(30000);
                 missingDependencies = Util.getMissingDependencies(prismHelper, coordID);
             }
@@ -132,13 +130,12 @@ public class ELUtil {
                 logger.info("dependency from job: " + dependency);
             }
             Date jobNominalTime = Util.getNominalTime(prismHelper, coordID);
-
             Calendar time = Calendar.getInstance();
             time.setTime(jobNominalTime);
             logger.info("nominalTime:" + jobNominalTime);
             SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
-            logger.info("nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
-
+            logger.info(
+                    "nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
             TimeZone z = time.getTimeZone();
             int offset = z.getRawOffset();
             int offsetHrs = offset / 1000 / 60 / 60;
@@ -153,14 +150,12 @@ public class ELUtil {
             logger.info("GMT Time: " + time.getTime());
 
             int frequency = bundle.getInitialDatasetFrequency();
-
             List<String> qaDependencyList =
                     getQADepedencyList(time, bundle.getStartInstanceProcess(time),
                             bundle.getEndInstanceProcess(time),
                             frequency, bundle);
             for (String qaDependency : qaDependencyList)
                 logger.info("qa qaDependencyList: " + qaDependency);
-
 
             Assert.assertTrue(matchDependencies(missingDependencies, qaDependencyList));
         } catch (Exception e) {
@@ -172,27 +167,22 @@ public class ELUtil {
     public static boolean matchDependencies(List<String> fromJob, List<String> QAList) {
         if (fromJob.size() != QAList.size())
             return false;
-
         for (int index = 0; index < fromJob.size(); index++) {
             if (!fromJob.get(index).contains(QAList.get(index)))
                 return false;
         }
-
         return true;
     }
 
 
     public static List<String> getQADepedencyList(Calendar nominalTime, Date startRef,
-                                                       Date endRef, int frequency,
-                                                       Bundle bundle) throws JAXBException {
-
+                                                  Date endRef, int frequency,
+                                                  Bundle bundle) throws JAXBException {
         logger.info("start ref:" + startRef);
         logger.info("end ref:" + endRef);
-
         Calendar initialTime = Calendar.getInstance();
         initialTime.setTime(startRef);
         Calendar finalTime = Calendar.getInstance();
-
 
         finalTime.setTime(endRef);
         String path = Util.getDatasetPath(bundle);
@@ -200,12 +190,8 @@ public class ELUtil {
         TimeZone tz = TimeZone.getTimeZone("GMT");
         nominalTime.setTimeZone(tz);
         logger.info("nominalTime: " + initialTime.getTime());
-
-
         logger.info("finalTime: " + finalTime.getTime());
-
         List<String> returnList = new ArrayList<String>();
-
         while (!initialTime.getTime().equals(finalTime.getTime())) {
             logger.info("initialTime: " + initialTime.getTime());
             returnList.add(getPath(path, initialTime));
@@ -223,9 +209,9 @@ public class ELUtil {
         // create variable length array of zeros
         char[] zeros = new char[digits];
         Arrays.fill(zeros, '0');
+
         // format number as String
         DecimalFormat df = new DecimalFormat(String.valueOf(zeros));
-
         return df.format(num);
     }
 
@@ -233,24 +219,18 @@ public class ELUtil {
         if (path.contains("${YEAR}")) {
             path = path.replaceAll("\\$\\{YEAR\\}", Integer.toString(time.get(Calendar.YEAR)));
         }
-
         if (path.contains("${MONTH}")) {
             path = path.replaceAll("\\$\\{MONTH\\}", intToString(time.get(Calendar.MONTH) + 1, 2));
         }
-
-
         if (path.contains("${DAY}")) {
             path = path.replaceAll("\\$\\{DAY\\}", intToString(time.get(Calendar.DAY_OF_MONTH), 2));
         }
-
         if (path.contains("${HOUR}")) {
             path = path.replaceAll("\\$\\{HOUR\\}", intToString(time.get(Calendar.HOUR_OF_DAY), 2));
         }
-
         if (path.contains("${MINUTE}")) {
             path = path.replaceAll("\\$\\{MINUTE\\}", intToString(time.get(Calendar.MINUTE), 2));
         }
-
         return path;
     }
 
@@ -260,7 +240,6 @@ public class ELUtil {
         int mins;
         int day;
         int month;
-
         Calendar cal = Calendar.getInstance();
         cal.setTime(time.getTime());
         if (expression.contains("now")) {
@@ -285,7 +264,6 @@ public class ELUtil {
             cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), 1, 0, 0);
             cal.add(Calendar.HOUR, 24 * day + hr);
             cal.add(Calendar.MINUTE, mins);
-
         } else if (expression.contains("lastMonth")) {
             day = getInt(expression, 0);
             hr = getInt(expression, 1);
@@ -313,7 +291,6 @@ public class ELUtil {
             cal.add(Calendar.MINUTE, mins);
         }
         return cal.getTime();
-
     }
 
     private static int getInt(String expression, int position) {

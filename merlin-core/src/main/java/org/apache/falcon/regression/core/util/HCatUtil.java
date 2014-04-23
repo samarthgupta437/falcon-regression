@@ -40,7 +40,8 @@ public class HCatUtil {
 
     public static HCatClient client;
 
-    public static HCatClient getHCatClient(String hCatEndPoint, String hiveMetaStorePrinciple) throws HCatException {
+    public static HCatClient getHCatClient(String hCatEndPoint, String hiveMetaStorePrinciple)
+    throws HCatException {
         HiveConf hcatConf = new HiveConf();
         hcatConf.set("hive.metastore.local", "false");
         hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, hCatEndPoint);
@@ -50,7 +51,6 @@ public class HCatUtil {
         hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
                 HCatSemanticAnalyzer.class.getName());
         hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-
         hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
         hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
         return HCatClient.create(hcatConf);
@@ -73,11 +73,10 @@ public class HCatUtil {
 
     }
 
-    public static void createEmptyTable(HCatClient cli, String dbName, String tabName){
-        try
-        {
+    public static void createEmptyTable(HCatClient cli, String dbName, String tabName) {
+        try {
             ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-            cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING,"id comment"));
+            cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
             HCatCreateTableDesc tableDesc = HCatCreateTableDesc
                     .create(dbName, tabName, cols)
                     .fileFormat("rcfile")
@@ -85,42 +84,49 @@ public class HCatUtil {
                     .isTableExternal(true)
                     .build();
             cli.createTable(tableDesc);
-
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void deleteTable(HCatClient cli, String dbName, String tabName){
-        try{
+    public static void deleteTable(HCatClient cli, String dbName, String tabName) {
+        try {
             cli.dropTable(dbName, tabName, true);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
 
-
-    public static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName, HCatClient client, String tableLoc){
-        try{
-
+    public static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName,
+                                              HCatClient client, String tableLoc) {
+        try {
             ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
             ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
 
             //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
 
-            cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING,"id comment"));
-            cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING,"value comment"));
+            cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
+            cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
 
-            switch(dataType){
-                case MINUTELY:   ptnCols.add(new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
-                case HOURLY:     ptnCols.add(new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
-                case DAILY:      ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-                case MONTHLY:    ptnCols.add(new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-                case YEARLY:     ptnCols.add(new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-                default :        break;
+            switch (dataType) {
+                case MINUTELY:
+                    ptnCols.add(
+                            new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+                case HOURLY:
+                    ptnCols.add(
+                            new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
+                case DAILY:
+                    ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
+                case MONTHLY:
+                    ptnCols.add(
+                            new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
+                case YEARLY:
+                    ptnCols.add(
+                            new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+                default:
+                    break;
             }
-
             HCatCreateTableDesc tableDesc = HCatCreateTableDesc
                     .create(dbName, tableName, cols)
                     .fileFormat("rcfile")
@@ -131,46 +137,52 @@ public class HCatUtil {
                     .build();
             client.createTable(tableDesc);
 
-        }catch(HCatException e){
+        } catch (HCatException e) {
             e.printStackTrace();
         }
     }
 
-    public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType, String dbName, String tableName, ArrayList<String> dataFolder) throws Exception {
-
+    public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType,
+                                          String dbName, String tableName,
+                                          ArrayList<String> dataFolder) throws Exception {
         HCatUtil.addPartitionsToExternalTable(cli, dataType, dbName, tableName, dataFolder);
     }
 
-    public static void addPartitionsToExternalTable( HCatClient client, FEED_TYPE dataType, String dbName, String tableName, ArrayList<String> dataFolder){
+    public static void addPartitionsToExternalTable(HCatClient client, FEED_TYPE dataType,
+                                                    String dbName, String tableName,
+                                                    ArrayList<String> dataFolder) {
         //Adding specific partitions that map to an external location
-
         Map<String, String> ptn = new HashMap<String, String>();
-        for(int i=0; i<dataFolder.size(); ++i){
+        for (int i = 0; i < dataFolder.size(); ++i) {
             String[] parts = dataFolder.get(i).split("/");
-            int s = parts.length-1;
+            int s = parts.length - 1;
             int subtractValue = 0;
 
-            switch(dataType){
-                case MINUTELY: ptn.put("minute", parts[s]);
-                               ++subtractValue;
-                case HOURLY:   ptn.put("hour", parts[s-subtractValue]);
-                               ++subtractValue;
-                case DAILY:    ptn.put("day", parts[s-subtractValue]);
-                               ++subtractValue;
-                case MONTHLY:  ptn.put("month", parts[s-subtractValue]);
-                               ++subtractValue;
-                case YEARLY:   ptn.put("year", parts[s-subtractValue]);
-                default :      break;
+            switch (dataType) {
+                case MINUTELY:
+                    ptn.put("minute", parts[s]);
+                    ++subtractValue;
+                case HOURLY:
+                    ptn.put("hour", parts[s - subtractValue]);
+                    ++subtractValue;
+                case DAILY:
+                    ptn.put("day", parts[s - subtractValue]);
+                    ++subtractValue;
+                case MONTHLY:
+                    ptn.put("month", parts[s - subtractValue]);
+                    ++subtractValue;
+                case YEARLY:
+                    ptn.put("year", parts[s - subtractValue]);
+                default:
+                    break;
             }
-
-            try{
+            try {
                 //Each HCat partition maps to a directory, not to a file
                 HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
                         tableName, dataFolder.get(i), ptn).build();
                 client.addPartition(addPtn);
                 ptn.clear();
-            }
-            catch(HCatException e){
+            } catch (HCatException e) {
                 e.printStackTrace();
             }
 
