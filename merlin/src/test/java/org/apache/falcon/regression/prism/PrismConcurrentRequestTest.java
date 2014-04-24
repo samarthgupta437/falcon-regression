@@ -23,12 +23,13 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Brother;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -43,8 +44,6 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     private ThreadGroup brotherGrimm = null;
     private Brother brothers[] = null;
-    private int failedResponse = 0;
-    private int succeedeResponse = 0;
     String aggregateWorkflowDir = baseHDFSDir + "/PrismConcurrentRequest/aggregator";
     private static final Logger logger = Logger.getLogger(PrismConcurrentRequestTest.class);
 
@@ -62,13 +61,10 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         brotherGrimm = new ThreadGroup("mixed");
         brothers = new Brother[10];
-        failedResponse = 0;
-        succeedeResponse = 0;
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        Thread.sleep(60000);
         removeBundles();
     }
 
@@ -84,15 +80,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         for (Brother brother : brothers) {
             brother.start();
         }
-        Thread.sleep(60000);
         for (Brother brother : brothers) {
-            if (brother.getOutput().getMessage().contains("SUCCEEDED"))
-                succeedeResponse++;
-            else if (brother.getOutput().getMessage().contains("FAILED"))
-                failedResponse++;
+            brother.join();
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        for (Brother brother : brothers) {
+            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            AssertUtil.assertSucceeded(brother.getOutput());
+        }
     }
 
     @Test(groups = {"multiCluster"})
@@ -109,15 +103,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         for (Brother brother : brothers) {
             brother.start();
         }
-        Thread.sleep(60000);
         for (Brother brother : brothers) {
-            if (brother.getOutput().getMessage().contains("SUCCEEDED"))
-                succeedeResponse++;
-            else if (brother.getOutput().getMessage().contains("FAILED"))
-                failedResponse++;
+            brother.join();
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        for (Brother brother : brothers) {
+            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            AssertUtil.assertSucceeded(brother.getOutput());
+        }
     }
 
 
@@ -133,15 +125,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         for (Brother brother : brothers) {
             brother.start();
         }
-        Thread.sleep(60000);
         for (Brother brother : brothers) {
-            if (brother.getOutput().getMessage().contains("SUCCEEDED"))
-                succeedeResponse++;
-            else if (brother.getOutput().getMessage().contains("FAILED"))
-                failedResponse++;
+            brother.join();
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        for (Brother brother : brothers) {
+            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            AssertUtil.assertSucceeded(brother.getOutput());
+        }
     }
 
 
@@ -157,15 +147,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         for (Brother brother : brothers) {
             brother.start();
         }
-        Thread.sleep(60000);
         for (Brother brother : brothers) {
-            if (brother.getOutput().getMessage().contains("SUCCEEDED"))
-                succeedeResponse++;
-            else if (brother.getOutput().getMessage().contains("FAILED"))
-                failedResponse++;
+            brother.join();
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        for (Brother brother : brothers) {
+            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            AssertUtil.assertSucceeded(brother.getOutput());
+        }
     }
 
 
@@ -194,15 +182,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         for (Brother brother : brothers) {
             brother.start();
         }
-        Thread.sleep(60000);
         for (Brother brother : brothers) {
-            if (brother.getOutput().getMessage().contains("SUCCEEDED"))
-                succeedeResponse++;
-            else if (brother.getOutput().getMessage().contains("FAILED"))
-                failedResponse++;
+            brother.join();
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 3);
+        for (Brother brother : brothers) {
+            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            AssertUtil.assertSucceeded(brother.getOutput());
+        }
     }
 
     @Test(groups = {"multiCluster"})
@@ -225,15 +211,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         for (Brother brother : brothers) {
             brother.start();
         }
-        Thread.sleep(60000);
         for (Brother brother : brothers) {
-            if (brother.getOutput().getMessage().contains("SUCCEEDED"))
-                succeedeResponse++;
-            else if (brother.getOutput().getMessage().contains("FAILED"))
-                failedResponse++;
+            brother.join();
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        for (Brother brother : brothers) {
+            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            AssertUtil.assertSucceeded(brother.getOutput());
+        }
     }
 
 
@@ -248,15 +232,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         for (Brother brother : brothers) {
             brother.start();
         }
-        Thread.sleep(60000);
         for (Brother brother : brothers) {
-            if (brother.getOutput().getMessage().contains("SUCCEEDED"))
-                succeedeResponse++;
-            else if (brother.getOutput().getMessage().contains("FAILED"))
-                failedResponse++;
+            brother.join();
         }
-        Assert.assertEquals(succeedeResponse, 1);
-        Assert.assertEquals(failedResponse, 9);
+        for (Brother brother : brothers) {
+            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            AssertUtil.assertSucceeded(brother.getOutput());
+        }
     }
 
 }
