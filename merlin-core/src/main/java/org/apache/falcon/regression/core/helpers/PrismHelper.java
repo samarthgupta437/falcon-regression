@@ -32,9 +32,6 @@ public class PrismHelper {
     protected IEntityManagerHelper clusterHelper;
     protected IEntityManagerHelper processHelper;
     protected IEntityManagerHelper feedHelper;
-    protected InstanceUtil instanceUtil;
-
-    protected Util util;
 
     public IEntityManagerHelper getClusterHelper() {
         return clusterHelper;

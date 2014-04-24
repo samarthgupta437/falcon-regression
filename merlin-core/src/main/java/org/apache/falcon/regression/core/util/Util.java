@@ -123,7 +123,9 @@ public class Util {
   public static String getExpectedErrorMessage(String filename) throws IOException {
 
     Properties properties = new Properties();
-    properties.load(Util.class.getResourceAsStream("/" + "errorMapping.properties"));
+      final InputStream resourceAsStream = Util.class.getResourceAsStream("/" + "errorMapping.properties");
+      properties.load(resourceAsStream);
+      resourceAsStream.close();
     return properties.getProperty(filename);
   }
 
@@ -149,10 +151,6 @@ public class Util {
     Unmarshaller u = jc.createUnmarshaller();
     Process processElement = (Process) u.unmarshal((new StringReader(data)));
     return processElement.getName();
-  }
-
-  public static String getProcessName(File file) throws IOException, JAXBException {
-    return getProcessName(fileToString(file));
   }
 
   private static boolean isXML(String data) {
@@ -338,8 +336,6 @@ public class Util {
     }
     return null;
   }
-
-
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
     throws JAXBException, IOException {
     List<String> finalResult = new ArrayList<String>();
@@ -639,16 +635,6 @@ public class Util {
         Util.copyDataToFolders(prismHelper, folderData,
                 OSUtil.NORMAL_INPUT, folderPrefix);
     }
-
-    public static void lateDataReplenish(PrismHelper prismHelper, String baseFolder, int interval,
-                                         int minuteSkip, String... files)
-    throws IOException, InterruptedException {
-        List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
-
-        Util.createLateDataFolders(prismHelper, folderData);
-        Util.copyDataToFolders(prismHelper, baseFolder, folderData, files);
-    }
-
 
   public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
                                              final String FolderPrefix)
@@ -1060,7 +1046,7 @@ public class Util {
         return property;
     }
 
-    public static ENTITY_TYPE getEntityType(String entity) {
+  public static ENTITY_TYPE getEntityType(String entity) {
     if (
       entity.contains("uri:falcon:process:0.1"))
       return ENTITY_TYPE.PROCESS;

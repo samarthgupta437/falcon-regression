@@ -520,34 +520,6 @@ public class Bundle {
         return processHelper.submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public String submitAndScheduleBundle(PrismHelper prismHelper, boolean isUnique)
-    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        if (isUnique) {
-            ServiceResponse submitResponse = submitBundle(prismHelper);
-            if (submitResponse.getCode() == 400)
-                return submitResponse.getMessage();
-        } else {
-            ServiceResponse submitResponse = submitBundle(false);
-            if (submitResponse.getCode() == 400)
-                return submitResponse.getMessage();
-        }
-        //lets schedule the damn thing now :)
-        ServiceResponse scheduleResult =
-                processHelper.schedule(URLS.SCHEDULE_URL, getProcessData());
-        logger.info("process schedule result=" + scheduleResult.getMessage());
-
-        Assert.assertEquals(Util.parseResponse(scheduleResult).getStatus(),
-                APIResult.Status.SUCCEEDED);
-        Assert.assertEquals(Util.parseResponse(scheduleResult).getStatusCode(), 200);
-
-        try {
-            Thread.sleep(7000);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
-    }
-
     public void updateWorkFlowFile() throws IOException, JAXBException, InterruptedException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
@@ -849,32 +821,6 @@ public class Bundle {
           .getPath());
     }
 
-    public void setProcessValidity(DateTime startDate, DateTime endDate, String clusterName) throws JAXBException {
-
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
-
-        for (Cluster cluster : processElement.getClusters().getCluster()) {
-            if (cluster.getName().equalsIgnoreCase(clusterName)) {
-                org.apache.falcon.regression.core.generated.process.Validity validity =
-                        new org.apache.falcon.regression.core.generated.process.Validity();
-                validity.setStart(startDate.toDate());
-                validity.setEnd(endDate.toDate());
-                cluster.setValidity(validity);
-            }
-        }
-
-
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-        processData = sw.toString();
-    }
-
     public void setProcessValidity(DateTime startDate, DateTime endDate) throws JAXBException, ParseException {
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
@@ -1007,16 +953,6 @@ public class Bundle {
         feedElement.setAvailabilityFlag(flag);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
-
-    public Cluster getClusterObjectFromProcess(String clusterName) throws JAXBException {
-        for (Cluster cluster : getProcessObject().getClusters().getCluster()) {
-            if (cluster.getName().equalsIgnoreCase(clusterName)) {
-                return cluster;
-            }
-        }
-        return null;
-    }
-
 
     public void setCLusterColo(String colo) throws JAXBException {
         org.apache.falcon.regression.core.generated.cluster.Cluster c =
@@ -1165,30 +1101,6 @@ public class Bundle {
         return Util.getProcessName(this.getProcessData());
     }
 
-    public void setProcessQueueName(String queueName) throws JAXBException {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        Property p = new Property();
-        p.setName("mapred.job.queue.name");
-        p.setValue(queueName);
-        Properties propList = processElement.getProperties();
-        propList.addProperty(p);
-
-        processElement.setProperties(propList);
-        InstanceUtil.writeProcessElement(this, processElement);
-
-    }
-
-    public void setProcessPriority(String priority) throws JAXBException {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        Property p = new Property();
-        p.setName("mapred.job.priority");
-        p.setValue(priority);
-        Properties propList = processElement.getProperties();
-        propList.addProperty(p);
-        processElement.setProperties(propList);
-        InstanceUtil.writeProcessElement(this, processElement);
-    }
-
     public void setProcessLibPath(String libPath) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
@@ -1215,24 +1127,6 @@ public class Bundle {
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"), r.getMessage());
         }
 
-
-    }
-
-    public static void deleteCluster(Bundle... bundles)
-    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-
-        for (Bundle bundle : bundles) {
-            logger.info("cluster b1: " + bundle.getClusters().get(0));
-            prismHelper.getClusterHelper().delete(URLS.DELETE_URL, bundle.getClusters().get(0));
-        }
-
-    }
-
-    public List<Output> getAllOutputs() throws JAXBException {
-
-        Process p = InstanceUtil.getProcessElement(processData);
-
-        return p.getOutputs().getOutput();
 
     }
 

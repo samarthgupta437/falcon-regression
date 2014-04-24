@@ -1582,13 +1582,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
   }
 
-  private String setProcessTimeOut(String process, int mag, TimeUnit unit) throws Exception {
-        Process p = InstanceUtil.getProcessElement(process);
-        Frequency f = new Frequency(mag, unit);
-        p.setTimeout(f);
-        return InstanceUtil.processToString(p);
-    }
-
     public ServiceResponse updateProcessConcurrency(Bundle bundle, int concurrency)
             throws Exception {
         String oldData = new String(bundle.getProcessData());
@@ -1708,18 +1701,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         DateTime endDate = new DateTime(end);
         Minutes minutes = Minutes.minutesBetween((startDate), (endDate));
         return minutes.getMinutes();
-    }
-
-    private Frequency getRandomFrequency(Bundle bundle) throws Exception {
-        org.apache.falcon.regression.core.generated.dependencies.Frequency current =
-                bundle.getProcessObject().getFrequency();
-        Random r = new Random();
-        TimeUnit[] values = TimeUnit.values();
-        int i = 0;
-        do {
-            i = r.nextInt(values.length);
-        } while (current.getTimeUnit().equals(values[i]));
-        return new Frequency(current.getFrequency() + 1, values[i]);
     }
 
     private void waitingForBundleFinish(ColoHelper coloHelper, String bundleId, int minutes)

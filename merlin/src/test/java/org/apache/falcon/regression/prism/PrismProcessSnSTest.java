@@ -46,9 +46,6 @@ public class PrismProcessSnSTest extends BaseTestClass {
     ColoHelper cluster2 = servers.get(1);
     OozieClient cluster1OC = serverOC.get(0);
     OozieClient cluster2OC = serverOC.get(1);
-    public static String RUNNING = "/RUNNING";
-    public static String CLUSTER1_RUNNING;
-    public static String CLUSTER2_RUNNING;
     String aggregateWorkflowDir = baseHDFSDir + "/PrismProcessSnSTest/aggregator";
     private static final Logger logger = Logger.getLogger(PrismProcessSnSTest.class);
 
@@ -194,21 +191,21 @@ public class PrismProcessSnSTest extends BaseTestClass {
     @Test(groups = {"prism", "0.2", "embedded"})
     public void testSnSDeletedProcessOnBothColos() throws Exception {
         //schedule both bundles
-        CLUSTER1_RUNNING = bundles[0].getClusterHelper().getColoName() + RUNNING;
-        CLUSTER2_RUNNING = bundles[1].getClusterHelper().getColoName() + RUNNING;
+        final String cluster1Running = bundles[0].getClusterHelper().getColoName() + "/RUNNING";
+        final String cluster2Running = bundles[1].getClusterHelper().getColoName() + "/RUNNING";
         bundles[0].submitAndScheduleProcess();
 
         Assert.assertEquals(Util.parseResponse(
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, bundles[0].getProcessData())).getMessage(),
-                CLUSTER1_RUNNING
+                cluster1Running
         );
 
         bundles[1].submitAndScheduleProcess();
         Assert.assertEquals(Util.parseResponse(
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, bundles[1].getProcessData())).getMessage(),
-                CLUSTER2_RUNNING
+                cluster2Running
         );
 
         AssertUtil.assertSucceeded(
@@ -228,13 +225,13 @@ public class PrismProcessSnSTest extends BaseTestClass {
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, bundles[0].getProcessData())
         ).getMessage(),
-                CLUSTER1_RUNNING
+                cluster1Running
         );
         Assert.assertEquals(Util.parseResponse(
                 prism.getProcessHelper()
                         .getStatus(URLS.STATUS_URL, bundles[1].getProcessData())
         ).getMessage(),
-                CLUSTER2_RUNNING
+                cluster2Running
         );
 
     }
