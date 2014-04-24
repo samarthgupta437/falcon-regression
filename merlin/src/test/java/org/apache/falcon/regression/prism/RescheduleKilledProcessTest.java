@@ -20,9 +20,11 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -55,7 +57,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
@@ -70,12 +72,12 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         // submit and schedule a process with error in workflow .
         //it will get killed
         //generate bundles according to config files
-        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-        String processEndTime = InstanceUtil.getTimeWrtSystemTime(06);
+        String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
+        String processEndTime = TimeUtil.getTimeWrtSystemTime(06);
         String process = bundles[0].getProcessData();
         process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
-        feed.add(Util.getOutputFeedFromBundle(bundles[0]));
+        feed.add(BundleUtil.getOutputFeedFromBundle(bundles[0]));
         process = bundles[0].setProcessFeeds(process, feed, 0, 0, 1);
 
         process = InstanceUtil.setProcessCluster(process, null,
@@ -97,14 +99,14 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
     public void recheduleKilledProcess02() throws Exception {
         // submit and schedule a process with error in workflow .
         //it will get killed
-        bundles[0].setProcessValidity(InstanceUtil.getTimeWrtSystemTime(-11),
-                InstanceUtil.getTimeWrtSystemTime(06));
+        bundles[0].setProcessValidity(TimeUtil.getTimeWrtSystemTime(-11),
+                TimeUtil.getTimeWrtSystemTime(06));
 
         bundles[0].setInputFeedDataPath(
                 baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
 
-        String prefix = InstanceUtil.getFeedPrefix(Util.getInputFeedFromBundle(bundles[0]));
+        String prefix = InstanceUtil.getFeedPrefix(BundleUtil.getInputFeedFromBundle(bundles[0]));
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         Util.lateDataReplenish(cluster, 40, 1, prefix, null);
 

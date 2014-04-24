@@ -21,6 +21,8 @@ package org.apache.falcon.regression.hcat;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -77,21 +79,21 @@ public class HCatRetentionTest extends BaseTestClass {
             int p= Integer.parseInt(period);
             displayDetails(period, unit.getValue(), dataType.getValue());
 
-            FeedMerlin feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
+            FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
             feedElement.setTableValue(getFeedPathValue(dataType.getValue()),
                     dBName, tableName);
             feedElement.insertRetentionValueInFeed(unit.getValue() + "(" + period + ")");
-            bundle.getDataSets().remove(Util.getInputFeedFromBundle(bundle));
+            bundle.getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundle));
             bundle.getDataSets().add(feedElement.toString());
             bundle.generateUniqueBundle();
 
             bundle.submitClusters(prism);
 
             if (p > 0) {
-                Util.assertSucceeded(prism.getFeedHelper()
-                        .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+                AssertUtil.assertSucceeded(prism.getFeedHelper()
+                        .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
 
-                feedElement = new FeedMerlin(Util.getInputFeedFromBundle(bundle));
+                feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
                 if(isEmpty){
                     feedElement.generateData(cli, serverFS.get(0));
                 }else{
@@ -100,8 +102,8 @@ public class HCatRetentionTest extends BaseTestClass {
 
                 check(dataType.getValue(), unit.getValue(), p, tableName);
             } else {
-                Util.assertFailed(prism.getFeedHelper()
-                        .submitEntity(URLS.SUBMIT_URL, Util.getInputFeedFromBundle(bundle)));
+                AssertUtil.assertFailed(prism.getFeedHelper()
+                        .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -129,8 +131,8 @@ public class HCatRetentionTest extends BaseTestClass {
 
             List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
-            Util.assertSucceeded(prism.getFeedHelper()
-                    .schedule(URLS.SCHEDULE_URL, Util.getInputFeedFromBundle(bundle)));
+            AssertUtil.assertSucceeded(prism.getFeedHelper()
+                    .schedule(URLS.SCHEDULE_URL, BundleUtil.getInputFeedFromBundle(bundle)));
             InstanceUtil.waitTillRetentionSucceeded(servers.get(0),bundle,expectedStatus,0,2,5);
 
             DateTime currentTime = new DateTime(DateTimeZone.UTC);
@@ -244,7 +246,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) throws Exception {
-        Bundle[] bundles = Util.getBundleData("hcat_2");
+        Bundle[] bundles = BundleUtil.getBundleData("hcat_2");
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
         String[] periods = new String[]{"7","824","43"}; // a negative value like -4 should be covered in validation scenarios.
         boolean[] empty = new boolean[]{false,true};

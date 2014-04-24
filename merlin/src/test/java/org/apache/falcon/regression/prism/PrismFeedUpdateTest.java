@@ -22,9 +22,11 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -61,7 +63,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -89,8 +91,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //submit 3 clusters
 
         //get 2 unique feeds
-        String feed01 = Util.getInputFeedFromBundle(bundles[0]);
-        String outputFeed = Util.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
 
         //set source and target for the 2 feeds
 
@@ -117,7 +119,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
         Util.lateDataReplenish(cluster1, 70, 1, prefix, null);
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 
         //set clusters for feed01
         feed01 = InstanceUtil
@@ -153,8 +155,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         //add clusters to process
 
-        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-        String processEndTime = InstanceUtil.getTimeWrtSystemTime(70);
+        String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
+        String processEndTime = TimeUtil.getTimeWrtSystemTime(70);
 
 
         process01 = InstanceUtil

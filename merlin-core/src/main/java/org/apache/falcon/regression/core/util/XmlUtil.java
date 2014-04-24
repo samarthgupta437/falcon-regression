@@ -36,8 +36,8 @@ public class XmlUtil {
 
     public static Validity createValidity(String start, String end) throws ParseException {
         Validity v = new Validity();
-        v.setStart(InstanceUtil.oozieDateToDate(start).toDate());
-        v.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
+        v.setStart(TimeUtil.oozieDateToDate(start).toDate());
+        v.setEnd(TimeUtil.oozieDateToDate(end).toDate());
         return v;
     }
 
@@ -54,9 +54,9 @@ public class XmlUtil {
         org.apache.falcon.regression.core.generated.process.Validity v =
                 new org.apache.falcon.regression.core.generated.process.Validity();
         logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
-                + InstanceUtil.oozieDateToDate(endTime).toDate());
-        v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
-        v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
+                + TimeUtil.oozieDateToDate(endTime).toDate());
+        v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
+        v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
         return v;
     }
 

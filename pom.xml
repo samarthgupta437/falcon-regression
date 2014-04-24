@@ -166,6 +166,7 @@
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-client</artifactId>
                         <version>${hadoop2.version}</version>
+                        <scope>runtime</scope>
                         <exclusions>
                             <exclusion>
                                 <groupId>org.glassfish</groupId>

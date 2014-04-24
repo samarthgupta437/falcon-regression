@@ -21,6 +21,8 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.PrismUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -58,7 +60,7 @@ public class PrismSubmitTest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         restartRequired = false;
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster1);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -150,7 +152,7 @@ public class PrismSubmitTest extends BaseTestClass {
         r = prism.getProcessHelper().delete(URLS.DELETE_URL,  bundles[0].getProcessData());
 
         r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getProcessData());
-        Util.assertFailed(r);
+        AssertUtil.assertFailed(r);
         List<String> afterSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
         List<String> afterSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
         List<String> afterSubmitPrism = prism.getProcessHelper().getStoreInfo();
