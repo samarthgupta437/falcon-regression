@@ -231,19 +231,10 @@ public class Util {
       return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(),
         helper.getStoreLocation() + subPath);
     } else {
-      return runRemoteScript(helper.getQaHost(), helper.getUsername(),
-        helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
-        helper.getIdentityFile());
+      return runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
+              helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
+              helper.getUsername(), helper.getIdentityFile());
     }
-  }
-
-  public static List<String> runRemoteScript(String hostName,
-                                             String userName,
-                                             String password,
-                                             String command,
-                                             String identityFile)
-    throws JSchException, IOException {
-    return runRemoteScriptAsSudo(hostName, userName, password, command, userName, identityFile);
   }
 
   public static File[] getFiles(String directoryPath) throws URISyntaxException {
@@ -608,7 +599,7 @@ public class Util {
         }
     }
 
-   
+
 
     public static String setFeedPathValue(String feed, String pathValue) throws JAXBException {
     JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
@@ -725,11 +716,12 @@ public class Util {
 
   public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
     throws IOException, JSchException {
-    List<String> raw = runRemoteScript(coloHelper.getProcessHelper()
+    List<String> raw = runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                     .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
             "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
                     "\"Received\" | awk '{print $2}'",
+            coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getIdentityFile()
     );
     List<String> finalList = new ArrayList<String>();
@@ -742,11 +734,12 @@ public class Util {
 
   public static List<String> getInstanceRetryTimes(ColoHelper coloHelper, String workflowId)
     throws IOException, JSchException {
-    List<String> raw = runRemoteScript(coloHelper.getProcessHelper()
+    List<String> raw = runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                     .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
             "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
                     "\"Retrying attempt\" | awk '{print $2}'",
+            coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getIdentityFile()
     );
     List<String> finalList = new ArrayList<String>();
@@ -803,8 +796,7 @@ public class Util {
                                                     String userName,
                                                     String password,
                                                     String command,
-                                                    String
-                                                      runAs,
+                                                    String runAs,
                                                     String identityFile
   ) throws JSchException, IOException {
     JSch jsch = new JSch();
@@ -834,6 +826,7 @@ public class Util {
     } else {
       runCmd = String.format("sudo su - %s -c '%s'", runAs, command);
     }
+    if (userName.equals(runAs)) runCmd = command;
     logger.info(
       "host_name: " + hostName + " user_name: " + userName + " password: " + password +
         " command: " +
