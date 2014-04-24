@@ -64,20 +64,9 @@
             <dependencies>
                 <dependency>
                     <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-client</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.glassfish</groupId>
-                            <artifactId>javax.servlet</artifactId>
-                        </exclusion>
-                    </exclusions>
+                    <artifactId>hadoop-common</artifactId>
                 </dependency>
 
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-hdfs</artifactId>
-                    <classifier>tests</classifier>
-                </dependency>
                 <dependency>
                     <groupId>org.apache.hive.hcatalog</groupId>
                     <artifactId>hive-webhcat-java-client</artifactId>
@@ -118,10 +107,6 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-metastore</artifactId>
         </dependency>
         <!-- Added so that at run time log4j is avaialble to capture the logs -->
         <dependency>
