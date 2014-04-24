@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -102,8 +103,8 @@ public class FeedReplicationTest extends BaseTestClass {
     throws AuthenticationException, IOException, URISyntaxException, ParseException, JAXBException,
     InterruptedException, OozieClientException {
         Bundle.submitCluster(bundles[0], bundles[1]);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
-        String endTime = InstanceUtil.addMinsToTime(startTime, 5);
+        String startTime = TimeUtil.getTimeWrtSystemTime(0);
+        String endTime = TimeUtil.addMinsToTime(startTime, 5);
         logger.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
@@ -174,8 +175,8 @@ public class FeedReplicationTest extends BaseTestClass {
     @Test
     public void replicate1Source2Targets() throws Exception {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
-        String endTime = InstanceUtil.addMinsToTime(startTime, 5);
+        String startTime = TimeUtil.getTimeWrtSystemTime(0);
+        String endTime = TimeUtil.addMinsToTime(startTime, 5);
         logger.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
@@ -266,8 +267,8 @@ public class FeedReplicationTest extends BaseTestClass {
     public void availabilityFlagTest() throws Exception {
         //replicate1Source1Target scenario + set availability flag but don't upload required file
         Bundle.submitCluster(bundles[0], bundles[1]);
-        String startTime = InstanceUtil.getTimeWrtSystemTime(0);
-        String endTime = InstanceUtil.addMinsToTime(startTime, 5);
+        String startTime = TimeUtil.getTimeWrtSystemTime(0);
+        String endTime = TimeUtil.addMinsToTime(startTime, 5);
         logger.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed

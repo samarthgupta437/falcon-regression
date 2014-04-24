@@ -57,9 +57,11 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.Path;
@@ -111,19 +113,19 @@ public class Bundle {
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
 
-        Util.assertSucceeded(prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, dataSets.get(0)));
+        AssertUtil.assertSucceeded(prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, dataSets.get(0)));
     }
 
     public void submitAndScheduleFeed() throws Exception {
         submitClusters(prismHelper);
 
-        Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, dataSets.get(0)));
+        AssertUtil.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, dataSets.get(0)));
     }
 
     public void submitAndScheduleFeedUsingColoHelper(ColoHelper coloHelper) throws Exception {
         submitFeed();
 
-        Util.assertSucceeded(coloHelper.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, dataSets.get(0)));
+        AssertUtil.assertSucceeded(coloHelper.getFeedHelper().schedule(Util.URLS.SCHEDULE_URL, dataSets.get(0)));
     }
 
     public void submitAndScheduleAllFeeds()
@@ -131,7 +133,7 @@ public class Bundle {
         submitClusters(prismHelper);
 
         for (String feed : dataSets) {
-            Util.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
+            AssertUtil.assertSucceeded(prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
         }
     }
 
@@ -141,7 +143,7 @@ public class Bundle {
       ServiceResponse r = prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
         processData);
       if(shouldSucceed)
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
       return r;
     }
 
@@ -150,20 +152,20 @@ public class Bundle {
 
         submitFeeds(prismHelper);
 
-        Util.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+        AssertUtil.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
     }
 
 
     public void submitAndScheduleProcess() throws Exception {
         submitAndScheduleAllFeeds();
 
-        Util.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+        AssertUtil.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, processData));
     }
 
     public void submitAndScheduleProcessUsingColoHelper(ColoHelper coloHelper) throws Exception {
         submitProcess(true);
 
-        Util.assertSucceeded(coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
+        AssertUtil.assertSucceeded(coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
     }
 
     public List<String> getClusters() {
@@ -606,13 +608,13 @@ public class Bundle {
     @DataProvider(name = "DP")
     public static Object[][] getTestData(Method m) throws IOException {
 
-        return Util.readBundles();
+        return BundleUtil.readBundles();
     }
 
     @DataProvider(name = "EL-DP")
     public static Object[][] getELTestData(Method m) throws IOException {
 
-        return Util.readELBundles();
+        return BundleUtil.readELBundles();
     }
 
     public void setInvalidData() throws JAXBException {
@@ -652,9 +654,9 @@ public class Bundle {
 
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getClusters().getCluster().get(0).getValidity()
-                .setStart(InstanceUtil.oozieDateToDate(feedStart).toDate());
+                .setStart(TimeUtil.oozieDateToDate(feedStart).toDate());
         feedElement.getClusters().getCluster().get(0).getValidity()
-                .setEnd(InstanceUtil.oozieDateToDate(feedEnd).toDate());
+                .setEnd(TimeUtil.oozieDateToDate(feedEnd).toDate());
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
 
 
@@ -817,7 +819,7 @@ public class Bundle {
     }
 
     public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         Frequency frq = new Frequency(frequency, periodicity);
         feedElement.setFrequency(frq);
@@ -826,23 +828,23 @@ public class Bundle {
     }
 
     public void setInputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
     public void setOutputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
-        String feedName = Util.getOutputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getOutputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
     public void setInputFeedDataPath(String path) throws JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getLocations().getLocation().get(0).setPath(path);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
     public String getFeedDataPathPrefix() throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(this, Util.getInputFeedNameFromBundle(this));
+        Feed feedElement = InstanceUtil.getFeedElement(this, BundleUtil.getInputFeedNameFromBundle(this));
         return Util.getPathPrefix(feedElement.getLocations().getLocation().get(0)
           .getPath());
     }
@@ -890,8 +892,8 @@ public class Bundle {
 
             org.apache.falcon.regression.core.generated.process.Validity validity =
                     new org.apache.falcon.regression.core.generated.process.Validity();
-            validity.setStart(InstanceUtil.oozieDateToDate(start).toDate());
-            validity.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
+            validity.setStart(TimeUtil.oozieDateToDate(start).toDate());
+            validity.setEnd(TimeUtil.oozieDateToDate(end).toDate());
             cluster.setValidity(validity);
 
         }
@@ -917,8 +919,8 @@ public class Bundle {
 
             org.apache.falcon.regression.core.generated.process.Validity validity =
                     new org.apache.falcon.regression.core.generated.process.Validity();
-            validity.setStart(InstanceUtil.oozieDateToDate(startDate).toDate());
-            validity.setEnd(InstanceUtil.oozieDateToDate(endDate).toDate());
+            validity.setStart(TimeUtil.oozieDateToDate(startDate).toDate());
+            validity.setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
             cluster.setValidity(validity);
 
         }
@@ -1000,7 +1002,7 @@ public class Bundle {
     }
 
     public void setInputFeedAvailabilityFlag(String flag) throws JAXBException {
-        String feedName = Util.getInputFeedNameFromBundle(this);
+        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.setAvailabilityFlag(flag);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
@@ -1040,7 +1042,7 @@ public class Bundle {
     }
 
     public void setInputFeedTableUri(String tableUri) throws ParseException, JAXBException {
-        final String feedStr = Util.getInputFeedFromBundle(this);
+        final String feedStr = BundleUtil.getInputFeedFromBundle(this);
         Feed feed = InstanceUtil.getFeedElement(feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
@@ -1049,7 +1051,7 @@ public class Bundle {
     }
 
     public void setOutputFeedTableUri(String tableUri) throws ParseException, JAXBException {
-        final String feedStr = Util.getOutputFeedFromBundle(this);
+        final String feedStr = BundleUtil.getOutputFeedFromBundle(this);
         Feed feed = InstanceUtil.getFeedElement(feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
@@ -1080,14 +1082,14 @@ public class Bundle {
     public void submitClusters(PrismHelper prismHelper, String user)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String cluster : this.clusters) {
-            Util.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster, user));
+            AssertUtil.assertSucceeded(prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster, user));
         }
     }
 
     public void submitFeeds(PrismHelper prismHelper)
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String feed : this.dataSets) {
-            Util.assertSucceeded(prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
+            AssertUtil.assertSucceeded(prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
         }
     }
 
@@ -1121,9 +1123,9 @@ public class Bundle {
         org.apache.falcon.regression.core.generated.process.Validity v =
         processObject.getClusters().getCluster().get(0).getValidity();
         if(StringUtils.isNotEmpty(startTime))
-          v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
+          v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
         if(StringUtils.isNotEmpty(endTime))
-          v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+          v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
         cluster.setValidity(v);
         processObject.getClusters().getCluster().add(cluster);
         this.processData = processHelper.toString(processObject);
@@ -1357,8 +1359,8 @@ public class Bundle {
             c.setName(Util.readClusterName(newCluster));
             org.apache.falcon.regression.core.generated.process.Validity v =
                     new org.apache.falcon.regression.core.generated.process.Validity();
-            v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
+            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
             c.setValidity(v);
             cs.getCluster().add(c);
         }
@@ -1387,10 +1389,10 @@ public class Bundle {
             ls.getLocation().add(l);
             c.setLocations(ls);
             Validity v = new Validity();
-            startTime = InstanceUtil.addMinsToTime(startTime, -180);
-            endTime = InstanceUtil.addMinsToTime(endTime, 180);
-            v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+            startTime = TimeUtil.addMinsToTime(startTime, -180);
+            endTime = TimeUtil.addMinsToTime(endTime, 180);
+            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
+            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
             c.setValidity(v);
             Retention r = new Retention();
             r.setAction(ActionType.DELETE);
@@ -1467,7 +1469,7 @@ public class Bundle {
     public static Object[][] readBundle(String bundleLocation) throws IOException {
         sBundleLocation = bundleLocation;
 
-        List<Bundle> bundleSet = Util.getDataFromFolder(bundleLocation);
+        List<Bundle> bundleSet = BundleUtil.getDataFromFolder(bundleLocation);
 
         Object[][] testData = new Object[bundleSet.size()][1];
 

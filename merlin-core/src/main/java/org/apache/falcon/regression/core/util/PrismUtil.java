@@ -117,7 +117,7 @@ public class PrismUtil {
     public Bundle setFeedCluster(Validity v1, Retention r1, String n1, ClusterType t1, Validity v2,
                                  Retention r2,
                                  String n2, ClusterType t2) throws IOException, JAXBException {
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         org.apache.falcon.regression.core.generated.feed.Cluster c1 =
                 new org.apache.falcon.regression.core.generated.feed.Cluster();

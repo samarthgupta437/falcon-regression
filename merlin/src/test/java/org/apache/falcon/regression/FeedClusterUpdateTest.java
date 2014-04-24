@@ -23,9 +23,12 @@ import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -63,7 +66,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -85,19 +88,19 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
 
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
         }
-        Util.submitAllClusters(bundles[0], bundles[1], bundles[2]);
+        BundleUtil.submitAllClusters(bundles[0], bundles[1], bundles[2]);
         feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
                 XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
                 ClusterType.SOURCE, null);
-        startTime = InstanceUtil.getTimeWrtSystemTime(-50);
+        startTime = TimeUtil.getTimeWrtSystemTime(-50);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -109,13 +112,13 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     public void addSourceCluster() throws Exception {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                InstanceUtil.addMinsToTime(startTime, 65)),
+                TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                 null);
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
 
@@ -124,12 +127,12 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
@@ -159,25 +162,25 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //prepare updated Feed
         feedUpdated = InstanceUtil.setFeedCluster(
                 feed, XmlUtil.createValidity(startTime,
-                InstanceUtil.addMinsToTime(startTime, 65)),
+                TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                 "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
@@ -206,13 +209,13 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
@@ -222,12 +225,12 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
@@ -257,18 +260,18 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //prepare updated Feed
         feedUpdated = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
@@ -277,7 +280,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
@@ -307,7 +310,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
@@ -316,12 +319,12 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
@@ -351,18 +354,18 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //prepare updated Feed
         feedUpdated = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
@@ -371,7 +374,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
@@ -401,7 +404,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
@@ -411,13 +414,13 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
 
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
@@ -446,18 +449,18 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         //prepare updated Feed
         feedUpdated = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                InstanceUtil.addMinsToTime(startTime, 65)),
+                TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                 null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
@@ -465,7 +468,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
@@ -495,7 +498,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
@@ -505,12 +508,12 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
@@ -540,18 +543,18 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //prepare updated Feed
         feedUpdated = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
@@ -560,7 +563,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
@@ -590,18 +593,18 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         "US/${cluster.colo}");
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 110)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
@@ -611,13 +614,13 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         ServiceResponse response =
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
 
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
@@ -647,22 +650,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         //prepare updated Feed
         feedUpdated = InstanceUtil
                 .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
+                        TimeUtil.addMinsToTime(startTime, 65)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = cluster3.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feedUpdated);
-        Util.assertFailed(response);
+        AssertUtil.assertFailed(response);
 
         prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
@@ -718,20 +721,20 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
     feedOriginalSubmit = InstanceUtil
       .setFeedCluster(feedOriginalSubmit, XmlUtil.createValidity(startTime,
-        InstanceUtil.addMinsToTime(startTime, 65)),
+        TimeUtil.addMinsToTime(startTime, 65)),
         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
         Util.readClusterName(bundles[1].getClusters().get(0)),
       ClusterType.SOURCE,
         "US/${cluster.colo}");
     feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-      XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-        InstanceUtil.addMinsToTime(startTime, 85)),
+      XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+        TimeUtil.addMinsToTime(startTime, 85)),
       XmlUtil.createRtention("hours(10)", ActionType.DELETE),
       Util.readClusterName(bundles[0].getClusters().get(0)),
       ClusterType.TARGET, null);
     feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-      XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-        InstanceUtil.addMinsToTime(startTime, 110)),
+      XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+        TimeUtil.addMinsToTime(startTime, 110)),
       XmlUtil.createRtention("hours(10)", ActionType.DELETE),
       Util.readClusterName(bundles[2].getClusters().get(0)),
       ClusterType.SOURCE,
@@ -742,13 +745,13 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     ServiceResponse response =
       prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
     Thread.sleep(10000);
-    Util.assertSucceeded(response);
+    AssertUtil.assertSucceeded(response);
 
     //schedule on source
     response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL,
       feedOriginalSubmit);
     Thread.sleep(20000);
-    Util.assertSucceeded(response);
+    AssertUtil.assertSucceeded(response);
 
     Assert.assertEquals(InstanceUtil
       .checkIfFeedCoordExist(cluster2.getFeedHelper(),
@@ -783,8 +786,8 @@ public class FeedClusterUpdateTest extends BaseTestClass {
       ClusterType.SOURCE, null);
 
     feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-      XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-        InstanceUtil.addMinsToTime(startTime, 110)),
+      XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+        TimeUtil.addMinsToTime(startTime, 110)),
       XmlUtil.createRtention("hours(10)", ActionType.DELETE),
       Util.readClusterName(bundles[2].getClusters().get(0)),
     ClusterType.SOURCE,
@@ -794,15 +797,15 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
     response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
     Thread.sleep(20000);
-    Util.assertSucceeded(response);
+    AssertUtil.assertSucceeded(response);
 
 
     //verify xmls definitions
     response = cluster1.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feedUpdated);
-    Util.assertFailed(response);
+    AssertUtil.assertFailed(response);
     response = cluster2.getFeedHelper().getEntityDefinition(URLS
       .GET_ENTITY_DEFINITION, feedUpdated);
-    Util.assertFailed(response);
+    AssertUtil.assertFailed(response);
     response = cluster3.getFeedHelper().getEntityDefinition(URLS
       .GET_ENTITY_DEFINITION, feedUpdated);
     Assert.assertTrue(XmlUtil.isIdentical(feedUpdated,

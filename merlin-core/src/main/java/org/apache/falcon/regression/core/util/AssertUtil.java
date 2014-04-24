@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.response.APIResult;
+import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.hadoop.fs.Path;
@@ -63,6 +64,13 @@ public class AssertUtil {
         Assert.assertNotNull(response.getMessage(), "Status message is null");
     }
 
+    public static void assertSucceeded(ProcessInstancesResult response) {
+        Assert.assertNotNull(response.getMessage());
+        Assert.assertTrue(
+                response.getMessage().contains("SUCCEEDED") ||
+                        response.getStatus().toString().equals("SUCCEEDED")
+        );
+    }
 
     public static void assertFailed(final ServiceResponse response, final String message)
     throws JAXBException {
@@ -91,12 +99,18 @@ public class AssertUtil {
     }
 
     public static void assertPartial(ServiceResponse response) throws JAXBException {
-        Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.PARTIAL,
-                "Status should be PARTIAL");
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400,
-                "Status code should be 400");
-        Assert.assertNotNull(Util.parseResponse(response).getMessage(), "Status message is null");
+        Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.PARTIAL);
+        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
+        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+    }
 
+
+    public static void assertFailed(ServiceResponse response) throws JAXBException {
+        if (response.message.equals("null"))
+            Assert.assertTrue(false, "response message should not be null");
+
+        Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED);
+        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
     }
 
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
@@ -108,7 +122,7 @@ public class AssertUtil {
             name = Util.readEntityName(data);
         }
         Assert.assertEquals(
-                Util.verifyOozieJobStatus(oozieClient, name, entityType, expectedStatus), true,
+                OozieUtil.verifyOozieJobStatus(oozieClient, name, entityType, expectedStatus), true,
                 "Status should be " + expectedStatus);
     }
 
@@ -131,7 +145,7 @@ public class AssertUtil {
         } else if (entityType == ENTITY_TYPE.PROCESS) {
             processName = Util.readEntityName(data);
         }
-        Assert.assertNotEquals(Util.getOozieJobStatus(oozieClient, processName,
+        Assert.assertNotEquals(OozieUtil.getOozieJobStatus(oozieClient, processName,
                 entityType), expectedStatus, "Status should not be " + expectedStatus);
     }
 

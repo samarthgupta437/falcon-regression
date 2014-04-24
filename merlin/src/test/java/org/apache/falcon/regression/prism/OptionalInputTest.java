@@ -21,9 +21,11 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -56,7 +58,7 @@ public class OptionalInputTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
@@ -88,9 +90,9 @@ public class OptionalInputTest extends BaseTestClass {
 
         Thread.sleep(20000);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate("2010-01-02T00:00Z"),
-                InstanceUtil.oozieDateToDate("2010-01-02T01:15Z"), inputPath + "/input1/",
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate("2010-01-02T00:00Z"),
+                TimeUtil.oozieDateToDate("2010-01-02T01:15Z"), inputPath + "/input1/",
                 1);
 
         InstanceUtil
@@ -124,13 +126,13 @@ public class OptionalInputTest extends BaseTestClass {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 5, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate("2010-01-01T22:00Z"),
-                InstanceUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input2/",
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
+                TimeUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input2/",
                 1);
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate("2010-01-01T22:00Z"),
-                InstanceUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input1/",
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
+                TimeUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input1/",
                 1);
 
         InstanceUtil
@@ -162,9 +164,9 @@ public class OptionalInputTest extends BaseTestClass {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate("2010-01-01T22:00Z"),
-                InstanceUtil.oozieDateToDate("2010-01-02T04:00Z"), inputPath + "/input2/",
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
+                TimeUtil.oozieDateToDate("2010-01-02T04:00Z"), inputPath + "/input2/",
                 1);
 
         InstanceUtil
@@ -179,8 +181,8 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(10);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-4);
+        String endTime = TimeUtil.getTimeWrtSystemTime(10);
 
 
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
@@ -193,14 +195,14 @@ public class OptionalInputTest extends BaseTestClass {
 
         logger.info(bundles[0].getProcessData());
 
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input1/",
                 1);
-        InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
+        TimeUtil.createEmptyDirWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input0/",
                 1);
 
@@ -251,8 +253,8 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(30);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-4);
+        String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
@@ -271,9 +273,9 @@ public class OptionalInputTest extends BaseTestClass {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input1/",
                 1);
 
@@ -296,9 +298,9 @@ public class OptionalInputTest extends BaseTestClass {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input0/",
                 1);
 
@@ -315,8 +317,8 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(30);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-4);
+        String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
@@ -335,9 +337,9 @@ public class OptionalInputTest extends BaseTestClass {
                 .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
+        TimeUtil.createDataWithinDatesAndPrefix(cluster,
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
                 inputPath + "/input1/",
                 1);
         InstanceUtil

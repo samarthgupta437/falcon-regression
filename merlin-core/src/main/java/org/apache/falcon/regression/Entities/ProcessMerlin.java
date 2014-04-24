@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hive.hcatalog.api.HCatClient;
@@ -105,9 +106,9 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
         Map<String, FeedMerlin> inpFeeds = getInputFeeds(b);
         for (FeedMerlin feedElement : inpFeeds.values()) {
             feedElement.getClusters().getCluster().get(0).getValidity()
-                    .setStart(InstanceUtil.oozieDateToDate(startDate).toDate());
+                    .setStart(TimeUtil.oozieDateToDate(startDate).toDate());
             feedElement.getClusters().getCluster().get(0).getValidity()
-                    .setEnd(InstanceUtil.oozieDateToDate(endDate).toDate());
+                    .setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
             InstanceUtil.writeFeedElement(b, feedElement, feedElement.getName());
         }
         return b;

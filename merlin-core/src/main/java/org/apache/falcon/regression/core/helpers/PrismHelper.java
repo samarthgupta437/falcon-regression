@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.helpers;
 
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
@@ -76,7 +72,6 @@ public class PrismHelper {
                             .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
             feedHelper =
                     EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
-            instanceUtil = new InstanceUtil(this.clusterHelper.getOozieClient());
 
         } catch (Exception e) {
             logger.info(e.getMessage());

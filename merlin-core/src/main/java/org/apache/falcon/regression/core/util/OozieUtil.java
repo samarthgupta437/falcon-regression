@@ -18,7 +18,9 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.oozie.client.AuthOozieClient;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
@@ -26,14 +28,20 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTimeZone;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class OozieUtil {
 
@@ -107,9 +115,10 @@ public class OozieUtil {
 
   public static List<CoordinatorJob> getAllCoordIds(ColoHelper cluster, String entityData) throws JAXBException, OozieClientException {
 
-    List<String> bundleIds = Util.getBundles(cluster.getFeedHelper()
-      .getOozieClient(), Util.readEntityName(entityData),
-      Util.getEntityType(entityData));
+    List<String> bundleIds = getBundles(cluster.getFeedHelper()
+                    .getOozieClient(), Util.readEntityName(entityData),
+            Util.getEntityType(entityData)
+    );
     List<CoordinatorJob> coords = new ArrayList<CoordinatorJob>();
     for(String bundleID : bundleIds) {
 
@@ -121,8 +130,8 @@ public class OozieUtil {
   }
 
   public static String addMinsToTime(DateTime time, int difference) throws ParseException {
-    return InstanceUtil.addMinsToTime(InstanceUtil.dateToOozieDate(time.toDate()),
-      difference
+    return TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(time.toDate()),
+            difference
     );
   }
 
@@ -182,5 +191,252 @@ public class OozieUtil {
         }
         Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
                 "Coordinator job should have got created by now.");
+    }
+
+    public static String getBundleStatus(PrismHelper prismHelper, String bundleId)
+      throws OozieClientException {
+          XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+      BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
+      return bundleJob.getStatus().toString();
+    }
+
+    public static Job.Status getOozieJobStatus(OozieClient client, String processName,
+                                               ENTITY_TYPE entityType)
+      throws OozieClientException, InterruptedException {
+      String filter = String.format("name=FALCON_%s_%s", entityType, processName);
+      List<Job.Status> statuses = getBundleStatuses(client, filter, 0, 10);
+      if (statuses.isEmpty()) {
+        return null;
+      } else {
+        return statuses.get(0);
+      }
+    }
+
+    public static List<String> getBundles(OozieClient client, String entityName,
+                                          ENTITY_TYPE entityType)
+      throws OozieClientException {
+      String filter = "name=FALCON_" + entityType + "_" + entityName;
+      return getBundleIds(client, filter, 0, 10);
+    }
+
+    public static List<DateTime> getStartTimeForRunningCoordinators(PrismHelper prismHelper,
+                                                                    String bundleID)
+      throws OozieClientException {
+      List<DateTime> startTimes = new ArrayList<DateTime>();
+  
+      XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+      BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
+      CoordinatorJob jobInfo;
+  
+  
+      for (CoordinatorJob job : bundleJob.getCoordinators()) {
+  
+        if (job.getAppName().contains("DEFAULT")) {
+          jobInfo = oozieClient.getCoordJobInfo(job.getId());
+          for (CoordinatorAction action : jobInfo.getActions()) {
+            DateTime temp = new DateTime(action.getCreatedTime(), DateTimeZone.UTC);
+            logger.info(temp);
+            startTimes.add(temp);
+          }
+        }
+  
+        Collections.sort(startTimes);
+  
+        if (!(startTimes.isEmpty())) {
+          return startTimes;
+        }
+      }
+  
+      return null;
+    }
+
+    public static boolean verifyOozieJobStatus(OozieClient client, String processName,
+                                             ENTITY_TYPE entityType, Job.Status expectedStatus)
+    throws OozieClientException, InterruptedException {
+    for (int seconds = 0; seconds < 20; seconds++) {
+      Job.Status status = getOozieJobStatus(client, processName, entityType);
+      logger.info("Current status: " + status);
+      if (status == expectedStatus) {
+        return true;
+      }
+      TimeUnit.SECONDS.sleep(5);
+    }
+    return false;
+  }
+
+    public static List<String> getMissingDependencies(PrismHelper helper, String bundleID)
+    throws OozieClientException {
+        BundleJob bundleJob = helper.getClusterHelper().getOozieClient().getBundleJobInfo(bundleID);
+    CoordinatorJob jobInfo =
+                helper.getClusterHelper().getOozieClient().getCoordJobInfo(
+                        bundleJob.getCoordinators().get(0).getId());
+    List<CoordinatorAction> actions = jobInfo.getActions();
+
+        if(actions.size() < 1) {
+            return null;
+        }
+        logger.info("conf from event: " + actions.get(0).getMissingDependencies());
+
+    String[] missingDependencies = actions.get(0).getMissingDependencies().split("#");
+    return new ArrayList<String>(Arrays.asList(missingDependencies));
+  }
+
+    public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
+    throws OozieClientException {
+    List<String> jobIds = new ArrayList<String>();
+        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+    BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
+    CoordinatorJob jobInfo =
+      oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+
+    for (CoordinatorAction action : jobInfo.getActions()) {
+      jobIds.add(action.getExternalId());
+    }
+
+
+    return jobIds;
+
+  }
+
+    public static Date getNominalTime(PrismHelper prismHelper, String bundleID)
+    throws OozieClientException {
+        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+    BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
+    CoordinatorJob jobInfo =
+      oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+    List<CoordinatorAction> actions = jobInfo.getActions();
+
+    return actions.get(0).getNominalTime();
+
+  }
+
+    public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId,
+                                                      ENTITY_TYPE type)
+    throws OozieClientException {
+        XOozieClient client = prismHelper.getClusterHelper().getOozieClient();
+    BundleJob bundlejob = client.getBundleJobInfo(bundleId);
+
+    for (CoordinatorJob coord : bundlejob.getCoordinators()) {
+      if ((coord.getAppName().contains("DEFAULT") && ENTITY_TYPE.PROCESS
+        .equals(type)) || (coord.getAppName().contains("REPLICATION") && ENTITY_TYPE
+        .FEED
+        .equals(type))) {
+        return client.getCoordJobInfo(coord.getId());
+      } else {
+        logger.info("Desired coord does not exists on "+ client.getOozieUrl());
+      }
+    }
+
+    return null;
+  }
+
+    public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId)
+      throws OozieClientException {
+      return getDefaultOozieCoord(prismHelper, bundleId,
+              ENTITY_TYPE.PROCESS).getActions().size();
+    }
+
+    public static List<String> getActionsNominalTime(PrismHelper prismHelper,
+                                                   String bundleId,
+                                                   ENTITY_TYPE type)
+    throws OozieClientException {
+    List<String> nominalTime = new ArrayList<String>();
+    List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
+            bundleId, type).getActions();
+    for (CoordinatorAction action : actions) {
+      nominalTime.add(action.getNominalTime().toString());
+    }
+    return nominalTime;
+  }
+
+    public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
+     throws OozieClientException {
+         XOozieClient client = coloHelper.getClusterHelper().getOozieClient();
+ 
+         BundleJob bundleJob = client.getBundleJobInfo(bundleId);
+ 
+         if (bundleJob.getStatus().equals(BundleJob.Status.DONEWITHERROR) ||
+                 bundleJob.getStatus().equals(BundleJob.Status.FAILED) ||
+                 bundleJob.getStatus().equals(BundleJob.Status.SUCCEEDED) ||
+                 bundleJob.getStatus().equals(BundleJob.Status.KILLED)) {
+             return true;
+         }
+ 
+ 
+         try {
+             TimeUnit.SECONDS.sleep(20);
+         } catch (InterruptedException e) {
+             logger.error(e.getMessage());
+         }
+         return false;
+     }
+
+    public static void verifyNewBundleCreation(ColoHelper cluster,
+                                               String originalBundleId,
+                                               List<String>
+                                                 initialNominalTimes,
+                                               String entity,
+                                               boolean shouldBeCreated,
+  
+                                               boolean matchInstances) throws OozieClientException, ParseException, JAXBException {
+      String entityName = Util.readEntityName(entity);
+      ENTITY_TYPE entityType = Util.getEntityType(entity);
+      String newBundleId = InstanceUtil.getLatestBundleID(cluster, entityName,
+        entityType);
+      if (shouldBeCreated) {
+        Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
+          "eeks! new bundle is not getting created!!!!");
+        logger.info("old bundleId=" + originalBundleId + " on oozie: " +
+          ""+cluster.getProcessHelper().getOozieClient().getOozieUrl());
+        logger.info("new bundleId=" + newBundleId + " on oozie: " +
+          ""+cluster.getProcessHelper().getOozieClient().getOozieUrl());
+        if(matchInstances)
+          validateNumberOfWorkflowInstances(cluster,
+                  initialNominalTimes, originalBundleId, newBundleId, entityType);
+      } else {
+        Assert.assertEquals(newBundleId,
+          originalBundleId, "eeks! new bundle is getting created!!!!");
+      }
+    }
+
+    private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId, ENTITY_TYPE type) throws OozieClientException, ParseException {
+  
+      List<String> nominalTimesOriginalAndNew = getActionsNominalTime
+              (cluster,
+                      originalBundleId, type);
+  
+      nominalTimesOriginalAndNew.addAll(getActionsNominalTime(cluster,
+              newBundleId, type));
+  
+      initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
+  
+      if (initialNominalTimes.size() != 0){
+        logger.info("Missing instance are : "+ getListElements(initialNominalTimes));
+        logger.info("Original Bundle ID   : "+originalBundleId);
+        logger.info("New Bundle ID        : "+newBundleId);
+  
+        Assert.assertFalse(true, "some instances have gone missing after " +
+          "update");
+      }
+    }
+
+    private static String getListElements(List<String> list) {
+  
+      String concatenated ="";
+      for(String curr : list)
+        concatenated = concatenated + " , " + curr;
+      return concatenated;
+    }
+
+    public static String getCoordStartTime(ColoHelper colo, String entity,
+                                           int bundleNo) throws JAXBException, OozieClientException, ParseException {
+      String bundleID = InstanceUtil.getSequenceBundleID(colo,
+              Util.readEntityName(entity), Util.getEntityType(entity), bundleNo);
+  
+      CoordinatorJob coord = getDefaultOozieCoord(colo, bundleID,
+              Util.getEntityType(entity));
+  
+      return TimeUtil.dateToOozieDate(coord.getStartTime()
+      );
     }
 }

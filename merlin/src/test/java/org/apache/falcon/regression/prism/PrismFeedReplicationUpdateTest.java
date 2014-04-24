@@ -22,9 +22,11 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.ActionType;
 import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -68,7 +70,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
 
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -107,24 +109,24 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 5, 80, prefix, postFix);
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-30);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-30);
 
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+                        TimeUtil.addMinsToTime(startTime, 85)),
                         XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                         Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                         "US/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 105)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                        TimeUtil.addMinsToTime(startTime, 105)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
 
         feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 130)),
+                XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                        TimeUtil.addMinsToTime(startTime, 130)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "UK/${cluster.colo}");
@@ -178,9 +180,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
         //get 2 unique feeds
-        String feed01 = Util.getInputFeedFromBundle(bundles[0]);
-        String feed02 = Util.getInputFeedFromBundle(bundles[1]);
-        String outputFeed = Util.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed02 = BundleUtil.getInputFeedFromBundle(bundles[1]);
+        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
 
         //set clusters to null;
         feed01 = InstanceUtil.setFeedCluster(feed01,
@@ -211,7 +213,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 70, 1, prefix, null);
 
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-50);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 
         //set clusters for feed01
         feed01 = InstanceUtil.setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
@@ -263,8 +265,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         String process = bundles[0].getProcessData();
 
         //add clusters to process
-        String processStartTime = InstanceUtil.getTimeWrtSystemTime(-11);
-        String processEndTime = InstanceUtil.getTimeWrtSystemTime(70);
+        String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
+        String processEndTime = TimeUtil.getTimeWrtSystemTime(70);
 
         process = InstanceUtil.setProcessCluster(process, null,
                 XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));

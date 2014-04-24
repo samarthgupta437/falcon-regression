@@ -72,6 +72,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.sql.Time;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,12 +82,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class InstanceUtil {
-
-    static OozieClient oozieClient = null;
-
-    public InstanceUtil(OozieClient oozieClient)  {
-        this.oozieClient = oozieClient;
-    }
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
 
@@ -201,7 +196,8 @@ public class InstanceUtil {
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
             logger.info(
                     "pArray[" + instanceIndex + "]: " + pArray[instanceIndex].getStatus() + " , " +
-                            pArray[instanceIndex].getInstance());
+                            pArray[instanceIndex].getInstance()
+            );
 
             if (pArray[instanceIndex].getStatus().equals(ws)) {
                 runningCount++;
@@ -211,7 +207,7 @@ public class InstanceUtil {
     }
 
     public static void validateSuccessWOInstances(ProcessInstancesResult r) {
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         Assert.assertNull(r.getInstances(), "Unexpected :" + Arrays.toString(r.getInstances()));
     }
 
@@ -316,7 +312,7 @@ public class InstanceUtil {
     }
 
     public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
-        Util.assertSucceeded(r);
+        AssertUtil.assertSucceeded(r);
         int counter = 0;
         for (ProcessInstancesResult.ProcessInstance processInstance : r.getInstances()) {
             if(processInstance.getStatus() == ProcessInstancesResult.WorkflowStatus.FAILED)
@@ -329,11 +325,11 @@ public class InstanceUtil {
     public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
                                             WorkflowJob.Status... ws) throws OozieClientException {
 
-        String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+        String bundleID = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
         OozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
 
-        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
+        List<String> workflows = OozieUtil.getCoordinatorJobs(prismHelper, bundleID);
 
         List<String> toBeReturned = new ArrayList<String>();
         for (String jobID : workflows) {
@@ -439,10 +435,10 @@ public class InstanceUtil {
                                                                String processName) throws OozieClientException {
         OozieClient oozieClient = prismHelper.getProcessHelper().getOozieClient();
 
-        String bundleID = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+        String bundleID = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
                 processName, ENTITY_TYPE.PROCESS).get(0);
         List<WorkflowAction> was = new ArrayList<WorkflowAction>();
-        List<String> workflows = Util.getCoordinatorJobs(prismHelper, bundleID);
+        List<String> workflows = OozieUtil.getCoordinatorJobs(prismHelper, bundleID);
 
         for (String jobID : workflows) {
 
@@ -478,7 +474,7 @@ public class InstanceUtil {
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         DateTimeZone tz = DateTimeZone.getDefault();
-        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(),false));
+        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(), false));
     }
 
     public static String addMinsToTime(String time, int minutes) throws ParseException {
@@ -519,7 +515,7 @@ public class InstanceUtil {
                                            String entityName,ENTITY_TYPE entityType )
       throws OozieClientException {
 
-        List<String> bundleIds = Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), entityName, entityType);
+        List<String> bundleIds = OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), entityName, entityType);
 
         String max = "0";
         int maxID = -1;
@@ -536,7 +532,7 @@ public class InstanceUtil {
                                              ENTITY_TYPE entityType, int bundleNumber) throws OozieClientException {
 
         //sequence start from 0
-        List<String> bundleIds = Util.getBundles(prismHelper.getFeedHelper().getOozieClient(), entityName, entityType);
+        List<String> bundleIds = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(), entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
         String bundleID;
         for (String strID : bundleIds) {
@@ -627,32 +623,6 @@ public class InstanceUtil {
         fs.copyFromLocalFile(false, false, localPaths.toArray(new Path[localPaths.size()]), new Path(remoteLocation));
     }
 
-    public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord) throws ParseException, IOException, JSchException {
-
-        DateTime finalDate = new DateTime(InstanceUtil.oozieDateToDate(startTimeOfLateCoord));
-
-        while (true) {
-            DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
-            sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
-            if (sysDate.compareTo(finalDate) > 0)
-                break;
-
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
-        }
-
-    }
-
-    public static DateTime oozieDateToDate(String time) throws ParseException {
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        fmt = fmt.withZoneUTC();
-        return fmt.parseDateTime(time);
-    }
-
     public static void createHDFSFolders(PrismHelper helper, List<String> folderList) throws IOException, InterruptedException {
         logger.info("creating folders.....");
 
@@ -689,7 +659,7 @@ public class InstanceUtil {
                                                       DateTime endDateJoda, String prefix,
                                                       int interval) throws IOException, InterruptedException {
         List<String> dataDates =
-                Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
         if(!prefix.endsWith("/"))
           prefix = prefix+"/";
@@ -1018,9 +988,9 @@ public class InstanceUtil {
         logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
-        if (Util.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED).size() == 0)
+        if (OozieUtil.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED).size() == 0)
             return 0;
-        List<String> bundleID = Util.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED);
+        List<String> bundleID = OozieUtil.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED);
         logger.info("bundleID: " + bundleID);
 
         for (String aBundleID : bundleID) {
@@ -1063,9 +1033,9 @@ public class InstanceUtil {
 
         for (int i = 0; i < processElement.getClusters().getCluster().size(); i++) {
             processElement.getClusters().getCluster().get(i).getValidity().setStart(
-                    InstanceUtil.oozieDateToDate(startTime).toDate());
+                    TimeUtil.oozieDateToDate(startTime).toDate());
             processElement.getClusters().getCluster().get(i).getValidity()
-                    .setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
+                    .setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
 
         }
 
@@ -1080,9 +1050,9 @@ public class InstanceUtil {
         List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
 
         logger.info("bundle size for process is " +
-                Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType).size());
+                OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType).size());
 
-        for (String bundleId : Util.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType)) {
+        for (String bundleId : OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName, entityType)) {
             BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
             List<CoordinatorJob> coords = bundleInfo.getCoordinators();
 
@@ -1113,7 +1083,8 @@ public class InstanceUtil {
 
         return InstanceUtil.getReplicatedFolderFromInstanceRunConf(
                 oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId())
-                        .getConf());
+                        .getConf()
+        );
     }
 
     private static String getReplicatedFolderFromInstanceRunConf(
@@ -1276,7 +1247,7 @@ public class InstanceUtil {
                                                                 String prefix,
                                                                 int interval) throws IOException, InterruptedException {
     List<String> dataDates =
-      Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
     for (int i = 0; i < dataDates.size(); i++)
       dataDates.set(i, prefix + dataDates.get(i));
@@ -1332,7 +1303,7 @@ public class InstanceUtil {
                                                   expectedStatus, int instanceNumber,
                                                 int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
 
-    String entityName = Util.getInputFeedNameFromBundle(b);
+    String entityName = BundleUtil.getInputFeedNameFromBundle(b);
     boolean flag = false;
     int sleep1 = MinutesToWaitForStatus * 60 / 20;
     int sleep2 = MinutesToWaitForCoordAction * 60 / 20;

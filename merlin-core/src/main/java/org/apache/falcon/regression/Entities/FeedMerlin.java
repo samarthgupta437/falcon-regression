@@ -29,7 +29,7 @@ import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
-import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.log4j.Logger;
@@ -123,14 +123,13 @@ public class FeedMerlin extends Feed {
         DateTime end = new DateTime(getClusters().getCluster().get(0).getValidity().getEnd(),
                 DateTimeZone.UTC);
         String endDate = formatter.print(end);
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
         dataFolder = HadoopUtil.createTestDataInHDFS(fs,
-                Util.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
+                TimeUtil.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
         return dataFolder;
     }
-
 
     public FEED_TYPE getDataType(int len) {
         if (len == 5) {

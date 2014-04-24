@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -90,14 +91,14 @@ public class FeedRetentionTest extends BaseTestClass {
         String outputPathTemplate = baseHDFSDir + "/testOutput/op%d/ivoryRetention0%d/%s/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
         InstanceUtil.putFileInFolders(cluster1,
-                InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster1,
-                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
-                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
+                TimeUtil.createEmptyDirWithinDatesAndPrefix(cluster1,
+                        TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-5)),
+                        TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(10)),
                         inputPath, 1), OSUtil.RESOURCES + "thriftRRMar0602.gz");
         InstanceUtil.putFileInFolders(cluster2,
-                InstanceUtil.createEmptyDirWithinDatesAndPrefix(cluster2,
-                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(-5)),
-                        InstanceUtil.oozieDateToDate(InstanceUtil.getTimeWrtSystemTime(10)),
+                TimeUtil.createEmptyDirWithinDatesAndPrefix(cluster2,
+                        TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-5)),
+                        TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(10)),
                         inputPath, 1), OSUtil.RESOURCES + "thriftRRMar0602.gz");
 
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
@@ -191,9 +192,9 @@ public class FeedRetentionTest extends BaseTestClass {
                 XmlUtil.createProcessValidity("2012-10-01T12:00Z", "2012-10-01T12:10Z"));
 
         process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
-                XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2), InstanceUtil.getTimeWrtSystemTime(5)));
+                XmlUtil.createProcessValidity(TimeUtil.getTimeWrtSystemTime(-2), TimeUtil.getTimeWrtSystemTime(5)));
         process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundles[1].getClusters().get(0)),
-                XmlUtil.createProcessValidity(InstanceUtil.getTimeWrtSystemTime(-2), InstanceUtil.getTimeWrtSystemTime(5)));
+                XmlUtil.createProcessValidity(TimeUtil.getTimeWrtSystemTime(-2), TimeUtil.getTimeWrtSystemTime(5)));
 
         logger.info("process: " + process);
 
