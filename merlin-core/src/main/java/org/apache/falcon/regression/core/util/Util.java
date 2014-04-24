@@ -1007,20 +1007,6 @@ public class Util {
     }
 
 
-    public static DateTime getSystemDate(PrismHelper prismHelper)
-    throws IOException, JSchException {
-
-    DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-    fmt = fmt.withZoneUTC();
-
-
-   return fmt.parseDateTime(runRemoteScript(prismHelper.getClusterHelper()
-      .getQaHost(), prismHelper.getClusterHelper().getUsername(),
-      prismHelper.getClusterHelper().getPassword(), "date '+%Y-%m-%dT%H:%MZ'",
-      prismHelper.getClusterHelper().getIdentityFile()).get(0));
-
-  }
-
   public static List<String> getBundles(OozieClient client, String entityName,
                                         ENTITY_TYPE entityType)
     throws OozieClientException {
