@@ -187,10 +187,6 @@ public abstract class IEntityManagerHelper {
         return envFileName;
     }
 
-    public IEntityManagerHelper() {
-
-    }
-
     public IEntityManagerHelper(String envFileName, String prefix) {
         if ((null == prefix) || prefix.isEmpty()) {
             prefix = "";

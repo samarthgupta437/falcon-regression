@@ -46,10 +46,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     private static Logger logger = Logger.getLogger(ClusterEntityHelperImpl.class);
 
-    public ClusterEntityHelperImpl() {
-
-    }
-
     public ClusterEntityHelperImpl(String envFileName, String prefix) {
         super(envFileName, prefix);
     }

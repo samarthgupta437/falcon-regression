@@ -50,9 +50,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     private static Logger logger = Logger.getLogger(DataEntityHelperImpl.class);
 
-    public DataEntityHelperImpl() {
-    }
-
     public DataEntityHelperImpl(String envFileName, String prefix) {
         super(envFileName, prefix);
     }

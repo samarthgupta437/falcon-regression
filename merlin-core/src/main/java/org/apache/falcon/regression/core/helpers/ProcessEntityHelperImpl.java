@@ -51,9 +51,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     private static Logger logger = Logger.getLogger(ProcessEntityHelperImpl.class);
 
-    public ProcessEntityHelperImpl() {
-    }
-
     public ProcessEntityHelperImpl(String envFileName, String prefix) {
         super(envFileName, prefix);
     }

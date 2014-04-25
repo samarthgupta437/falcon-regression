@@ -45,7 +45,6 @@ import org.apache.falcon.regression.core.generated.process.LateProcess;
 import org.apache.falcon.regression.core.generated.process.Output;
 import org.apache.falcon.regression.core.generated.process.Outputs;
 import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.process.Properties;
 import org.apache.falcon.regression.core.generated.process.Property;
 import org.apache.falcon.regression.core.generated.process.Retry;
 import org.apache.falcon.regression.core.generated.process.Workflow;
@@ -70,7 +69,6 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
-import org.testng.annotations.DataProvider;
 import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBContext;
@@ -82,7 +80,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -210,34 +207,6 @@ public class Bundle {
         this.envFileName = bundle.getEnvFileName();
     }
 
-    public Bundle(List<String> dataSets, String processData, String clusterData,
-                  String envFileName, String prefix) throws JAXBException {
-        this.dataSets = dataSets;
-        this.processData = processData;
-        this.envFileName = envFileName;
-        this.clusters = new ArrayList<String>();
-        this.clusters.add(Util.getEnvClusterXML(envFileName, clusterData, prefix));
-        this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS,
-                envFileName, prefix);
-        this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName, prefix);
-    }
-
-    public Bundle(List<String> dataSets, String processData, List<String> clusterData,
-                  String envFileName, String prefix) throws JAXBException {
-        this.dataSets = dataSets;
-        this.processData = processData;
-        this.clusters = new ArrayList<String>();
-        for (String cluster : clusterData) {
-            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster, prefix));
-        }
-        this.envFileName = envFileName;
-        this.clusterHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER,
-                envFileName, prefix);
-        this.processHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS,
-                envFileName, prefix);
-        this.feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName, prefix);
-    }
-
     public Bundle(List<String> dataSets, String processData, String clusterData)  {
         this.dataSets = dataSets;
         this.processData = processData;
@@ -291,10 +260,6 @@ public class Bundle {
         this.feedHelper = prismHelper.getFeedHelper();
     }
 
-    public String getClusterData() {
-        return clusterData;
-    }
-
     public void setClusterData(List<String> clusters)  {
         this.clusters = new ArrayList<String>(clusters);
     }
@@ -327,12 +292,6 @@ public class Bundle {
     public void setProcessData(String processData) {
         this.processData = processData;
     }
-
-    public Bundle(List<String> dataSets, String processData) {
-        this.dataSets = dataSets;
-        this.processData = processData;
-    }
-
 
     public void generateUniqueBundle() throws JAXBException {
 
@@ -500,26 +459,6 @@ public class Bundle {
         return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public ServiceResponse submitBundle(boolean isUnique)
-    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-
-        //make sure bundle is unique
-        if (isUnique)
-            generateUniqueBundle();
-
-        //submit the cluster first
-        for (String clusterData : clusters) {
-            clusterHelper.submitEntity(URLS.SUBMIT_URL, clusterData);
-        }
-
-        //lets submit all data first
-        for (String dataset : getDataSets()) {
-         feedHelper.submitEntity(URLS.SUBMIT_URL, dataset);
-        }
-
-        return processHelper.submitEntity(URLS.SUBMIT_URL, getProcessData());
-    }
-
     public void updateWorkFlowFile() throws IOException, JAXBException, InterruptedException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
@@ -571,22 +510,6 @@ public class Bundle {
         }
 
         return scheduleResult.getMessage();
-    }
-
-
-    public Bundle() {
-    }
-
-    @DataProvider(name = "DP")
-    public static Object[][] getTestData(Method m) throws IOException {
-
-        return BundleUtil.readBundles();
-    }
-
-    @DataProvider(name = "EL-DP")
-    public static Object[][] getELTestData(Method m) throws IOException {
-
-        return BundleUtil.readELBundles();
     }
 
     public void setInvalidData() throws JAXBException {
@@ -967,9 +890,8 @@ public class Bundle {
                 InstanceUtil.getClusterElement(this);
         final Interfaces interfaces = c.getInterfaces();
         final List<Interface> interfaceList = interfaces.getInterface();
-        for(int i = 0; i < interfaceList.size(); ++i) {
-            final Interface anInterface = interfaceList.get(i);
-            if(anInterface.getType() == interfacetype) {
+        for (final Interface anInterface : interfaceList) {
+            if (anInterface.getType() == interfacetype) {
                 anInterface.setEndpoint(value);
             }
         }

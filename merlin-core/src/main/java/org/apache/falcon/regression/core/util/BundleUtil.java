@@ -106,10 +106,6 @@ public class BundleUtil {
 
     }
 
-    public static Bundle[][] readBundles() throws IOException {
-    return readBundles("bundles");
-  }
-
     public static Bundle[][] readELBundles() throws IOException {
     return readBundles("ELbundle");
   }

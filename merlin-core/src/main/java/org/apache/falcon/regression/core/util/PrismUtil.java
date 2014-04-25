@@ -18,22 +18,9 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.Retention;
-import org.apache.falcon.regression.core.generated.feed.Validity;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 public class PrismUtil {

@@ -19,7 +19,6 @@
 package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
-import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.CatalogTable;
@@ -50,12 +49,7 @@ import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job.Status;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.apache.oozie.client.WorkflowAction;
 import org.apache.oozie.client.WorkflowJob;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
 
@@ -72,11 +66,9 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.sql.Time;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -447,28 +439,6 @@ public class InstanceUtil {
     }
 
 
-    public static String getTimeWrtSystemTime(int minutes)  {
-
-        DateTime jodaTime = new DateTime(DateTimeZone.UTC);
-        if (minutes > 0)
-            jodaTime = jodaTime.plusMinutes(minutes);
-        else
-            jodaTime = jodaTime.minusMinutes(-1 * minutes);
-
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        DateTimeZone tz = DateTimeZone.getDefault();
-        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(), false));
-    }
-
-    public static String addMinsToTime(String time, int minutes) throws ParseException {
-
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        DateTime jodaTime = fmt.parseDateTime(time);
-        jodaTime = jodaTime.plusMinutes(minutes);
-        return fmt.print(jodaTime);
-    }
-
-
     public static Status getDefaultCoordinatorStatus(ColoHelper colohelper, String processName,
                                                      int bundleNumber) throws OozieClientException {
 
@@ -537,15 +507,6 @@ public class InstanceUtil {
         }
         return null;
     }
-
-    public static String dateToOozieDate(Date dt) throws ParseException {
-
-        DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        logger.info("SystemTime: " + jodaTime);
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        return fmt.print(jodaTime);
-    }
-
 
     public static CoordinatorAction.Status getInstanceStatus(ColoHelper coloHelper,
                                                              String processName,
@@ -636,26 +597,6 @@ public class InstanceUtil {
                     fs.copyFromLocalFile(new Path(aFileName), new Path(folder));
             }
         }
-    }
-
-    public static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
-                                                      DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException, InterruptedException {
-        List<String> dataDates =
-                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        if(!prefix.endsWith("/"))
-          prefix = prefix+"/";
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.putDataInFolders(colo, dataFolder,"");
-
     }
 
     public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
@@ -776,28 +717,6 @@ public class InstanceUtil {
         }
 
         return ReplicationCoordID;
-    }
-
-    public static void putDataInFolder(PrismHelper helper, final String remoteLocation) throws IOException, InterruptedException {
-
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
-
-
-        final FileSystem fs = FileSystem.get(FileSystem.getDefaultUri(conf), conf, "hdfs");
-
-        if (!fs.exists(new Path(remoteLocation)))
-            fs.mkdirs(new Path(remoteLocation));
-
-        File[] files = new File(OSUtil.NORMAL_INPUT).listFiles();
-        assert files != null;
-        for (final File file : files) {
-            if (!file.isDirectory()) {
-                fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                  new Path(remoteLocation));
-            }
-        }
-
     }
 
   public static APIResult createAndsendRequestProcessInstance(
@@ -1215,25 +1134,6 @@ public class InstanceUtil {
             }
         }
     }
-
-  public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
-                                                                DateTime startDateJoda,
-                                                                DateTime endDateJoda,
-                                                                String prefix,
-                                                                int interval) throws IOException, InterruptedException {
-    List<String> dataDates =
-            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-    for (int i = 0; i < dataDates.size(); i++)
-      dataDates.set(i, prefix + dataDates.get(i));
-
-    List<String> dataFolder = new ArrayList<String>();
-
-    for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-    InstanceUtil.createHDFSFolders(colo, dataFolder);
-    return dataFolder;
-  }
 
   public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
     Feed feedElement = InstanceUtil.getFeedElement(feed);
