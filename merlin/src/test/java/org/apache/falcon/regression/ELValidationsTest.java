@@ -47,14 +47,16 @@ public class ELValidationsTest extends BaseTestClass {
 
     @Test(groups = {"0.1", "0.2"})
     public void startInstBeforeFeedStart_today02() throws Exception {
-        String response = ELUtil.testWith(prism, cluster, "2009-02-02T20:00Z", "2011-12-31T00:00Z", "2009-02-02T20:00Z",
+        String response = ELUtil.testWith(prism, cluster, "2009-02-02T20:00Z", "2011-12-31T00:00Z",
+                "2009-02-02T20:00Z",
                 "2011-12-31T00:00Z", "now(-40,0)", "currentYear(20,30,24,20)", false);
         validate(response);
     }
 
     @Test(groups = {"singleCluster"})
     public void startInstAfterFeedEnd() throws Exception {
-        String response = ELUtil.testWith(prism, cluster, "currentYear(10,0,22,0)", "now(4,20)", false);
+        String response =
+                ELUtil.testWith(prism, cluster, "currentYear(10,0,22,0)", "now(4,20)", false);
         validate(response);
     }
 
@@ -68,10 +70,12 @@ public class ELValidationsTest extends BaseTestClass {
     private void validate(String response) {
         if ((response.contains("End instance ") || response.contains("Start instance"))
                 && (response.contains("for feed") || response.contains("of feed"))
-                && (response.contains("is before the start of feed") || response.contains("is after the end of feed"))) {
+                && (response.contains("is before the start of feed") ||
+                response.contains("is after the end of feed"))) {
             return;
         }
-        if (response.contains("End instance") && response.contains("is before the start instance")) {
+        if (response.contains("End instance") &&
+                response.contains("is before the start instance")) {
             return;
         }
 

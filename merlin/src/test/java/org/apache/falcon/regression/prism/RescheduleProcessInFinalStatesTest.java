@@ -69,14 +69,15 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         String startDate = "2010-01-01T20:00Z";
         String endDate = "2010-01-03T01:04Z";
 
-        b.setInputFeedDataPath(baseTestDir +"/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -99,7 +100,8 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:15Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setOutputFeedLocationData(baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setOutputFeedLocationData(
+                baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -114,7 +116,9 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     // DWE mean Done With Error In Oozie
     @Test(enabled = false)
     public void rescheduleSucceeded() throws Exception {
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
         Thread.sleep(20000);
 
         //delete the process
@@ -127,16 +131,21 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         AssertUtil.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
+        r = prism.getProcessHelper()
+                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
 
     }
 
     @Test(enabled = false)
     public void rescheduleFailed() throws Exception {
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
         Thread.sleep(20000);
 
         //delete the process
@@ -144,15 +153,18 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
-                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
+                .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
         AssertUtil.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
+        r = prism.getProcessHelper()
+                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
     }
 
     @Test(enabled = false)
@@ -160,9 +172,11 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         Thread.sleep(20000);
 
         prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()), "?start=2010-01-02T01:05Z");
+                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                        "?start=2010-01-02T01:05Z");
 
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.DONEWITHERROR, 20);
+        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(),
+                Status.DONEWITHERROR, 20);
 
         Thread.sleep(20000);
 
@@ -171,15 +185,18 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
-                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
+                .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
         AssertUtil.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
+        r = prism.getProcessHelper()
+                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
 
     }
 
@@ -190,20 +207,24 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
 
 
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.KILLED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.KILLED, 20);
 
         Thread.sleep(20000);
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
-                        .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
+                .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
         Assert.assertTrue(r.getMessage().contains("(process) not found"));
         AssertUtil.assertFailed(r);
 
         //submit and schedule process again
-        r = prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
+        r = prism.getProcessHelper()
+                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
         Thread.sleep(20000);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
     }
 }

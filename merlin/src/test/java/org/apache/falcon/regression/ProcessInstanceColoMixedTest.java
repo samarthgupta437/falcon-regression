@@ -252,9 +252,11 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         }
 
         Assert.assertNotNull(sUa1, "sUa1 should not be null.");
-        Assert.assertTrue(sUa1 == Status.RUNNING || sUa1 == Status.SUCCEEDED, "Unexpected sUa1: " + sUa1);
+        Assert.assertTrue(sUa1 == Status.RUNNING || sUa1 == Status.SUCCEEDED,
+                "Unexpected sUa1: " + sUa1);
         Assert.assertNotNull(sUa2, "sUa2 should not be null.");
-        Assert.assertTrue(sUa2 == Status.RUNNING || sUa2 == Status.SUCCEEDED, "Unexpected sUa2: " + sUa2);
+        Assert.assertTrue(sUa2 == Status.RUNNING || sUa2 == Status.SUCCEEDED,
+                "Unexpected sUa2: " + sUa2);
 
         ProcessInstancesResult responseInstance = prism.getProcessHelper()
                 .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),

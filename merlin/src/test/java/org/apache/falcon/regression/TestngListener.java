@@ -33,17 +33,20 @@ public class TestngListener implements ITestListener {
     @Override
     public void onTestStart(ITestResult result) {
         logLine();
-        logger.info(String.format("Testing going to start for: %s.%s %s", result.getTestClass().getName(),
+        logger.info(String.format("Testing going to start for: %s.%s %s",
+                result.getTestClass().getName(),
                 result.getName(), Arrays.toString(result.getParameters())));
         NDC.push(result.getName());
     }
 
     private void logLine() {
-        logger.info("-----------------------------------------------------------------------------------------------");
+        logger.info(
+                "-----------------------------------------------------------------------------------------------");
     }
 
     private void logEndOfTest(ITestResult result, String outcome) {
-        logger.info(String.format("Testing going to end for: %s.%s(%s) %s", result.getTestClass().getName(),
+        logger.info(String.format("Testing going to end for: %s.%s(%s) %s",
+                result.getTestClass().getName(),
                 result.getName(), Arrays.toString(result.getParameters()), outcome));
         NDC.pop();
         logLine();

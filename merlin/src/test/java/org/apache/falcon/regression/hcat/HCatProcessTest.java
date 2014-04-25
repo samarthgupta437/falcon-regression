@@ -76,9 +76,12 @@ public class HCatProcessTest extends BaseTestClass {
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String hiveScriptFileNonHCatInput = hiveScriptDir + "/script_non_hcat_input.hql";
     String hiveScriptFileNonHCatOutput = hiveScriptDir + "/script_non_hcat_output.hql";
-    String hiveScriptTwoHCatInputOneHCatOutput = hiveScriptDir + "/script_two_hcat_input_one_hcat_output.hql";
-    String hiveScriptOneHCatInputTwoHCatOutput = hiveScriptDir + "/script_one_hcat_input_two_hcat_output.hql";
-    String hiveScriptTwoHCatInputTwoHCatOutput = hiveScriptDir + "/script_two_hcat_input_two_hcat_output.hql";
+    String hiveScriptTwoHCatInputOneHCatOutput =
+            hiveScriptDir + "/script_two_hcat_input_one_hcat_output.hql";
+    String hiveScriptOneHCatInputTwoHCatOutput =
+            hiveScriptDir + "/script_one_hcat_input_two_hcat_output.hql";
+    String hiveScriptTwoHCatInputTwoHCatOutput =
+            hiveScriptDir + "/script_two_hcat_input_two_hcat_output.hql";
     final String inputHDFSDir = baseTestHDFSDir + "/input";
     final String inputHDFSDir2 = baseTestHDFSDir + "/input2";
     final String outputHDFSDir = baseTestHDFSDir + "/output";
@@ -105,7 +108,8 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(hiveScriptFile, EngineType.HIVE);
-        bundles[0].setClusterInterface(Interfacetype.REGISTRY, cluster.getClusterHelper().getHCatEndpoint());
+        bundles[0].setClusterInterface(Interfacetype.REGISTRY,
+                cluster.getClusterHelper().getHCatEndpoint());
 
         HadoopUtil.deleteDirIfExists(baseTestHDFSDir, clusterFS);
         HadoopUtil.uploadDir(clusterFS, hiveScriptDir, hiveScript);
@@ -122,7 +126,7 @@ public class HCatProcessTest extends BaseTestClass {
     public String[][] generateSeparators() {
         //disabling till FALCON-372 is fixed
         //return new String[][] {{"-"}, {"/"}};
-        return new String[][] {{"-"}, };
+        return new String[][]{{"-"},};
     }
 
     @Test(dataProvider = "generateSeparators")
@@ -130,17 +134,20 @@ public class HCatProcessTest extends BaseTestClass {
         /* upload data and create partition */
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
         cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
@@ -160,12 +167,14 @@ public class HCatProcessTest extends BaseTestClass {
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
 
         final String tableUriPartitionFragment = StringUtils.join(
-                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
-        String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
+                new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String inputTableUri =
+                "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
         bundles[0].setInputFeedTableUri(inputTableUri);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
-        String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
+        String outputTableUri =
+                "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
@@ -176,9 +185,11 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
+                defaultTimeOut, ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+                outputHDFSDir + "/dt=" + dataDates.get(0));
     }
 
     @Test(dataProvider = "generateSeparators")
@@ -186,18 +197,22 @@ public class HCatProcessTest extends BaseTestClass {
         /* upload data and create partition */
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset2 =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
         cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
@@ -226,9 +241,11 @@ public class HCatProcessTest extends BaseTestClass {
         addPartitionsToTable(dataDates, dataset2, "dt", dbName, inputTableName2);
 
         final String tableUriPartitionFragment = StringUtils.join(
-                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
-        String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
-        String inputTableUri2 = "catalog:" + dbName + ":" + inputTableName2 + tableUriPartitionFragment;
+                new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String inputTableUri =
+                "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
+        String inputTableUri2 =
+                "catalog:" + dbName + ":" + inputTableName2 + tableUriPartitionFragment;
         bundles[0].setInputFeedTableUri(inputTableUri);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
@@ -242,7 +259,8 @@ public class HCatProcessTest extends BaseTestClass {
         String inputFeed2 = feedObj.toString();
         bundles[0].addInputFeedToBundle("inputData2", inputFeed2, 0);
 
-        String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
+        String outputTableUri =
+                "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
@@ -254,7 +272,8 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
+                defaultTimeOut, ENTITY_TYPE.PROCESS);
 
         final ContentSummary inputContentSummary =
                 clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -275,17 +294,20 @@ public class HCatProcessTest extends BaseTestClass {
         /* upload data and create partition */
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
         cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
@@ -313,19 +335,22 @@ public class HCatProcessTest extends BaseTestClass {
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
 
         final String tableUriPartitionFragment = StringUtils.join(
-                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
-        String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
+                new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String inputTableUri =
+                "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
         bundles[0].setInputFeedTableUri(inputTableUri);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
-        String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
-        String outputTableUri2 = "catalog:" + dbName + ":" + outputTableName2 + tableUriPartitionFragment;
+        String outputTableUri =
+                "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
+        String outputTableUri2 =
+                "catalog:" + dbName + ":" + outputTableName2 + tableUriPartitionFragment;
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
         final String outputFeed1 = BundleUtil.getInputFeedFromBundle(bundles[0]);
         final String outputFeed2Name = "second-" + Util.readEntityName(outputFeed1);
-        FeedMerlin feedObj = new FeedMerlin(outputFeed1) ;
+        FeedMerlin feedObj = new FeedMerlin(outputFeed1);
         feedObj.setName(outputFeed2Name);
         feedObj.getTable().setUri(outputTableUri2);
         bundles[0].addOutputFeedToBundle("outputData2", feedObj.toString(), 0);
@@ -337,10 +362,13 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
+                defaultTimeOut, ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir2 + "/dt=" + dataDates.get(0));
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+                outputHDFSDir + "/dt=" + dataDates.get(0));
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+                outputHDFSDir2 + "/dt=" + dataDates.get(0));
     }
 
 
@@ -349,18 +377,22 @@ public class HCatProcessTest extends BaseTestClass {
         /* upload data and create partition */
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset2 =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
         cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
@@ -397,9 +429,11 @@ public class HCatProcessTest extends BaseTestClass {
         addPartitionsToTable(dataDates, dataset2, "dt", dbName, inputTableName2);
 
         final String tableUriPartitionFragment = StringUtils.join(
-                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
-        String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
-        String inputTableUri2 = "catalog:" + dbName + ":" + inputTableName2 + tableUriPartitionFragment;
+                new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String inputTableUri =
+                "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
+        String inputTableUri2 =
+                "catalog:" + dbName + ":" + inputTableName2 + tableUriPartitionFragment;
         bundles[0].setInputFeedTableUri(inputTableUri);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
@@ -411,8 +445,10 @@ public class HCatProcessTest extends BaseTestClass {
         String inputFeed2 = feedObj.toString();
         bundles[0].addInputFeedToBundle("inputData2", inputFeed2, 0);
 
-        String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
-        String outputTableUri2 = "catalog:" + dbName + ":" + outputTableName2 + tableUriPartitionFragment;
+        String outputTableUri =
+                "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
+        String outputTableUri2 =
+                "catalog:" + dbName + ":" + outputTableName2 + tableUriPartitionFragment;
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
@@ -430,7 +466,8 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
+                defaultTimeOut, ENTITY_TYPE.PROCESS);
 
         final ContentSummary inputContentSummary =
                 clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -458,17 +495,20 @@ public class HCatProcessTest extends BaseTestClass {
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
         /* upload data and create partition */
-        final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
         cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, inputTableName, cols)
                 .partCols(partitionCols)
@@ -480,8 +520,9 @@ public class HCatProcessTest extends BaseTestClass {
         addPartitionsToTable(dataDates, dataset, "dt", dbName, inputTableName);
 
         final String tableUriPartitionFragment = StringUtils.join(
-                new String[] {"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
-        String inputTableUri = "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
+                new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+        String inputTableUri =
+                "catalog:" + dbName + ":" + inputTableName + tableUriPartitionFragment;
         bundles[0].setInputFeedTableUri(inputTableUri);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
@@ -495,7 +536,8 @@ public class HCatProcessTest extends BaseTestClass {
         nonHCatFeed = Util.setClusterNameInFeed(nonHCatFeed, clusterNames.get(0), 0);
         InstanceUtil.writeFeedElement(bundles[0], nonHCatFeed, outputFeedName);
         bundles[0].setOutputFeedLocationData(outputHDFSDir + "/" +
-                StringUtils.join(new String[]{"${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator));
+                StringUtils
+                        .join(new String[]{"${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator));
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
 
@@ -507,9 +549,11 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
+                defaultTimeOut, ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/" + dataDates.get(0));
+        checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+                outputHDFSDir + "/" + dataDates.get(0));
     }
 
     @Test(dataProvider = "generateSeparators")
@@ -517,17 +561,20 @@ public class HCatProcessTest extends BaseTestClass {
         /* upload data and create partition */
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2010-01-02T04:00Z";
-        final String datePattern = StringUtils.join(new String[] {"yyyy", "MM", "dd", "HH"}, separator);
+        final String datePattern =
+                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset =
+                createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
         cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING, partitionColumn + " partition"));
+        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
+                partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
                 .create(dbName, outputTableName, cols)
                 .partCols(partitionCols)
@@ -544,13 +591,15 @@ public class HCatProcessTest extends BaseTestClass {
         nonHCatFeed = Util.setClusterNameInFeed(nonHCatFeed, clusterNames.get(0), 0);
         InstanceUtil.writeFeedElement(bundles[0], nonHCatFeed, inputFeedName);
         bundles[0].setInputFeedDataPath(inputHDFSDir + "/" +
-                StringUtils.join(new String[] {"${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator));
+                StringUtils
+                        .join(new String[]{"${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator));
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
 
         final String tableUriPartitionFragment = StringUtils.join(
                 new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
-        String outputTableUri = "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
+        String outputTableUri =
+                "catalog:" + dbName + ":" + outputTableName + tableUriPartitionFragment;
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
@@ -562,7 +611,8 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].submitFeedsScheduleProcess();
 
         InstanceUtil.waitTillInstanceReachState(
-                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut,
+                clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
+                defaultTimeOut,
                 ENTITY_TYPE.PROCESS);
 
         checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
@@ -581,7 +631,8 @@ public class HCatProcessTest extends BaseTestClass {
                 "Unexpected size of the output.");
     }
 
-    private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations, String partitionCol,
+    private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations,
+                                      String partitionCol,
                                       String dbName, String tableName) throws HCatException {
         Assert.assertEquals(partitions.size(), partitionLocations.size(),
                 "Number of locations is not same as number of partitions.");
@@ -591,12 +642,15 @@ public class HCatProcessTest extends BaseTestClass {
             final Map<String, String> onePartition = new HashMap<String, String>();
             onePartition.put(partitionCol, partition);
             final String partitionLoc = partitionLocations.get(i);
-            partitionDesc.add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition).build());
+            partitionDesc
+                    .add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition)
+                            .build());
         }
         clusterHC.addPartitions(partitionDesc);
     }
 
-    private ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData, FileSystem fileSystem,
+    private ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
+                                                    FileSystem fileSystem,
                                                     String baseHDFSLocation) throws IOException {
         ArrayList<String> dataFolder = new ArrayList<String>();
 
@@ -612,7 +666,8 @@ public class HCatProcessTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
         DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);
-        logger.info("generating data between " + formatter.print(startDateJoda) + " and " + formatter.print(endDateJoda));
+        logger.info("generating data between " + formatter.print(startDateJoda) + " and " +
+                formatter.print(endDateJoda));
         List<String> dates = new ArrayList<String>();
         dates.add(formatter.print(startDateJoda));
         while (!startDateJoda.isAfter(endDateJoda)) {

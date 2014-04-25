@@ -55,7 +55,8 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+            baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
@@ -76,7 +77,8 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
@@ -135,7 +137,8 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         //wait for instance to succeed
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0, 0)
+                    .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0,
+                            0)
                     .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
 

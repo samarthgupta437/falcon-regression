@@ -82,7 +82,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -121,7 +122,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(5);
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstancesAreCreated(cluster,bundles[0].getProcessData(),0,10);
+        InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z&end=2010-01-02T01:16Z");
@@ -218,14 +219,14 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstancesAreCreated(cluster,bundles[0].getProcessData(),0,10);
-        String wfID  = InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0]
+        InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
+        String wfID = InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0]
                 .getProcessData()),
-                Status.RUNNING,Status.SUCCEEDED)
+                Status.RUNNING, Status.SUCCEEDED)
                 .get(0);
-        InstanceUtil.waitTillInstanceReachState(clusterOC,Util.readEntityName(bundles[0]
-                .getProcessData()),0,CoordinatorAction
-                .Status.SUCCEEDED,10, ENTITY_TYPE.PROCESS);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
+                .getProcessData()), 0, CoordinatorAction
+                .Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
         prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                         "?start=2010-01-02T01:00Z");
@@ -264,8 +265,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
-        InstanceUtil.waitTillInstanceReachState(clusterOC,Util.readEntityName(bundles[0]
-                .getProcessData()),2, CoordinatorAction.Status.SUCCEEDED,10,ENTITY_TYPE.PROCESS);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
+                .getProcessData()), 2, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
         List<String> wfIDs =
                 InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
                         ()));
@@ -292,7 +293,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         CoordinatorAction.Status s = null;
         while (!CoordinatorAction.Status.TIMEDOUT.equals(s)) {
             s = InstanceUtil
-                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
+                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0,
+                            0);
             Thread.sleep(15000);
         }
         prism.getProcessHelper()

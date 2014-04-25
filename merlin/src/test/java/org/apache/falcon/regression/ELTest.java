@@ -52,13 +52,13 @@ public class ELTest extends BaseTestClass {
     public Object[][] getELData(Method m) throws Exception {
         return new Object[][]{
 
-                {"now(-3,0)","now(4,20)"},
-                {"yesterday(22,0)","now(4,20)"},
-                {"currentMonth(0,22,0)","now(4,20)"},
-                {"lastMonth(30,22,0)","now(4,20)"},
-                {"currentYear(0,0,22,0)","currentYear(1,1,22,0)"},
-                {"currentMonth(0,22,0)","currentMonth(1,22,20)"},
-                {"lastMonth(30,22,0)","lastMonth(60,2,40)"},
+                {"now(-3,0)", "now(4,20)"},
+                {"yesterday(22,0)", "now(4,20)"},
+                {"currentMonth(0,22,0)", "now(4,20)"},
+                {"lastMonth(30,22,0)", "now(4,20)"},
+                {"currentYear(0,0,22,0)", "currentYear(1,1,22,0)"},
+                {"currentMonth(0,22,0)", "currentMonth(1,22,20)"},
+                {"lastMonth(30,22,0)", "lastMonth(60,2,40)"},
                 {"lastYear(12,0,22,0)", "lastYear(13,1,22,0)"}
         };
     }

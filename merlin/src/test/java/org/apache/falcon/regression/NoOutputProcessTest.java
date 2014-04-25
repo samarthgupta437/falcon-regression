@@ -40,6 +40,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,8 @@ public class NoOutputProcessTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -137,7 +139,8 @@ public class NoOutputProcessTest extends BaseTestClass {
         Consumer consumerInternalMsg =
                 new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         Consumer consumerProcess =
-                new Consumer("FALCON." + bundles[0].getProcessName(), cluster.getClusterHelper().getActiveMQ());
+                new Consumer("FALCON." + bundles[0].getProcessName(),
+                        cluster.getClusterHelper().getActiveMQ());
 
         consumerInternalMsg.start();
         consumerProcess.start();

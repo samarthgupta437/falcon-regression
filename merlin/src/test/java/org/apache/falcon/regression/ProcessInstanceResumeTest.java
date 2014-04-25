@@ -40,6 +40,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,8 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     FileSystem clusterFS = serverFS.get(0);
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceResumeTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+            baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     private static final Logger logger = Logger.getLogger(ProcessInstanceResumeTest.class);
 
@@ -79,7 +81,8 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         ArrayList<String> dataFolder = new ArrayList<String>();
         int i = 0;
@@ -216,7 +219,8 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         Thread.sleep(15000);
         ProcessInstancesResult r =
                 prism.getProcessHelper()
-                        .getProcessInstanceResume("invalidName", "?start=2010-01-02T01:00Z&end=2010-01-02T01:15Z");
+                        .getProcessInstanceResume("invalidName",
+                                "?start=2010-01-02T01:00Z&end=2010-01-02T01:15Z");
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
@@ -229,7 +233,8 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r =
-                prism.getProcessHelper().getProcessInstanceResume("invalidName", "?start=2010-01-02T01:00Z");
+                prism.getProcessHelper()
+                        .getProcessInstanceResume("invalidName", "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 

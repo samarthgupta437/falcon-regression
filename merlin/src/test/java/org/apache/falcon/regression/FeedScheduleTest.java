@@ -97,7 +97,8 @@ public class FeedScheduleTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void scheduleSuspendedFeed() throws Exception {
-        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(
+                prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
         //now suspend
         AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
@@ -109,7 +110,8 @@ public class FeedScheduleTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void scheduleKilledFeed() throws Exception {
-        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(
+                prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
         //now suspend
         AssertUtil.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, feed));

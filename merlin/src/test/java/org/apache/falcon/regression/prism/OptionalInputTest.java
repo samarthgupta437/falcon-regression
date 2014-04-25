@@ -36,6 +36,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import java.lang.reflect.Method;
 
 
@@ -75,8 +76,9 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
+        bundles[0] =
+                bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
+                        "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(bundles[0].getDataSets().get(i));
@@ -96,7 +98,8 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -105,8 +108,9 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 3 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
+        bundles[0] =
+                bundles[0].getRequiredBundle(bundles[0], 1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
+                        "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(bundles[0].getDataSets().get(i));
@@ -123,7 +127,8 @@ public class OptionalInputTest extends BaseTestClass {
 
         logger.info("instanceShouldStillBeInWaitingState");
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 5, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
@@ -136,7 +141,8 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -146,8 +152,9 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
+        bundles[0] =
+                bundles[0].getRequiredBundle(bundles[0], 1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
+                        "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(bundles[0].getDataSets().get(i));
@@ -161,7 +168,8 @@ public class OptionalInputTest extends BaseTestClass {
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
@@ -170,7 +178,8 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -185,7 +194,8 @@ public class OptionalInputTest extends BaseTestClass {
         String endTime = TimeUtil.getTimeWrtSystemTime(10);
 
 
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0] =
+                bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(bundles[0].getDataSets().get(i));
@@ -210,7 +220,8 @@ public class OptionalInputTest extends BaseTestClass {
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
     }
 
@@ -219,10 +230,12 @@ public class OptionalInputTest extends BaseTestClass {
         //process with 2 input , scheduled on single cluster
         // in input set true / false for both the input
         //create data after process has been scheduled, so that initially instance goes into waiting
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
+        bundles[0] =
+                bundles[0].getRequiredBundle(bundles[0], 1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
+                        "2010-01-02T01:12Z");
 
-        bundles[0].setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData"));
+        bundles[0].setProcessData(
+                bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData"));
 
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
@@ -242,7 +255,8 @@ public class OptionalInputTest extends BaseTestClass {
         // , instanceUtil.oozieDateToDate("2010-01-02T04:00Z"), "/samarthData/input/input1/",
         // 1);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.KILLED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -256,7 +270,8 @@ public class OptionalInputTest extends BaseTestClass {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0] =
+                bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(bundles[0].getDataSets().get(i));
@@ -270,7 +285,8 @@ public class OptionalInputTest extends BaseTestClass {
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
@@ -280,10 +296,12 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
-        bundles[0].setProcessData(bundles[0].setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
+        bundles[0].setProcessData(bundles[0]
+                .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
 
         logger.info("modified process:" + bundles[0].getProcessData());
 
@@ -295,7 +313,8 @@ public class OptionalInputTest extends BaseTestClass {
         Thread.sleep(60000);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
@@ -305,7 +324,8 @@ public class OptionalInputTest extends BaseTestClass {
                 1);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
@@ -320,7 +340,8 @@ public class OptionalInputTest extends BaseTestClass {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0] =
+                bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(bundles[0].getDataSets().get(i));
@@ -334,7 +355,8 @@ public class OptionalInputTest extends BaseTestClass {
 
         Thread.sleep(20000);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
@@ -343,15 +365,18 @@ public class OptionalInputTest extends BaseTestClass {
                 inputPath + "/input1/",
                 1);
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
-        bundles[0].setProcessData(bundles[0].setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 2, 1));
+        bundles[0].setProcessData(bundles[0]
+                .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 2, 1));
 
         //delete all input data
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
 
-        bundles[0].setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
+        bundles[0].setProcessData(bundles[0]
+                .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
 
         logger.info("modified process:" + bundles[0].getProcessData());
 
@@ -364,7 +389,8 @@ public class OptionalInputTest extends BaseTestClass {
         Thread.sleep(30000);
 
         InstanceUtil
-                .waitTillInstanceReachState(oozieClient, Util.getProcessName(bundles[0].getProcessData()),
+                .waitTillInstanceReachState(oozieClient,
+                        Util.getProcessName(bundles[0].getProcessData()),
                         2, CoordinatorAction.Status.KILLED, 10, ENTITY_TYPE.PROCESS);
     }
 }

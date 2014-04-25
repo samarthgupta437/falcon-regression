@@ -73,7 +73,8 @@ public class ProcessLibPathTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -98,7 +99,8 @@ public class ProcessLibPathTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setOutputFeedLocationData(baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setOutputFeedLocationData(
+                baseHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessConcurrency(1);
         bundles[0].setProcessLibPath(testLibDir);
     }
@@ -115,7 +117,9 @@ public class ProcessLibPathTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(workflowDir + "/lib", clusterFS);
         logger.info("processData: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
     }
 
     @Test(groups = {"singleCluster"})
@@ -123,9 +127,12 @@ public class ProcessLibPathTest extends BaseTestClass {
         String workflowDir = testLibDir + "/aggregatorLib2/";
         HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.deleteFile(cluster, new Path(workflowDir + "/lib/oozie-examples-3.1.5.jar"));
-        HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib", OSUtil.RESOURCES + "ivory-oozie-lib-0.1.jar");
+        HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib",
+                OSUtil.RESOURCES + "ivory-oozie-lib-0.1.jar");
         logger.info("processData: " + bundles[0].getProcessData());
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+        InstanceUtil
+                .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED,
+                        20);
     }
 }

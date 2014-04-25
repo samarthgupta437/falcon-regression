@@ -57,7 +57,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + testDir;
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+            baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(ProcessInstanceKillsTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -80,7 +81,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -288,7 +290,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0)
+                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0,
+                            0)
                     .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
             Thread.sleep(30000);

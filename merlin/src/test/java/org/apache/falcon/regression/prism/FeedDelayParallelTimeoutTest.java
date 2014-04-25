@@ -40,8 +40,8 @@ import java.lang.reflect.Method;
 @Test(groups = "distributed")
 public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
-    ColoHelper cluster1 = servers.get(0);;
-    ColoHelper cluster2 = servers.get(1);;
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
 
     String baseTestDir = baseHDFSDir + "/FeedDelayParallelTimeoutTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
@@ -52,6 +52,7 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
+
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());

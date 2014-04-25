@@ -42,6 +42,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +58,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedInputTimedOutPath = baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputTimedOutPath = baseTestHDFSDir + "/output-data/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+            baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedInputTimedOutPath =
+            baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputTimedOutPath = baseTestHDFSDir +
+            "/output-data/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(ProcessInstanceStatusTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -84,7 +88,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -115,7 +120,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_StartAndEnd_checkNoInstanceAfterEndDate()
-            throws Exception {
+    throws Exception {
         //time out is set as 3 minutes .... getStatus is for a large range in past.
         //6 instance should be materialized and one in running and other in waiting
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-03T10:22Z");
@@ -351,7 +356,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         Status status = null;
         while (status != Status.TIMEDOUT) {
             status = InstanceUtil
-                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
+                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0,
+                            0);
             Thread.sleep(15000);
         }
         ProcessInstancesResult r = prism.getProcessHelper()
