@@ -71,6 +71,10 @@ public class FeedResumeTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Launches feed, suspends it and then resumes and checks if it got running.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void resumeSuspendedFeed() throws Exception {
         AssertUtil.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
@@ -86,12 +90,19 @@ public class FeedResumeTest extends BaseTestClass {
     }
 
 
+    /**
+     * Tries to resume feed that wasn't submitted and scheduled. Attempt should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void resumeNonExistentFeed() throws Exception {
         AssertUtil.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
-
+    /**
+     * Tries to resume deleted feed. Attempt should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void resumeDeletedFeed() throws Exception {
         AssertUtil.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
@@ -101,7 +112,10 @@ public class FeedResumeTest extends BaseTestClass {
         AssertUtil.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
-
+    /**
+     * Tries to resume scheduled feed which wasn't suspended. Feed status shouldn't change.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void resumeScheduledFeed() throws Exception {
         AssertUtil.assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
