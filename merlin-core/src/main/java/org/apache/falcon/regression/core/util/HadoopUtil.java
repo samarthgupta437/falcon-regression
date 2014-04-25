@@ -367,7 +367,8 @@ public class HadoopUtil {
             if (!fs.exists(new Path(remoteLocation)))
                 fs.mkdirs(new Path(remoteLocation));
 
-            fs.copyFromLocalFile(false, true, filePaths.toArray(new Path[filePaths.size()]), new Path(remoteLocation));
+            fs.copyFromLocalFile(false, true, filePaths.toArray(new Path[filePaths.size()]),
+                    new Path(remoteLocation));
         }
     }
 
