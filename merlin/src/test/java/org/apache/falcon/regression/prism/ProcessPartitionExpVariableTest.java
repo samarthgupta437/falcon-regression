@@ -62,7 +62,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     public void uploadWorkflow() throws Exception {
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
-    
+
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
@@ -116,8 +116,9 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     }
 
     private static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
-                                                      DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException, InterruptedException {
+                                                       DateTime endDateJoda, String prefix,
+                                                       int interval)
+    throws IOException, InterruptedException {
         List<String> dataDates =
                 generateDateAndOneDayAfter(startDateJoda, endDateJoda, interval);
 
@@ -128,11 +129,12 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-        InstanceUtil.putDataInFolders(colo, dataFolder,"");
+        InstanceUtil.putDataInFolders(colo, dataFolder, "");
 
     }
 
-    private static List<String> generateDateAndOneDayAfter(DateTime startDate, DateTime endDate, int minuteSkip) {
+    private static List<String> generateDateAndOneDayAfter(DateTime startDate, DateTime endDate,
+                                                           int minuteSkip) {
         //we want to generate patterns of the form .../2014/03/06/21/57/2014-Mar-07
         //note there are two dates and the second date is one day after the first one
         final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm/");

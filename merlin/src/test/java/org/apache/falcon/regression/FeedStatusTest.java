@@ -64,7 +64,8 @@ public class FeedStatusTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         //submit the cluster
-        ServiceResponse response = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
+        ServiceResponse response = prism.getClusterHelper()
+                .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
 
@@ -78,7 +79,8 @@ public class FeedStatusTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getStatusForScheduledFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        ServiceResponse response =
+                prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         logger.info(feed);
         AssertUtil.assertSucceeded(response);
 
@@ -97,7 +99,8 @@ public class FeedStatusTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getStatusForSuspendedFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        ServiceResponse response =
+                prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
 
         AssertUtil.assertSucceeded(response);
 

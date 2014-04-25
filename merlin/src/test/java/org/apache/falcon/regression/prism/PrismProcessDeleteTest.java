@@ -811,7 +811,8 @@ public class PrismProcessDeleteTest extends BaseTestClass {
 
 
     @Test(groups = {"prism", "0.2"})
-    public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDownWithFeedSuspended() throws Exception {
+    public void testDeleteProcessSuspendedInOneColoWhileAnotherColoIsDownWithFeedSuspended()
+    throws Exception {
         try {
             bundles[0].submitFeedsScheduleProcess();
             bundles[1].submitFeedsScheduleProcess();

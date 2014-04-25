@@ -100,8 +100,9 @@ public class FeedReplicationTest extends BaseTestClass {
      */
     @Test
     public void replicate1Source1Target()
-    throws AuthenticationException, IOException, URISyntaxException, ParseException, JAXBException,
-    InterruptedException, OozieClientException {
+            throws AuthenticationException, IOException, URISyntaxException, ParseException,
+            JAXBException,
+            InterruptedException, OozieClientException {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
@@ -144,7 +145,8 @@ public class FeedReplicationTest extends BaseTestClass {
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
-        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil
+                .copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if coordinator exists
@@ -222,7 +224,8 @@ public class FeedReplicationTest extends BaseTestClass {
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
-        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil
+                .copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if all coordinators exist
@@ -236,7 +239,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
                         "REPLICATION"), 1);
-         //replication on cluster 2 should start, wait till it ends
+        //replication on cluster 2 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
@@ -313,7 +316,8 @@ public class FeedReplicationTest extends BaseTestClass {
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
-        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil
+                .copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check while instance is got created

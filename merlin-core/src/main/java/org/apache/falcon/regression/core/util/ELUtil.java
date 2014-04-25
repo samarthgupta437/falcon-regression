@@ -120,7 +120,8 @@ public class ELUtil {
             Assert.assertTrue(bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
             logger.info("coord id: " + coordID);
-            List<String> missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);
+            List<String> missingDependencies =
+                    OozieUtil.getMissingDependencies(prismHelper, coordID);
             for (int i = 0; i < 10 && missingDependencies == null; ++i) {
                 Thread.sleep(30000);
                 missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);

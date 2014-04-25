@@ -1,4 +1,3 @@
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,7 +20,8 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.process.*;
+import org.apache.falcon.regression.core.generated.process.Input;
+import org.apache.falcon.regression.core.generated.process.Output;
 import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -42,15 +42,15 @@ import java.util.List;
 public class BundleUtil {
     public static Bundle[][] readBundles(String path) throws IOException {
 
-      List<Bundle> bundleSet = getDataFromFolder(path);
+        List<Bundle> bundleSet = getDataFromFolder(path);
 
-      Bundle[][] testData = new Bundle[bundleSet.size()][1];
+        Bundle[][] testData = new Bundle[bundleSet.size()][1];
 
-      for (int i = 0; i < bundleSet.size(); i++) {
-        testData[i][0] = bundleSet.get(i);
-      }
+        for (int i = 0; i < bundleSet.size(); i++) {
+            testData[i][0] = bundleSet.get(i);
+        }
 
-      return testData;
+        return testData;
     }
 
     public static Bundle readHCatBundle() throws IOException {
@@ -107,115 +107,116 @@ public class BundleUtil {
     }
 
     public static Bundle[][] readBundles() throws IOException {
-    return readBundles("bundles");
-  }
+        return readBundles("bundles");
+    }
 
     public static Bundle[][] readELBundles() throws IOException {
-    return readBundles("ELbundle");
-  }
+        return readBundles("ELbundle");
+    }
 
     public static Bundle[] getBundleData(String path) throws IOException {
 
-    List<Bundle> bundleSet = getDataFromFolder(path);
+        List<Bundle> bundleSet = getDataFromFolder(path);
 
-    return bundleSet.toArray(new Bundle[bundleSet.size()]);
-  }
+        return bundleSet.toArray(new Bundle[bundleSet.size()]);
+    }
 
     public static Bundle getBundle(ColoHelper cluster, String... xmlLocation) {
-      Bundle b;
-      try {
-        if (xmlLocation.length == 1)
-          b = (Bundle) Bundle.readBundle(xmlLocation[0])[0][0];
-        else if (xmlLocation.length == 0)
-          b = readELBundles()[0][0];
-        else {
-          Util.logger.info("invalid size of xmlLocaltions return null");
-          return null;
-        }
+        Bundle b;
+        try {
+            if (xmlLocation.length == 1)
+                b = (Bundle) Bundle.readBundle(xmlLocation[0])[0][0];
+            else if (xmlLocation.length == 0)
+                b = readELBundles()[0][0];
+            else {
+                Util.logger.info("invalid size of xmlLocaltions return null");
+                return null;
+            }
 
-        b.generateUniqueBundle();
-        return new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-      } catch (Exception e) {
-        Util.logger.info(Arrays.toString(e.getStackTrace()));
-      }
-      return null;
+            b.generateUniqueBundle();
+            return new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
+        } catch (Exception e) {
+            Util.logger.info(Arrays.toString(e.getStackTrace()));
+        }
+        return null;
     }
 
     public static void submitAllClusters(Bundle... b)
-      throws IOException, URISyntaxException, AuthenticationException {
-          for (Bundle aB : b) {
-              ServiceResponse r = Util.prismHelper.getClusterHelper()
-                      .submitEntity(Util.URLS.SUBMIT_URL, aB.getClusters().get(0));
-              Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
+    throws IOException, URISyntaxException, AuthenticationException {
+        for (Bundle aB : b) {
+            ServiceResponse r = Util.prismHelper.getClusterHelper()
+                    .submitEntity(Util.URLS.SUBMIT_URL, aB.getClusters().get(0));
+            Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-      }
+        }
     }
 
     public static String getInputFeedNameFromBundle(Bundle b) throws JAXBException {
-      String feedData = getInputFeedFromBundle(b);
+        String feedData = getInputFeedFromBundle(b);
 
-      JAXBContext processContext = JAXBContext.newInstance(Feed.class);
-      Unmarshaller unmarshaller = processContext.createUnmarshaller();
-      Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
+        JAXBContext processContext = JAXBContext.newInstance(Feed.class);
+        Unmarshaller unmarshaller = processContext.createUnmarshaller();
+        Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
 
-      return feedObject.getName();
+        return feedObject.getName();
     }
 
     public static String getOutputFeedNameFromBundle(Bundle b) throws JAXBException {
-          String feedData = getOutputFeedFromBundle(b);
+        String feedData = getOutputFeedFromBundle(b);
 
-          JAXBContext processContext = JAXBContext.newInstance(Feed.class);
-          Unmarshaller unmarshaller = processContext.createUnmarshaller();
-          Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
+        JAXBContext processContext = JAXBContext.newInstance(Feed.class);
+        Unmarshaller unmarshaller = processContext.createUnmarshaller();
+        Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
 
-          return feedObject.getName();
-      }
+        return feedObject.getName();
+    }
 
     public static String getOutputFeedFromBundle(Bundle bundle) throws JAXBException {
-      String processData = bundle.getProcessData();
+        String processData = bundle.getProcessData();
 
-      JAXBContext processContext = JAXBContext.newInstance(org.apache.falcon.regression.core.generated.process.Process.class);
-      Unmarshaller unmarshaller = processContext.createUnmarshaller();
-      Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
+        JAXBContext processContext = JAXBContext
+                .newInstance(org.apache.falcon.regression.core.generated.process.Process.class);
+        Unmarshaller unmarshaller = processContext.createUnmarshaller();
+        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
 
-      for (Output output : processObject.getOutputs().getOutput()) {
-        for (String feed : bundle.getDataSets()) {
-          if (Util.readDatasetName(feed).equalsIgnoreCase(output.getFeed())) {
-            return feed;
-          }
+        for (Output output : processObject.getOutputs().getOutput()) {
+            for (String feed : bundle.getDataSets()) {
+                if (Util.readDatasetName(feed).equalsIgnoreCase(output.getFeed())) {
+                    return feed;
+                }
+            }
         }
-      }
-      return null;
+        return null;
     }
 
     public static String getDatasetPath(Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
 
-    Unmarshaller u = jc.createUnmarshaller();
-    Feed dataElement = (Feed) u.unmarshal((new StringReader(bundle.dataSets.get(0))));
-    if (!dataElement.getName().contains("raaw-logs16")) {
-      dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
+        Unmarshaller u = jc.createUnmarshaller();
+        Feed dataElement = (Feed) u.unmarshal((new StringReader(bundle.dataSets.get(0))));
+        if (!dataElement.getName().contains("raaw-logs16")) {
+            dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
+        }
+
+        return dataElement.getLocations().getLocation().get(0).getPath();
+
     }
-
-    return dataElement.getLocations().getLocation().get(0).getPath();
-
-  }
 
     //needs to be rewritten to randomly pick an input feed
     public static String getInputFeedFromBundle(Bundle bundle) throws JAXBException {
-      String processData = bundle.getProcessData();
+        String processData = bundle.getProcessData();
 
-      JAXBContext processContext = JAXBContext.newInstance(Process.class);
-      Unmarshaller unmarshaller = processContext.createUnmarshaller();
-      Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
+        JAXBContext processContext = JAXBContext.newInstance(Process.class);
+        Unmarshaller unmarshaller = processContext.createUnmarshaller();
+        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
 
-      for (Input input : processObject.getInputs().getInput()) {
-        for (String feed : bundle.getDataSets()) {
-          if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
-            return feed;
-          }
+        for (Input input : processObject.getInputs().getInput()) {
+            for (String feed : bundle.getDataSets()) {
+                if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
+                    return feed;
+                }
+            }
         }
-      }
-      return null;
+        return null;
     }
 }

@@ -93,8 +93,10 @@ public class BaseTestClass {
     }
 
     public void uploadDirToClusters(final String dstHdfsDir, final String localLocation)
-            throws IOException, InterruptedException {
-        logger.info(String.format("Uploading local dir: %s to all the clusters at: %s", localLocation, dstHdfsDir));
+    throws IOException, InterruptedException {
+        logger.info(
+                String.format("Uploading local dir: %s to all the clusters at: %s", localLocation,
+                        dstHdfsDir));
         for (FileSystem fs : serverFS) {
             HadoopUtil.uploadDir(fs, dstHdfsDir, localLocation);
         }

@@ -78,7 +78,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
     @Test(enabled = true, timeOut = 1200000)
     public void updateFeedQueue_dependentMultipleProcess_oneProcessZeroInput() throws Exception {
-        //cluster1colo and cluster2colo are source. feed01 on cluster1colo target cluster2colo, feed02 on cluster2colo target cluster1colo
+        //cluster1colo and cluster2colo are source. feed01 on cluster1colo target cluster2colo,
+        // feed02 on cluster2colo target cluster1colo
 
         //get 3 unique bundles
         //set cluster colos
@@ -185,7 +186,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         logger.info("Wait till process goes into running ");
 
-			        //change feed location path
+        //change feed location path
         outputFeed = Util.setFeedProperty(outputFeed, "queueName", "myQueue");
 
         logger.info("updated feed: " + outputFeed);

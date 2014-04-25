@@ -91,7 +91,8 @@ public class RetentionTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, BundleUtil.getInputFeedFromBundle(bundles[0]));
+        prism.getFeedHelper()
+                .delete(URLS.DELETE_URL, BundleUtil.getInputFeedFromBundle(bundles[0]));
         verifyFeedDeletion(BundleUtil.getInputFeedFromBundle(bundles[0]));
         removeBundles();
     }
@@ -208,7 +209,7 @@ public class RetentionTest extends BaseTestClass {
             }
             logger.info("*************************************");
         }
-        if(consumer.getMessageData().isEmpty()){
+        if (consumer.getMessageData().isEmpty()) {
             logger.info("Message data was empty!");
         }
         //now look for cluster data
@@ -258,16 +259,17 @@ public class RetentionTest extends BaseTestClass {
             final String pathString = testHDFSDir + folder;
             logger.info(pathString);
             clusterFS.mkdirs(new Path(pathString));
-            if(uploadData) {
-                clusterFS.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"), new Path(pathString));
+            if (uploadData) {
+                clusterFS.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"),
+                        new Path(pathString));
             }
         }
     }
 
     private void validateDataFromFeedQueue(String feedName,
-                                                  List<HashMap<String, String>> queueData,
-                                                  List<String> expectedOutput,
-                                                  List<String> input) throws OozieClientException {
+                                           List<HashMap<String, String>> queueData,
+                                           List<String> expectedOutput,
+                                           List<String> input) throws OozieClientException {
 
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
@@ -303,7 +305,7 @@ public class RetentionTest extends BaseTestClass {
         Assert.assertEquals(deletedFolders.size(), input.size(),
                 "Output size is different than expected!");
         Assert.assertTrue(Arrays.deepEquals(input.toArray(new String[input.size()]),
-                        deletedFolders.toArray(new String[deletedFolders.size()])),
+                deletedFolders.toArray(new String[deletedFolders.size()])),
                 "It appears that the data that is received from queue and the data deleted are " +
                         "not same!");
     }
@@ -423,8 +425,8 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private List<String> filterDataOnRetention(String feed, int time, String interval,
-                                                     DateTime endDate,
-                                                     List<String> inputData) throws JAXBException {
+                                               DateTime endDate,
+                                               List<String> inputData) throws JAXBException {
         String locationType = "";
         String appender = "";
 
@@ -498,7 +500,8 @@ public class RetentionTest extends BaseTestClass {
 
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) throws Exception {
-        String[] periods = new String[]{"0", "10080", "60", "8", "24"}; // a negative value like -4 should be covered in validation scenarios.
+        String[] periods = new String[]{"0", "10080", "60", "8",
+                "24"}; // a negative value like -4 should be covered in validation scenarios.
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
         String[] dataTypes = new String[]{"daily", "yearly", "monthly"};

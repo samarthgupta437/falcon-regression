@@ -55,7 +55,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+            baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(ProcessInstanceRunningTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -76,7 +77,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+                TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
@@ -159,7 +161,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         ProcessInstancesResult r =
                 prism.getProcessHelper()
                         .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
-        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND, "Unexpected status code");
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
+                "Unexpected status code");
     }
 
 
@@ -171,7 +174,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         ProcessInstancesResult r = prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING,
                         Util.readEntityName(bundles[0].getProcessData()));
-        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND, "Unexpected status code");
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
+                "Unexpected status code");
     }
 
 

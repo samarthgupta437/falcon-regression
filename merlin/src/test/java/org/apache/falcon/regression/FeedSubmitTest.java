@@ -60,13 +60,14 @@ public class FeedSubmitTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         //submit the cluster
-        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
+        ServiceResponse response = prism.getClusterHelper()
+                .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
 
         feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
-    
+
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         removeBundles();
