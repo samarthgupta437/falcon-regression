@@ -50,7 +50,6 @@ public class Consumer extends Thread {
     Logger logger = Logger.getLogger(this.getClass());
 
     List<HashMap<String, String>> messageData;
-    List<String> textMessageList;
 
     public List<HashMap<String, String>> getMessageData() {
         return messageData;
@@ -61,8 +60,6 @@ public class Consumer extends Thread {
         this.subject = subject;
         this.url = url;
         messageData = new ArrayList<HashMap<String, String>>();
-        textMessageList = new ArrayList<String>();
-
     }
 
     public void run() {

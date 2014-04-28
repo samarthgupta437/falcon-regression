@@ -61,7 +61,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   static Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
 
-  Bundle processBundle = new Bundle();
+  Bundle processBundle;
 
   ColoHelper cluster_1 = servers.get(0);
   ColoHelper cluster_2 = servers.get(1);
