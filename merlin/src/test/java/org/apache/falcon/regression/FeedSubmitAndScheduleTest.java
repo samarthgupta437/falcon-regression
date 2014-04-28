@@ -25,7 +25,9 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -108,6 +110,11 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         submitFirstClusterScheduleFirstFeed();
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
 
+        //get created bundle id
+        String bundleId = InstanceUtil
+                .getLatestBundleID(cluster, Util.readEntityName(bundles[0].getDataSets().get(0)),
+                        ENTITY_TYPE.FEED);;
+
         //try to submit and schedule the same process again
         ServiceResponse response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
@@ -115,6 +122,10 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
         Assert.assertNotNull(Util.parseResponse(response).getMessage());
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
+
+        //check that new bundle wasn't created
+        OozieUtil.verifyNewBundleCreation(cluster, bundleId, null, bundles[0].getDataSets().get
+                (0), false, false);
     }
 
     /**
