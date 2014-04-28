@@ -75,6 +75,11 @@ public class FeedSuspendTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Schedule feed, suspend it. Check that web response reflects success and feed status is
+     * "suspended".
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendScheduledFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
@@ -85,6 +90,11 @@ public class FeedSuspendTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
+    /**
+     * Try to suspend running feed twice. Response should reflect success,
+     * feed status should be suspended.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendAlreadySuspendedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
@@ -99,6 +109,10 @@ public class FeedSuspendTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
+    /**
+     * Remove feed. Attempt to suspend it should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendDeletedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
@@ -111,12 +125,20 @@ public class FeedSuspendTest extends BaseTestClass {
         AssertUtil.assertFailed(response);
     }
 
+    /**
+     * Attempt to suspend non existent feed should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendNonExistentFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().suspend(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertFailed(response);
     }
 
+    /**
+     * Attempt to suspend non scheduled feed should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendSubmittedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);

@@ -72,28 +72,38 @@ public class FeedSubmitTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Submit correctly adjusted feed. Response should reflect success.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeed() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         AssertUtil.assertSucceeded(response);
     }
 
+    /**
+     * Submit and remove feed. Try to submit it again. Response should reflect success.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeedPostDeletion() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
         AssertUtil.assertSucceeded(response);
 
-        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        AssertUtil.assertSucceeded(response);
     }
 
+    /**
+     * Submit feed. Get its definition. Try to submit it again. Should succeed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeedPostGet() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         AssertUtil.assertSucceeded(response);
 
@@ -104,9 +114,12 @@ public class FeedSubmitTest extends BaseTestClass {
         AssertUtil.assertSucceeded(response);
     }
 
+    /**
+     * Try to submit correctly adjusted feed twice. Should succeed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeedTwice() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         AssertUtil.assertSucceeded(response);
 

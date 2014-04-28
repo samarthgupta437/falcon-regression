@@ -40,7 +40,7 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 
 /**
- * Feed status tests.
+ * Feed status tests. Checks getStatus functionality.
  */
 @Test(groups = "embedded")
 public class FeedStatusTest extends BaseTestClass {
@@ -76,6 +76,11 @@ public class FeedStatusTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Schedules feed. Queries a feed status and checks the response
+     * correctness and a feed status correspondence.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getStatusForScheduledFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
@@ -94,7 +99,11 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
-
+    /**
+     * Schedules and suspends feed. Queries a feed status and checks the response
+     * correctness and a feed status correspondence.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getStatusForSuspendedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
@@ -113,7 +122,11 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
-
+    /**
+     * Submits feed. Queries a feed status and checks the response
+     * correctness and a feed status correspondence.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getStatusForSubmittedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
@@ -129,7 +142,10 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
-
+    /**
+     * Removes feed. Queries a feed status. Checks that the response correctness.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getStatusForDeletedFeed() throws Exception {
         ServiceResponse response =
@@ -148,7 +164,10 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
     }
 
-
+    /**
+     * Queries a status of feed which wasn't submitted and checks the response.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getStatusForNonExistentFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
