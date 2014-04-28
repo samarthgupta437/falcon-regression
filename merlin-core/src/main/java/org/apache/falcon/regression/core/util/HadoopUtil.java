@@ -194,7 +194,7 @@ public class HadoopUtil {
 
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
                                         final String fileLocation)
-    throws IOException, InterruptedException {
+    throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://"
                 + coloHelper.getProcessHelper().getHadoopURL());
@@ -205,7 +205,7 @@ public class HadoopUtil {
 
     public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
                                         final String srcFileLocation)
-    throws IOException, InterruptedException {
+    throws IOException {
         logger.info(String.format("Copying local dir %s to hdfs location %s", srcFileLocation,
                 dstHdfsDir));
         fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
@@ -213,7 +213,7 @@ public class HadoopUtil {
 
     public static void uploadDir(final FileSystem fs, final String dstHdfsDir,
                                  final String localLocation)
-    throws IOException, InterruptedException {
+    throws IOException {
         logger.info(String.format("Uploading local dir %s to hdfs location %s", localLocation,
                 dstHdfsDir));
         HadoopUtil.deleteDirIfExists(dstHdfsDir, fs);

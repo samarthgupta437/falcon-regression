@@ -396,10 +396,9 @@ public abstract class IEntityManagerHelper {
             String readEntityName, String params, String user)
     throws IOException, URISyntaxException, AuthenticationException;
 
-    public abstract String list() throws IOException, InterruptedException;
+    public abstract String list();
 
-    public abstract String getDependencies(String entityName)
-    throws IOException, InterruptedException;
+    public abstract String getDependencies(String entityName);
 
     public abstract List<String> getArchiveInfo() throws IOException, JSchException;
 

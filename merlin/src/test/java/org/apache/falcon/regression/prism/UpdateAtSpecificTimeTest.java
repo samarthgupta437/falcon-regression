@@ -663,7 +663,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             processBundle.getProcessData(), true, true);
   }
 
-  private String submitAndScheduleFeed(Bundle b) throws ParseException, JAXBException, IOException, URISyntaxException, AuthenticationException {
+  private String submitAndScheduleFeed(Bundle b) throws JAXBException, IOException, URISyntaxException, AuthenticationException {
     String feed = b.getDataSets().get(0);
     feed = InstanceUtil.setFeedCluster(feed,
       XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
@@ -686,7 +686,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
 
-  private String getMultiClusterFeed(String startTimeCluster_source, String startTimeCluster_target) throws ParseException, IOException, InterruptedException, JAXBException, URISyntaxException, AuthenticationException {
+  private String getMultiClusterFeed(String startTimeCluster_source, String startTimeCluster_target)
+          throws IOException, JAXBException, URISyntaxException, AuthenticationException {
     String testDataDir = baseTestDir + "/replication";
 
     //create desired feed

@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -51,7 +50,7 @@ public class ELUtil {
                                   String feedEnd, String processStart,
                                   String processend,
                                   String startInstance, String endInstance, boolean isMatch)
-    throws IOException, JAXBException, ParseException, URISyntaxException, InterruptedException {
+    throws IOException, JAXBException {
         HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
                 aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = BundleUtil.readELBundles()[0][0];
@@ -81,7 +80,7 @@ public class ELUtil {
 
     public static String testWith(PrismHelper prismHelper, ColoHelper server1, String startInstance,
                                   String endInstance, boolean isMatch)
-    throws IOException, JAXBException, URISyntaxException, InterruptedException {
+    throws IOException, JAXBException {
         HadoopUtil.uploadDir(server1.getClusterHelper().getHadoopFS(),
                 aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = BundleUtil.readELBundles()[0][0];
@@ -117,6 +116,7 @@ public class ELUtil {
                 }
                 Thread.sleep(30000);
             }
+            Assert.assertNotNull(bundles, "Bundle job should not be null.");
             Assert.assertTrue(bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
             logger.info("coord id: " + coordID);
@@ -138,8 +138,8 @@ public class ELUtil {
                     "nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
             TimeZone z = time.getTimeZone();
             int offset = z.getRawOffset();
-            int offsetHrs = offset / 1000 / 60 / 60;
-            int offsetMins = offset / 1000 / 60 % 60;
+            int offsetHrs = offset / (1000 * 60 * 60);
+            int offsetMins = (offset / (1000 * 60)) % 60;
 
             logger.info("offset: " + offsetHrs);
             logger.info("offset: " + offsetMins);

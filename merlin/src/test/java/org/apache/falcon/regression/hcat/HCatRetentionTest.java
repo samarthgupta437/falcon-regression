@@ -44,7 +44,6 @@ import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -182,8 +181,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
     }
 
-    private void displayDetails(String period, String unit, String dataType)
-            throws Exception {
+    private void displayDetails(String period, String unit, String dataType) {
         logger.info("***********************************************");
         logger.info("executing for:");
         logger.info(unit + "(" + period + ")");
@@ -191,7 +189,7 @@ public class HCatRetentionTest extends BaseTestClass {
         logger.info("***********************************************");
     }
 
-    private String getFeedPathValue(String dataType) throws Exception {
+    private String getFeedPathValue(String dataType) {
         if (dataType.equalsIgnoreCase("monthly")) {
             return "year=${YEAR};month=${MONTH}";
         }
@@ -211,7 +209,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath, String dir, String dataType)
-            throws JAXBException, IOException {
+            throws IOException {
         List<String> finalResult = new ArrayList<String>();
         int depth=0;
 

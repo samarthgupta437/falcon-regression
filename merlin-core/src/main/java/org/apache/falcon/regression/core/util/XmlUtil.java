@@ -34,7 +34,7 @@ public class XmlUtil {
 
     static Logger logger = Logger.getLogger(XmlUtil.class);
 
-    public static Validity createValidity(String start, String end) throws ParseException {
+    public static Validity createValidity(String start, String end) {
         Validity v = new Validity();
         v.setStart(TimeUtil.oozieDateToDate(start).toDate());
         v.setEnd(TimeUtil.oozieDateToDate(end).toDate());
@@ -50,7 +50,7 @@ public class XmlUtil {
 
     public static org.apache.falcon.regression.core.generated.process.Validity
     createProcessValidity(
-            String startTime, String endTime) throws ParseException {
+            String startTime, String endTime) {
         org.apache.falcon.regression.core.generated.process.Validity v =
                 new org.apache.falcon.regression.core.generated.process.Validity();
         logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "

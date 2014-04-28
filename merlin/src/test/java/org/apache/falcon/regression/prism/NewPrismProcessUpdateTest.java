@@ -524,11 +524,16 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
-        while (Util.parseResponse(
-                prism.getProcessHelper()
-                        .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+        ServiceResponse response = prism.getProcessHelper()
+                .update(bundles[1].getProcessData(), bundles[1].getProcessData());
+        for (int i = 0; i < 10 &&
+                Util.parseResponse(response).getStatus() != APIResult.Status.SUCCEEDED; ++ i) {
+            response = prism.getProcessHelper()
+                    .update(bundles[1].getProcessData(), bundles[1].getProcessData());
+            java.util.concurrent.TimeUnit.SECONDS.sleep(6);
         }
+        Assert.assertEquals(Util.parseResponse(response).getStatus(),
+                APIResult.Status.SUCCEEDED, "Process update did not succeed.");
 
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
                 bundles[1].getProcessData(), false, true);
@@ -1584,7 +1589,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     public ServiceResponse updateProcessConcurrency(Bundle bundle, int concurrency)
             throws Exception {
-        String oldData = new String(bundle.getProcessData());
+        String oldData = bundle.getProcessData();
         Process updatedProcess = bundle.getProcessObject();
         updatedProcess.setParallel(concurrency);
 
@@ -1674,7 +1679,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     public ServiceResponse updateProcessFrequency(Bundle bundle,
                                                   org.apache.falcon.regression.core.generated.dependencies.Frequency frequency)
             throws Exception {
-        String oldData = new String(bundle.getProcessData());
+        String oldData = bundle.getProcessData();
         Process updatedProcess = bundle.getProcessObject();
         updatedProcess.setFrequency(frequency);
         return prism.getProcessHelper()
@@ -1682,21 +1687,21 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     //need to expand this function more later
-    private int getExpectedNumberOfWorkflowInstances(String start, String end) throws Exception {
+    private int getExpectedNumberOfWorkflowInstances(String start, String end) {
         DateTime startDate = new DateTime(start);
         DateTime endDate = new DateTime(end);
         Minutes minutes = Minutes.minutesBetween((startDate), (endDate));
         return minutes.getMinutes();
     }
 
-    private int getExpectedNumberOfWorkflowInstances(Date start, Date end) throws Exception {
+    private int getExpectedNumberOfWorkflowInstances(Date start, Date end) {
         DateTime startDate = new DateTime(start);
         DateTime endDate = new DateTime(end);
         Minutes minutes = Minutes.minutesBetween((startDate), (endDate));
         return minutes.getMinutes();
     }
 
-    private int getExpectedNumberOfWorkflowInstances(String start, Date end) throws Exception {
+    private int getExpectedNumberOfWorkflowInstances(String start, Date end) {
         DateTime startDate = new DateTime(start);
         DateTime endDate = new DateTime(end);
         Minutes minutes = Minutes.minutesBetween((startDate), (endDate));

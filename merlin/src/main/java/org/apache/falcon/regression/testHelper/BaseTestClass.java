@@ -76,7 +76,7 @@ public class BaseTestClass {
         bundles = new Bundle[serverNames.length];
     }
 
-    private static void prepareProperties() throws Exception {
+    private static void prepareProperties() {
 
         Properties merlinProp = Util.getPropertiesObj(MERLIN_PROPERTIES);
         serverNames = merlinProp.getProperty("servers").split(",");
@@ -86,14 +86,14 @@ public class BaseTestClass {
 
     private List<ColoHelper> getServers() {
         ArrayList<ColoHelper> returnList = new ArrayList<ColoHelper>();
-        for (int i = 0; i < serverNames.length; i++) {
-            returnList.add(new ColoHelper(MERLIN_PROPERTIES, serverNames[i]));
+        for (String serverName : serverNames) {
+            returnList.add(new ColoHelper(MERLIN_PROPERTIES, serverName));
         }
         return returnList;
     }
 
     public void uploadDirToClusters(final String dstHdfsDir, final String localLocation)
-            throws IOException, InterruptedException {
+            throws IOException {
         logger.info(String.format("Uploading local dir: %s to all the clusters at: %s", localLocation, dstHdfsDir));
         for (FileSystem fs : serverFS) {
             HadoopUtil.uploadDir(fs, dstHdfsDir, localLocation);

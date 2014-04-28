@@ -372,7 +372,7 @@ public class HCatReplicationTest extends BaseTestClass {
     }
 
     public static List<String> getDatesList(String startDate, String endDate, String datePattern,
-                                            int skipMinutes) throws ParseException {
+                                            int skipMinutes) {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
         DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);

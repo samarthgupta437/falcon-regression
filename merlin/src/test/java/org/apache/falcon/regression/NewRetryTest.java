@@ -251,7 +251,7 @@ public class NewRetryTest extends BaseTestClass {
             AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
             //now wait till the process is over
             String bundleId = OozieUtil.getBundles(clusterOC,
-                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);;
+                    Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             String status = OozieUtil.getBundleStatus(cluster, bundleId);
 
             for (int i = 0; i < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++i) {
@@ -781,7 +781,7 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             List<DateTime> dates = null;
 
-            for(int i = 0; i < 10 && dates != null; ++i) {
+            for(int i = 0; i < 10 && dates == null; ++i) {
                 dates = OozieUtil.getStartTimeForRunningCoordinators(cluster, bundleId);
                 TimeUnit.SECONDS.sleep(10);
             }
@@ -879,7 +879,7 @@ public class NewRetryTest extends BaseTestClass {
                     Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
             List<DateTime> dates = null;
 
-            for(int i = 0; i < 10 && dates != null; ++i) {
+            for(int i = 0; i < 10 && dates == null; ++i) {
                 dates = OozieUtil.getStartTimeForRunningCoordinators(cluster, bundleId);
                 TimeUnit.SECONDS.sleep(10);
             }
@@ -1215,8 +1215,7 @@ public class NewRetryTest extends BaseTestClass {
     }
 
     private Retry getRetry(int delay, String delayUnits, String retryType,
-                           int retryAttempts)
-    throws Exception {
+                           int retryAttempts) {
         Retry retry = new Retry();
         retry.setAttempts(retryAttempts);
         retry.setDelay(new Frequency(delayUnits + "(" + delay + ")"));
@@ -1224,7 +1223,7 @@ public class NewRetryTest extends BaseTestClass {
         return retry;
     }
 
-    private Integer getDelay(int delay, int attempts, String attemptType) throws Exception {
+    private Integer getDelay(int delay, int attempts, String attemptType) {
         if (delay == 0) {
             delay = 1;
         }

@@ -113,7 +113,7 @@ public class HCatUtil {
 
     public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType,
                                           String dbName, String tableName,
-                                          ArrayList<String> dataFolder) throws Exception {
+                                          ArrayList<String> dataFolder) {
         HCatUtil.addPartitionsToExternalTable(cli, dataType, dbName, tableName, dataFolder);
     }
 
@@ -122,8 +122,8 @@ public class HCatUtil {
                                                     ArrayList<String> dataFolder) {
         //Adding specific partitions that map to an external location
         Map<String, String> ptn = new HashMap<String, String>();
-        for (int i = 0; i < dataFolder.size(); ++i) {
-            String[] parts = dataFolder.get(i).split("/");
+        for (String aDataFolder : dataFolder) {
+            String[] parts = aDataFolder.split("/");
             int s = parts.length - 1;
             int subtractValue = 0;
 
@@ -148,7 +148,7 @@ public class HCatUtil {
             try {
                 //Each HCat partition maps to a directory, not to a file
                 HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
-                        tableName, dataFolder.get(i), ptn).build();
+                        tableName, aDataFolder, ptn).build();
                 client.addPartition(addPtn);
                 ptn.clear();
             } catch (HCatException e) {

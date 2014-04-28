@@ -180,7 +180,7 @@ public class OozieUtil {
 
     public static Job.Status getOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType)
-      throws OozieClientException, InterruptedException {
+      throws OozieClientException {
       String filter = String.format("name=FALCON_%s_%s", entityType, processName);
       List<Job.Status> statuses = getBundleStatuses(client, filter, 0, 10);
       if (statuses.isEmpty()) {
@@ -356,7 +356,8 @@ public class OozieUtil {
                                                String entity,
                                                boolean shouldBeCreated,
   
-                                               boolean matchInstances) throws OozieClientException, ParseException, JAXBException {
+                                               boolean matchInstances) throws OozieClientException,
+                                                                              JAXBException {
       String entityName = Util.readEntityName(entity);
       ENTITY_TYPE entityType = Util.getEntityType(entity);
       String newBundleId = InstanceUtil.getLatestBundleID(cluster, entityName,
@@ -377,7 +378,7 @@ public class OozieUtil {
       }
     }
 
-    private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId, ENTITY_TYPE type) throws OozieClientException, ParseException {
+    private static void validateNumberOfWorkflowInstances(ColoHelper cluster, List<String> initialNominalTimes, String originalBundleId, String newBundleId, ENTITY_TYPE type) throws OozieClientException {
   
       List<String> nominalTimesOriginalAndNew = getActionsNominalTime
               (cluster,
@@ -407,7 +408,7 @@ public class OozieUtil {
     }
 
     public static String getCoordStartTime(ColoHelper colo, String entity,
-                                           int bundleNo) throws JAXBException, OozieClientException, ParseException {
+                                           int bundleNo) throws JAXBException, OozieClientException {
       String bundleID = InstanceUtil.getSequenceBundleID(colo,
               Util.readEntityName(entity), Util.getEntityType(entity), bundleNo);
   

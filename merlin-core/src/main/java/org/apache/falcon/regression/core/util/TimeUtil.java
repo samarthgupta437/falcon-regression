@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.core.util;
 
-import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -40,7 +39,7 @@ instanceUtil to here , pending item.
  */
 
 public class TimeUtil {
-  public static String get20roundedTime(String oozieBaseTime) throws ParseException {
+  public static String get20roundedTime(String oozieBaseTime) {
     DateTime startTime =
       new DateTime(oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
 
@@ -164,7 +163,7 @@ public class TimeUtil {
         return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(),false));
     }
 
-    public static String addMinsToTime(String time, int minutes) throws ParseException {
+    public static String addMinsToTime(String time, int minutes) {
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         DateTime jodaTime = fmt.parseDateTime(time);
@@ -172,13 +171,13 @@ public class TimeUtil {
         return fmt.print(jodaTime);
     }
 
-    public static DateTime oozieDateToDate(String time) throws ParseException {
+    public static DateTime oozieDateToDate(String time) {
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         fmt = fmt.withZoneUTC();
         return fmt.parseDateTime(time);
     }
 
-    public static String dateToOozieDate(Date dt) throws ParseException {
+    public static String dateToOozieDate(Date dt) {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
         InstanceUtil.logger.info("SystemTime: " + jodaTime);
@@ -186,7 +185,7 @@ public class TimeUtil {
         return fmt.print(jodaTime);
     }
 
-    public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord) throws ParseException, IOException, JSchException {
+    public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord) {
 
         DateTime finalDate = new DateTime(oozieDateToDate(startTimeOfLateCoord));
 
@@ -208,7 +207,7 @@ public class TimeUtil {
 
     public static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
                                                       DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException, InterruptedException {
+                                                      int interval) throws IOException {
         List<String> dataDates =
                 getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
@@ -230,7 +229,7 @@ public class TimeUtil {
                                                                   DateTime startDateJoda,
                                                                   DateTime endDateJoda,
                                                                   String prefix,
-                                                                  int interval) throws IOException, InterruptedException {
+                                                                  int interval) throws IOException {
       List<String> dataDates =
         getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
