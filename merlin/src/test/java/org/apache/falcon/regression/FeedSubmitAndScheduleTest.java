@@ -94,10 +94,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
                 .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0))).getStatusCode(), 200);
         ServiceResponse response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertEquals(Util.parseResponse(response).getStatus(),
-                APIResult.Status.SUCCEEDED);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertSucceeded(response);
     }
 
     /**
@@ -118,9 +115,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         //try to submit and schedule the same process again
         ServiceResponse response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
-
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
 
         //check that new bundle wasn't created
@@ -138,9 +133,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         ServiceResponse response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
 
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-        Assert.assertEquals(Util.parseResponse(response).getStatus(), APIResult.Status.FAILED);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertFailed(response);
     }
 
     /**
@@ -160,10 +153,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
         ServiceResponse response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertEquals(Util.parseResponse(response).getStatus(),
-                APIResult.Status.SUCCEEDED);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
     }
 
@@ -186,10 +176,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         ServiceResponse response = prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
 
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertEquals(Util.parseResponse(response).getStatus(),
-                APIResult.Status.SUCCEEDED);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
     }
 }

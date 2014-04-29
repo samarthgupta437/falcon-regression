@@ -497,9 +497,7 @@ public class Bundle {
         ServiceResponse scheduleResult =
                 prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, getProcessData());
         logger.info("process schedule result=" + scheduleResult.getMessage());
-        Assert.assertEquals(Util.parseResponse(scheduleResult).getStatus(),
-                APIResult.Status.SUCCEEDED);
-        Assert.assertEquals(Util.parseResponse(scheduleResult).getStatusCode(), 200);
+        AssertUtil.assertSucceeded(scheduleResult);
 
         try {
             Thread.sleep(7000);

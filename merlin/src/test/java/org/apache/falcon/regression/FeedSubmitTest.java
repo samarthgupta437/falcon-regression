@@ -61,9 +61,7 @@ public class FeedSubmitTest extends BaseTestClass {
 
         //submit the cluster
         ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
+        AssertUtil.assertSucceeded(response);
         feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
     
