@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 public class XmlUtil {
 

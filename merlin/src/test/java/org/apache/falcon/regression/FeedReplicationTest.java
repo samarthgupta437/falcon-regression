@@ -53,7 +53,6 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.List;
 
 @Test(groups = "embedded")
@@ -89,7 +88,7 @@ public class FeedReplicationTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
@@ -100,7 +99,7 @@ public class FeedReplicationTest extends BaseTestClass {
      */
     @Test
     public void replicate1Source1Target()
-    throws AuthenticationException, IOException, URISyntaxException, ParseException, JAXBException,
+    throws AuthenticationException, IOException, URISyntaxException, JAXBException,
     InterruptedException, OozieClientException {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = TimeUtil.getTimeWrtSystemTime(0);

@@ -65,7 +65,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -111,7 +110,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
@@ -172,7 +171,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
-    @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessRollStartTimeForwardInEachColoWithOneProcessRunning()
             throws Exception {
         bundles[1].submitBundle(prism);
@@ -495,7 +493,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
-    @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessIncreaseValidityInEachColoWithOneProcessRunning() throws Exception {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
@@ -1140,7 +1137,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
-    @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessDecreaseValidityInEachColoWithOneProcessRunning() throws Exception {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
@@ -1382,7 +1378,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
-    @SuppressWarnings("SleepWhileInLoop")
     public void updateProcessRollStartTimeBackwardsToPastInEachColoWithOneProcessRunning()
             throws Exception {
         bundles[1].submitBundle(prism);
@@ -1540,7 +1535,9 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
   @Test(timeOut = 1200000)
   public void
-  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException, IOException, ParseException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
+  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException,
+          IOException, OozieClientException, IllegalAccessException, NoSuchMethodException,
+          InvocationTargetException, AuthenticationException {
     Bundle b = BundleUtil.readELBundles()[0][0];
     HadoopFileEditor hadoopFileEditor = null;
     try {

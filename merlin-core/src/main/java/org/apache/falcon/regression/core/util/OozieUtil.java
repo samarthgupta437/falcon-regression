@@ -35,7 +35,6 @@ import org.joda.time.DateTimeZone;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

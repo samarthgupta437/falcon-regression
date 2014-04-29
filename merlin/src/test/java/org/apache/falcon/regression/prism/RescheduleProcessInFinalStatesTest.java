@@ -106,7 +106,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 

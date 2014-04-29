@@ -53,7 +53,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.List;
 
 
@@ -95,7 +94,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
       processBundle.setProcessWorkflow(aggregateWorkflowDir);
   }
 
-  public void tearDown() throws Exception {
+  public void tearDown() {
       removeBundles();
       removeBundles(processBundle);
   }
@@ -103,7 +102,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
   public void invalidChar_Process()
-  throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException,
+  throws JAXBException, IOException, URISyntaxException,
   AuthenticationException, OozieClientException {
     processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
       TimeUtil.getTimeWrtSystemTime(20));
@@ -122,7 +121,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
   public void invalidChar_Feed()
-  throws ParseException, JAXBException, IOException, URISyntaxException, AuthenticationException,
+  throws JAXBException, IOException, URISyntaxException, AuthenticationException,
   OozieClientException {
 
     String feed = submitAndScheduleFeed(processBundle);
@@ -139,7 +138,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void updateTimeInPast_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
+  public void updateTimeInPast_Process() throws JAXBException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
     processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
       TimeUtil.getTimeWrtSystemTime(20));
     processBundle.submitAndScheduleBundle(prism);
@@ -178,7 +177,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
 
-  public void updateTimeInPast_Feed() throws InterruptedException, JAXBException, ParseException, IOException, OozieClientException, URISyntaxException, AuthenticationException {
+  public void updateTimeInPast_Feed() throws InterruptedException, JAXBException, IOException, OozieClientException, URISyntaxException, AuthenticationException {
 
 
     String startTimeCluster_source = TimeUtil.getTimeWrtSystemTime(-10);
@@ -225,7 +224,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void inNextFewMinutesUpdate_RollForward_Process() throws JAXBException, ParseException, IOException, URISyntaxException, InterruptedException, JSchException, OozieClientException, SAXException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
+  public void inNextFewMinutesUpdate_RollForward_Process() throws JAXBException, IOException, URISyntaxException, InterruptedException, JSchException, OozieClientException, SAXException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
     /*
     submit process on 3 clusters. Schedule on 2 clusters. Bring down one of
     the scheduled cluster. Update with time 5 minutes from now. On running
@@ -346,7 +345,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void inNextFewMinutesUpdate_RollForward_Feed() throws InterruptedException, JAXBException, ParseException, IOException, URISyntaxException, JSchException, OozieClientException, SAXException, AuthenticationException {
+  public void inNextFewMinutesUpdate_RollForward_Feed() throws InterruptedException, JAXBException,
+          IOException, URISyntaxException, JSchException, OozieClientException, SAXException, AuthenticationException {
     try {
     String startTimeCluster_source = TimeUtil.getTimeWrtSystemTime(-18);
 
@@ -429,7 +429,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void updateTimeAfterEndTime_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
+  public void updateTimeAfterEndTime_Process() throws JAXBException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, AuthenticationException {
 
     /*
       submit and schedule process with end time after 60 mins. Set update time
@@ -481,7 +481,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void updateTimeAfterEndTime_Feed() throws ParseException, JAXBException, IOException, OozieClientException, InterruptedException, URISyntaxException, AuthenticationException {
+  public void updateTimeAfterEndTime_Feed() throws JAXBException, IOException, OozieClientException,
+          URISyntaxException, AuthenticationException {
     /*
     submit and schedule feed with end time 60 mins in future and update with
     +60
@@ -535,7 +536,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
   public void updateTimeBeforeStartTime_Process() throws JAXBException,
-    ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, AuthenticationException {
+          InterruptedException, IOException, URISyntaxException, OozieClientException, AuthenticationException {
 
     /*
       submit and schedule process with start time +10 mins from now. Update
@@ -568,7 +569,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
   @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
     enabled = true)
-  public void updateDiffClusterDiffValidity_Process() throws JAXBException, ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, JSchException, AuthenticationException {
+  public void updateDiffClusterDiffValidity_Process() throws JAXBException, IOException, URISyntaxException, OozieClientException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+          AuthenticationException {
 
     //set start end process time for 3 clusters
     String startTime_cluster1 = TimeUtil.getTimeWrtSystemTime(-40);
@@ -728,7 +730,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
   }
 
   @AfterMethod(alwaysRun = true)
-  public void tearDown(Method method) throws JAXBException, IOException, URISyntaxException, JSchException, InterruptedException {
+  public void tearDown(Method method) {
     logger.info("tearDown " + method.getName());
     processBundle.deleteBundle(prism);
     bundles[0].deleteBundle(prism);

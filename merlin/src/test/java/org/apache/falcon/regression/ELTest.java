@@ -48,7 +48,7 @@ public class ELTest extends BaseTestClass {
     }
 
     @DataProvider(name = "EL-DP")
-    public Object[][] getELData(Method m) throws Exception {
+    public Object[][] getELData(Method m) {
         return new Object[][]{
 
                 {"now(-3,0)","now(4,20)"},

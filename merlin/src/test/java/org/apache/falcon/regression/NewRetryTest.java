@@ -93,7 +93,7 @@ public class NewRetryTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
 
         removeBundles();
     }
@@ -1062,7 +1062,7 @@ public class NewRetryTest extends BaseTestClass {
     }
 
     @DataProvider(name = "DP")
-    public Object[][] getData() throws Exception {
+    public Object[][] getData() {
 
         String[] retryTypes = new String[]{"periodic", "exp-backoff"};//,"exp-backoff"
         int[] delays = new int[]{2, 0};//removing -1 since this should be checked at validation level while setting
