@@ -30,6 +30,7 @@ import org.joda.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -243,5 +244,68 @@ public class TimeUtil {
 
       InstanceUtil.createHDFSFolders(colo, dataFolder);
       return dataFolder;
+    }
+
+    public static Date getMinutes(String expression, Calendar time) {
+        int hr;
+        int mins;
+        int day;
+        int month;
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time.getTime());
+        if (expression.contains("now")) {
+            hr = getInt(expression, 0);
+            mins = getInt(expression, 1);
+            cal.add(Calendar.HOUR, hr);
+            cal.add(Calendar.MINUTE, mins);
+        } else if (expression.contains("today")) {
+            hr = getInt(expression, 0);
+            mins = getInt(expression, 1);
+            cal.add(Calendar.HOUR, hr - (cal.get(Calendar.HOUR_OF_DAY)));
+            cal.add(Calendar.MINUTE, mins);
+        } else if (expression.contains("yesterday")) {
+            hr = getInt(expression, 0);
+            mins = getInt(expression, 1);
+            cal.add(Calendar.HOUR, hr - (cal.get(Calendar.HOUR_OF_DAY)) - 24);
+            cal.add(Calendar.MINUTE, mins);
+        } else if (expression.contains("currentMonth")) {
+            day = getInt(expression, 0);
+            hr = getInt(expression, 1);
+            mins = getInt(expression, 2);
+            cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), 1, 0, 0);
+            cal.add(Calendar.HOUR, 24 * day + hr);
+            cal.add(Calendar.MINUTE, mins);
+        } else if (expression.contains("lastMonth")) {
+            day = getInt(expression, 0);
+            hr = getInt(expression, 1);
+            mins = getInt(expression, 2);
+            cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) - 1, 1, 0, 0);
+            cal.add(Calendar.HOUR, 24 * day + hr);
+            cal.add(Calendar.MINUTE, mins);
+        } else if (expression.contains("currentYear")) {
+            month = getInt(expression, 0);
+            day = getInt(expression, 1);
+            hr = getInt(expression, 2);
+            mins = getInt(expression, 3);
+            cal.set(cal.get(Calendar.YEAR), 1, 1, 0, 0);
+            cal.add(Calendar.MONTH, month - 1);
+            cal.add(Calendar.HOUR, 24 * day + hr);
+            cal.add(Calendar.MINUTE, mins);
+        } else if (expression.contains("lastYear")) {
+            month = getInt(expression, 0);
+            day = getInt(expression, 1);
+            hr = getInt(expression, 2);
+            mins = getInt(expression, 3);
+            cal.set(cal.get(Calendar.YEAR) - 1, 1, 1, 0, 0);
+            cal.add(Calendar.MONTH, month - 1);
+            cal.add(Calendar.HOUR, 24 * day + hr);
+            cal.add(Calendar.MINUTE, mins);
+        }
+        return cal.getTime();
+    }
+
+    private static int getInt(String expression, int position) {
+        String numbers = expression.substring(expression.indexOf("(") + 1, expression.indexOf(")"));
+        return Integer.parseInt(numbers.split(",")[position]);
     }
 }
