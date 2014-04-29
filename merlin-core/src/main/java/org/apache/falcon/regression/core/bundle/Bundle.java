@@ -57,7 +57,6 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.ELUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
@@ -576,7 +575,7 @@ public class Bundle {
     public Date getStartInstanceProcess(Calendar time) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
         logger.info("start instance: " + processElement.getInputs().getInput().get(0).getStart());
-        return ELUtil.getMinutes(processElement.getInputs().getInput().get(0).getStart(), time);
+        return TimeUtil.getMinutes(processElement.getInputs().getInput().get(0).getStart(), time);
     }
 
     public Date getEndInstanceProcess(Calendar time) throws JAXBException {
@@ -584,7 +583,7 @@ public class Bundle {
         logger.info("end instance: " + processElement.getInputs().getInput().get(0).getEnd());
         logger.info("timezone in getendinstance: " + time.getTimeZone().toString());
         logger.info("time in getendinstance: " + time.getTime());
-        return ELUtil.getMinutes(processElement.getInputs().getInput().get(0).getEnd(), time);
+        return TimeUtil.getMinutes(processElement.getInputs().getInput().get(0).getEnd(), time);
     }
 
     public void setDatasetInstances(String startInstance, String endInstance) throws JAXBException {
