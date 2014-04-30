@@ -74,7 +74,8 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
-    public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit, FEED_TYPE dataType, boolean isEmpty) {
+    public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit,
+                                  FEED_TYPE dataType, boolean isEmpty) throws Exception {
 
         String tableName = "testhcatretention"+unit.getValue() + period;
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
@@ -111,8 +112,6 @@ public class HCatRetentionTest extends BaseTestClass {
                 AssertUtil.assertFailed(prism.getFeedHelper()
                         .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
             }
-        }catch(Exception e){
-            e.printStackTrace();
         }finally{
             try{
                 HCatUtil.deleteTable(cli, dBName,tableName);
