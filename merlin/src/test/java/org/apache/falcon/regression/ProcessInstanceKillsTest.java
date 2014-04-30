@@ -110,6 +110,11 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Schedule process. Perform -kill action using only -start parameter. Check that action
+     * succeeded and only one instance was killed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_single() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
@@ -125,7 +130,12 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.KILLED);
     }
 
-
+    /**
+     * Schedule process. Check that in case when -start and -end parameters are equal -kill
+     * action results in the same way as in case with only -start parameter is used. Only one
+     * instance should be killed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_startAndEndSame() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T00:00Z", "2010-01-02T04:00Z");
@@ -143,16 +153,20 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         InstanceUtil.validateResponse(r, 1, 0, 0, 0, 1);
     }
 
-
+    /**
+     * Schedule process. Perform -kill action on instances between -start and -end dates which
+     * expose range of last 3 instances which have been materialized already and those which
+     * should be. Check that only existent instances are killed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_killNonMatrelized() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T00:00Z", "2010-01-02T04:00Z");
-        bundles[0].setProcessConcurrency(2);
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
-        bundles[0].setProcessConcurrency(10);
+        bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
@@ -163,13 +177,17 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         logger.info(r.toString());
     }
 
-
+    /**
+     * Generate data. Schedule process. Try to perform -kill
+     * operation using -start and -end which are both in future with respect to process start.
+     * @throws Exception
+     * TODO amend test with validations
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
         /*
         both start and end r in future with respect to process start end
          */
-
         String startTime = TimeUtil.getTimeWrtSystemTime(-20);
         String endTime = TimeUtil.getTimeWrtSystemTime(400);
         String startTimeData = TimeUtil.getTimeWrtSystemTime(-150);
@@ -192,14 +210,16 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         logger.info(r.toString());
     }
 
-
+    /**
+     * Schedule process. Check that -kill action is not performed when time range between -start
+     * and -end parameters is in future and don't include existing instances.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture() throws Exception {
-
         /*
          both start and end r in future with respect to current time
           */
-
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2099-01-02T01:21Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -217,7 +237,12 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         Assert.assertEquals(r.getInstances(), null);
     }
 
-
+    /**
+     * Schedule process. Perform -kill action within time range which includes 3 running instances.
+     * Get status of instances within wider range. Check that only mentioned 3 instances are
+     * killed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_multipleInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:21Z");
@@ -237,7 +262,11 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         InstanceUtil.validateResponse(result, 5, 2, 0, 0, 3);
     }
 
-
+    /**
+     * Schedule process. Perform -kill action on last expected instance. Get status of instances
+     * which are in wider range. Check that only last is killed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_lastInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:21Z");
@@ -257,7 +286,11 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         InstanceUtil.validateResponse(result, 5, 4, 0, 0, 1);
     }
 
-
+    /**
+     * Schedule process. Suspend one running instance. Perform -kill action on it. Check that
+     * mentioned instance is really killed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_suspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
@@ -277,7 +310,11 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.KILLED);
     }
 
-
+    /**
+     * Schedule single instance process. Wait till it finished. Try to kill the instance. Check
+     * that instance still succeeded.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_succeeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
