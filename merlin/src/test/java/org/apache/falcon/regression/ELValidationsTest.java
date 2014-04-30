@@ -62,7 +62,7 @@ public class ELValidationsTest extends BaseTestClass {
     String aggregateWorkflowDir = baseHDFSDir + "/ELTest/aggregator";
 
     //test for instance when process time line is subset of feed time
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void testName(Method method) {
         logger.info("test name: " + method.getName());
     }

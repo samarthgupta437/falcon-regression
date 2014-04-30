@@ -86,7 +86,7 @@ public class HCatReplicationTest extends BaseTestClass {
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
     int defaultTimeout = OSUtil.IS_WINDOWS ? 10 : 5;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void beforeClass() throws IOException {
         clusterHC = cluster.getClusterHelper().getHCatClient();
         cluster2HC = cluster2.getClusterHelper().getHCatClient();
@@ -96,7 +96,7 @@ public class HCatReplicationTest extends BaseTestClass {
         HadoopUtil.createDir(baseTestHDFSDir, clusterFS, cluster2FS, cluster3FS);
     }
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         Bundle bundle = BundleUtil.readHCatBundle();
         bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());

@@ -48,7 +48,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
     String aggregateWorkflowDir = baseHDFSDir + "/PrismFeedResumeTest/aggregator";
     private static final Logger logger = Logger.getLogger(PrismFeedResumeTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }

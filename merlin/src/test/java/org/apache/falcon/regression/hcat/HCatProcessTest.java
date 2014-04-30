@@ -97,7 +97,7 @@ public class HCatProcessTest extends BaseTestClass {
     private static final String hiveScript = OSUtil.getPath(hcatDir, "hivescript");
     private static final int defaultTimeOut = OSUtil.IS_WINDOWS ? 10 : 5;
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         clusterHC = cluster.getClusterHelper().getHCatClient();
         bundles[0] = BundleUtil.readHCatBundle();

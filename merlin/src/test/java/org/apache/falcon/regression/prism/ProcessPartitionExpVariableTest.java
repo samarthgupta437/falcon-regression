@@ -58,7 +58,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     private String baseTestDir = baseHDFSDir + "/ProcessPartitionExpVariableTest";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }

@@ -100,7 +100,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         usualGrind(cluster3, bundles[1]);
     }
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void setup() throws Exception {
         for (String wfPath : new String[]{WORKFLOW_PATH, WORKFLOW_PATH2, aggregatorPath, aggregator1Path}) {
             uploadDirToClusters(wfPath, OSUtil.RESOURCES_OOZIE);
