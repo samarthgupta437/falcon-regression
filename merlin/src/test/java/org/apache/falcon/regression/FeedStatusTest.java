@@ -65,9 +65,7 @@ public class FeedStatusTest extends BaseTestClass {
 
         //submit the cluster
         ServiceResponse response = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
+        AssertUtil.assertSucceeded(response);
         feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
 
@@ -91,9 +89,6 @@ public class FeedStatusTest extends BaseTestClass {
 
         AssertUtil.assertSucceeded(response);
 
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
@@ -115,8 +110,7 @@ public class FeedStatusTest extends BaseTestClass {
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
 
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertSucceeded(response);
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUSPENDED"));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
@@ -135,8 +129,7 @@ public class FeedStatusTest extends BaseTestClass {
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
 
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertSucceeded(response);
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUBMITTED"));
         AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
@@ -156,8 +149,7 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertFailed(response);
 
         Assert.assertTrue(
                 response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
@@ -171,8 +163,7 @@ public class FeedStatusTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void getStatusForNonExistentFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 400);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        AssertUtil.assertFailed(response);
         Assert.assertTrue(
                 response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
 
