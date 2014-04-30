@@ -1171,7 +1171,10 @@ public class Util {
         return "get";
     }
 
-    public static String prettyPrintXml(String xmlString) {
+    public static String prettyPrintXml(final String xmlString) {
+        if(xmlString == null) {
+            return null;
+        }
         try {
             Source xmlInput = new StreamSource(new StringReader(xmlString));
             StringWriter stringWriter = new StringWriter();
@@ -1190,12 +1193,18 @@ public class Util {
 
     }
 
-    public static String prettyPrintJson(String jsonString) {
+    public static String prettyPrintJson(final String jsonString) {
+        if(jsonString == null) {
+            return null;
+        }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(jsonString);
     }
 
     public static String prettyPrintXmlOrJson(final String str) {
+        if(str == null) {
+            return null;
+        }
         String cleanStr = str.trim();
         //taken from http://stackoverflow.com/questions/7256142/way-to-quickly-check-if-string-is-xml-or-json-in-c-sharp
         if(cleanStr.startsWith("{") || cleanStr.startsWith("["))
