@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.hcat;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
@@ -77,7 +78,7 @@ public class HCatRetentionTest extends BaseTestClass {
     public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit,
                                   FEED_TYPE dataType, boolean isEmpty) throws Exception {
 
-        String tableName = "testhcatretention"+unit.getValue() + period;
+        final String tableName = String.format("testhcatretention_%s_%s", unit.getValue(), period);
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
 
@@ -112,11 +113,11 @@ public class HCatRetentionTest extends BaseTestClass {
                 AssertUtil.assertFailed(prism.getFeedHelper()
                         .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
             }
-        }finally{
-            try{
-                HCatUtil.deleteTable(cli, dBName,tableName);
-            }catch(Exception e){
-                e.printStackTrace();
+        } finally {
+            try {
+                HCatUtil.deleteTable(cli, dBName, tableName);
+            } catch(Exception e){
+                logger.info("Exception during table delete:" + ExceptionUtils.getStackTrace(e));
             }
         }
     }
