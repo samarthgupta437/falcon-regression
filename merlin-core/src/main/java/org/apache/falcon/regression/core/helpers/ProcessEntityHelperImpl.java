@@ -202,13 +202,13 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
                 .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public String list() throws IOException, InterruptedException {
+    public String list() {
         return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
     }
 
     @Override
-    public String getDependencies(String entityName) throws IOException, InterruptedException {
+    public String getDependencies(String entityName) {
         return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -dependency -url " + this.hostname +
                         " -type process -name " + entityName);

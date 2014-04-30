@@ -154,13 +154,13 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-    public String list() throws IOException, InterruptedException {
+    public String list() {
         return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -list -url " + this.hostname + " -type cluster");
     }
 
     @Override
-    public String getDependencies(String entityName) throws IOException, InterruptedException {
+    public String getDependencies(String entityName) {
 
         return Util.executeCommandGetOutput(
                 BASE_COMMAND + " entity -dependency -url " + this.hostname +

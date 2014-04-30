@@ -20,6 +20,6 @@ package org.apache.falcon.regression.core.enumsAndConstants;
 
 public enum ENTITY_TYPE {
 
-    PROCESS, DATA, CLUSTER, FEED;
+    PROCESS, DATA, CLUSTER, FEED
 
 }

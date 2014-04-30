@@ -59,7 +59,6 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.List;
 
 @Test(groups = "embedded")
@@ -461,7 +460,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache.org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1KillSomeU2RerunAllProcessInstances()
-            throws ParseException, IOException, JAXBException, InterruptedException,
+            throws IOException, JAXBException, InterruptedException,
             AuthenticationException, URISyntaxException, OozieClientException {
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
@@ -681,7 +680,7 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         KerberosHelper.loginFromKeytab(MerlinConstants.CURRENT_USER_NAME);
         removeBundles();
     }

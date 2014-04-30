@@ -81,8 +81,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 // ps: partition in source
 
 
-    private void uploadDataToServer3(String location, String fileName) throws IOException,
-    InterruptedException {
+    private void uploadDataToServer3(String location, String fileName) throws IOException {
         HadoopUtil.createDir(location, cluster3FS);
         HadoopUtil.copyDataToFolder(cluster3, new Path(location), fileName);
     }

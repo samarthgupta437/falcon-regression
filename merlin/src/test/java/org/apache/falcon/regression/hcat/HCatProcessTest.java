@@ -55,7 +55,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -608,7 +607,7 @@ public class HCatProcessTest extends BaseTestClass {
     }
 
     public static List<String> getDatesList(String startDate, String endDate, String datePattern,
-                                            int skipMinutes) throws ParseException {
+                                            int skipMinutes) {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
         DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);
@@ -623,7 +622,7 @@ public class HCatProcessTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 }

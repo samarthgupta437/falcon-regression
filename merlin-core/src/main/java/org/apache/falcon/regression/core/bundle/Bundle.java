@@ -80,7 +80,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -458,7 +457,7 @@ public class Bundle {
         return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public void updateWorkFlowFile() throws IOException, JAXBException, InterruptedException {
+    public void updateWorkFlowFile() throws IOException, JAXBException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
         File wfFile = new File(sBundleLocation + "/workflow/workflow.xml");
@@ -483,7 +482,7 @@ public class Bundle {
     }
 
     public String submitAndScheduleBundle(PrismHelper prismHelper)
-    throws IOException, JAXBException, InterruptedException, URISyntaxException,
+    throws IOException, JAXBException, URISyntaxException,
     AuthenticationException {
 
         if (colohelper != null) {
@@ -544,7 +543,8 @@ public class Bundle {
     }
 
 
-    public void setFeedValidity(String feedStart, String feedEnd, String feedName) throws ParseException, JAXBException {
+    public void setFeedValidity(String feedStart, String feedEnd, String feedName) throws
+                                                                                   JAXBException {
 
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getClusters().getCluster().get(0).getValidity()
@@ -721,12 +721,12 @@ public class Bundle {
 
     }
 
-    public void setInputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
+    public void setInputFeedValidity(String startInstance, String endInstance) throws JAXBException {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
-    public void setOutputFeedValidity(String startInstance, String endInstance) throws ParseException, JAXBException {
+    public void setOutputFeedValidity(String startInstance, String endInstance) throws JAXBException {
         String feedName = BundleUtil.getOutputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
@@ -743,7 +743,7 @@ public class Bundle {
           .getPath());
     }
 
-    public void setProcessValidity(DateTime startDate, DateTime endDate) throws JAXBException, ParseException {
+    public void setProcessValidity(DateTime startDate, DateTime endDate) throws JAXBException {
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
 
@@ -774,7 +774,7 @@ public class Bundle {
         processData = sw.toString();
     }
 
-    public void setProcessValidity(String startDate, String endDate) throws JAXBException, ParseException {
+    public void setProcessValidity(String startDate, String endDate) throws JAXBException {
 
         JAXBContext jc = JAXBContext.newInstance(Process.class);
 
@@ -816,7 +816,7 @@ public class Bundle {
     }
 
 
-    public void verifyDependencyListing() throws JAXBException, IOException, InterruptedException {
+    public void verifyDependencyListing() throws JAXBException {
         //display dependencies of process:
         String dependencies = processHelper.getDependencies(Util.readEntityName(getProcessData()));
 
@@ -898,7 +898,7 @@ public class Bundle {
         clusters.set(0, clusterData);
     }
 
-    public void setInputFeedTableUri(String tableUri) throws ParseException, JAXBException {
+    public void setInputFeedTableUri(String tableUri) throws JAXBException {
         final String feedStr = BundleUtil.getInputFeedFromBundle(this);
         Feed feed = InstanceUtil.getFeedElement(feedStr);
         final CatalogTable catalogTable = new CatalogTable();
@@ -907,7 +907,7 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feed, feed.getName());
     }
 
-    public void setOutputFeedTableUri(String tableUri) throws ParseException, JAXBException {
+    public void setOutputFeedTableUri(String tableUri) throws JAXBException {
         final String feedStr = BundleUtil.getOutputFeedFromBundle(this);
         Feed feed = InstanceUtil.getFeedElement(feedStr);
         final CatalogTable catalogTable = new CatalogTable();
@@ -952,7 +952,7 @@ public class Bundle {
 
     public void addClusterToBundle(String clusterData, ClusterType type,
                                    String startTime, String endTime
-                                   ) throws JAXBException, ParseException {
+                                   ) throws JAXBException {
 
         clusterData = setNewClusterName(clusterData);
 
@@ -1054,7 +1054,7 @@ public class Bundle {
     public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
                                     String inputBasePaths, int numberOfOutputs, String startTime,
-                                    String endTime) throws JAXBException, ParseException {
+                                    String endTime) throws JAXBException {
 
 
         //generate clusters And setCluster
@@ -1164,7 +1164,7 @@ public class Bundle {
     }
 
     public String setProcessClusters(String process, List<String> newClusters, String startTime,
-                                     String endTime) throws ParseException, JAXBException {
+                                     String endTime) throws JAXBException {
 
         Process p = InstanceUtil.getProcessElement(process);
         org.apache.falcon.regression.core.generated.process.Clusters cs =
@@ -1187,7 +1187,7 @@ public class Bundle {
 
     public String setFeedClusters(String referenceFeed,
                                   List<String> newClusters, String location, String startTime,
-                                  String endTime) throws ParseException, JAXBException {
+                                  String endTime) throws JAXBException {
 
         Feed f = InstanceUtil.getFeedElement(referenceFeed);
         Clusters cs = new Clusters();

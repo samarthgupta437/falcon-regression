@@ -101,7 +101,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown(Method method) throws Exception {
+    public void tearDown(Method method) {
         logger.info("tearDown " + method.getName());
         removeBundles();
     }

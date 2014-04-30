@@ -62,7 +62,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     private static final Logger logger = Logger.getLogger(PrismFeedReplicationUpdateTest.class);
 
     @BeforeClass
-    public void prepareCluster() throws IOException, InterruptedException {
+    public void prepareCluster() throws IOException {
         // upload workflow to hdfs
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
@@ -80,7 +80,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 

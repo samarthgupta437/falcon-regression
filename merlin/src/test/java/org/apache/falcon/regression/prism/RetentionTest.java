@@ -159,7 +159,7 @@ public class RetentionTest extends BaseTestClass {
         }
     }
 
-    private String getFeedPathValue(String dataType) throws Exception {
+    private String getFeedPathValue(String dataType) {
         if (dataType.equalsIgnoreCase("monthly")) {
             return testHDFSDir + "${YEAR}/${MONTH}";
         }
@@ -248,7 +248,7 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void replenishData(List<String> folderList, boolean uploadData)
-    throws IOException, InterruptedException {
+    throws IOException {
         //purge data first
         HadoopUtil.deleteDirIfExists(testHDFSDir, clusterFS);
 
@@ -497,7 +497,7 @@ public class RetentionTest extends BaseTestClass {
     final static int[] gaps = new int[]{2, 4, 5, 1};
 
     @DataProvider(name = "betterDP")
-    public Object[][] getTestData(Method m) throws Exception {
+    public Object[][] getTestData(Method m) {
         String[] periods = new String[]{"0", "10080", "60", "8", "24"}; // a negative value like -4 should be covered in validation scenarios.
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};

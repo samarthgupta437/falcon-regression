@@ -83,8 +83,8 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
 
         ArrayList<String> dataFolder = new ArrayList<String>();
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataFolder.add(dataDates.get(i));
+        for (String dataDate : dataDates)
+            dataFolder.add(dataDate);
 
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
@@ -106,7 +106,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
