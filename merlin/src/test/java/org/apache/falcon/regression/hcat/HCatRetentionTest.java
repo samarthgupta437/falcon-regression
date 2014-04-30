@@ -78,7 +78,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
-    public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit,
+    public void testHCatRetention(String period, RETENTION_UNITS unit,
                                   FEED_TYPE dataType, boolean isEmpty) throws Exception {
 
         final String tableName = String.format("testhcatretention_%s_%s", unit.getValue(), period);
@@ -125,7 +125,8 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    public void check(String dataType, String unit, int period, String tableName){
+    public void check(String dataType, String unit, int period, String tableName)
+            throws Exception {
         List<CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
         expectedStatus.add(CoordinatorAction.Status.FAILED);
         expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
@@ -249,7 +250,7 @@ public class HCatRetentionTest extends BaseTestClass {
         String[] periods = new String[]{"7","824","43"}; // a negative value like -4 should be covered in validation scenarios.
         boolean[] empty = new boolean[]{false,true};
         FEED_TYPE[] dataTypes = new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
-        Object[][] testData = new Object[bundles.length * units.length * periods.length * dataTypes.length * empty.length][5];
+        Object[][] testData = new Object[units.length * periods.length * dataTypes.length * empty.length][4];
 
         int i = 0;
 
@@ -257,11 +258,10 @@ public class HCatRetentionTest extends BaseTestClass {
             for (String period : periods) {
                 for (FEED_TYPE dataType : dataTypes) {
                     for (boolean isEmpty : empty) {
-                        testData[i][0] = bundle;
-                        testData[i][1] = period;
-                        testData[i][2] = unit;
-                        testData[i][3] = dataType;
-                        testData[i][4] = isEmpty;
+                        testData[i][0] = period;
+                        testData[i][1] = unit;
+                        testData[i][2] = dataType;
+                        testData[i][3] = isEmpty;
                         i++;
                     }
                 }
