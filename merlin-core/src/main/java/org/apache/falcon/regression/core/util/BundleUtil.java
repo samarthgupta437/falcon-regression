@@ -57,6 +57,10 @@ public class BundleUtil {
         return readBundles("hcat")[0][0];
     }
 
+    public static Bundle getHCat2Bundle() throws IOException {
+        return getBundleData("hcat_2")[0];
+    }
+
     public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
 
         List<Bundle> bundleList = new ArrayList<Bundle>();

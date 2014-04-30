@@ -39,6 +39,7 @@ import org.apache.oozie.client.CoordinatorAction;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
@@ -61,8 +62,15 @@ public class HCatRetentionTest extends BaseTestClass {
     final String dBName="default";
 
     @BeforeMethod(alwaysRun = true)
-    public void setUp() throws HCatException {
-        cli=HCatUtil.getHCatClient(servers.get(0));
+    public void setUp() throws Exception {
+        cli = HCatUtil.getHCatClient(servers.get(0));
+        bundle = new Bundle(BundleUtil.getHCat2Bundle(), servers.get(0));
+        HadoopUtil.deleteDirIfExists(baseTestHDFSDir, serverFS.get(0));
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws HCatException {
+        bundle.deleteBundle(prism);
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
@@ -74,7 +82,6 @@ public class HCatRetentionTest extends BaseTestClass {
 
         try{
             HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
-            bundle = new Bundle(b, servers.get(0));
             int p= Integer.parseInt(period);
             displayDetails(period, unit.getValue(), dataType.getValue());
 
@@ -108,8 +115,6 @@ public class HCatRetentionTest extends BaseTestClass {
             e.printStackTrace();
         }finally{
             try{
-                bundle.deleteBundle(prism);
-                HadoopUtil.deleteDirIfExists(baseTestHDFSDir, serverFS.get(0));
                 HCatUtil.deleteTable(cli, dBName,tableName);
             }catch(Exception e){
                 e.printStackTrace();
@@ -244,7 +249,6 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) throws Exception {
-        Bundle[] bundles = BundleUtil.getBundleData("hcat_2");
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
         String[] periods = new String[]{"7","824","43"}; // a negative value like -4 should be covered in validation scenarios.
         boolean[] empty = new boolean[]{false,true};
@@ -253,18 +257,16 @@ public class HCatRetentionTest extends BaseTestClass {
 
         int i = 0;
 
-        for (Bundle bundle : bundles) {
-            for (RETENTION_UNITS unit : units) {
-                for (String period : periods) {
-                    for (FEED_TYPE dataType : dataTypes) {
-                        for(boolean isEmpty : empty){
-                            testData[i][0] = bundle;
-                            testData[i][1] = period;
-                            testData[i][2] = unit;
-                            testData[i][3] = dataType;
-                            testData[i][4] = isEmpty;
-                            i++;
-                        }
+        for (RETENTION_UNITS unit : units) {
+            for (String period : periods) {
+                for (FEED_TYPE dataType : dataTypes) {
+                    for (boolean isEmpty : empty) {
+                        testData[i][0] = bundle;
+                        testData[i][1] = period;
+                        testData[i][2] = unit;
+                        testData[i][3] = dataType;
+                        testData[i][4] = isEmpty;
+                        i++;
                     }
                 }
             }
