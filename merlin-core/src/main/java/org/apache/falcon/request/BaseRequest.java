@@ -54,10 +54,6 @@ public class BaseRequest {
     private URI uri;
     private HttpHost target;
 
-    public BaseRequest(String url, String method) throws URISyntaxException {
-        this(url, method, RequestKeys.CURRENT_USER, null);
-    }
-
     public BaseRequest(String url, String method, String user) throws URISyntaxException {
         this(url, method, user, null);
     }
