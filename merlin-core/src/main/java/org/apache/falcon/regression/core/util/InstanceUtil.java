@@ -64,7 +64,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,23 +122,11 @@ public class InstanceUtil {
             }
           }
       }
-    } catch (InstantiationException e) {
-      e.printStackTrace();
-      logger.info("Could not create InstancesSummaryResult or " +
-        "ProcessInstancesResult constructor");
-      Assert.fail();
-    } catch (InvocationTargetException e) {
-      e.printStackTrace();
-      logger.info("Could not create InstancesSummaryResult or " +
-        "ProcessInstancesResult constructor");
-      Assert.fail();
-    } catch (IllegalAccessException e) {
-      e.printStackTrace();
-      logger.info("Could not create InstancesSummaryResult or " +
-        "ProcessInstancesResult constructor");
-      Assert.fail();
+    } catch (ReflectiveOperationException e) {
+        Assert.fail("Could not create InstancesSummaryResult or " +
+        "ProcessInstancesResult constructor\n" + e.getMessage());
     }
-
+    Assert.assertNotNull(r, "APIResult is null");
     if (jsonString.contains("(PROCESS) not found")) {
       r.setStatusCode(ResponseKeys.PROCESS_NOT_FOUND);
       return r;
