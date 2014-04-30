@@ -85,7 +85,7 @@ public class InstanceUtil {
   public static APIResult hitUrl(String url,
                                               String method, String user) throws URISyntaxException,
     IOException, AuthenticationException {
-        BaseRequest request = new BaseRequest(url, method);
+        BaseRequest request = new BaseRequest(url, method, user);
         HttpResponse response = request.run();
 
     BufferedReader reader = new BufferedReader(

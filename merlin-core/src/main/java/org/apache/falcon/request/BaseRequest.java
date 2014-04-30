@@ -58,6 +58,10 @@ public class BaseRequest {
         this(url, method, RequestKeys.CURRENT_USER, null);
     }
 
+    public BaseRequest(String url, String method, String user) throws URISyntaxException {
+        this(url, method, user, null);
+    }
+
     public BaseRequest(String url, String method, String user, String data)
     throws URISyntaxException {
         this.method = method;
