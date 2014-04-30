@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatPartition;
@@ -61,12 +62,14 @@ public class HCatRetentionTest extends BaseTestClass {
     final String testDir = "/HCatRetentionTest/";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String dBName="default";
+    final ColoHelper cluster = servers.get(0);
+    final FileSystem clusterFS = serverFS.get(0);
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
-        cli = HCatUtil.getHCatClient(servers.get(0));
-        bundle = new Bundle(BundleUtil.getHCat2Bundle(), servers.get(0));
-        HadoopUtil.deleteDirIfExists(baseTestHDFSDir, serverFS.get(0));
+        cli = HCatUtil.getHCatClient(cluster);
+        bundle = new Bundle(BundleUtil.getHCat2Bundle(), cluster);
+        HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -123,67 +126,60 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     public void check(String dataType, String unit, int period, String tableName){
-        try{
+        List<CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
+        expectedStatus.add(CoordinatorAction.Status.FAILED);
+        expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
+        expectedStatus.add(CoordinatorAction.Status.KILLED);
+        expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
 
-            List <CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
-            expectedStatus.add(CoordinatorAction.Status.FAILED);
-            expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
-            expectedStatus.add(CoordinatorAction.Status.KILLED);
-            expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
+        List<String> initialData =
+                getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, dataType);
 
-            List<String> initialData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, testDir, dataType);
+        List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
-            List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
+        AssertUtil.assertSucceeded(prism.getFeedHelper()
+                .schedule(URLS.SCHEDULE_URL, BundleUtil.getInputFeedFromBundle(bundle)));
+        InstanceUtil.waitTillRetentionSucceeded(cluster, bundle, expectedStatus, 0, 2, 5);
 
-            AssertUtil.assertSucceeded(prism.getFeedHelper()
-                    .schedule(URLS.SCHEDULE_URL, BundleUtil.getInputFeedFromBundle(bundle)));
-            InstanceUtil.waitTillRetentionSucceeded(servers.get(0),bundle,expectedStatus,0,2,5);
+        DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
-            DateTime currentTime = new DateTime(DateTimeZone.UTC);
+        List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, dataType);
 
-            List<String> finalData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, testDir, dataType);
+        List<String> expectedOutput =
+                Util.filterDataOnRetentionHCat(period, unit, dataType,
+                        currentTime, initialData);
 
-            List<String> expectedOutput =
-                    Util.filterDataOnRetentionHCat(period, unit, dataType,
-                            currentTime, initialData);
+        List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
-            List<HCatPartition> finalPtnList = cli.getPartitions(dBName,tableName);
-
-            logger.info("initial data in system was:");
-            for (String line : initialData) {
-                logger.info(line);
-            }
-
-            logger.info("system output is:");
-            for (String line : finalData) {
-                logger.info(line);
-            }
-
-            logger.info("expected output is:");
-            for (String line : expectedOutput) {
-                logger.info(line);
-            }
-
-            Assert.assertEquals(finalPtnList.size(), expectedOutput.size(),
-                    "sizes of hcat outputs are different! please check");
-
-            //Checking if size of expected data and obtained data same
-            Assert.assertEquals(finalData.size(), expectedOutput.size(),
-                "sizes of hadoop outputs are different! please check");
-
-            //Checking if the values are also the same
-             Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
-                     expectedOutput.toArray(new String[expectedOutput.size()])));
-
-            //Checking if number of partitions left = size of remaining directories in HDFS
-             Assert.assertEquals(finalData.size(), finalPtnList.size(),
-              "sizes of outputs are different! please check");
-
-        }catch(Exception e){
-            e.printStackTrace();
+        logger.info("initial data in system was:");
+        for (String line : initialData) {
+            logger.info(line);
         }
 
+        logger.info("system output is:");
+        for (String line : finalData) {
+            logger.info(line);
+        }
 
+        logger.info("expected output is:");
+        for (String line : expectedOutput) {
+            logger.info(line);
+        }
+
+        Assert.assertEquals(finalPtnList.size(), expectedOutput.size(),
+                "sizes of hcat outputs are different! please check");
+
+        //Checking if size of expected data and obtained data same
+        Assert.assertEquals(finalData.size(), expectedOutput.size(),
+                "sizes of hadoop outputs are different! please check");
+
+        //Checking if the values are also the same
+        Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
+                expectedOutput.toArray(new String[expectedOutput.size()])));
+
+        //Checking if number of partitions left = size of remaining directories in HDFS
+        Assert.assertEquals(finalData.size(), finalPtnList.size(),
+                "sizes of outputs are different! please check");
     }
 
     private void displayDetails(String period, String unit, String dataType) {
