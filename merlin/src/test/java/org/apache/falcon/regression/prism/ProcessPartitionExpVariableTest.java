@@ -117,7 +117,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
     private static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
                                                       DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException, InterruptedException {
+                                                      int interval) throws IOException {
         List<String> dataDates =
                 generateDateAndOneDayAfter(startDateJoda, endDateJoda, interval);
 

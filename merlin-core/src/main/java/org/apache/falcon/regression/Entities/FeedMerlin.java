@@ -144,8 +144,7 @@ public class FeedMerlin extends Feed {
         return null;
     }
 
-    public String insertRetentionValueInFeed(String retentionValue)
-    throws JAXBException {
+    public String insertRetentionValueInFeed(String retentionValue) {
         //insert retentionclause
         getClusters().getCluster().get(0).getRetention()
                 .setLimit(new Frequency(retentionValue));
@@ -157,8 +156,7 @@ public class FeedMerlin extends Feed {
         return toString();
     }
 
-    public String setTableValue(String pathValue, String dBName, String tableName)
-    throws Exception {
+    public String setTableValue(String pathValue, String dBName, String tableName) {
         getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
         //set the value
         return toString();

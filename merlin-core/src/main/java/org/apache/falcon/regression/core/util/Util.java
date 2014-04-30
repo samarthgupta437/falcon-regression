@@ -359,7 +359,7 @@ public class Util {
 
     public static List<String> filterDataOnRetentionHCat(int time, String interval, String dataType,
                                                       DateTime endDate,
-                                                      List<String> inputData) throws JAXBException {
+                                                      List<String> inputData) {
 
         String locationType = "";
         String appender = "";
@@ -525,7 +525,7 @@ public class Util {
   }
 
     public static void createLateDataFoldersWithRandom(PrismHelper prismHelper, String folderPrefix, List<String> folderList)
-    throws IOException, InterruptedException {
+    throws IOException {
         logger.info("creating late data folders.....");
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
@@ -543,7 +543,7 @@ public class Util {
 
   public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
                                        String directory, String folderPrefix)
-    throws IOException, InterruptedException {
+    throws IOException {
     logger.info("copying data into folders....");
     List<String> fileLocations = new ArrayList<String>();
     File[] files = new File(directory).listFiles();
@@ -559,7 +559,7 @@ public class Util {
     public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
                                          List<String> folderList,
                                          String... fileLocations)
-    throws IOException, InterruptedException {
+    throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
 
@@ -628,7 +628,7 @@ public class Util {
   }
 
   public static void lateDataReplenish(PrismHelper prismHelper, int interval,
-                                       int minuteSkip, String folderPrefix) throws IOException, InterruptedException {
+                                       int minuteSkip, String folderPrefix) throws IOException {
     List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
         Util.createLateDataFoldersWithRandom(prismHelper, folderPrefix, folderData);
@@ -638,7 +638,7 @@ public class Util {
 
   public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
                                              final String FolderPrefix)
-    throws IOException, InterruptedException {
+    throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
 
@@ -651,7 +651,7 @@ public class Util {
 
   public static void injectMoreData(PrismHelper prismHelper, final String remoteLocation,
                                     String localLocation)
-    throws IOException, InterruptedException {
+    throws IOException {
     Configuration conf = new Configuration();
     conf.set("fs.default.name", "hdfs://" + prismHelper.getClusterHelper().getHadoopURL() + "");
 
@@ -771,7 +771,7 @@ public class Util {
   }
 
   public static void restartService(IEntityManagerHelper helper)
-          throws IOException, JSchException, InterruptedException, AuthenticationException, URISyntaxException {
+          throws IOException, JSchException, AuthenticationException, URISyntaxException {
     logger.info("restarting service for: " + helper.getQaHost());
 
     shutDownService(helper);
@@ -897,7 +897,7 @@ public class Util {
     public static void lateDataReplenish(PrismHelper prismHelper, int interval,
                                          int minuteSkip,
                                          String folderPrefix, String postFix)
-    throws IOException, InterruptedException {
+    throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
         logger.info("folderData: " + folderPaths.toString());
 
@@ -915,7 +915,7 @@ public class Util {
     public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
                                                         String postFix)
-    throws IOException, InterruptedException {
+    throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
         logger.info("folderData: " + folderPaths.toString());
 
@@ -932,7 +932,7 @@ public class Util {
 
   public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
                                          String folderPrefix, String fileToBePut)
-    throws IOException, InterruptedException {
+    throws IOException {
     List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
     logger.info("folderData: " + folderPaths.toString());
 

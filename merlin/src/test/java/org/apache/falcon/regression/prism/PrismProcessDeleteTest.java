@@ -69,7 +69,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
@@ -965,8 +965,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
 
 
     private void compareDataStoreStates(List<String> initialState, List<String> finalState,
-                                        String filename)
-    throws Exception {
+                                        String filename) {
 
         List<String> temp = new ArrayList<String>(initialState);
         temp.removeAll(finalState);
@@ -976,8 +975,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
     }
 
 
-    private void compareDataStoresForEquality(List<String> store1, List<String> store2)
-    throws Exception {
+    private void compareDataStoresForEquality(List<String> store1, List<String> store2) {
         Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]),
                 store1.toArray(new String[store1.size()])));
     }

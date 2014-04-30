@@ -66,7 +66,6 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -239,7 +238,6 @@ public class InstanceUtil {
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
                                         String feedName) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(feedElement, sw);
@@ -536,7 +534,7 @@ public class InstanceUtil {
 
     public static void putDataInFolders(ColoHelper colo,
                                         final List<String> inputFoldersForInstance,
-                                        String type) throws IOException, InterruptedException {
+                                        String type) throws IOException {
 
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(colo.getClusterHelper().getHadoopFS(),
@@ -567,7 +565,7 @@ public class InstanceUtil {
         fs.copyFromLocalFile(false, false, localPaths.toArray(new Path[localPaths.size()]), new Path(remoteLocation));
     }
 
-    public static void createHDFSFolders(PrismHelper helper, List<String> folderList) throws IOException, InterruptedException {
+    public static void createHDFSFolders(PrismHelper helper, List<String> folderList) throws IOException {
         logger.info("creating folders.....");
 
 
@@ -585,7 +583,7 @@ public class InstanceUtil {
 
 
     public static void putFileInFolders(ColoHelper colo, List<String> folderList,
-                                        final String... fileName) throws IOException, InterruptedException {
+                                        final String... fileName) throws IOException {
         final FileSystem fs = colo.getClusterHelper().getHadoopFS();
 
         for (final String folder : folderList) {
@@ -840,7 +838,7 @@ public class InstanceUtil {
 
     public static void putLateDataInFolders(ColoHelper helper,
                                             List<String> inputFolderList,
-                                            int lateDataFolderNumber) throws IOException, InterruptedException {
+                                            int lateDataFolderNumber) throws IOException {
 
         for (String anInputFolderList : inputFolderList)
             putLateDataInFolder(helper, anInputFolderList, lateDataFolderNumber);
@@ -848,7 +846,7 @@ public class InstanceUtil {
 
     public static void putLateDataInFolder(ColoHelper helper, final String remoteLocation,
                                            int lateDataFolderNumber)
-    throws IOException, InterruptedException {
+    throws IOException {
 
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
@@ -921,7 +919,7 @@ public class InstanceUtil {
 
 
     public static String setProcessValidity(String process,
-                                            String startTime, String endTime) throws JAXBException, ParseException {
+                                            String startTime, String endTime) throws JAXBException {
 
         Process processElement = InstanceUtil.getProcessElement(process);
 
@@ -1213,9 +1211,9 @@ public class InstanceUtil {
         statusList.add(coordInfo.getActions().get(count).getStatus());
       }
 
-      for(int i=0; i<expectedStatus.size(); ++i){
-        if (statusList.get(instanceNumber).equals(expectedStatus.get(i))){
-          flag=true;
+      for (CoordinatorAction.Status oneExpectedStatus : expectedStatus) {
+        if (statusList.get(instanceNumber) == oneExpectedStatus) {
+          flag = true;
           break;
         }
       }
@@ -1233,13 +1231,12 @@ public class InstanceUtil {
   public static String getRetentionCoordID(String bundlID,
                                            IEntityManagerHelper helper) throws OozieClientException {
     List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-    String RetentionCoordID = null;
     for (CoordinatorJob coord : coords) {
       if (coord.getAppName().contains("FEED_RETENTION"))
         return coord.getId();
     }
 
-    return RetentionCoordID;
+    return null;
   }
 
 }

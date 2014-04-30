@@ -29,7 +29,7 @@ import java.util.Set;
 @XmlRootElement
 public class ProcessInstancesResult extends APIResult {
     public static enum WorkflowStatus {
-        WAITING, LATE_RUNNING, RUNNING, SUSPENDED, KILLED, FAILED, SUCCEEDED;
+        WAITING, LATE_RUNNING, RUNNING, SUSPENDED, KILLED, FAILED, SUCCEEDED
     }
 
     @XmlRootElement(name = "pinstance")

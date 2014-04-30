@@ -48,7 +48,7 @@ public class PrismSubmitTest extends BaseTestClass {
     String baseTestDir = baseHDFSDir + "/PrismSubmitTest";
     String randomHDFSPath = baseTestDir + "/someRandomPath";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    boolean restartRequired = false;
+    boolean restartRequired;
     private static final Logger logger = Logger.getLogger(PrismSubmitTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -570,7 +570,7 @@ public class PrismSubmitTest extends BaseTestClass {
     }
 
   @DataProvider(name = "errorDP")
-  public Object[][] getTestData(Method m) throws Exception {
+  public Object[][] getTestData(Method m) {
     Object[][] testData = new Object[2][1];
     testData[0][0] = "EmptyInputTagProcess";
     testData[1][0] = "EmptyOutputTagProcess";

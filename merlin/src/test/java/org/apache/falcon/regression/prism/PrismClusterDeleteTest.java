@@ -398,15 +398,14 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         compareDataStoresForEquality(server1ArchivePostUp, finalServer1ArchiveStore);
     }
 
-    private void compareDataStoreStates(List<String> initialState, List<String> finalState, String filename)
-    throws Exception {
+    private void compareDataStoreStates(List<String> initialState, List<String> finalState, String filename) {
         initialState.removeAll(finalState);
         Assert.assertEquals(initialState.size(), 1);
         Assert.assertTrue(initialState.get(0).contains(filename));
 
     }
 
-    private void compareDataStoresForEquality(List<String> store1, List<String> store2) throws Exception {
+    private void compareDataStoresForEquality(List<String> store1, List<String> store2) {
         Assert.assertEquals(store1.size(), store2.size(), "DataStores are not equal!");
         Assert.assertTrue(Arrays.deepEquals(store2.toArray(new String[store2.size()]),
                 store1.toArray(new String[store1.size()])), "DataStores are not equal!");
