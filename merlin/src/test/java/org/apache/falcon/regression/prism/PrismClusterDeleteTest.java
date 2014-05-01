@@ -46,7 +46,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
     String aggregateWorkflowDir = baseHDFSDir + "/PrismClusterDeleteTest/aggregator";
     private static final Logger logger = Logger.getLogger(PrismClusterDeleteTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }

@@ -77,7 +77,7 @@ public class NewRetryTest extends BaseTestClass {
     private DateTime startDate;
     private DateTime endDate;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }

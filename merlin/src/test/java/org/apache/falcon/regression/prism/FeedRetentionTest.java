@@ -51,7 +51,7 @@ public class FeedRetentionTest extends BaseTestClass {
     String impressionrcWorkflowLibPath = impressionrcWorkflowDir + "lib";
     private static final Logger logger = Logger.getLogger(FeedRetentionTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         for (FileSystem fs : serverFS) {
             HadoopUtil.createDir(impressionrcWorkflowLibPath);

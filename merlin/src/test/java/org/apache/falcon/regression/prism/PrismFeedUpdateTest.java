@@ -55,7 +55,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
     public final String cluster2colo = cluster2.getClusterHelper().getColoName();
     private static final Logger logger = Logger.getLogger(PrismFeedUpdateTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }

@@ -60,7 +60,7 @@ public class HCatRetentionTest extends BaseTestClass {
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String dBName="default";
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws HCatException {
         cli=HCatUtil.getHCatClient(servers.get(0));
     }
