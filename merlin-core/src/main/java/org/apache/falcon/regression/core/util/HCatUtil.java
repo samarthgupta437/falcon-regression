@@ -101,6 +101,7 @@ public class HCatUtil {
                 .isTableExternal(true)
                 .location(tableLoc)
                 .build();
+        client.dropTable(dbName, tableName, true);
         client.createTable(tableDesc);
     }
 

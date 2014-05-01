@@ -21,10 +21,12 @@ package org.apache.falcon.regression.hcat;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -37,7 +39,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatPartition;
 import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.oozie.cli.OozieCLI;
 import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.Assert;
@@ -64,6 +68,7 @@ public class HCatRetentionTest extends BaseTestClass {
     final String dBName="default";
     final ColoHelper cluster = servers.get(0);
     final FileSystem clusterFS = serverFS.get(0);
+    final OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
@@ -87,9 +92,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
         try{
             HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
-            int p= Integer.parseInt(period);
-            displayDetails(period, unit.getValue(), dataType.getValue());
-
+            int p = Integer.parseInt(period);
             FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
             feedElement.setTableValue(getFeedPathValue(dataType.getValue()),
                     dBName, tableName);
@@ -138,9 +141,17 @@ public class HCatRetentionTest extends BaseTestClass {
 
         List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
-        AssertUtil.assertSucceeded(prism.getFeedHelper()
-                .schedule(URLS.SCHEDULE_URL, BundleUtil.getInputFeedFromBundle(bundle)));
-        InstanceUtil.waitTillRetentionSucceeded(cluster, bundle, expectedStatus, 0, 2, 5);
+        if(initialData.size() != initialPtnList.size()) {
+            logger.info("initialData:" + initialData);
+            logger.info("initialPtnList:" + initialPtnList);
+        }
+
+        final String inputFeed = BundleUtil.getInputFeedFromBundle(bundle);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed));
+
+        final String bundleId = OozieUtil.getBundles(clusterOC, Util.readDatasetName(inputFeed),
+                ENTITY_TYPE.FEED).get(0);
+        OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
@@ -181,14 +192,6 @@ public class HCatRetentionTest extends BaseTestClass {
         //Checking if number of partitions left = size of remaining directories in HDFS
         Assert.assertEquals(finalData.size(), finalPtnList.size(),
                 "sizes of outputs are different! please check");
-    }
-
-    private void displayDetails(String period, String unit, String dataType) {
-        logger.info("***********************************************");
-        logger.info("executing for:");
-        logger.info(unit + "(" + period + ")");
-        logger.info("dataType=" + dataType);
-        logger.info("***********************************************");
     }
 
     private String getFeedPathValue(String dataType) {
