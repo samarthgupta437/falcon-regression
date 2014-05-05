@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Process lib path tests.
+ * Tests with process lib folder detached from workflow.xml
  */
 @Test(groups = "embedded")
 public class ProcessLibPathTest extends BaseTestClass {
@@ -108,6 +108,10 @@ public class ProcessLibPathTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Test which test a process with no lib folder in workflow location
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithNoLibFolderInWorkflowfLocaltion() throws Exception {
         String workflowDir = testLibDir + "/aggregatorLib1/";
@@ -118,6 +122,10 @@ public class ProcessLibPathTest extends BaseTestClass {
         InstanceUtil.waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 
+    /**
+     * Test which test a process with wrong jar in lib folder in workflow location
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
         String workflowDir = testLibDir + "/aggregatorLib2/";
