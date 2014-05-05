@@ -191,7 +191,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
       ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
-        AssertUtil.assertFailed(r, "submit of feed should have fialed as the partiton in source is blank");
+        AssertUtil.assertFailed(r, "submit of feed should have failed as the partition in source " +
+                "is blank");
     }
 
 
