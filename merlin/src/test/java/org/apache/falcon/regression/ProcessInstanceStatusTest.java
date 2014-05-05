@@ -113,11 +113,14 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * time out is set as 3 minutes .... getStatus is for a large range in past.
+     * 6 instance should be materialized and one in running and other in waiting
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_StartAndEnd_checkNoInstanceAfterEndDate()
             throws Exception {
-        //time out is set as 3 minutes .... getStatus is for a large range in past.
-        //6 instance should be materialized and one in running and other in waiting
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-03T10:22Z");
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
@@ -131,11 +134,13 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateResponse(r, 6, 1, 0, 5, 0);
     }
 
-
+    /**
+     * Perform -getStatus using only -start parameter within time-range of non-materialized
+     * instances. There should be no instances returned in response.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_onlyStartAfterMat() throws Exception {
-        //time out is set as 3 minutes .... getStatus is for a large range in past.
-        //6 instance should be materialized and one in running and other in waiting
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-03T10:22Z");
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
@@ -149,7 +154,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         Assert.assertEquals(r.getInstances(), null);
     }
 
-
+    /**
+     * Schedule process. Perform -getStatus using -end parameter which is out of process
+     * validity range. Attempt should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_EndOutOfRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -163,7 +172,10 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
-
+    /**
+     * Schedule process and try to -getStatus without date parameters. Attempt should fail with
+     * an appropriate message.
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_dateEmpty() {
         try {
@@ -179,6 +191,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         }
     }
 
+    /**
+     * Schedule process with number of instances. Perform -getStatus request with valid
+     * parameters. Attempt should succeed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_StartAndEnd() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -191,7 +208,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
-
+    /**
+     * Schedule process. Perform -getStatus using -start parameter which is out of process
+     * validity range. Attempt should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_StartOutOfRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -205,7 +226,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
-
+    /**
+     * Schedule and then delete process. Try to get the status of its instances. Attempt should
+     * fail with an appropriate code.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_killed() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -221,7 +246,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
             Assert.assertTrue(false);
     }
 
-
+    /**
+     * Schedule process and then suspend it. -getStatus of first instance only -start parameter.
+     * Instance should be suspended.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_onlyStartSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -236,7 +265,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.SUSPENDED);
     }
 
-
+    /**
+     * Schedule process. Try to -getStatus using -start/-end parameters with values which were
+     * reversed i.e. -start is further then -end. Attempt should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_reverseDateRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -249,7 +282,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
-
+    /**
+     * Schedule process. Perform -getStatus using -start/-end parameters which are out of process
+     * validity range. Attempt should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_StartEndOutOfRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -266,7 +303,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
-
+    /**
+     * Schedule process. Suspend and then resume it. -getStatus of its instances. Check that
+     * response reflects that instances are running.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_resumed() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -286,6 +327,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
+    /**
+     * Schedule process. -getStatus of it's first instance using only -start parameter which
+     * points to start time of process validity. Check that response reflects expected status of
+     * instance.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_onlyStart() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -298,7 +345,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
     }
 
-
+    /**
+     * Schedule process. Try to perform -getStatus using valid -start parameter but invalid
+     * process name. Attempt should fail with an appropriate status code.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_invalidName() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
@@ -310,7 +361,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
             Assert.assertTrue(false);
     }
 
-
+    /**
+     * Schedule process. Suspend it. -getStatus of it's instances. Check if response reflects
+     * their status as suspended.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_suspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -327,6 +382,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.SUSPENDED);
     }
 
+    /**
+     * Schedule process. Try to -getStatus without time range parameters. Attempt should fails
+     * with an appropriate status code.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_woParams() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
@@ -337,9 +397,13 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
+    /**
+     * Schedule process with timeout set to 2 minutes. Wait till it become timed-out. -getStatus
+     * of that process. Check that all materialized instances are failed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_timedOut() throws Exception {
-        //submit
         bundles[0].setInputFeedDataPath(feedInputTimedOutPath);
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);

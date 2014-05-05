@@ -172,17 +172,29 @@ public class InstanceUtil {
     return r;
   }
 
+    /**
+     * Checks if API response reflects success and if it's instances match to expected status.
+     * @param r - kind of response from API which should contain information about instances
+     * @param b - bundle from which process instances are being analyzed
+     * @param ws - - expected status of instances
+     * @throws JAXBException
+     */
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
                                        ProcessInstancesResult.WorkflowStatus ws) throws JAXBException {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(runningInstancesInResult(r, ws), b.getProcessConcurrency());
     }
 
+    /**
+     * Check the number of instances in response which have the same status as expected.
+     * @param r - kind of response from API which should contain information about instances
+     * @param ws - expected status of instances
+     * @return - number of instances which have expected status
+     */
     public static int runningInstancesInResult(ProcessInstancesResult r,
                                                ProcessInstancesResult.WorkflowStatus ws) {
         ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
         int runningCount = 0;
-        //logger.info("function runningInstancesInResult: Start");
         logger.info("pArray: " + Arrays.toString(pArray));
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
             logger.info(
@@ -257,12 +269,29 @@ public class InstanceUtil {
         bundle.getDataSets().set(index, feedString);
     }
 
+    /**
+     * Checks that API action succeed and the instance on which it has been performed on has
+     * expected status.
+     * @param r - - kind of response from API which should contain information about instance
+     * @param ws - - expected status of instance
+     */
     public static void validateSuccessOnlyStart(ProcessInstancesResult r,
                                                 ProcessInstancesResult.WorkflowStatus ws) {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(1, runningInstancesInResult(r, ws));
     }
 
+    /**
+     * Checks that actual number of instances with different statuses are equal to expected number
+     * of instances with matching statuses.
+     * @param r - - kind of response from API which should contain information about instances
+     * All parameters below reflect number of expected instances of some kind of status.
+     * @param totalInstances
+     * @param runningInstances
+     * @param suspendedInstances
+     * @param waitingInstances
+     * @param killedInstances
+     */
     public static void validateResponse(ProcessInstancesResult r, int totalInstances,
                                         int runningInstances,
                                         int suspendedInstances, int waitingInstances,
@@ -301,6 +330,11 @@ public class InstanceUtil {
         Assert.assertEquals(actualKilledInstances, killedInstances, "Killed Instances");
     }
 
+    /**
+     * Checks that expected number of failed instances matches actual number of failed ones.
+     * @param r - - kind of response from API which should contain information about instances
+     * @param failCount - number of instances which should be failed.
+     */
     public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
         AssertUtil.assertSucceeded(r);
         int counter = 0;
