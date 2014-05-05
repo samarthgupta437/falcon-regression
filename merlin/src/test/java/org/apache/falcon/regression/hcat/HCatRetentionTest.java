@@ -18,12 +18,15 @@
 
 package org.apache.falcon.regression.hcat;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -31,14 +34,18 @@ import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatPartition;
 import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.oozie.cli.OozieCLI;
 import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
@@ -59,25 +66,33 @@ public class HCatRetentionTest extends BaseTestClass {
     final String testDir = "/HCatRetentionTest/";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
     final String dBName="default";
+    final ColoHelper cluster = servers.get(0);
+    final FileSystem clusterFS = serverFS.get(0);
+    final OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
-    public void setUp() throws HCatException {
-        cli=HCatUtil.getHCatClient(servers.get(0));
+    public void setUp() throws Exception {
+        cli = HCatUtil.getHCatClient(cluster);
+        bundle = new Bundle(BundleUtil.getHCat2Bundle(), cluster);
+        HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() throws HCatException {
+        bundle.deleteBundle(prism);
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
-    public void testHCatRetention(Bundle b, String period, RETENTION_UNITS unit, FEED_TYPE dataType, boolean isEmpty) {
+    public void testHCatRetention(String period, RETENTION_UNITS unit,
+                                  FEED_TYPE dataType, boolean isEmpty) throws Exception {
 
-        String tableName = "testhcatretention"+unit.getValue() + period;
+        final String tableName = String.format("testhcatretention_%s_%s", unit.getValue(), period);
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
 
         try{
             HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
-            bundle = new Bundle(b, servers.get(0));
-            int p= Integer.parseInt(period);
-            displayDetails(period, unit.getValue(), dataType.getValue());
-
+            int p = Integer.parseInt(period);
             FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
             feedElement.setTableValue(getFeedPathValue(dataType.getValue()),
                     dBName, tableName);
@@ -104,89 +119,79 @@ public class HCatRetentionTest extends BaseTestClass {
                 AssertUtil.assertFailed(prism.getFeedHelper()
                         .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
             }
-        }catch(Exception e){
-            e.printStackTrace();
-        }finally{
-            try{
-                bundle.deleteBundle(prism);
-                HadoopUtil.deleteDirIfExists(baseTestHDFSDir, serverFS.get(0));
-                HCatUtil.deleteTable(cli, dBName,tableName);
-            }catch(Exception e){
-                e.printStackTrace();
+        } finally {
+            try {
+                HCatUtil.deleteTable(cli, dBName, tableName);
+            } catch(Exception e){
+                logger.info("Exception during table delete:" + ExceptionUtils.getStackTrace(e));
             }
         }
     }
 
-    public void check(String dataType, String unit, int period, String tableName){
-        try{
+    public void check(String dataType, String unit, int period, String tableName)
+            throws Exception {
+        List<CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
+        expectedStatus.add(CoordinatorAction.Status.FAILED);
+        expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
+        expectedStatus.add(CoordinatorAction.Status.KILLED);
+        expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
 
-            List <CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
-            expectedStatus.add(CoordinatorAction.Status.FAILED);
-            expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
-            expectedStatus.add(CoordinatorAction.Status.KILLED);
-            expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
+        List<String> initialData =
+                getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, dataType);
 
-            List<String> initialData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, testDir, dataType);
+        List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
-            List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
+        if(initialData.size() != initialPtnList.size()) {
+            logger.info("initialData:" + initialData);
+            logger.info("initialPtnList:" + initialPtnList);
+        }
 
-            AssertUtil.assertSucceeded(prism.getFeedHelper()
-                    .schedule(URLS.SCHEDULE_URL, BundleUtil.getInputFeedFromBundle(bundle)));
-            InstanceUtil.waitTillRetentionSucceeded(servers.get(0),bundle,expectedStatus,0,2,5);
+        final String inputFeed = BundleUtil.getInputFeedFromBundle(bundle);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed));
 
-            DateTime currentTime = new DateTime(DateTimeZone.UTC);
+        final String bundleId = OozieUtil.getBundles(clusterOC, Util.readDatasetName(inputFeed),
+                ENTITY_TYPE.FEED).get(0);
+        OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
 
-            List<String> finalData = getHadoopDataFromDir(servers.get(0), baseTestHDFSDir, testDir, dataType);
+        DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
-            List<String> expectedOutput =
-                    Util.filterDataOnRetentionHCat(period, unit, dataType,
-                            currentTime, initialData);
+        List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, dataType);
 
-            List<HCatPartition> finalPtnList = cli.getPartitions(dBName,tableName);
+        List<String> expectedOutput =
+                Util.filterDataOnRetentionHCat(period, unit, dataType,
+                        currentTime, initialData);
 
-            logger.info("initial data in system was:");
-            for (String line : initialData) {
-                logger.info(line);
-            }
+        List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
-            logger.info("system output is:");
-            for (String line : finalData) {
-                logger.info(line);
-            }
+        logger.info("initial data in system was:");
+        for (String line : initialData) {
+            logger.info(line);
+        }
 
-            logger.info("expected output is:");
-            for (String line : expectedOutput) {
-                logger.info(line);
-            }
+        logger.info("system output is:");
+        for (String line : finalData) {
+            logger.info(line);
+        }
 
-            Assert.assertEquals(finalPtnList.size(), expectedOutput.size(),
-                    "sizes of hcat outputs are different! please check");
+        logger.info("expected output is:");
+        for (String line : expectedOutput) {
+            logger.info(line);
+        }
 
-            //Checking if size of expected data and obtained data same
-            Assert.assertEquals(finalData.size(), expectedOutput.size(),
+        Assert.assertEquals(finalPtnList.size(), expectedOutput.size(),
+                "sizes of hcat outputs are different! please check");
+
+        //Checking if size of expected data and obtained data same
+        Assert.assertEquals(finalData.size(), expectedOutput.size(),
                 "sizes of hadoop outputs are different! please check");
 
-            //Checking if the values are also the same
-             Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
-                     expectedOutput.toArray(new String[expectedOutput.size()])));
+        //Checking if the values are also the same
+        Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
+                expectedOutput.toArray(new String[expectedOutput.size()])));
 
-            //Checking if number of partitions left = size of remaining directories in HDFS
-             Assert.assertEquals(finalData.size(), finalPtnList.size(),
-              "sizes of outputs are different! please check");
-
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-
-
-    }
-
-    private void displayDetails(String period, String unit, String dataType) {
-        logger.info("***********************************************");
-        logger.info("executing for:");
-        logger.info(unit + "(" + period + ")");
-        logger.info("dataType=" + dataType);
-        logger.info("***********************************************");
+        //Checking if number of partitions left = size of remaining directories in HDFS
+        Assert.assertEquals(finalData.size(), finalPtnList.size(),
+                "sizes of outputs are different! please check");
     }
 
     private String getFeedPathValue(String dataType) {
@@ -244,27 +249,23 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) throws Exception {
-        Bundle[] bundles = BundleUtil.getBundleData("hcat_2");
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
         String[] periods = new String[]{"7","824","43"}; // a negative value like -4 should be covered in validation scenarios.
         boolean[] empty = new boolean[]{false,true};
         FEED_TYPE[] dataTypes = new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
-        Object[][] testData = new Object[bundles.length * units.length * periods.length * dataTypes.length * empty.length][5];
+        Object[][] testData = new Object[units.length * periods.length * dataTypes.length * empty.length][4];
 
         int i = 0;
 
-        for (Bundle bundle : bundles) {
-            for (RETENTION_UNITS unit : units) {
-                for (String period : periods) {
-                    for (FEED_TYPE dataType : dataTypes) {
-                        for(boolean isEmpty : empty){
-                            testData[i][0] = bundle;
-                            testData[i][1] = period;
-                            testData[i][2] = unit;
-                            testData[i][3] = dataType;
-                            testData[i][4] = isEmpty;
-                            i++;
-                        }
+        for (RETENTION_UNITS unit : units) {
+            for (String period : periods) {
+                for (FEED_TYPE dataType : dataTypes) {
+                    for (boolean isEmpty : empty) {
+                        testData[i][0] = period;
+                        testData[i][1] = unit;
+                        testData[i][2] = dataType;
+                        testData[i][3] = isEmpty;
+                        i++;
                     }
                 }
             }

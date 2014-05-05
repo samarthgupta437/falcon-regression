@@ -360,33 +360,30 @@ public class Util {
     public static List<String> filterDataOnRetentionHCat(int time, String interval, String dataType,
                                                       DateTime endDate,
                                                       List<String> inputData) {
-
-        String locationType = "";
-        String appender = "";
-        DateTime today;
-
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         List<String> finalData = new ArrayList<String>();
 
         //determine what kind of data is there in the feed!
 
-        if (dataType.equalsIgnoreCase("monthly")) {
+        final String appender;
+        if (dataType.equalsIgnoreCase("yearly")) {
+            appender = "/01/01/00/01";
+        } else if (dataType.equalsIgnoreCase("monthly")) {
             appender = "/01/00/01";
-        } else if (locationType
-                .equalsIgnoreCase("daily")) {
-            appender = "/01"; //because we already take care of that!
-        } else if (locationType
+        } else if (dataType.equalsIgnoreCase("daily")) {
+            appender = "/00/01"; //because we already take care of that!
+        } else if (dataType
                 .equalsIgnoreCase("hourly")) {
             appender = "/01";
-        } else if (locationType.equalsIgnoreCase("yearly")) {
-            appender = "/01/01/00/01";
+        } else {
+            appender = "";
         }
 
         //convert the start and end date boundaries to the same format
         //end date is today's date
         formatter.print(endDate);
-        String startLimit = "";
-        today = new DateTime(endDate, DateTimeZone.UTC);
+        final String startLimit;
+        final DateTime today = new DateTime(endDate, DateTimeZone.UTC);
 
         if (interval.equalsIgnoreCase("minutes")) {
             startLimit = formatter.print(today.minusMinutes(time));
@@ -396,6 +393,9 @@ public class Util {
             startLimit = formatter.print(today.minusDays(time));
         } else if (interval.equalsIgnoreCase("months")) {
             startLimit = formatter.print(today.minusDays(31 * time));
+        } else {
+            startLimit = null;
+            Assert.fail("Unexpected value of interval: " + interval);
         }
 
         //now to actually check!

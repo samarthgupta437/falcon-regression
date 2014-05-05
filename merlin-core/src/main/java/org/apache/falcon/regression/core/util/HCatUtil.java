@@ -58,68 +58,63 @@ public class HCatUtil {
                 helper.getProcessHelper().getHiveMetaStorePrincipal());
     }
 
-    public static void deleteTable(HCatClient cli, String dbName, String tabName) {
-        try {
-            cli.dropTable(dbName, tabName, true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public static void deleteTable(HCatClient cli, String dbName, String tabName)
+            throws HCatException {
+        cli.dropTable(dbName, tabName, true);
     }
 
 
     public static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName,
-                                              HCatClient client, String tableLoc) {
-        try {
-            ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-            ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
+                                              HCatClient client, String tableLoc)
+            throws HCatException {
+        ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
+        ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
 
-            //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
+        //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
 
-            cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
-            cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
+        cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
+        cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
 
-            switch (dataType) {
-                case MINUTELY:
-                    ptnCols.add(
-                            new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
-                case HOURLY:
-                    ptnCols.add(
-                            new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
-                case DAILY:
-                    ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-                case MONTHLY:
-                    ptnCols.add(
-                            new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-                case YEARLY:
-                    ptnCols.add(
-                            new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-                default:
-                    break;
-            }
-            HCatCreateTableDesc tableDesc = HCatCreateTableDesc
-                    .create(dbName, tableName, cols)
-                    .fileFormat("rcfile")
-                    .ifNotExists(true)
-                    .partCols(ptnCols)
-                    .isTableExternal(true)
-                    .location(tableLoc)
-                    .build();
-            client.createTable(tableDesc);
-
-        } catch (HCatException e) {
-            e.printStackTrace();
+        switch (dataType) {
+            case MINUTELY:
+                ptnCols.add(
+                        new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+            case HOURLY:
+                ptnCols.add(
+                        new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
+            case DAILY:
+                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
+            case MONTHLY:
+                ptnCols.add(
+                        new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
+            case YEARLY:
+                ptnCols.add(
+                        new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+            default:
+                break;
         }
+        HCatCreateTableDesc tableDesc = HCatCreateTableDesc
+                .create(dbName, tableName, cols)
+                .fileFormat("rcfile")
+                .ifNotExists(true)
+                .partCols(ptnCols)
+                .isTableExternal(true)
+                .location(tableLoc)
+                .build();
+        client.dropTable(dbName, tableName, true);
+        client.createTable(tableDesc);
     }
 
     public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType,
                                           String dbName, String tableName,
-                                          ArrayList<String> dataFolder) {
+                                          ArrayList<String> dataFolder) throws HCatException {
         HCatUtil.addPartitionsToExternalTable(cli, dataType, dbName, tableName, dataFolder);
     }
 
     public static void addPartitionsToExternalTable(HCatClient client, FEED_TYPE dataType,
                                                     String dbName, String tableName,
-                                                    ArrayList<String> dataFolder) {
+                                                    ArrayList<String> dataFolder)
+            throws HCatException {
         //Adding specific partitions that map to an external location
         Map<String, String> ptn = new HashMap<String, String>();
         for (String aDataFolder : dataFolder) {
@@ -145,16 +140,11 @@ public class HCatUtil {
                 default:
                     break;
             }
-            try {
-                //Each HCat partition maps to a directory, not to a file
-                HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
-                        tableName, aDataFolder, ptn).build();
-                client.addPartition(addPtn);
-                ptn.clear();
-            } catch (HCatException e) {
-                e.printStackTrace();
-            }
-
+            //Each HCat partition maps to a directory, not to a file
+            HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
+                    tableName, aDataFolder, ptn).build();
+            client.addPartition(addPtn);
+            ptn.clear();
         }
     }
 }
