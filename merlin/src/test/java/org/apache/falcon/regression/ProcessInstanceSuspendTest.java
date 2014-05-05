@@ -101,6 +101,11 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Schedule process. Try to suspend instances with start/end parameters which are
+     * wider then process validity range. Should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_largeRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
@@ -123,7 +128,11 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(result, 400);
     }
 
-
+    /**
+     * Schedule single-instance process. Wait till instance succeed. Try to suspend
+     * succeeded instance. Action should be performed successfully as indempotent action.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_succeeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
@@ -148,7 +157,11 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, 0);
     }
 
-
+    /**
+     * Schedule process. Check that all instances are running. Suspend them. Check that all are
+     * suspended. In every action valid time range is used.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_all() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
@@ -171,7 +184,11 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         InstanceUtil.validateResponse(result, 5, 0, 5, 0, 0);
     }
 
-
+    /**
+     * Schedule process and try to perform -suspend action without date range parameters.
+     * Attempt should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_woParams() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
@@ -186,7 +203,11 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
-
+    /**
+     * Schedule process with 3 running and 2 waiting instances expected. Suspend ones which are
+     * running. Check that now 3 are suspended and 2 are still waiting.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_StartAndEnd() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
@@ -209,7 +230,10 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         InstanceUtil.validateResponse(result, 5, 0, 3, 2, 0);
     }
 
-
+    /**
+     * Try to suspend process which wasn't submitted and scheduled. Action should fail.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_nonExistent() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
@@ -226,7 +250,11 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
             Assert.assertTrue(false);
     }
 
-
+    /**
+     * Schedule process. Perform -suspend action using only -start parameter which points to start
+     * time of process. Check that only 1 instance is suspended then.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_onlyStart() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
@@ -248,6 +276,12 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
                         Util.readEntityName(bundles[0].getProcessData()));
     }
 
+    /**
+     * Schedule process with number of instances running. Perform -suspend action using only -start
+     * parameter with value which points to expected last time of instantiation. Check that only
+     * the last instance is suspended.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceSuspend_suspendLast() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
