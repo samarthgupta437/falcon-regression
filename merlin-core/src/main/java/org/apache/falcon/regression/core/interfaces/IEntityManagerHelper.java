@@ -432,10 +432,10 @@ public abstract class IEntityManagerHelper {
 
         if (org.apache.commons.lang.StringUtils.isEmpty(colo))
             return Util.sendRequest(url + "?effective=" + updateTime, "post",
-                    newEntity, null);
+                    newEntity, user);
 
         return Util.sendRequest(url + colo + "&effective=" + updateTime, "post",
-                newEntity, null);
+                newEntity, user);
     }
 
     public abstract String toString(Object object) throws JAXBException;
