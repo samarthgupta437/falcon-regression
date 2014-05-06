@@ -106,6 +106,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Schedule process. Suspend some instances. Attempt to -resume instance using single -end
+     * parameter results in failure.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_onlyEnd() throws Exception {
         bundles[0].setProcessConcurrency(6);
@@ -129,7 +134,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(result, ResponseKeys.UNPARSEABLE_DATE);
     }
 
-
+    /**
+     * Schedule process. Suspend some instances. Try to perform -resume using time range which
+     * effects only on one instance. Check that this instance was resumed es expected.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_resumeSome() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -156,7 +165,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateResponse(result, 6, 5, 1, 0, 0);
     }
 
-
+    /**
+     * Schedule process. Suspend some instances. Try to perform -resume using time range which
+     * effects on all instances. Check that there are no suspended instances.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_resumeMany() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -183,7 +196,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
     }
 
-
+    /**
+     * Schedule process. Suspend first instance. Resume that instance using only -start parameter.
+     * Check that mentioned instance was resumed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_single() throws Exception {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -205,7 +222,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
     }
 
-
+    /**
+     * Attempt to resume instances of non-existent process should fail with an appropriate
+     * status code.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_nonExistent() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -220,7 +241,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
-
+    /**
+     * Attempt to perform -resume action using invalid process name should fail with an
+     * appropriate status code.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_noParams() throws Exception {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -233,7 +258,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
-
+    /**
+     * Schedule process, remove it. Try to -resume it's instance. Attempt should fail with
+     * an appropriate status code.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_deleted() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -250,7 +279,10 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
     }
 
-
+    /**
+     * Schedule process. Try to resume entity which wasn't suspended.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_nonSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -264,7 +296,12 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
                         "?start=2010-01-02T01:05Z");
     }
 
-
+    /**
+     * Schedule process. Suspend last instance. Resume it using parameter which points to
+     * expected materialization time of last instance. Check that there are no suspended
+     * instances among all which belong to current process.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceResume_lastInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -286,8 +323,13 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
     }
 
+    /**
+     * Schedule process. Suspend all instances except the first and the last using appropriate
+     * -start/-end parameters. Resume that instances. Check that there are no suspended ones.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
-    public void ap() throws Exception {
+    public void testProcessInstanceResume_withinRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
