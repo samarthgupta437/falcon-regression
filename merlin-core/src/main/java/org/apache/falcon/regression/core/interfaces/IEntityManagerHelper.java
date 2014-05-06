@@ -429,12 +429,8 @@ public abstract class IEntityManagerHelper {
     throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         String url = this.hostname + updateUrl + "/" +
                 Util.readEntityName(oldEntity);
-
-        if (org.apache.commons.lang.StringUtils.isEmpty(colo))
-            return Util.sendRequest(url + "?effective=" + updateTime, "post",
-                    newEntity, user);
-
-        return Util.sendRequest(url + colo + "&effective=" + updateTime, "post",
+        String urlPart = colo==null || colo.isEmpty() ? "?" : colo + "&";
+        return Util.sendRequest(url + urlPart + "effective=" + updateTime, "post",
                 newEntity, user);
     }
 
