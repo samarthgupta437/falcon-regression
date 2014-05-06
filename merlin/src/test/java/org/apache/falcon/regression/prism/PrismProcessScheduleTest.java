@@ -74,6 +74,11 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     removeBundles();
   }
 
+    /**
+     * Schedules first process on colo-1. Schedule second process on colo-2. Check that first
+     * process hasn't been scheduled on colo-2.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOnBothColos() throws Exception {
     //schedule both bundles
@@ -91,6 +96,11 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
+    /**
+     * Schedule first process on colo-1 and second one on colo-2. Then try to schedule them once
+     * more on the same colos. Check that request succeed and process status hasn't been changed.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "distributed"})
   public void testScheduleAlreadyScheduledProcessOnBothColos() throws Exception {
     //schedule both bundles
@@ -109,12 +119,20 @@ public class PrismProcessScheduleTest extends BaseTestClass {
       .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
     AssertUtil.assertSucceeded(cluster1.getProcessHelper()
       .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+
     //now check if they have been scheduled correctly or not
     AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
     AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
   }
 
+    /**
+     * Schedule two processes on two different colos. Suspend process on first colo.
+     * Try to schedule first process once more. Check that its status didn't change. Resume that
+     * process. Suspend process on colo-2. Check that process on colo-1 is running and process on
+     * colo-2 is suspended.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "distributed"})
   public void testScheduleSuspendedProcessOnBothColos() throws Exception {
     //schedule both bundles
@@ -125,8 +143,8 @@ public class PrismProcessScheduleTest extends BaseTestClass {
       .suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
     AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
     AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
-    //now check if they have been scheduled correctly or not
 
+    //now check if they have been scheduled correctly or not
     AssertUtil.assertSucceeded(cluster2.getProcessHelper()
       .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
     AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
@@ -140,6 +158,11 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
   }
 
+    /**
+     * Schedule two processes on different colos. Delete both of them. Try to schedule them once
+     * more. Attempt should fail.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "embedded"})
   public void testScheduleDeletedProcessOnBothColos() throws Exception {
     //schedule both bundles
@@ -163,7 +186,10 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-
+    /**
+     * Attempt to schedule non-submitted process should fail.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "embedded"})
   public void testScheduleNonExistentProcessOnBothColos() throws Exception {
     AssertUtil.assertFailed(cluster2.getProcessHelper()
@@ -173,7 +199,12 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
-
+    /**
+     * Submit process which has colo-2 in it definition through prism. Shutdown falcon on colo-2.
+     * Submit and schedule the same process through prism. Check that mentioned process is running
+     * on colo-2.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "distributed"})
   public void testProcessScheduleOn1ColoWhileOtherColoIsDown() throws Exception {
     try {
@@ -197,7 +228,11 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     }
   }
 
-
+    /**
+     * Submit process through prism. Shutdown a colo. Try to schedule process though prism.
+     * Process shouldn't be scheduled on that colo.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "distributed"})
   public void testProcessScheduleOn1ColoWhileThatColoIsDown() throws Exception {
     try {
@@ -217,6 +252,12 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
+    /**
+     * Submit and schedule process. Suspend it. Submit and schedule another process on another
+     * colo. Check that first process is suspended and the second is running both on matching
+     * colos.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOn1ColoWhileAnotherColoHasSuspendedProcess()
     throws Exception {
@@ -239,6 +280,12 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
   }
 
+    /**
+     * Schedule process on one colo. Kill it. Schedule process on another colo. Check that
+     * processes were scheduled on appropriate colos and have expected statuses killed
+     * and running respectively.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "embedded"})
   public void testProcessScheduleOn1ColoWhileAnotherColoHasKilledProcess()
     throws Exception {
@@ -259,6 +306,11 @@ public class PrismProcessScheduleTest extends BaseTestClass {
     }
   }
 
+    /**
+     * Schedule process. Wait till it become killed. Remove it. Submit and schedule it again.
+     * Check that process was scheduled with new bundle associated to it.
+     * @throws Exception
+     */
   @Test(groups = {"prism", "0.2", "embedded"}, enabled = true, timeOut = 1800000)
   public void testRescheduleKilledProcess() throws Exception {
 
@@ -300,7 +352,9 @@ public class PrismProcessScheduleTest extends BaseTestClass {
               false);
     } finally {
 
-      hadoopFileEditor.restore();
+      if(hadoopFileEditor != null){
+          hadoopFileEditor.restore();
+      }
     }
   }
 }
