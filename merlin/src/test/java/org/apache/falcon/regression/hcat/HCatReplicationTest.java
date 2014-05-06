@@ -214,7 +214,7 @@ public class HCatReplicationTest extends BaseTestClass {
         List<Path> cluster2ReplicatedData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on target cluster: " + cluster2ReplicatedData);
-        AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
 
     }
 
@@ -328,11 +328,11 @@ public class HCatReplicationTest extends BaseTestClass {
         List<Path> cluster2TargetData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on target cluster: " + cluster2TargetData);
-        AssertUtil.checkForPathsSizes(srcData, cluster2TargetData);
+        AssertUtil.checkForListSizes(srcData, cluster2TargetData);
         List<Path> cluster3TargetData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster3, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on target cluster: " + cluster3TargetData);
-        AssertUtil.checkForPathsSizes(srcData, cluster3TargetData);
+        AssertUtil.checkForListSizes(srcData, cluster3TargetData);
     }
 
     //TODO: More tests need to be added such as
