@@ -68,6 +68,56 @@ public class AssertUtil {
     }
 
     /**
+     * Checks that two lists has expected diff element
+     * @param initialState first list
+     * @param finalState second list
+     * @param filename expected diff element
+     * @param expectedDiff diff count (positive for new elements)
+     */
+    public static void compareDataStoreStates(List<String> initialState,
+                                              List<String> finalState, String filename,
+                                              int expectedDiff) {
+
+        if (expectedDiff > -1) {
+            finalState.removeAll(initialState);
+            Assert.assertEquals(finalState.size(), expectedDiff);
+            if (expectedDiff != 0)
+                Assert.assertTrue(finalState.get(0).contains(filename));
+        } else {
+            expectedDiff = expectedDiff * -1;
+            initialState.removeAll(finalState);
+            Assert.assertEquals(initialState.size(), expectedDiff);
+            if (expectedDiff != 0)
+                Assert.assertTrue(initialState.get(0).contains(filename));
+        }
+
+
+    }
+
+    /**
+     * Checks that two lists has expected diff element
+     * @param initialState first list
+     * @param finalState second list
+     * @param expectedDiff diff count (positive for new elements)
+     */
+    public static void compareDataStoreStates(List<String> initialState,
+                                              List<String> finalState, int expectedDiff) {
+
+        if (expectedDiff > -1) {
+            finalState.removeAll(initialState);
+            Assert.assertEquals(finalState.size(), expectedDiff);
+
+        } else {
+            expectedDiff = expectedDiff * -1;
+            initialState.removeAll(finalState);
+            Assert.assertEquals(initialState.size(), expectedDiff);
+
+        }
+
+
+    }
+
+    /**
      * Checks that ServiceResponse status is SUCCEEDED
      * @param response ServiceResponse
      * @throws JAXBException
