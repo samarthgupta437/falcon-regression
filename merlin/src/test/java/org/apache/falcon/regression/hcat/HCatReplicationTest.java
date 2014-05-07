@@ -169,15 +169,6 @@ public class HCatReplicationTest extends BaseTestClass {
         // create table on target cluster.
         createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
 
-        // change permission of the destination table. Hive is running with hive.metastore
-        // .execute.setugi = true and we have not yet determined how we can send that value
-        // through falcon. One workaround is to make sure oozie is running with this config set
-        // in hive.xml in action-conf dir. For now this change has been put in the tests until we
-        // determine the ideal solution.
-        Path path = new Path(testHdfsDir);
-        FsPermission dirPerm = new FsPermission("777");
-        cluster2FS.setPermission(path, dirPerm);
-
         Bundle.submitCluster(bundles[0], bundles[1]);
 
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
@@ -265,16 +256,6 @@ public class HCatReplicationTest extends BaseTestClass {
         // create table on target cluster.
         createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
         createTable(cluster3HC, dbName, tblName, cols, partitionCols, testHdfsDir);
-
-        // change permission of the destination table. Hive is running with hive.metastore
-        // .execute.setugi = true and we have not yet determined how we can send that value
-        // through falcon. One workaround is to make sure oozie is running with this config set
-        // in hive.xml in action-conf dir. For now this change has been put in the tests until we
-        // determine the ideal solution.
-        Path path = new Path(testHdfsDir);
-        FsPermission dirPerm = new FsPermission("777");
-        cluster2FS.setPermission(path, dirPerm);
-        cluster3FS.setPermission(path, dirPerm);
 
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
