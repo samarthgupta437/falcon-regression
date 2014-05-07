@@ -60,6 +60,43 @@ public class AssertUtil {
                 "array size of the 2 paths array list is not the same");
     }
 
+    public static void compareDataStoreStates(List<String> initialState,
+                                              List<String> finalState, String filename,
+                                              int expectedDiff) {
+
+        if (expectedDiff > -1) {
+            finalState.removeAll(initialState);
+            Assert.assertEquals(finalState.size(), expectedDiff);
+            if (expectedDiff != 0)
+                Assert.assertTrue(finalState.get(0).contains(filename));
+        } else {
+            expectedDiff = expectedDiff * -1;
+            initialState.removeAll(finalState);
+            Assert.assertEquals(initialState.size(), expectedDiff);
+            if (expectedDiff != 0)
+                Assert.assertTrue(initialState.get(0).contains(filename));
+        }
+
+
+    }
+
+    public static void compareDataStoreStates(List<String> initialState,
+                                              List<String> finalState, int expectedDiff) {
+
+        if (expectedDiff > -1) {
+            finalState.removeAll(initialState);
+            Assert.assertEquals(finalState.size(), expectedDiff);
+
+        } else {
+            expectedDiff = expectedDiff * -1;
+            initialState.removeAll(finalState);
+            Assert.assertEquals(initialState.size(), expectedDiff);
+
+        }
+
+
+    }
+
     /**
      * Checks that ServiceResponse status is SUCCEEDED
      * @param response ServiceResponse
