@@ -112,7 +112,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         removeBundles();
     }
 
-
+    /**
+     * Schedule process. Kill some instances. Rerun some of that killed. Check that
+     * instances were rerun correctly and other are still killed.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_someKilled02() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -135,6 +139,10 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 6, 5, 1, 0);
     }
 
+    /**
+     * Schedule process. Kill all instances. Rerun them. Check that they were rerun.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_multipleKilled() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
@@ -162,7 +170,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                         0);
     }
 
-
+    /**
+     * Schedule process. Kill some instances. Rerun them. Check that there are no killed
+     * instances left.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_someKilled01() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -186,9 +198,12 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 6, 6, 0, 0);
     }
 
-
+    /**
+     * Schedule process. Kill single instance. Rerun it. Check it was rerun.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceRerun_deleted() throws Exception {
+    public void testProcessInstanceRerun_singleKilled() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -210,6 +225,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 wfID));
     }
 
+    /**
+     * Schedule process. Wait till it got succeeded. Rerun first succeeded instance. Check if it
+     * is running.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_singleSucceeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
@@ -232,7 +252,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(clusterOC, wfID));
     }
 
-
+    /**
+     * Schedule process. Suspend its instances. Try to rerun them. Check that instances weren't
+     * rerun and are still suspended.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_singleSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:06Z");
@@ -254,7 +278,10 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 CoordinatorAction.Status.SUSPENDED);
     }
 
-
+    /**
+     * Schedule process. Wait till its instances succeed. Rerun them all. Check they are running.
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_multipleSucceeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
@@ -279,6 +306,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                         0);
     }
 
+    /**
+     * Schedule process with invalid input feed data path. Wait till process got timed-out. Rerun
+     * it's instances. Check that they were rerun and are waiting (wait for input data).
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_timedOut() throws Exception {
         bundles[0].setInputFeedDataPath(feedInputTimedOutPath);

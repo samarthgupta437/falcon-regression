@@ -67,6 +67,10 @@ public class PrismProcessResumeTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Schedule process. Suspend/resume it one by one. Check that process really suspended/resumed.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeSuspendedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
@@ -80,14 +84,14 @@ public class PrismProcessResumeTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
-        //suspend using prism
+        //resume using prism
         AssertUtil.assertSucceeded(prism.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
         //verify
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
-        //try using the colohelper                
+        //suspend using the colohelper
         AssertUtil.assertSucceeded(
                 cluster2.getProcessHelper()
                         .suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData())
@@ -96,7 +100,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
-        //suspend using prism
+        //resume using colohelper
         AssertUtil.assertSucceeded(cluster2.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
         //verify
@@ -111,46 +115,60 @@ public class PrismProcessResumeTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
 
+        //resume using colohelper
         AssertUtil.assertSucceeded(cluster1.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
+    /**
+     * Schedule processes, remove them. Try to resume them using colo-helpers and through prism.
+     * Attempt to -resume process which was removed should fail.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeDeletedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster2);
         bundles[1].submitAndScheduleProcessUsingColoHelper(cluster1);
 
-        //delete using coloHelpers
+        //delete using prism
         AssertUtil.assertSucceeded(prism.getProcessHelper()
                 .delete(Util.URLS.DELETE_URL, bundles[0].getProcessData()));
 
-
-        //suspend using prism
+        //try to resume it through prism
         AssertUtil.assertFailed(prism.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
         //verify
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
+        //delete using prism
         AssertUtil.assertSucceeded(prism.getProcessHelper()
                 .delete(Util.URLS.DELETE_URL, bundles[1].getProcessData()));
-        //suspend on the other one
+
+        //try to resume it through prism
         AssertUtil.assertFailed(prism.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
 
+        //try to resume process through colohelper
         AssertUtil.assertFailed(cluster2.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
+        //try to resume process through colohelper
         AssertUtil.assertFailed(cluster1.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
     }
 
+    /**
+     * Schedule processes. One by one suspend them and then resume. Then try to resume them once
+     * more.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeResumedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
@@ -162,7 +180,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
 
         for (int i = 0; i < 2; i++) {
-            //suspend using prism
+            //resume suspended process using prism
             AssertUtil.assertSucceeded(
                     prism.getProcessHelper()
                             .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
@@ -171,12 +189,12 @@ public class PrismProcessResumeTest extends BaseTestClass {
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
         }
 
-
         AssertUtil.assertSucceeded(prism.getProcessHelper()
                 .suspend(Util.URLS.SUSPEND_URL, bundles[1].getProcessData()));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
 
         for (int i = 0; i < 2; i++) {
+            //resume resumed process
             AssertUtil.assertSucceeded(
                     cluster2.getProcessHelper()
                             .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData())
@@ -186,9 +204,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
         }
 
-
         for (int i = 0; i < 2; i++) {
-            //suspend on the other one
+            //resume on the other one
             AssertUtil.assertSucceeded(
                     prism.getProcessHelper()
                             .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData())
@@ -198,7 +215,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
         }
 
         for (int i = 0; i < 2; i++) {
-            //suspend on the other one
+            //resume another resumed process
             AssertUtil.assertSucceeded(
                     cluster1.getProcessHelper()
                             .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData())
@@ -208,6 +225,10 @@ public class PrismProcessResumeTest extends BaseTestClass {
         }
     }
 
+    /**
+     * Attempt to resume non-existent process should fail through both prism and colohelpers.
+     * @throws Exception
+     */
     @Test(groups = "distributed")
     public void testResumeNonExistentProcessOnBothColos() throws Exception {
         AssertUtil.assertFailed(prism.getProcessHelper()
@@ -221,6 +242,10 @@ public class PrismProcessResumeTest extends BaseTestClass {
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
     }
 
+    /**
+     * Attempt to resume process which wasn't submitted should fail.
+     * @throws Exception
+     */
     @Test(groups = "distributed")
     public void testResumeSubmittedProcessOnBothColos() throws Exception {
         bundles[0].submitProcess(true);
@@ -239,6 +264,11 @@ public class PrismProcessResumeTest extends BaseTestClass {
 
     }
 
+    /**
+     * Schedule processes on both servers and then suspend them. Shutdown server. Check that it's
+     * impossible to resume process on this server and possible on another server.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeScheduledProcessOnBothColosWhen1ColoIsDown()
     throws Exception {
@@ -257,7 +287,6 @@ public class PrismProcessResumeTest extends BaseTestClass {
 
             Util.shutDownService(cluster2.getProcessHelper());
 
-
             AssertUtil.assertFailed(prism.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
             //verify
@@ -273,12 +302,17 @@ public class PrismProcessResumeTest extends BaseTestClass {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
         } finally {
-
             Util.restartService(cluster2.getFeedHelper());
         }
 
     }
 
+    /**
+     * Schedule processes on both servers. Remove process form one of them. Shutdown server.
+     * Check that it's impossible to resume process on that server. Then remove another process
+     * from another server. Check the same.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeDeletedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         try {
@@ -294,16 +328,18 @@ public class PrismProcessResumeTest extends BaseTestClass {
 
             Util.shutDownService(cluster2.getProcessHelper());
 
-            //suspend using prism
+            //try to resume using prism
             AssertUtil.assertFailed(prism.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
             //verify
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
-            //suspend using prism
-            AssertUtil.assertFailed(prism.getProcessHelper()
-                    .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
+            //try to resume using colohelper
+            AssertUtil.assertFailed(
+                    cluster2.getProcessHelper()
+                            .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData())
+            );
             //verify
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
@@ -332,6 +368,12 @@ public class PrismProcessResumeTest extends BaseTestClass {
         }
     }
 
+    /**
+     * Schedule processes on both servers. Suspend process on one server. Resume it. Shutdown
+     * this server. Try to resume that process once more. Attempt should fail. Then suspend
+     * process on another server. Resume it. Try to resume it once more. Should succeed.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeResumedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         try {
@@ -388,6 +430,11 @@ public class PrismProcessResumeTest extends BaseTestClass {
         }
     }
 
+    /**
+     * Shutdown one of the server. Attempt to resume non-existent process on both servers should
+     * fail.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeNonExistentProcessOnBothColosWhen1ColoIsDown()
     throws Exception {
@@ -410,6 +457,11 @@ public class PrismProcessResumeTest extends BaseTestClass {
         }
     }
 
+    /**
+     * Submit processes on both servers. Shutdown one server. Attempt to resume non-scheduled
+     * process ob both servers should fail.
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2", "distributed"})
     public void testResumeSubmittedProcessOnBothColosWhen1ColoIsDown()
     throws Exception {
