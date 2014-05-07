@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
@@ -39,6 +40,8 @@ public class AssertUtil {
      * @param paths list of paths
      * @param shouldNotBePresent string that shouldn't be present
      */
+    private static final Logger logger = Logger.getLogger(OozieUtil.class);
+
     public static void failIfStringFoundInPath(
             List<Path> paths, String... shouldNotBePresent) {
         for (Path path : paths) {
@@ -50,14 +53,18 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that two lists has the same size
-     * @param oneList one list of paths
-     * @param anotherList another list of paths
+     * Checks that two lists have same size
+     * @param oneList first list
+     * @param anotherList second list
      */
-    public static void checkForPathsSizes(List<Path> oneList,
-                                          List<Path> anotherList) {
-        Assert.assertEquals(oneList.size(), anotherList.size(),
-                "array size of the 2 paths array list is not the same");
+    public static void checkForListSizes(List<?> expected, List<?> actual) {
+        if(expected.size() != actual.size()) {
+            logger.info("expected = " + expected);
+            logger.info("actual = " + actual);
+            logger.info("expected.size() = " + expected.size());
+            logger.info("actual.size() = " + actual.size());
+            Assert.fail("Size of expected and actual list don't match.");
+        }
     }
 
     /**

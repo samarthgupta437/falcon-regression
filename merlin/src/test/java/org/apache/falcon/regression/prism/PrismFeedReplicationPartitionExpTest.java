@@ -283,8 +283,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua2ReplicatedData05 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2 + testDate + "05"), "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(ua3ReplicatedData00, ua2ReplicatedData00);
-        AssertUtil.checkForPathsSizes(ua3ReplicatedData05, ua2ReplicatedData05);
+        AssertUtil.checkForListSizes(ua3ReplicatedData00, ua2ReplicatedData00);
+        AssertUtil.checkForListSizes(ua3ReplicatedData05, ua2ReplicatedData05);
     }
 
 
@@ -360,8 +360,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua2ReplicatedData05 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir2 + testDate + "05"), "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(ua3ReplicatedData00, ua2ReplicatedData00);
-        AssertUtil.checkForPathsSizes(ua3ReplicatedData05, ua2ReplicatedData05);
+        AssertUtil.checkForListSizes(ua3ReplicatedData00, ua2ReplicatedData00);
+        AssertUtil.checkForListSizes(ua3ReplicatedData05, ua2ReplicatedData05);
     }
 
 
@@ -458,10 +458,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua3OriginalData15ua2 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "15/ua2"), "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData00, new ArrayList<Path>());
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
+        AssertUtil.checkForListSizes(ua1ReplicatedData00, new ArrayList<Path>());
+        AssertUtil.checkForListSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
+        AssertUtil.checkForListSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
+        AssertUtil.checkForListSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
     }
 
     @Test(enabled = true, groups = "embedded")
@@ -605,10 +605,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua3OriginalData15ua2 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "15/ua3"), "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData00, new ArrayList<Path>());
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData05, ua3OriginalData05ua1);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
+        AssertUtil.checkForListSizes(ua1ReplicatedData00, new ArrayList<Path>());
+        AssertUtil.checkForListSizes(ua1ReplicatedData05, ua3OriginalData05ua1);
+        AssertUtil.checkForListSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
+        AssertUtil.checkForListSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
 
     }
 
@@ -686,8 +686,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua3OriginalData05 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "05/ua1"), "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData00ua1, ua1OriginalData00);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData05ua3, ua3OriginalData05);
+        AssertUtil.checkForListSizes(ua2ReplicatedData00ua1, ua1OriginalData00);
+        AssertUtil.checkForListSizes(ua2ReplicatedData05ua3, ua3OriginalData05);
     }
 
 
@@ -780,10 +780,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua3OriginalData15ua2 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "15/ua2"), "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData00, new ArrayList<Path>());
-        AssertUtil.checkForPathsSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
-        AssertUtil.checkForPathsSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
+        AssertUtil.checkForListSizes(ua1ReplicatedData00, new ArrayList<Path>());
+        AssertUtil.checkForListSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
+        AssertUtil.checkForListSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
+        AssertUtil.checkForListSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
     }
 
 

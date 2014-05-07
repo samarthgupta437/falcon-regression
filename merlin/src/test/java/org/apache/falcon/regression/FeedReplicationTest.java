@@ -163,7 +163,7 @@ public class FeedReplicationTest extends BaseTestClass {
         List<Path> cluster2ReplicatedData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
     }
 
     /**
@@ -251,8 +251,8 @@ public class FeedReplicationTest extends BaseTestClass {
         List<Path> cluster3ReplicatedData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster3, toTarget, "_SUCCESS");
 
-        AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
-        AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster3ReplicatedData);
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster3ReplicatedData);
     }
 
     /**
@@ -347,7 +347,7 @@ public class FeedReplicationTest extends BaseTestClass {
         List<Path> cluster2ReplicatedData = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
         logger.info("Data on target cluster: " + cluster2ReplicatedData);
-        AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
     }
 
 }
