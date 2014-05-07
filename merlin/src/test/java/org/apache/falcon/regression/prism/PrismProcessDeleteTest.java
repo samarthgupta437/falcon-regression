@@ -174,6 +174,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
 
             //UA1:
             compareDataStoresForEquality(initialUA1Store, finalUA1Store);
+            compareDataStoresForEquality(initialUA1ArchiveStore, finalUA2ArchiveStore);
 
             //bring service up
             Util.startService(cluster2.getProcessHelper());
@@ -241,7 +242,6 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
 
-            String clusterName = Util.readEntityName(bundle.getProcessData());
             //prism:
             compareDataStoresForEquality(initialPrismStore, finalPrismStore);
             compareDataStoresForEquality(initialPrismArchiveStore, finalPrismArchiveStore);
@@ -357,7 +357,6 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
 
-            String clusterName = Util.readEntityName(bundle.getProcessData());
             //prism:
             compareDataStoresForEquality(initialPrismStore, finalPrismStore);
             compareDataStoresForEquality(initialPrismArchiveStore, finalPrismArchiveStore);
@@ -414,7 +413,6 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
 
-            String clusterName = Util.readEntityName(bundle.getProcessData());
             //prism:
             compareDataStoresForEquality(initialPrismStore, finalPrismStore);
             compareDataStoresForEquality(initialPrismArchiveStore, finalPrismArchiveStore);
@@ -643,7 +641,6 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             //now ensure that data has been deleted from all cluster store and is present in the
             // cluster archives
 
-            String clusterName = Util.readEntityName(bundle.getProcessData());
             //prism:
             compareDataStoresForEquality(initialPrismStore, finalPrismStore);
             compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
