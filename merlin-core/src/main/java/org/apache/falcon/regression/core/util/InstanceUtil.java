@@ -684,6 +684,7 @@ public class InstanceUtil {
         c1.setValidity(v1);
         if (partition != null)
             c1.setPartition(partition);
+
         // if table uri is not empty or null then set it.
         if (StringUtils.isNotEmpty(tableUri)) {
             c1.setTable(getCatalogTable(tableUri));
@@ -839,7 +840,6 @@ public class InstanceUtil {
             return null;
         WorkflowJob actionInfo = oozieClient.getJobInfo(jobId);
         return actionInfo.getStatus();
-        //return coordInfo.getActions().get(instanceNumber).getStatus();
     }
 
     public static List<String> getInputFoldersForInstanceForReplication(
@@ -1203,75 +1203,5 @@ public class InstanceUtil {
     }
 
   }
-
-
-  public static void waitTillRetentionSucceeded(ColoHelper coloHelper, Bundle b,
-                                                List <org.apache.oozie.client.CoordinatorAction.Status>
-                                                  expectedStatus, int instanceNumber,
-                                                int MinutesToWaitForCoordAction, int MinutesToWaitForStatus) throws Exception{
-
-    String entityName = BundleUtil.getInputFeedNameFromBundle(b);
-    boolean flag = false;
-    int sleep1 = MinutesToWaitForStatus * 60 / 20;
-    int sleep2 = MinutesToWaitForCoordAction * 60 / 20;
-
-    String bundleID = getLatestBundleID(coloHelper, entityName, ENTITY_TYPE.FEED);
-    String coordID = getRetentionCoordID(bundleID, coloHelper.getFeedHelper());
-    CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient().getCoordJobInfo(coordID);
-
-    for(int waitForCoord=0; waitForCoord<sleep2 ; ++waitForCoord){
-      if(coordInfo.getActions().size() > 0)
-        break;
-      logger.info("Coord "+ coordInfo.getId() + " still dosent have " +
-        "instance created on oozie: " + coloHelper.getProcessHelper()
-        .getOozieClient().getOozieUrl());
-      try {
-        Thread.sleep(20000);
-      } catch (InterruptedException e) {
-        logger.error(e.getMessage());
-      }
-    }
-
-    if(coordInfo.getActions().size()==0){
-      logger.info("Oozie actions not created for the entire wait duration.");
-      Assert.fail();
-    }
-
-    for (int sleepCount = 0; sleepCount < sleep1; sleepCount++) {
-
-      List<org.apache.oozie.client.CoordinatorAction.Status> statusList = new ArrayList<org.apache.oozie.client.CoordinatorAction.Status>();
-
-      for (int count = 0; count < coordInfo.getActions().size(); count++){
-        statusList.add(coordInfo.getActions().get(count).getStatus());
-      }
-
-      for (CoordinatorAction.Status oneExpectedStatus : expectedStatus) {
-        if (statusList.get(instanceNumber) == oneExpectedStatus) {
-          flag = true;
-          break;
-        }
-      }
-      if(flag){
-        return; // breaks from outer for upon status match too
-      }
-      try {
-        Thread.sleep(20000);
-      } catch (InterruptedException e) {
-        logger.error(e.getMessage());
-      }
-    }
-  }
-
-  public static String getRetentionCoordID(String bundlID,
-                                           IEntityManagerHelper helper) throws OozieClientException {
-    List<CoordinatorJob> coords = InstanceUtil.getBundleCoordinators(bundlID, helper);
-    for (CoordinatorJob coord : coords) {
-      if (coord.getAppName().contains("FEED_RETENTION"))
-        return coord.getId();
-    }
-
-    return null;
-  }
-
 }
 
