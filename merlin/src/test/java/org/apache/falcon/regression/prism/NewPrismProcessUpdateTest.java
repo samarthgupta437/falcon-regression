@@ -1579,7 +1579,9 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     } finally {
       b.deleteBundle(prism);
-      hadoopFileEditor.restore();
+        if (hadoopFileEditor != null) {
+            hadoopFileEditor.restore();
+        }
     }
 
   }
