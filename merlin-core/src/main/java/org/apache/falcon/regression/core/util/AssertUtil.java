@@ -60,6 +60,13 @@ public class AssertUtil {
                 "array size of the 2 paths array list is not the same");
     }
 
+    /**
+     * Checks that two lists has expected diff element
+     * @param initialState first list
+     * @param finalState second list
+     * @param filename expected diff element
+     * @param expectedDiff diff count (positive for new elements)
+     */
     public static void compareDataStoreStates(List<String> initialState,
                                               List<String> finalState, String filename,
                                               int expectedDiff) {
@@ -80,6 +87,12 @@ public class AssertUtil {
 
     }
 
+    /**
+     * Checks that two lists has expected diff element
+     * @param initialState first list
+     * @param finalState second list
+     * @param expectedDiff diff count (positive for new elements)
+     */
     public static void compareDataStoreStates(List<String> initialState,
                                               List<String> finalState, int expectedDiff) {
 
