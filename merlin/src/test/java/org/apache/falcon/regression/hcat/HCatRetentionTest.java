@@ -82,7 +82,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
     public void testHCatRetention(String period, RETENTION_UNITS unit,
-                                  FEED_TYPE dataType, boolean isEmpty) throws Exception {
+                                  FEED_TYPE dataType) throws Exception {
 
         final String tableName = String.format("testhcatretention_%s_%s", unit.getValue(), period);
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
@@ -106,16 +106,11 @@ public class HCatRetentionTest extends BaseTestClass {
                         .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
 
                 feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-                if(isEmpty){
-                    feedElement.generateData(cli, serverFS.get(0));
-                }else{
-                    feedElement.generateData(cli, serverFS.get(0), "src/test/resources/OozieExampleInputData/lateData");
-                }
-
+                feedElement.generateData(cli, serverFS.get(0), "src/test/resources/OozieExampleInputData/lateData");
                 check(dataType.getValue(), unit.getValue(), p, tableName);
             } else {
                 AssertUtil.assertFailed(prism.getFeedHelper()
-                        .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
+                    .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
             }
         } finally {
             try {
@@ -139,10 +134,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
         List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
-        if(initialData.size() != initialPtnList.size()) {
-            logger.info("initialData:" + initialData);
-            logger.info("initialPtnList:" + initialPtnList);
-        }
+        AssertUtil.checkForListSizes(initialData, initialPtnList);
 
         final String inputFeed = BundleUtil.getInputFeedFromBundle(bundle);
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed));
@@ -197,13 +189,13 @@ public class HCatRetentionTest extends BaseTestClass {
             case YEARLY:
                 return "year=${YEAR}";
             case MONTHLY:
-            return "year=${YEAR};month=${MONTH}";
+                return "year=${YEAR};month=${MONTH}";
             case DAILY:
-            return "year=${YEAR};month=${MONTH};day=${DAY}";
+                return "year=${YEAR};month=${MONTH};day=${DAY}";
             case HOURLY:
-            return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}";
+                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}";
             case MINUTELY:
-            return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTELY}";
+                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTELY}";
             default:
                 Assert.fail("Unexpected feedType=" + feedType);
         }
@@ -248,22 +240,18 @@ public class HCatRetentionTest extends BaseTestClass {
     public Object[][] getTestData(Method m) throws Exception {
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
         String[] periods = new String[]{"7","824","43"}; // a negative value like -4 should be covered in validation scenarios.
-        boolean[] empty = new boolean[]{false,true};
         FEED_TYPE[] dataTypes = new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
-        Object[][] testData = new Object[units.length * periods.length * dataTypes.length * empty.length][4];
+        Object[][] testData = new Object[units.length * periods.length * dataTypes.length][3];
 
         int i = 0;
 
         for (RETENTION_UNITS unit : units) {
             for (String period : periods) {
                 for (FEED_TYPE dataType : dataTypes) {
-                    for (boolean isEmpty : empty) {
-                        testData[i][0] = period;
-                        testData[i][1] = unit;
-                        testData[i][2] = dataType;
-                        testData[i][3] = isEmpty;
-                        i++;
-                    }
+                    testData[i][0] = period;
+                    testData[i][1] = unit;
+                    testData[i][2] = dataType;
+                    i++;
                 }
             }
         }
