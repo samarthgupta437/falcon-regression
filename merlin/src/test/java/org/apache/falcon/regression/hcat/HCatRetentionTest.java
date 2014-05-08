@@ -167,24 +167,6 @@ public class HCatRetentionTest extends BaseTestClass {
                 expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
-    private String getFeedPathValue(FEED_TYPE feedType) {
-        switch (feedType) {
-            case YEARLY:
-                return "year=${YEAR}";
-            case MONTHLY:
-                return "year=${YEAR};month=${MONTH}";
-            case DAILY:
-                return "year=${YEAR};month=${MONTH};day=${DAY}";
-            case HOURLY:
-                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}";
-            case MINUTELY:
-                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTELY}";
-            default:
-                Assert.fail("Unexpected feedType=" + feedType);
-        }
-        return null;
-    }
-
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath,
                                                     String dir, FEED_TYPE feedType)
             throws IOException {
@@ -202,24 +184,6 @@ public class HCatRetentionTest extends BaseTestClass {
         }
 
         return finalResult;
-    }
-
-    private static int getDirDepthForFeedType(FEED_TYPE feedType) {
-        switch (feedType) {
-            case MINUTELY:
-                return 4;
-            case HOURLY:
-                return 3;
-            case DAILY:
-                return 2;
-            case MONTHLY:
-                return 1;
-            case YEARLY:
-                return 0;
-            default:
-                Assert.fail("Unexpected feedType=" + feedType);
-        }
-        return -1;
     }
 
     /**
@@ -257,6 +221,42 @@ public class HCatRetentionTest extends BaseTestClass {
             }
         }
         return finalData;
+    }
+
+    private String getFeedPathValue(FEED_TYPE feedType) {
+        switch (feedType) {
+            case YEARLY:
+                return "year=${YEAR}";
+            case MONTHLY:
+                return "year=${YEAR};month=${MONTH}";
+            case DAILY:
+                return "year=${YEAR};month=${MONTH};day=${DAY}";
+            case HOURLY:
+                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}";
+            case MINUTELY:
+                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTELY}";
+            default:
+                Assert.fail("Unexpected feedType=" + feedType);
+        }
+        return null;
+    }
+
+    private static int getDirDepthForFeedType(FEED_TYPE feedType) {
+        switch (feedType) {
+            case MINUTELY:
+                return 4;
+            case HOURLY:
+                return 3;
+            case DAILY:
+                return 2;
+            case MONTHLY:
+                return 1;
+            case YEARLY:
+                return 0;
+            default:
+                Assert.fail("Unexpected feedType=" + feedType);
+        }
+        return -1;
     }
 
     private static String getAppenderFromFeedType(FEED_TYPE feedType) {
