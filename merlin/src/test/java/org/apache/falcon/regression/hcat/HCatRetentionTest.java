@@ -81,16 +81,15 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
-    public void testHCatRetention(String period, RETENTION_UNITS unit,
+    public void testHCatRetention(int period, RETENTION_UNITS unit,
                                   FEED_TYPE dataType) throws Exception {
 
-        final String tableName = String.format("testhcatretention_%s_%s", unit.getValue(), period);
+        final String tableName = String.format("testhcatretention_%s_%d", unit.getValue(), period);
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
 
         try{
             HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
-            int p = Integer.parseInt(period);
             FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
             feedElement.setTableValue(getFeedPathValue(dataType),
                     dBName, tableName);
@@ -101,13 +100,13 @@ public class HCatRetentionTest extends BaseTestClass {
 
             bundle.submitClusters(prism);
 
-            if (p > 0) {
+            if (period > 0) {
                 AssertUtil.assertSucceeded(prism.getFeedHelper()
                         .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
 
                 feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
                 feedElement.generateData(cli, serverFS.get(0), "src/test/resources/OozieExampleInputData/lateData");
-                check(dataType.getValue(), unit.getValue(), p, tableName);
+                check(dataType.getValue(), unit.getValue(), period, tableName);
             } else {
                 AssertUtil.assertFailed(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
@@ -239,14 +238,15 @@ public class HCatRetentionTest extends BaseTestClass {
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) throws Exception {
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
-        String[] periods = new String[]{"7","824","43"}; // a negative value like -4 should be covered in validation scenarios.
+        int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered
+        // in validation scenarios.
         FEED_TYPE[] dataTypes = new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
         Object[][] testData = new Object[units.length * periods.length * dataTypes.length][3];
 
         int i = 0;
 
         for (RETENTION_UNITS unit : units) {
-            for (String period : periods) {
+            for (int period : periods) {
                 for (FEED_TYPE dataType : dataTypes) {
                     testData[i][0] = period;
                     testData[i][1] = unit;
