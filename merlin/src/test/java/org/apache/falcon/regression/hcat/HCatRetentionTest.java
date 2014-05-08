@@ -42,6 +42,8 @@ import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -147,7 +149,7 @@ public class HCatRetentionTest extends BaseTestClass {
         List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
 
         List<String> expectedOutput =
-                Util.filterDataOnRetentionHCat(retentionPeriod, retentionUnit,
+                filterDataOnRetentionHCat(retentionPeriod, retentionUnit,
                     feedType, currentTime, initialData);
 
         List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
@@ -238,6 +240,74 @@ public class HCatRetentionTest extends BaseTestClass {
         return -1;
     }
 
+    public static List<String> filterDataOnRetentionHCat(int time, RETENTION_UNITS interval,
+                                                         FEED_TYPE dataType,
+                                                         DateTime endDate,
+                                                         List<String> inputData) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        List<String> finalData = new ArrayList<String>();
+
+        //determine what kind of data is there in the feed!
+
+        final String appender;
+        switch (dataType) {
+            case YEARLY:
+                appender = "/01/01/00/01";
+                break;
+            case MONTHLY:
+                appender = "/01/00/01";
+                break;
+            case DAILY:
+                appender = "/00/01"; //because we already take care of that!
+                break;
+            case HOURLY:
+                appender = "/01";
+                break;
+            case MINUTELY:
+                appender = "";
+                break;
+            default:
+                appender = null;
+                Assert.fail("Unexpected dataType=" + dataType);
+        }
+
+        //convert the start and end date boundaries to the same format
+        //end date is today's date
+        formatter.print(endDate);
+        String startLimit = null;
+        final DateTime today = new DateTime(endDate, DateTimeZone.UTC);
+
+        switch (interval) {
+            case MINUTES:
+                startLimit = formatter.print(today.minusMinutes(time));
+                break;
+            case HOURS:
+                startLimit = formatter.print(today.minusHours(time));
+                break;
+            case DAYS:
+                startLimit = formatter.print(today.minusDays(time));
+                break;
+            case MONTHS:
+                startLimit = formatter.print(today.minusDays(31 * time));
+                break;
+            case YEARS:
+                break;
+            default:
+                Assert.fail("Unexpected value of interval: " + interval);
+        }
+        //now to actually check!
+        for (String testDate : inputData) {
+            if (!testDate.equalsIgnoreCase("somethingRandom")) {
+                if ((testDate + appender).compareTo(startLimit) > 0) {
+                    finalData.add(testDate);
+                }
+            } else {
+                finalData.add(testDate);
+            }
+        }
+        return finalData;
+    }
+
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) throws Exception {
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
@@ -259,6 +329,11 @@ public class HCatRetentionTest extends BaseTestClass {
             }
         }
         return testData;
+    }
+
+    @Test
+    public void runOne() throws Exception {
+        testHCatRetention(67, RETENTION_UNITS.HOURS, FEED_TYPE.MINUTELY);
     }
 
 }
