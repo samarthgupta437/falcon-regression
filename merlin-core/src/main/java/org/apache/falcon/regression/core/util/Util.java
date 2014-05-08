@@ -27,7 +27,9 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
+import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
 import org.apache.falcon.regression.core.generated.cluster.Interface;
 import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
@@ -357,7 +359,8 @@ public class Util {
 
 
 
-    public static List<String> filterDataOnRetentionHCat(int time, String interval, String dataType,
+    public static List<String> filterDataOnRetentionHCat(int time, RETENTION_UNITS interval,
+                                                         FEED_TYPE dataType,
                                                       DateTime endDate,
                                                       List<String> inputData) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
@@ -366,38 +369,51 @@ public class Util {
         //determine what kind of data is there in the feed!
 
         final String appender;
-        if (dataType.equalsIgnoreCase("yearly")) {
-            appender = "/01/01/00/01";
-        } else if (dataType.equalsIgnoreCase("monthly")) {
-            appender = "/01/00/01";
-        } else if (dataType.equalsIgnoreCase("daily")) {
-            appender = "/00/01"; //because we already take care of that!
-        } else if (dataType
-                .equalsIgnoreCase("hourly")) {
-            appender = "/01";
-        } else {
-            appender = "";
+        switch (dataType) {
+            case YEARLY:
+                appender = "/01/01/00/01";
+                break;
+            case MONTHLY:
+                appender = "/01/00/01";
+                break;
+            case DAILY:
+                appender = "/00/01"; //because we already take care of that!
+                break;
+            case HOURLY:
+                appender = "/01";
+                break;
+            case MINUTELY:
+                appender = "";
+                break;
+            default:
+                appender = null;
+                Assert.fail("Unexpected dataType=" + dataType);
         }
 
         //convert the start and end date boundaries to the same format
         //end date is today's date
         formatter.print(endDate);
-        final String startLimit;
+        String startLimit = null;
         final DateTime today = new DateTime(endDate, DateTimeZone.UTC);
 
-        if (interval.equalsIgnoreCase("minutes")) {
-            startLimit = formatter.print(today.minusMinutes(time));
-        } else if (interval.equalsIgnoreCase("hours")) {
-            startLimit = formatter.print(today.minusHours(time));
-        } else if (interval.equalsIgnoreCase("days")) {
-            startLimit = formatter.print(today.minusDays(time));
-        } else if (interval.equalsIgnoreCase("months")) {
-            startLimit = formatter.print(today.minusDays(31 * time));
-        } else {
-            startLimit = null;
-            Assert.fail("Unexpected value of interval: " + interval);
+        switch (interval) {
+            case MINUTES:
+                startLimit = formatter.print(today.minusMinutes(time));
+                break;
+            case HOURS:
+                startLimit = formatter.print(today.minusHours(time));
+                break;
+            case DAYS:
+                startLimit = formatter.print(today.minusDays(time));
+                break;
+            case MONTHS:
+                startLimit = formatter.print(today.minusDays(31 * time));
+                break;
+            case YEARS:
+                break;
+            default:
+                Assert.fail("Unexpected value of interval: " + interval);
         }
-
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {

@@ -147,9 +147,8 @@ public class HCatRetentionTest extends BaseTestClass {
         List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
 
         List<String> expectedOutput =
-                Util.filterDataOnRetentionHCat(retentionPeriod, retentionUnit.getValue(),
-                    feedType.getValue(),
-                        currentTime, initialData);
+                Util.filterDataOnRetentionHCat(retentionPeriod, retentionUnit,
+                    feedType, currentTime, initialData);
 
         List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
