@@ -81,32 +81,32 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
-    public void testHCatRetention(int period, RETENTION_UNITS unit,
-                                  FEED_TYPE dataType) throws Exception {
+    public void testHCatRetention(int retentionPeriod, RETENTION_UNITS retentionUnit,
+                                  FEED_TYPE feedType) throws Exception {
 
-        final String tableName = String.format("testhcatretention_%s_%d", unit.getValue(), period);
+        final String tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(), retentionPeriod);
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
 
         try{
-            HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
+            HCatUtil.createPartitionedTable(feedType, dBName, tableName, cli, baseTestHDFSDir);
             FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-            feedElement.setTableValue(getFeedPathValue(dataType),
-                    dBName, tableName);
-            feedElement.insertRetentionValueInFeed(unit.getValue() + "(" + period + ")");
+            feedElement.setTableValue(getFeedPathValue(feedType),
+                dBName, tableName);
+            feedElement.insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
             bundle.getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundle));
             bundle.getDataSets().add(feedElement.toString());
             bundle.generateUniqueBundle();
 
             bundle.submitClusters(prism);
 
-            if (period > 0) {
+            if (retentionPeriod > 0) {
                 AssertUtil.assertSucceeded(prism.getFeedHelper()
                         .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
 
                 feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
                 feedElement.generateData(cli, serverFS.get(0), "src/test/resources/OozieExampleInputData/lateData");
-                check(dataType.getValue(), unit.getValue(), period, tableName);
+                check(feedType.getValue(), retentionUnit.getValue(), retentionPeriod, tableName);
             } else {
                 AssertUtil.assertFailed(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
@@ -120,7 +120,7 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    public void check(String dataType, String unit, int period, String tableName)
+    public void check(String feedType, String retentionUnit, int retentionPeriod, String tableName)
             throws Exception {
         List<CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
         expectedStatus.add(CoordinatorAction.Status.FAILED);
@@ -129,7 +129,7 @@ public class HCatRetentionTest extends BaseTestClass {
         expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
 
         List<String> initialData =
-                getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, dataType);
+                getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
 
         List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
 
@@ -144,10 +144,10 @@ public class HCatRetentionTest extends BaseTestClass {
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
 
-        List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, dataType);
+        List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
 
         List<String> expectedOutput =
-                Util.filterDataOnRetentionHCat(period, unit, dataType,
+                Util.filterDataOnRetentionHCat(retentionPeriod, retentionUnit, feedType,
                         currentTime, initialData);
 
         List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
