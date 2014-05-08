@@ -150,40 +150,21 @@ public class HCatRetentionTest extends BaseTestClass {
         List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
 
         List<String> expectedOutput =
-                filterDataOnRetentionHCat(retentionPeriod, retentionUnit,
+                getExpectedOutput(retentionPeriod, retentionUnit,
                     feedType, currentTimeUTC, initialData);
 
         List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
-        logger.info("initial data in system was:");
-        for (String line : initialData) {
-            logger.info(line);
-        }
-
-        logger.info("system output is:");
-        for (String line : finalData) {
-            logger.info(line);
-        }
-
-        logger.info("expected output is:");
-        for (String line : expectedOutput) {
-            logger.info(line);
-        }
-
         Assert.assertEquals(finalPtnList.size(), expectedOutput.size(),
-                "sizes of hcat outputs are different! please check");
+            "unexpected number of partition in final output");
 
         //Checking if size of expected data and obtained data same
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
-                "sizes of hadoop outputs are different! please check");
+            "unexpected number of directories in final output");
 
         //Checking if the values are also the same
         Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
                 expectedOutput.toArray(new String[expectedOutput.size()])));
-
-        //Checking if number of partitions left = size of remaining directories in HDFS
-        Assert.assertEquals(finalData.size(), finalPtnList.size(),
-                "sizes of outputs are different! please check");
     }
 
     private String getFeedPathValue(FEED_TYPE feedType) {
@@ -241,7 +222,16 @@ public class HCatRetentionTest extends BaseTestClass {
         return -1;
     }
 
-    public static List<String> filterDataOnRetentionHCat(int retentionPeriod, RETENTION_UNITS retentionUnit,
+    /**
+     * Get the expected output after retention is applied
+     * @param retentionPeriod retention period
+     * @param retentionUnit retiontion unit
+     * @param feedType feed type
+     * @param endDateUTC end date of retention
+     * @param inputData input data on which retention was applied
+     * @return expected output of the retention
+     */
+    public static List<String> getExpectedOutput(int retentionPeriod, RETENTION_UNITS retentionUnit,
                                                          FEED_TYPE feedType,
                                                          DateTime endDateUTC,
                                                          List<String> inputData) {
@@ -254,12 +244,12 @@ public class HCatRetentionTest extends BaseTestClass {
 
         //convert the start and end date boundaries to the same format
         //end date is today's date
-        final String startLimit =
-            formatter.print(getStartLimit(retentionPeriod, retentionUnit, endDateUTC));
+        final String endLimit =
+            formatter.print(getEndLimit(retentionPeriod, retentionUnit, endDateUTC));
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if ((testDate + appender).compareTo(startLimit) > 0) {
+                if ((testDate + appender).compareTo(endLimit) > 0) {
                     finalData.add(testDate);
                 }
             } else {
@@ -287,7 +277,7 @@ public class HCatRetentionTest extends BaseTestClass {
         return null;
     }
 
-    private static DateTime getStartLimit(int time, RETENTION_UNITS interval,
+    private static DateTime getEndLimit(int time, RETENTION_UNITS interval,
                                           DateTime today) {
         switch (interval) {
             case MINUTES:
