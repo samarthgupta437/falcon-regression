@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.generated.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -141,14 +142,14 @@ public class FeedInstanceStatusTest extends BaseTestClass {
                         .addMinsToTime(startTime, 100) + "&end=" +
                         TimeUtil.addMinsToTime(startTime, 120));
 
-        r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
         Thread.sleep(10000);
         prism.getFeedHelper()
                 .getProcessInstanceStatus(Util.readDatasetName(feed),
                         "?start=" + startTime + "&end=" + TimeUtil
                                 .addMinsToTime(startTime, 100));
 
-        r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
         Thread.sleep(15000);
 
         // both replication instances

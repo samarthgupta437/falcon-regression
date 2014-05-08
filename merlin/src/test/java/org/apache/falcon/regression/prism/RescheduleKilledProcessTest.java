@@ -73,7 +73,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         //it will get killed
         //generate bundles according to config files
         String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
-        String processEndTime = TimeUtil.getTimeWrtSystemTime(06);
+        String processEndTime = TimeUtil.getTimeWrtSystemTime(6);
         String process = bundles[0].getProcessData();
         process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
@@ -100,7 +100,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         // submit and schedule a process with error in workflow .
         //it will get killed
         bundles[0].setProcessValidity(TimeUtil.getTimeWrtSystemTime(-11),
-                TimeUtil.getTimeWrtSystemTime(06));
+                TimeUtil.getTimeWrtSystemTime(6));
 
         bundles[0].setInputFeedDataPath(
                 baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");

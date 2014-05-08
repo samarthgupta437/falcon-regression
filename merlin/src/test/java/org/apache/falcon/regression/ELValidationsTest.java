@@ -167,7 +167,7 @@ public class ELValidationsTest extends BaseTestClass {
                 }
                 Thread.sleep(30000);
             }
-            Assert.assertTrue(bundles.size() > 0, "Bundle job not created.");
+            Assert.assertTrue(bundles != null && bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
             logger.info("coord id: " + coordID);
             List<String> missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);

@@ -148,9 +148,9 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> beforeSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
         List<String> beforeSubmitPrism = prism.getProcessHelper().getStoreInfo();
 
-        r = prism.getProcessHelper().delete(URLS.DELETE_URL,  bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL,  bundles[0].getProcessData()));
 
-        r = prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,  bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData()));
         AssertUtil.assertFailed(r);
         List<String> afterSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
         List<String> afterSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();

@@ -162,8 +162,7 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         brothers = new Brother[4];
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getDataSets().get(0));
-        ServiceResponse r =
-                prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         Thread.sleep(15000);
         prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0));
         Thread.sleep(15000);
@@ -195,8 +194,7 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
     public void resumeParallel() throws Exception {
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getDataSets().get(0));
-        ServiceResponse r =
-                prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         Thread.sleep(15000);
         prism.getFeedHelper().resume(URLS.RESUME_URL, bundles[0].getDataSets().get(0));
         Thread.sleep(5000);

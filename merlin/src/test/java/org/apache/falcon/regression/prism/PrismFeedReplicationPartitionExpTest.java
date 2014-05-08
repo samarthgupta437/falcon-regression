@@ -412,7 +412,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
-        r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
         Thread.sleep(15000);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
@@ -449,8 +449,6 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua2ReplicatedData15 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "15"), "_SUCCESS");
 
-        List<Path> ua3OriginalData00ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "00/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua1 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir3 + testDate + "10/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua2 = HadoopUtil
@@ -564,7 +562,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
-        r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
         Thread.sleep(15000);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
@@ -738,7 +736,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Thread.sleep(10000);
         AssertUtil.assertSucceeded(r);
 
-        r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
         Thread.sleep(15000);        
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
                 CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
@@ -771,8 +769,6 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         List<Path> ua2ReplicatedData15 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "15"), "_SUCCESS");
 
-        List<Path> ua3OriginalData00ua1 = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "00/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua1 = HadoopUtil
                 .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "10/ua1"), "_SUCCESS");
         List<Path> ua3OriginalData10ua2 = HadoopUtil
