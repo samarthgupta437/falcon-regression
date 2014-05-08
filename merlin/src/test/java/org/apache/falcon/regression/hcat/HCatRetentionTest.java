@@ -143,6 +143,7 @@ public class HCatRetentionTest extends BaseTestClass {
         final String bundleId = OozieUtil.getBundles(clusterOC, Util.readDatasetName(inputFeed),
                 ENTITY_TYPE.FEED).get(0);
         OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, inputFeed));
 
         DateTime currentTimeUTC = new DateTime(DateTimeZone.UTC);
 
