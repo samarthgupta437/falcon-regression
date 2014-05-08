@@ -249,31 +249,12 @@ public class HCatRetentionTest extends BaseTestClass {
 
         //determine what kind of data is there in the feed!
 
-        final String appender;
-        switch (feedType) {
-            case YEARLY:
-                appender = "/01/01/00/01";
-                break;
-            case MONTHLY:
-                appender = "/01/00/01";
-                break;
-            case DAILY:
-                appender = "/00/01"; //because we already take care of that!
-                break;
-            case HOURLY:
-                appender = "/01";
-                break;
-            case MINUTELY:
-                appender = "";
-                break;
-            default:
-                appender = null;
-                Assert.fail("Unexpected feedType = " + feedType);
-        }
+        final String appender = getAppenderFromFeedType(feedType);
 
         //convert the start and end date boundaries to the same format
         //end date is today's date
-        final String startLimit = getStartLimit(retentionPeriod, retentionUnit, formatter, endDateUTC);
+        final String startLimit =
+            formatter.print(getStartLimit(retentionPeriod, retentionUnit, endDateUTC));
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
@@ -287,19 +268,37 @@ public class HCatRetentionTest extends BaseTestClass {
         return finalData;
     }
 
-    private static String getStartLimit(int time, RETENTION_UNITS interval,
-                                        DateTimeFormatter formatter, DateTime today) {
+    private static String getAppenderFromFeedType(FEED_TYPE feedType) {
+        switch (feedType) {
+            case YEARLY:
+                return "/01/01/00/01";
+            case MONTHLY:
+                return "/01/00/01";
+            case DAILY:
+                return "/00/01"; //because we already take care of that!
+            case HOURLY:
+                return "/01";
+            case MINUTELY:
+                return "";
+            default:
+                Assert.fail("Unexpected feedType = " + feedType);
+        }
+        return null;
+    }
+
+    private static DateTime getStartLimit(int time, RETENTION_UNITS interval,
+                                          DateTime today) {
         switch (interval) {
             case MINUTES:
-                return formatter.print(today.minusMinutes(time));
+                return today.minusMinutes(time);
             case HOURS:
-                return formatter.print(today.minusHours(time));
+                return today.minusHours(time);
             case DAYS:
-                return formatter.print(today.minusDays(time));
+                return today.minusDays(time);
             case MONTHS:
-                return formatter.print(today.minusMonths(time));
+                return today.minusMonths(time);
             case YEARS:
-                return formatter.print(today.minusYears(time));
+                return today.minusYears(time);
             default:
                 Assert.fail("Unexpected value of interval: " + interval);
         }
