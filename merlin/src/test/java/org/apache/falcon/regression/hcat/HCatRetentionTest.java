@@ -144,13 +144,13 @@ public class HCatRetentionTest extends BaseTestClass {
                 ENTITY_TYPE.FEED).get(0);
         OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
 
-        DateTime currentTime = new DateTime(DateTimeZone.UTC);
+        DateTime currentTimeUTC = new DateTime(DateTimeZone.UTC);
 
         List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
 
         List<String> expectedOutput =
                 filterDataOnRetentionHCat(retentionPeriod, retentionUnit,
-                    feedType, currentTime, initialData);
+                    feedType, currentTimeUTC, initialData);
 
         List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
@@ -242,7 +242,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
     public static List<String> filterDataOnRetentionHCat(int retentionPeriod, RETENTION_UNITS retentionUnit,
                                                          FEED_TYPE feedType,
-                                                         DateTime endDate,
+                                                         DateTime endDateUTC,
                                                          List<String> inputData) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         List<String> finalData = new ArrayList<String>();
@@ -273,10 +273,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
         //convert the start and end date boundaries to the same format
         //end date is today's date
-        formatter.print(endDate);
-        final DateTime today = new DateTime(endDate, DateTimeZone.UTC);
-
-        final String startLimit = getStartLimit(retentionPeriod, retentionUnit, formatter, today);
+        final String startLimit = getStartLimit(retentionPeriod, retentionUnit, formatter, endDateUTC);
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
