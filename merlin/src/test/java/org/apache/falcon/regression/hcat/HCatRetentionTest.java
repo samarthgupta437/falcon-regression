@@ -206,38 +206,37 @@ public class HCatRetentionTest extends BaseTestClass {
                                                     String dir, FEED_TYPE feedType)
             throws IOException {
         List<String> finalResult = new ArrayList<String>();
-        int depth=0;
-        switch (feedType) {
-            case MINUTELY:
-                depth = 4;
-                break;
-            case HOURLY:
-                depth = 3;
-                break;
-            case DAILY:
-                depth = 2;
-                break;
-            case MONTHLY:
-                depth = 1;
-                break;
-            case YEARLY:
-                depth = 0;
-                break;
-            default:
-                Assert.fail("Unexpected feedType=" + feedType);
-        }
+        final int dirDepth = getDirDepthForFeedType(feedType);
 
         List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper,
-                new Path(hadoopPath), depth);
+                new Path(hadoopPath), dirDepth);
 
         for (Path result : results) {
             int pathDepth = result.toString().split(dir)[1].split("/").length-1;
-            if (pathDepth == depth) {
+            if (pathDepth == dirDepth) {
                 finalResult.add(result.toString().split(dir)[1]);
             }
         }
 
         return finalResult;
+    }
+
+    private static int getDirDepthForFeedType(FEED_TYPE feedType) {
+        switch (feedType) {
+            case MINUTELY:
+                return 4;
+            case HOURLY:
+                return 3;
+            case DAILY:
+                return 2;
+            case MONTHLY:
+                return 1;
+            case YEARLY:
+                return 0;
+            default:
+                Assert.fail("Unexpected feedType=" + feedType);
+        }
+        return -1;
     }
 
     @DataProvider(name = "loopBelow")
