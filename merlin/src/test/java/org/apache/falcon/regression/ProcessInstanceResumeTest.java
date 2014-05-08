@@ -35,6 +35,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -251,8 +252,8 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     }
 
     /**
-     * Attempt to perform -resume action using invalid process name should fail with an
-     * appropriate status code.
+     * Attempt to perform -resume action without time range parameters should fail with an
+     + appropriate status code or message.
      *
      * @throws Exception
      */
@@ -264,9 +265,9 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r =
-            prism.getProcessHelper().getProcessInstanceResume("invalidName",
-                "?start=2010-01-02T01:00Z");
-        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.PROCESS_NOT_FOUND);
+                prism.getProcessHelper().getProcessInstanceResume(
+                        Util.readEntityName(bundles[0].getProcessData()), null);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
     /**
@@ -307,6 +308,14 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         prism.getProcessHelper()
             .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z");
+        ProcessInstancesResult result = prism.getProcessHelper()
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:05Z");
+        InstanceUtil.validateResponse(result, 1, 1, 0, 0, 0);
+        result = prism.getProcessHelper()
+            .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:05Z");
+        InstanceUtil.validateResponse(result, 1, 1, 0, 0, 0);
     }
 
     /**
@@ -327,11 +336,15 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:25Z");
+        ProcessInstancesResult result = prism.getProcessHelper()
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:25Z");
+        InstanceUtil.validateResponse(result, 6, 5, 1, 0, 0);
         Thread.sleep(10000);
         prism.getProcessHelper()
             .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:25Z");
-        ProcessInstancesResult result = prism.getProcessHelper()
+        result = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:25Z");
         InstanceUtil.validateResponse(result, 6, 6, 0, 0, 0);
