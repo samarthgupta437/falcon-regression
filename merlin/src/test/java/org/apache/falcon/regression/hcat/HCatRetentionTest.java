@@ -240,8 +240,8 @@ public class HCatRetentionTest extends BaseTestClass {
         return -1;
     }
 
-    public static List<String> filterDataOnRetentionHCat(int time, RETENTION_UNITS interval,
-                                                         FEED_TYPE dataType,
+    public static List<String> filterDataOnRetentionHCat(int retentionPeriod, RETENTION_UNITS retentionUnit,
+                                                         FEED_TYPE feedType,
                                                          DateTime endDate,
                                                          List<String> inputData) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
@@ -250,7 +250,7 @@ public class HCatRetentionTest extends BaseTestClass {
         //determine what kind of data is there in the feed!
 
         final String appender;
-        switch (dataType) {
+        switch (feedType) {
             case YEARLY:
                 appender = "/01/01/00/01";
                 break;
@@ -268,33 +268,15 @@ public class HCatRetentionTest extends BaseTestClass {
                 break;
             default:
                 appender = null;
-                Assert.fail("Unexpected dataType=" + dataType);
+                Assert.fail("Unexpected feedType = " + feedType);
         }
 
         //convert the start and end date boundaries to the same format
         //end date is today's date
         formatter.print(endDate);
-        String startLimit = null;
         final DateTime today = new DateTime(endDate, DateTimeZone.UTC);
 
-        switch (interval) {
-            case MINUTES:
-                startLimit = formatter.print(today.minusMinutes(time));
-                break;
-            case HOURS:
-                startLimit = formatter.print(today.minusHours(time));
-                break;
-            case DAYS:
-                startLimit = formatter.print(today.minusDays(time));
-                break;
-            case MONTHS:
-                startLimit = formatter.print(today.minusDays(31 * time));
-                break;
-            case YEARS:
-                break;
-            default:
-                Assert.fail("Unexpected value of interval: " + interval);
-        }
+        final String startLimit = getStartLimit(retentionPeriod, retentionUnit, formatter, today);
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
@@ -306,6 +288,25 @@ public class HCatRetentionTest extends BaseTestClass {
             }
         }
         return finalData;
+    }
+
+    private static String getStartLimit(int time, RETENTION_UNITS interval,
+                                        DateTimeFormatter formatter, DateTime today) {
+        switch (interval) {
+            case MINUTES:
+                return formatter.print(today.minusMinutes(time));
+            case HOURS:
+                return formatter.print(today.minusHours(time));
+            case DAYS:
+                return formatter.print(today.minusDays(time));
+            case MONTHS:
+                return formatter.print(today.minusMonths(time));
+            case YEARS:
+                return formatter.print(today.minusYears(time));
+            default:
+                Assert.fail("Unexpected value of interval: " + interval);
+        }
+        return null;
     }
 
     @DataProvider(name = "loopBelow")
@@ -329,11 +330,6 @@ public class HCatRetentionTest extends BaseTestClass {
             }
         }
         return testData;
-    }
-
-    @Test
-    public void runOne() throws Exception {
-        testHCatRetention(67, RETENTION_UNITS.HOURS, FEED_TYPE.MINUTELY);
     }
 
 }
