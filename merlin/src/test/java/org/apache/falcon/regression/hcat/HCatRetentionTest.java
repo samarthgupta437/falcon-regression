@@ -69,6 +69,7 @@ public class HCatRetentionTest extends BaseTestClass {
     final ColoHelper cluster = servers.get(0);
     final FileSystem clusterFS = serverFS.get(0);
     final OozieClient clusterOC = serverOC.get(0);
+    String tableName;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
@@ -80,45 +81,39 @@ public class HCatRetentionTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws HCatException {
         bundle.deleteBundle(prism);
+        HCatUtil.deleteTable(cli, dBName, tableName);
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
     public void testHCatRetention(int retentionPeriod, RETENTION_UNITS retentionUnit,
                                   FEED_TYPE feedType) throws Exception {
 
-        final String tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(), retentionPeriod);
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
+        tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(), retentionPeriod);
+        HCatUtil.createPartitionedTable(feedType, dBName, tableName, cli, baseTestHDFSDir);
+        FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
+        feedElement.setTableValue(getFeedPathValue(feedType),
+            dBName, tableName);
+        feedElement
+            .insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
+        bundle.getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundle));
+        bundle.getDataSets().add(feedElement.toString());
+        bundle.generateUniqueBundle();
 
-        try{
-            HCatUtil.createPartitionedTable(feedType, dBName, tableName, cli, baseTestHDFSDir);
-            FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-            feedElement.setTableValue(getFeedPathValue(feedType),
-                dBName, tableName);
-            feedElement.insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
-            bundle.getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundle));
-            bundle.getDataSets().add(feedElement.toString());
-            bundle.generateUniqueBundle();
+        bundle.submitClusters(prism);
 
-            bundle.submitClusters(prism);
+        if (retentionPeriod > 0) {
+            AssertUtil.assertSucceeded(prism.getFeedHelper()
+                .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
 
-            if (retentionPeriod > 0) {
-                AssertUtil.assertSucceeded(prism.getFeedHelper()
-                        .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
-
-                feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-                feedElement.generateData(cli, serverFS.get(0), "src/test/resources/OozieExampleInputData/lateData");
-                check(feedType, retentionUnit, retentionPeriod, tableName);
-            } else {
-                AssertUtil.assertFailed(prism.getFeedHelper()
-                    .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
-            }
-        } finally {
-            try {
-                HCatUtil.deleteTable(cli, dBName, tableName);
-            } catch(Exception e){
-                logger.info("Exception during table delete:" + ExceptionUtils.getStackTrace(e));
-            }
+            feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
+            feedElement.generateData(cli, serverFS.get(0),
+                "src/test/resources/OozieExampleInputData/lateData");
+            check(feedType, retentionUnit, retentionPeriod, tableName);
+        } else {
+            AssertUtil.assertFailed(prism.getFeedHelper()
+                .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
         }
     }
 
@@ -155,12 +150,10 @@ public class HCatRetentionTest extends BaseTestClass {
 
         List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
-        Assert.assertEquals(finalPtnList.size(), expectedOutput.size(),
-            "unexpected number of partition in final output");
+        AssertUtil.checkForListSizes(expectedOutput, finalPtnList);
 
         //Checking if size of expected data and obtained data same
-        Assert.assertEquals(finalData.size(), expectedOutput.size(),
-            "unexpected number of directories in final output");
+        AssertUtil.checkForListSizes(expectedOutput, finalData);
 
         //Checking if the values are also the same
         Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
