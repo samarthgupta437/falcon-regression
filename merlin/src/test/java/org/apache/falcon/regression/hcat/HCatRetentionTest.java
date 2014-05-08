@@ -92,7 +92,7 @@ public class HCatRetentionTest extends BaseTestClass {
             HCatUtil.createPartitionedTable(dataType, dBName, tableName, cli, baseTestHDFSDir);
             int p = Integer.parseInt(period);
             FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-            feedElement.setTableValue(getFeedPathValue(dataType.getValue()),
+            feedElement.setTableValue(getFeedPathValue(dataType),
                     dBName, tableName);
             feedElement.insertRetentionValueInFeed(unit.getValue() + "(" + period + ")");
             bundle.getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundle));
@@ -192,21 +192,20 @@ public class HCatRetentionTest extends BaseTestClass {
                 "sizes of outputs are different! please check");
     }
 
-    private String getFeedPathValue(String dataType) {
-        if (dataType.equalsIgnoreCase("monthly")) {
+    private String getFeedPathValue(FEED_TYPE feedType) {
+        switch (feedType) {
+            case YEARLY:
+                return "year=${YEAR}";
+            case MONTHLY:
             return "year=${YEAR};month=${MONTH}";
-        }
-        if (dataType.equalsIgnoreCase("daily")) {
+            case DAILY:
             return "year=${YEAR};month=${MONTH};day=${DAY}";
-        }
-        if (dataType.equalsIgnoreCase("hourly")) {
+            case HOURLY:
             return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}";
-        }
-        if (dataType.equalsIgnoreCase("minutely")) {
+            case MINUTELY:
             return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTELY}";
-        }
-        if (dataType.equalsIgnoreCase("yearly")) {
-            return "year=${YEAR}";
+            default:
+                Assert.fail("Unexpected feedType=" + feedType);
         }
         return null;
     }
