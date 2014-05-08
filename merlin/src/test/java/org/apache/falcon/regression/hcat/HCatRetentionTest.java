@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.hcat;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
@@ -27,7 +26,6 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
-import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
@@ -38,7 +36,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatPartition;
 import org.apache.hive.hcatalog.common.HCatException;
-import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -73,9 +70,11 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
+        HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
         cli = HCatUtil.getHCatClient(cluster);
         bundle = new Bundle(BundleUtil.getHCat2Bundle(), cluster);
-        HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
+        bundle.generateUniqueBundle();
+        bundle.submitClusters(prism);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -93,71 +92,44 @@ public class HCatRetentionTest extends BaseTestClass {
         tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(), retentionPeriod);
         HCatUtil.createPartitionedTable(feedType, dBName, tableName, cli, baseTestHDFSDir);
         FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-        feedElement.setTableValue(getFeedPathValue(feedType),
-            dBName, tableName);
+        feedElement.setTableValue(dBName, tableName, getFeedPathValue(feedType));
         feedElement
             .insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
-        bundle.getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundle));
-        bundle.getDataSets().add(feedElement.toString());
-        bundle.generateUniqueBundle();
-
-        bundle.submitClusters(prism);
-
-        if (retentionPeriod > 0) {
-            AssertUtil.assertSucceeded(prism.getFeedHelper()
-                .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
-
-            feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-            feedElement.generateData(cli, serverFS.get(0),
-                "src/test/resources/OozieExampleInputData/lateData");
-            check(feedType, retentionUnit, retentionPeriod, tableName);
-        } else {
+        if (retentionPeriod <= 0) {
             AssertUtil.assertFailed(prism.getFeedHelper()
                 .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
-        }
-    }
-
-    public void check(FEED_TYPE feedType, RETENTION_UNITS retentionUnit, int retentionPeriod, String tableName)
-            throws Exception {
-        List<CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
-        expectedStatus.add(CoordinatorAction.Status.FAILED);
-        expectedStatus.add(CoordinatorAction.Status.SUCCEEDED);
-        expectedStatus.add(CoordinatorAction.Status.KILLED);
-        expectedStatus.add(CoordinatorAction.Status.SUSPENDED);
-
-        List<String> initialData =
+        } else {
+            feedElement.generateData(cli, serverFS.get(0),
+                "src/test/resources/OozieExampleInputData/lateData");
+            List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
+            List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
+            AssertUtil.checkForListSizes(initialData, initialPtnList);
 
-        List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
-
-        AssertUtil.checkForListSizes(initialData, initialPtnList);
-
-        final String inputFeed = BundleUtil.getInputFeedFromBundle(bundle);
-        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed));
-
-        final String bundleId = OozieUtil.getBundles(clusterOC, Util.readDatasetName(inputFeed),
+            AssertUtil.assertSucceeded(prism.getFeedHelper()
+                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedElement.toString()));
+            final String bundleId = OozieUtil.getBundles(clusterOC, feedElement.getName(),
                 ENTITY_TYPE.FEED).get(0);
-        OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
-        AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, inputFeed));
+            OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
+            AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL,
+                feedElement.toString()));
 
-        DateTime currentTimeUTC = new DateTime(DateTimeZone.UTC);
+            List<String> expectedOutput = getExpectedOutput(retentionPeriod, retentionUnit,
+                feedType, new DateTime(DateTimeZone.UTC), initialData);
+            List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir,
+                feedType);
+            List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
-        List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
-
-        List<String> expectedOutput =
-                getExpectedOutput(retentionPeriod, retentionUnit,
-                    feedType, currentTimeUTC, initialData);
-
-        List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
-
-        AssertUtil.checkForListSizes(expectedOutput, finalPtnList);
-
-        //Checking if size of expected data and obtained data same
-        AssertUtil.checkForListSizes(expectedOutput, finalData);
-
-        //Checking if the values are also the same
-        Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
-                expectedOutput.toArray(new String[expectedOutput.size()])));
+            logger.info("checking expectedOutput and finalPtnList");
+            AssertUtil.checkForListSizes(expectedOutput, finalPtnList);
+            logger.info("checking expectedOutput and finalData");
+            AssertUtil.checkForListSizes(expectedOutput, finalData);
+            logger.info("finalData = " + finalData);
+            logger.info("expectedOutput = " + expectedOutput);
+            Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
+                expectedOutput.toArray(new String[expectedOutput.size()])),
+                "expectedOutput and finalData don't match");
+        }
     }
 
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath,

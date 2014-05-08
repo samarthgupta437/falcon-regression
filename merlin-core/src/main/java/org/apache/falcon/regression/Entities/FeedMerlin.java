@@ -156,7 +156,7 @@ public class FeedMerlin extends Feed {
         return toString();
     }
 
-    public String setTableValue(String pathValue, String dBName, String tableName) {
+    public String setTableValue(String dBName, String tableName, String pathValue) {
         getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
         //set the value
         return toString();
