@@ -142,12 +142,13 @@ public class PrismProcessScheduleTest extends BaseTestClass {
         bundles[0].submitAndScheduleProcess();
         bundles[1].submitAndScheduleProcess();
 
+        //suspend process on colo-1
         AssertUtil.assertSucceeded(cluster2.getProcessHelper()
             .suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
-        //now check if they have been scheduled correctly or not
+        //now check if it has been scheduled correctly or not
         AssertUtil.assertSucceeded(cluster2.getProcessHelper()
             .schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
@@ -155,11 +156,20 @@ public class PrismProcessScheduleTest extends BaseTestClass {
             .resume(URLS.RESUME_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
 
+        //suspend process on colo-2
         AssertUtil.assertSucceeded(cluster1.getProcessHelper()
             .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-    }
+
+        //now check if it has been scheduled correctly or not
+        AssertUtil.assertSucceeded(cluster2.getProcessHelper()
+            .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
+        AssertUtil.assertSucceeded(cluster2.getProcessHelper()
+            .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
+        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+  }
 
     /**
      * Schedule two processes on different colos. Delete both of them. Try to schedule them once
