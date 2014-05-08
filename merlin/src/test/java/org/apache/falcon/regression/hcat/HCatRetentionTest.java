@@ -106,7 +106,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
                 feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
                 feedElement.generateData(cli, serverFS.get(0), "src/test/resources/OozieExampleInputData/lateData");
-                check(feedType.getValue(), retentionUnit.getValue(), retentionPeriod, tableName);
+                check(feedType, retentionUnit, retentionPeriod, tableName);
             } else {
                 AssertUtil.assertFailed(prism.getFeedHelper()
                     .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
@@ -120,7 +120,7 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    public void check(String feedType, String retentionUnit, int retentionPeriod, String tableName)
+    public void check(FEED_TYPE feedType, RETENTION_UNITS retentionUnit, int retentionPeriod, String tableName)
             throws Exception {
         List<CoordinatorAction.Status> expectedStatus = new ArrayList<CoordinatorAction.Status>();
         expectedStatus.add(CoordinatorAction.Status.FAILED);
@@ -147,7 +147,8 @@ public class HCatRetentionTest extends BaseTestClass {
         List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
 
         List<String> expectedOutput =
-                Util.filterDataOnRetentionHCat(retentionPeriod, retentionUnit, feedType,
+                Util.filterDataOnRetentionHCat(retentionPeriod, retentionUnit.getValue(),
+                    feedType.getValue(),
                         currentTime, initialData);
 
         List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
@@ -201,25 +202,29 @@ public class HCatRetentionTest extends BaseTestClass {
         return null;
     }
 
-    public static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath, String dir, String dataType)
+    public static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath,
+                                                    String dir, FEED_TYPE feedType)
             throws IOException {
         List<String> finalResult = new ArrayList<String>();
         int depth=0;
-
-        if (dataType.equalsIgnoreCase("minutely")){
-            depth=4;
-        }
-        else if (dataType.equalsIgnoreCase("hourly")){
-            depth=3;
-        }
-        else if (dataType.equalsIgnoreCase("daily")){
-            depth=2;
-        }
-        else if (dataType.equalsIgnoreCase("monthly")){
-            depth=1;
-        }
-        else if (dataType.equalsIgnoreCase("yearly")){
-            depth=0;
+        switch (feedType) {
+            case MINUTELY:
+                depth = 4;
+                break;
+            case HOURLY:
+                depth = 3;
+                break;
+            case DAILY:
+                depth = 2;
+                break;
+            case MONTHLY:
+                depth = 1;
+                break;
+            case YEARLY:
+                depth = 0;
+                break;
+            default:
+                Assert.fail("Unexpected feedType=" + feedType);
         }
 
         List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper,
