@@ -29,13 +29,16 @@ import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hive.hcatalog.api.HCatClient;
+import org.apache.hive.hcatalog.api.HCatCreateTableDesc;
 import org.apache.hive.hcatalog.api.HCatPartition;
 import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -71,7 +74,7 @@ public class HCatRetentionTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
-        cli = HCatUtil.getHCatClient(cluster);
+        cli = cluster.getClusterHelper().getHCatClient();
         bundle = new Bundle(BundleUtil.getHCat2Bundle(), cluster);
         bundle.generateUniqueBundle();
         bundle.submitClusters(prism);
@@ -89,8 +92,9 @@ public class HCatRetentionTest extends BaseTestClass {
 
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
-        tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(), retentionPeriod);
-        HCatUtil.createPartitionedTable(feedType, dBName, tableName, cli, baseTestHDFSDir);
+        tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(),
+            retentionPeriod);
+        createPartitionedTable(feedType, dBName, tableName, cli, baseTestHDFSDir);
         FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
         feedElement.setTableValue(dBName, tableName, getFeedPathValue(feedType));
         feedElement
@@ -99,7 +103,7 @@ public class HCatRetentionTest extends BaseTestClass {
             AssertUtil.assertFailed(prism.getFeedHelper()
                 .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
         } else {
-            feedElement.generateData(cli, serverFS.get(0),
+            generateData(feedElement, cli, serverFS.get(0),
                 "src/test/resources/OozieExampleInputData/lateData");
             List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
@@ -154,7 +158,7 @@ public class HCatRetentionTest extends BaseTestClass {
     /**
      * Get the expected output after retention is applied
      * @param retentionPeriod retention period
-     * @param retentionUnit retiontion unit
+     * @param retentionUnit retention unit
      * @param feedType feed type
      * @param endDateUTC end date of retention
      * @param inputData input data on which retention was applied
@@ -186,6 +190,103 @@ public class HCatRetentionTest extends BaseTestClass {
             }
         }
         return finalData;
+    }
+
+    public static void generateData(FeedMerlin feedMerlin, HCatClient cli, FileSystem fs,
+                                    String... copyFrom) throws Exception {
+        FEED_TYPE dataType;
+        ArrayList<String> dataFolder;
+        String ur = feedMerlin.getTable().getUri();
+        if (ur.contains(";")) {
+            String[] parts = ur.split("#")[1].split(";");
+            int len = parts.length;
+            dataType = getDataType(len);
+        } else {
+            dataType = FEED_TYPE.YEARLY;
+        }
+        String dbName = ur.split("#")[0].split(":")[1];
+        String tableName = ur.split("#")[0].split(":")[2];
+
+        String loc = cli.getTable(dbName, tableName).getLocation();
+        loc = loc + "/";
+
+        dataFolder = createTestData(feedMerlin, fs, dataType, loc, copyFrom);
+        HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder);
+    }
+
+    public static ArrayList<String> createTestData(FeedMerlin feedMerlin, FileSystem fs,
+                                                   FEED_TYPE dataType,
+                                                   String loc,
+                                                   String... copyFrom) throws Exception {
+        ArrayList<String> dataFolder;
+        DateTime start = new DateTime(feedMerlin.getClusters().getCluster().get(0).getValidity()
+            .getStart(), DateTimeZone.UTC);
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        String startDate = formatter.print(start);
+        DateTime end = new DateTime(feedMerlin.getClusters().getCluster().get(0).getValidity()
+            .getEnd(),
+            DateTimeZone.UTC);
+        String endDate = formatter.print(end);
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
+
+        dataFolder = HadoopUtil.createTestDataInHDFS(fs,
+            TimeUtil.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
+        return dataFolder;
+    }
+
+    public static FEED_TYPE getDataType(int len) {
+        if (len == 5) {
+            return FEED_TYPE.MINUTELY;
+        } else if (len == 4) {
+            return FEED_TYPE.HOURLY;
+        } else if (len == 3) {
+            return FEED_TYPE.DAILY;
+        } else if (len == 2) {
+            return FEED_TYPE.MONTHLY;
+        }
+        return null;
+    }
+
+    private static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName,
+                                              HCatClient client, String tableLoc)
+        throws HCatException {
+        ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
+        ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
+
+        //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
+
+        cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
+        cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
+
+        switch (dataType) {
+            case MINUTELY:
+                ptnCols.add(
+                    new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+            case HOURLY:
+                ptnCols.add(
+                    new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
+            case DAILY:
+                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
+            case MONTHLY:
+                ptnCols.add(
+                    new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
+            case YEARLY:
+                ptnCols.add(
+                    new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+            default:
+                break;
+        }
+        HCatCreateTableDesc tableDesc = HCatCreateTableDesc
+            .create(dbName, tableName, cols)
+            .fileFormat("rcfile")
+            .ifNotExists(true)
+            .partCols(ptnCols)
+            .isTableExternal(true)
+            .location(tableLoc)
+            .build();
+        client.dropTable(dbName, tableName, true);
+        client.createTable(tableDesc);
     }
 
     private String getFeedPathValue(FEED_TYPE feedType) {

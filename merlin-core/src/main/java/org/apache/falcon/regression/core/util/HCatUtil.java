@@ -53,57 +53,11 @@ public class HCatUtil {
         return HCatClient.create(hcatConf);
     }
 
-    public static HCatClient getHCatClient(ColoHelper helper) throws HCatException {
-        return getHCatClient(helper.getProcessHelper().getHCatEndpoint(),
-                helper.getProcessHelper().getHiveMetaStorePrincipal());
-    }
-
     public static void deleteTable(HCatClient cli, String dbName, String tabName)
             throws HCatException {
         cli.dropTable(dbName, tabName, true);
     }
 
-
-    public static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName,
-                                              HCatClient client, String tableLoc)
-            throws HCatException {
-        ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
-
-        //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
-
-        cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
-        cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
-
-        switch (dataType) {
-            case MINUTELY:
-                ptnCols.add(
-                        new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
-            case HOURLY:
-                ptnCols.add(
-                        new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
-            case DAILY:
-                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-            case MONTHLY:
-                ptnCols.add(
-                        new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-            case YEARLY:
-                ptnCols.add(
-                        new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-            default:
-                break;
-        }
-        HCatCreateTableDesc tableDesc = HCatCreateTableDesc
-                .create(dbName, tableName, cols)
-                .fileFormat("rcfile")
-                .ifNotExists(true)
-                .partCols(ptnCols)
-                .isTableExternal(true)
-                .location(tableLoc)
-                .build();
-        client.dropTable(dbName, tableName, true);
-        client.createTable(tableDesc);
-    }
 
     public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType,
                                           String dbName, String tableName,
