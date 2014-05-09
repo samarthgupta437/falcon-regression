@@ -19,21 +19,11 @@
 package org.apache.falcon.regression.core.util;
 
 
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.hcatalog.api.HCatAddPartitionDesc;
 import org.apache.hive.hcatalog.api.HCatClient;
-import org.apache.hive.hcatalog.api.HCatCreateTableDesc;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatException;
-import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HCatUtil {
 
@@ -52,10 +42,4 @@ public class HCatUtil {
         hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
         return HCatClient.create(hcatConf);
     }
-
-    public static void deleteTable(HCatClient cli, String dbName, String tabName)
-            throws HCatException {
-        cli.dropTable(dbName, tabName, true);
-    }
-
 }

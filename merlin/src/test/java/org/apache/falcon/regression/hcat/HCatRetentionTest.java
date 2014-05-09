@@ -24,7 +24,6 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
@@ -86,7 +85,7 @@ public class HCatRetentionTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws HCatException {
         bundle.deleteBundle(prism);
-        HCatUtil.deleteTable(cli, dBName, tableName);
+        cli.dropTable(dBName, tableName, true);
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
