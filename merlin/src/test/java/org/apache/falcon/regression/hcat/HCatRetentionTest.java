@@ -103,8 +103,16 @@ public class HCatRetentionTest extends BaseTestClass {
             AssertUtil.assertFailed(prism.getFeedHelper()
                 .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
         } else {
-            generateData(feedElement, cli, serverFS.get(0),
-                "src/test/resources/OozieExampleInputData/lateData");
+            final DateTime dataStartTime = new DateTime(
+                feedElement.getClusters().getCluster().get(0).getValidity().getStart(),
+                DateTimeZone.UTC).withSecondOfMinute(0);
+            final DateTime dataEndTime = new DateTime(
+                feedElement.getClusters().getCluster().get(0).getValidity().getEnd(),
+                DateTimeZone.UTC).withSecondOfMinute(0);
+            final ArrayList<String> dataFolder = HadoopUtil.createTestDataInHDFS(clusterFS,
+                TimeUtil.getDatesOnEitherSide(dataStartTime, dataEndTime, feedType),
+                baseTestHDFSDir, "src/test/resources/OozieExampleInputData/lateData");
+            HCatUtil.createHCatTestData(cli, clusterFS, feedType, dBName, tableName, dataFolder);
             List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
             List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
@@ -190,49 +198,6 @@ public class HCatRetentionTest extends BaseTestClass {
             }
         }
         return finalData;
-    }
-
-    public static void generateData(FeedMerlin feedMerlin, HCatClient cli, FileSystem fs,
-                                    String... copyFrom) throws Exception {
-        FEED_TYPE dataType;
-        ArrayList<String> dataFolder;
-        String ur = feedMerlin.getTable().getUri();
-        if (ur.contains(";")) {
-            String[] parts = ur.split("#")[1].split(";");
-            int len = parts.length;
-            dataType = getDataType(len);
-        } else {
-            dataType = FEED_TYPE.YEARLY;
-        }
-        String dbName = ur.split("#")[0].split(":")[1];
-        String tableName = ur.split("#")[0].split(":")[2];
-
-        String loc = cli.getTable(dbName, tableName).getLocation();
-        loc = loc + "/";
-
-        dataFolder = createTestData(feedMerlin, fs, dataType, loc, copyFrom);
-        HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder);
-    }
-
-    public static ArrayList<String> createTestData(FeedMerlin feedMerlin, FileSystem fs,
-                                                   FEED_TYPE dataType,
-                                                   String loc,
-                                                   String... copyFrom) throws Exception {
-        ArrayList<String> dataFolder;
-        DateTime start = new DateTime(feedMerlin.getClusters().getCluster().get(0).getValidity()
-            .getStart(), DateTimeZone.UTC);
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        String startDate = formatter.print(start);
-        DateTime end = new DateTime(feedMerlin.getClusters().getCluster().get(0).getValidity()
-            .getEnd(),
-            DateTimeZone.UTC);
-        String endDate = formatter.print(end);
-        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-
-        dataFolder = HadoopUtil.createTestDataInHDFS(fs,
-            TimeUtil.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
-        return dataFolder;
     }
 
     public static FEED_TYPE getDataType(int len) {
