@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
+import junit.framework.Assert;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -98,10 +99,45 @@ public class TimeUtil {
       return dates;
     }
 
-    public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
+    /**
+     * Get format string corresponding to the FEED_TYPE
+     * @param feedType type of the feed
+     * @return format string
+     */
+    public static String getFormatStringForFeedType(FEED_TYPE feedType) {
+        switch (feedType) {
+            case MINUTELY:
+                return "yyyy/MM/dd/HH/mm";
+            case HOURLY:
+                return "yyyy/MM/dd/HH";
+            case DAILY:
+                return "yyyy/MM/dd";
+            case MONTHLY:
+                return "yyyy/MM";
+            case YEARLY:
+                return "yyyy";
+            default:
+                Assert.fail("Unexpected feedType = " + feedType);
+        }
+        return null;
+    }
+
+
+    public static List<String> convertDatesToString(List<DateTime> dates,
+                                                    String formatString) {
+        List<String> dateString= new ArrayList<String>();
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(formatString);
+        formatter.withZoneUTC();
+        for (DateTime date : dates) {
+            dateString.add(formatter.print(date));
+        }
+        return dateString;
+    }
+
+    public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                     FEED_TYPE dataType) {
         int counter = 0, skip = 0;
-        List<String> dates = new ArrayList<String>();
+        List<DateTime> dates = new ArrayList<DateTime>();
 
         while (!startDate.isAfter(endDate) && counter < 1000) {
 
@@ -111,37 +147,27 @@ public class TimeUtil {
 
             switch (dataType) {
                 case MINUTELY:
-                    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-                    formatter.withZoneUTC();
-                    dates.add(formatter.print(startDate.plusMinutes(skip)));
+                    dates.add(startDate.plusMinutes(skip));
                     startDate = startDate.plusMinutes(skip);
                     break;
 
                 case HOURLY:
-                    formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
-                    formatter.withZoneUTC();
-                    dates.add(formatter.print(startDate.plusHours(skip)));
+                    dates.add(startDate.plusHours(skip));
                     startDate = startDate.plusHours(skip);
                     break;
 
                 case DAILY:
-                    formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-                    formatter.withZoneUTC();
-                    dates.add(formatter.print(startDate.plusDays(skip)));
+                    dates.add(startDate.plusDays(skip));
                     startDate = startDate.plusDays(skip);
                     break;
 
                 case MONTHLY:
-                    formatter = DateTimeFormat.forPattern("yyyy/MM");
-                    formatter.withZoneUTC();
-                    dates.add(formatter.print(startDate.plusMonths(skip)));
+                    dates.add(startDate.plusMonths(skip));
                     startDate = startDate.plusMonths(skip);
                     break;
 
                 case YEARLY:
-                    formatter = DateTimeFormat.forPattern("yyyy");
-                    formatter.withZoneUTC();
-                    dates.add(formatter.print(startDate.plusYears(skip)));
+                    dates.add(startDate.plusYears(skip));
                     startDate = startDate.plusYears(skip);
             }//end of switch
             ++counter;
