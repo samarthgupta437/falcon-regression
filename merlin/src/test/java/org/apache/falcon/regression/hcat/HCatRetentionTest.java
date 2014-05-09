@@ -150,7 +150,7 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    public static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath,
+    private static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath,
                                                     String dir, FEED_TYPE feedType)
             throws IOException {
         List<String> finalResult = new ArrayList<String>();
@@ -178,7 +178,7 @@ public class HCatRetentionTest extends BaseTestClass {
      * @param inputData input data on which retention was applied
      * @return expected output of the retention
      */
-    public static List<String> getExpectedOutput(int retentionPeriod, RETENTION_UNITS retentionUnit,
+    private static List<String> getExpectedOutput(int retentionPeriod, RETENTION_UNITS retentionUnit,
                                                          FEED_TYPE feedType,
                                                          DateTime endDateUTC,
                                                          List<String> inputData) {
@@ -275,7 +275,7 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    private String getFeedPathValue(FEED_TYPE feedType) {
+    private static String getFeedPathValue(FEED_TYPE feedType) {
         switch (feedType) {
             case YEARLY:
                 return "year=${YEAR}";
