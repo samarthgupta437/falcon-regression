@@ -115,9 +115,9 @@ public class HCatRetentionTest extends BaseTestClass {
                 TimeUtil.getDatesOnEitherSide(dataStartTime, dataEndTime, feedType);
             final List<String> dataDateStrings = TimeUtil.convertDatesToString(dataDates,
                     TimeUtil.getFormatStringForFeedType(feedType));
-            final ArrayList<String> dataFolder = HadoopUtil.createTestDataInHDFS(clusterFS,
-                dataDateStrings, baseTestHDFSDir,
-                "src/test/resources/OozieExampleInputData/lateData");
+            AssertUtil.checkForListSizes(dataDates, dataDateStrings);
+            final ArrayList<String> dataFolder = HadoopUtil.createPeriodicDataset(dataDateStrings,
+                "src/test/resources/OozieExampleInputData/lateData", clusterFS, baseTestHDFSDir);
             addPartitionsToExternalTable(cli, dBName, tableName, feedType, dataFolder);
             List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
