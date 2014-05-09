@@ -58,47 +58,4 @@ public class HCatUtil {
         cli.dropTable(dbName, tabName, true);
     }
 
-
-    public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType,
-                                          String dbName, String tableName,
-                                          ArrayList<String> dataFolder) throws HCatException {
-        HCatUtil.addPartitionsToExternalTable(cli, dataType, dbName, tableName, dataFolder);
-    }
-
-    public static void addPartitionsToExternalTable(HCatClient client, FEED_TYPE dataType,
-                                                    String dbName, String tableName,
-                                                    ArrayList<String> dataFolder)
-            throws HCatException {
-        //Adding specific partitions that map to an external location
-        Map<String, String> ptn = new HashMap<String, String>();
-        for (String aDataFolder : dataFolder) {
-            String[] parts = aDataFolder.split("/");
-            int s = parts.length - 1;
-            int subtractValue = 0;
-
-            switch (dataType) {
-                case MINUTELY:
-                    ptn.put("minute", parts[s]);
-                    ++subtractValue;
-                case HOURLY:
-                    ptn.put("hour", parts[s - subtractValue]);
-                    ++subtractValue;
-                case DAILY:
-                    ptn.put("day", parts[s - subtractValue]);
-                    ++subtractValue;
-                case MONTHLY:
-                    ptn.put("month", parts[s - subtractValue]);
-                    ++subtractValue;
-                case YEARLY:
-                    ptn.put("year", parts[s - subtractValue]);
-                default:
-                    break;
-            }
-            //Each HCat partition maps to a directory, not to a file
-            HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
-                    tableName, aDataFolder, ptn).build();
-            client.addPartition(addPtn);
-            ptn.clear();
-        }
-    }
 }

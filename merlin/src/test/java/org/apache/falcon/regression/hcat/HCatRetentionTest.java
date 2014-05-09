@@ -34,6 +34,7 @@ import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hive.hcatalog.api.HCatAddPartitionDesc;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatCreateTableDesc;
 import org.apache.hive.hcatalog.api.HCatPartition;
@@ -55,7 +56,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HCatRetentionTest extends BaseTestClass {
 
@@ -94,7 +97,7 @@ public class HCatRetentionTest extends BaseTestClass {
           name in the feed should be the same.*/
         tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(),
             retentionPeriod);
-        createPartitionedTable(feedType, dBName, tableName, cli, baseTestHDFSDir);
+        createPartitionedTable(cli, dBName, tableName, baseTestHDFSDir, feedType);
         FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
         feedElement.setTableValue(dBName, tableName, getFeedPathValue(feedType));
         feedElement
@@ -112,7 +115,7 @@ public class HCatRetentionTest extends BaseTestClass {
             final ArrayList<String> dataFolder = HadoopUtil.createTestDataInHDFS(clusterFS,
                 TimeUtil.getDatesOnEitherSide(dataStartTime, dataEndTime, feedType),
                 baseTestHDFSDir, "src/test/resources/OozieExampleInputData/lateData");
-            HCatUtil.createHCatTestData(cli, clusterFS, feedType, dBName, tableName, dataFolder);
+            addPartitionsToExternalTable(cli, dBName, tableName, feedType, dataFolder);
             List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
             List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
@@ -200,21 +203,8 @@ public class HCatRetentionTest extends BaseTestClass {
         return finalData;
     }
 
-    public static FEED_TYPE getDataType(int len) {
-        if (len == 5) {
-            return FEED_TYPE.MINUTELY;
-        } else if (len == 4) {
-            return FEED_TYPE.HOURLY;
-        } else if (len == 3) {
-            return FEED_TYPE.DAILY;
-        } else if (len == 2) {
-            return FEED_TYPE.MONTHLY;
-        }
-        return null;
-    }
-
-    private static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName,
-                                              HCatClient client, String tableLoc)
+    private static void createPartitionedTable(HCatClient client, String dbName, String tableName,
+                                               String tableLoc, FEED_TYPE dataType)
         throws HCatException {
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
@@ -252,6 +242,43 @@ public class HCatRetentionTest extends BaseTestClass {
             .build();
         client.dropTable(dbName, tableName, true);
         client.createTable(tableDesc);
+    }
+
+    private static void addPartitionsToExternalTable(HCatClient client, String dbName,
+                                                     String tableName, FEED_TYPE dataType,
+                                                     ArrayList<String> dataFolder)
+        throws HCatException {
+        //Adding specific partitions that map to an external location
+        Map<String, String> ptn = new HashMap<String, String>();
+        for (String aDataFolder : dataFolder) {
+            String[] parts = aDataFolder.split("/");
+            int s = parts.length - 1;
+            int subtractValue = 0;
+
+            switch (dataType) {
+                case MINUTELY:
+                    ptn.put("minute", parts[s]);
+                    ++subtractValue;
+                case HOURLY:
+                    ptn.put("hour", parts[s - subtractValue]);
+                    ++subtractValue;
+                case DAILY:
+                    ptn.put("day", parts[s - subtractValue]);
+                    ++subtractValue;
+                case MONTHLY:
+                    ptn.put("month", parts[s - subtractValue]);
+                    ++subtractValue;
+                case YEARLY:
+                    ptn.put("year", parts[s - subtractValue]);
+                default:
+                    break;
+            }
+            //Each HCat partition maps to a directory, not to a file
+            HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
+                tableName, aDataFolder, ptn).build();
+            client.addPartition(addPtn);
+            ptn.clear();
+        }
     }
 
     private String getFeedPathValue(FEED_TYPE feedType) {
