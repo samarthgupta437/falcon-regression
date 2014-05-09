@@ -116,9 +116,9 @@ public class HCatRetentionTest extends BaseTestClass {
             final List<String> dataDateStrings = TimeUtil.convertDatesToString(dataDates,
                     TimeUtil.getFormatStringForFeedType(feedType));
             AssertUtil.checkForListSizes(dataDates, dataDateStrings);
-            final ArrayList<String> dataFolder = HadoopUtil.createPeriodicDataset(dataDateStrings,
+            final List<String> dataFolders = HadoopUtil.createPeriodicDataset(dataDateStrings,
                 "src/test/resources/OozieExampleInputData/lateData", clusterFS, baseTestHDFSDir);
-            addPartitionsToExternalTable(cli, dBName, tableName, feedType, dataFolder);
+            addPartitionsToExternalTable(cli, dBName, tableName, feedType, dataDates, dataFolders);
             List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
             List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
@@ -248,37 +248,33 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static void addPartitionsToExternalTable(HCatClient client, String dbName,
-                                                     String tableName, FEED_TYPE dataType,
-                                                     ArrayList<String> dataFolder)
+                                                     String tableName, FEED_TYPE feedType,
+                                                     List<DateTime> dataDates,
+                                                     List<String> dataFolders)
         throws HCatException {
         //Adding specific partitions that map to an external location
         Map<String, String> ptn = new HashMap<String, String>();
-        for (String aDataFolder : dataFolder) {
-            String[] parts = aDataFolder.split("/");
-            int s = parts.length - 1;
-            int subtractValue = 0;
-
-            switch (dataType) {
+        for(int i = 0; i < dataDates.size(); ++i) {
+            final String dataFolder = dataFolders.get(i);
+            final DateTime dataDate = dataDates.get(i);
+            switch (feedType) {
                 case MINUTELY:
-                    ptn.put("minute", parts[s]);
-                    ++subtractValue;
+                    ptn.put("minute", "" + dataDate.getMinuteOfHour());
                 case HOURLY:
-                    ptn.put("hour", parts[s - subtractValue]);
-                    ++subtractValue;
+                    ptn.put("hour", "" + dataDate.getHourOfDay());
                 case DAILY:
-                    ptn.put("day", parts[s - subtractValue]);
-                    ++subtractValue;
+                    ptn.put("day", "" + dataDate.getDayOfMonth());
                 case MONTHLY:
-                    ptn.put("month", parts[s - subtractValue]);
-                    ++subtractValue;
+                    ptn.put("month", "" + dataDate.getMonthOfYear());
                 case YEARLY:
-                    ptn.put("year", parts[s - subtractValue]);
-                default:
+                    ptn.put("year", "" + dataDate.getYear());
                     break;
+                default:
+                    Assert.fail("Unexpected feedType = " + feedType);
             }
             //Each HCat partition maps to a directory, not to a file
             HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
-                tableName, aDataFolder, ptn).build();
+                tableName, dataFolder, ptn).build();
             client.addPartition(addPtn);
             ptn.clear();
         }
