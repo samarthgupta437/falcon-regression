@@ -99,55 +99,55 @@ public class TimeUtil {
     }
 
     public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                            FEED_TYPE dataType) {
-          int counter=0, skip=0;
-          List<String> dates = new ArrayList<String>();
+                                                    FEED_TYPE dataType) {
+        int counter = 0, skip = 0;
+        List<String> dates = new ArrayList<String>();
 
-          while (!startDate.isAfter(endDate) && counter<1000) {
+        while (!startDate.isAfter(endDate) && counter < 1000) {
 
-                if(counter == 1 && skip == 0){
-                    skip=1;
-                }
+            if (counter == 1 && skip == 0) {
+                skip = 1;
+            }
 
-                switch(dataType){
-                    case MINUTELY:
-                          DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusMinutes(skip)));
-                          startDate = startDate.plusMinutes(skip);
-                          break;
+            switch (dataType) {
+                case MINUTELY:
+                    DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+                    formatter.withZoneUTC();
+                    dates.add(formatter.print(startDate.plusMinutes(skip)));
+                    startDate = startDate.plusMinutes(skip);
+                    break;
 
-                    case HOURLY:
-                          formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusHours(skip)));
-                          startDate = startDate.plusHours(skip);
-                          break;
+                case HOURLY:
+                    formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
+                    formatter.withZoneUTC();
+                    dates.add(formatter.print(startDate.plusHours(skip)));
+                    startDate = startDate.plusHours(skip);
+                    break;
 
-                    case DAILY:
-                          formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusDays(skip)));
-                          startDate = startDate.plusDays(skip);
-                          break;
+                case DAILY:
+                    formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
+                    formatter.withZoneUTC();
+                    dates.add(formatter.print(startDate.plusDays(skip)));
+                    startDate = startDate.plusDays(skip);
+                    break;
 
-                    case MONTHLY:
-                          formatter = DateTimeFormat.forPattern("yyyy/MM");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusMonths(skip)));
-                          startDate = startDate.plusMonths(skip);
-                          break;
+                case MONTHLY:
+                    formatter = DateTimeFormat.forPattern("yyyy/MM");
+                    formatter.withZoneUTC();
+                    dates.add(formatter.print(startDate.plusMonths(skip)));
+                    startDate = startDate.plusMonths(skip);
+                    break;
 
-                    case YEARLY:
-                          formatter = DateTimeFormat.forPattern("yyyy");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusYears(skip)));
-                          startDate = startDate.plusYears(skip);
-                }//end of switch
-              ++counter;
-          }//end of while
+                case YEARLY:
+                    formatter = DateTimeFormat.forPattern("yyyy");
+                    formatter.withZoneUTC();
+                    dates.add(formatter.print(startDate.plusYears(skip)));
+                    startDate = startDate.plusYears(skip);
+            }//end of switch
+            ++counter;
+        }//end of while
 
-          return dates;
+        return dates;
     }
 
     public static String getTimeWrtSystemTime(int minutes)  {
