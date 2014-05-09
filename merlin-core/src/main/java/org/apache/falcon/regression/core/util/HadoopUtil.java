@@ -386,4 +386,18 @@ public class HadoopUtil {
             flattenAndPutDataInFolder(fs, inputPath[0], remoteLocations);
         }
     }
+
+    public static ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
+                                                          FileSystem fileSystem,
+                                                          String baseHDFSLocation)
+        throws IOException {
+        deleteDirIfExists(baseHDFSLocation, fileSystem);
+        ArrayList<String> dataFolder = new ArrayList<String>();
+
+        for (String dataDate : dataDates)
+            dataFolder.add(baseHDFSLocation + "/" + dataDate);
+
+        flattenAndPutDataInFolder(fileSystem, localData, dataFolder);
+        return dataFolder;
+    }
 }
