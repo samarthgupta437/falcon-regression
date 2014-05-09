@@ -182,21 +182,16 @@ public class HCatRetentionTest extends BaseTestClass {
                                                          FEED_TYPE feedType,
                                                          DateTime endDateUTC,
                                                          List<String> inputData) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(TimeUtil.getFormatStringForFeedType(feedType));
         List<String> finalData = new ArrayList<String>();
 
-        //determine what kind of data is there in the feed!
-
-        final String appender = getAppenderFromFeedType(feedType);
-
-        //convert the start and end date boundaries to the same format
-        //end date is today's date
+        //convert the end date to the same format
         final String endLimit =
             formatter.print(getEndLimit(retentionPeriod, retentionUnit, endDateUTC));
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if ((testDate + appender).compareTo(endLimit) > 0) {
+                if (testDate.compareTo(endLimit) >= 0) {
                     finalData.add(testDate);
                 }
             } else {
@@ -314,24 +309,6 @@ public class HCatRetentionTest extends BaseTestClass {
                 Assert.fail("Unexpected feedType=" + feedType);
         }
         return -1;
-    }
-
-    private static String getAppenderFromFeedType(FEED_TYPE feedType) {
-        switch (feedType) {
-            case YEARLY:
-                return "/01/01/00/01";
-            case MONTHLY:
-                return "/01/00/01";
-            case DAILY:
-                return "/00/01"; //because we already take care of that!
-            case HOURLY:
-                return "/01";
-            case MINUTELY:
-                return "";
-            default:
-                Assert.fail("Unexpected feedType = " + feedType);
-        }
-        return null;
     }
 
     private static DateTime getEndLimit(int time, RETENTION_UNITS interval,
