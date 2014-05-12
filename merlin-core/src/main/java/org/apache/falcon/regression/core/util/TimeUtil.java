@@ -135,40 +135,38 @@ public class TimeUtil {
     }
 
     public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                    FEED_TYPE dataType) {
+                                                    FEED_TYPE feedType) {
         int counter = 0, skip = 0;
         List<DateTime> dates = new ArrayList<DateTime>();
 
         while (!startDate.isAfter(endDate) && counter < 1000) {
-
             if (counter == 1 && skip == 0) {
                 skip = 1;
             }
 
-            switch (dataType) {
+            switch (feedType) {
                 case MINUTELY:
-                    dates.add(startDate.plusMinutes(skip));
                     startDate = startDate.plusMinutes(skip);
+                    dates.add(startDate);
                     break;
-
                 case HOURLY:
-                    dates.add(startDate.plusHours(skip));
                     startDate = startDate.plusHours(skip);
+                    dates.add(startDate);
                     break;
-
                 case DAILY:
-                    dates.add(startDate.plusDays(skip));
                     startDate = startDate.plusDays(skip);
+                    dates.add(startDate);
                     break;
-
                 case MONTHLY:
-                    dates.add(startDate.plusMonths(skip));
                     startDate = startDate.plusMonths(skip);
+                    dates.add(startDate);
                     break;
-
                 case YEARLY:
-                    dates.add(startDate.plusYears(skip));
                     startDate = startDate.plusYears(skip);
+                    dates.add(startDate);
+                    break;
+                default:
+                    Assert.fail("Unexpected feedType = " + feedType);
             }//end of switch
             ++counter;
         }//end of while
