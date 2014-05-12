@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.CatalogTable;
 import org.apache.falcon.regression.core.generated.process.Process;
@@ -64,6 +65,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,9 +124,15 @@ public class InstanceUtil {
             }
           }
       }
-    } catch (ReflectiveOperationException e) {
+    } catch (IllegalAccessException e) {
         Assert.fail("Could not create InstancesSummaryResult or " +
-        "ProcessInstancesResult constructor\n" + e.getMessage());
+            "ProcessInstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
+    } catch (InstantiationException e) {
+        Assert.fail("Could not create InstancesSummaryResult or " +
+            "ProcessInstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
+    } catch (InvocationTargetException e) {
+        Assert.fail("Could not create InstancesSummaryResult or " +
+            "ProcessInstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
     }
     Assert.assertNotNull(r, "APIResult is null");
     if (jsonString.contains("(PROCESS) not found")) {
