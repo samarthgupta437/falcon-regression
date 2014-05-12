@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
@@ -117,7 +118,7 @@ public class HCatRetentionTest extends BaseTestClass {
                     TimeUtil.getFormatStringForFeedType(feedType));
             AssertUtil.checkForListSizes(dataDates, dataDateStrings);
             final List<String> dataFolders = HadoopUtil.createPeriodicDataset(dataDateStrings,
-                "src/test/resources/OozieExampleInputData/lateData", clusterFS, baseTestHDFSDir);
+                OSUtil.OOZIE_EXAMPLE_INPUT_LATE_INPUT, clusterFS, baseTestHDFSDir);
             addPartitionsToExternalTable(cli, dBName, tableName, feedType, dataDates, dataFolders);
             List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
