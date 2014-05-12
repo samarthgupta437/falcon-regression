@@ -149,41 +149,36 @@ public class TimeUtil {
      */
     public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                     FEED_TYPE feedType) {
-        int counter = 0, skip = 0;
-        List<DateTime> dates = new ArrayList<DateTime>();
-
-        while (!startDate.isAfter(endDate) && counter < 1000) {
-            if (counter == 1 && skip == 0) {
-                skip = 1;
-            }
-
+        final List<DateTime> dates = new ArrayList<DateTime>();
+        if(!startDate.isAfter(endDate)) {
+            dates.add(startDate);
+        }
+        for (int counter = 0; !startDate.isAfter(endDate) && counter < 1000; ++counter) {
             switch (feedType) {
                 case MINUTELY:
-                    startDate = startDate.plusMinutes(skip);
+                    startDate = startDate.plusMinutes(1);
                     dates.add(startDate);
                     break;
                 case HOURLY:
-                    startDate = startDate.plusHours(skip);
+                    startDate = startDate.plusHours(1);
                     dates.add(startDate);
                     break;
                 case DAILY:
-                    startDate = startDate.plusDays(skip);
+                    startDate = startDate.plusDays(1);
                     dates.add(startDate);
                     break;
                 case MONTHLY:
-                    startDate = startDate.plusMonths(skip);
+                    startDate = startDate.plusMonths(1);
                     dates.add(startDate);
                     break;
                 case YEARLY:
-                    startDate = startDate.plusYears(skip);
+                    startDate = startDate.plusYears(1);
                     dates.add(startDate);
                     break;
                 default:
                     Assert.fail("Unexpected feedType = " + feedType);
             }//end of switch
-            ++counter;
-        }//end of while
-
+        }//end of for
         return dates;
     }
 
