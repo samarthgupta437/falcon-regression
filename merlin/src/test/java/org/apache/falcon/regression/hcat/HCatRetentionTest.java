@@ -191,11 +191,7 @@ public class HCatRetentionTest extends BaseTestClass {
             formatter.print(getEndLimit(retentionPeriod, retentionUnit, endDateUTC));
         //now to actually check!
         for (String testDate : inputData) {
-            if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if (testDate.compareTo(endLimit) >= 0) {
-                    finalData.add(testDate);
-                }
-            } else {
+            if (testDate.compareTo(endLimit) >= 0) {
                 finalData.add(testDate);
             }
         }
