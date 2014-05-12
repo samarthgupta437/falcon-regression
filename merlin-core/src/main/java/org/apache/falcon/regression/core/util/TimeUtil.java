@@ -122,7 +122,12 @@ public class TimeUtil {
         return null;
     }
 
-
+    /**
+     * Convert list of dates to list of string according to the supplied format
+     * @param dates list of dates
+     * @param formatString format string to be used for converting dates
+     * @return list of strings corresponding to given dates
+     */
     public static List<String> convertDatesToString(List<DateTime> dates,
                                                     String formatString) {
         List<String> dateString= new ArrayList<String>();
@@ -134,6 +139,14 @@ public class TimeUtil {
         return dateString;
     }
 
+    /**
+     * Get all possible dates between start and end date gap between subsequent dates be one unit
+     * of feedType
+     * @param startDate start date
+     * @param endDate end date
+     * @param feedType type of the feed
+     * @return list of dates
+     */
     public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                     FEED_TYPE feedType) {
         int counter = 0, skip = 0;

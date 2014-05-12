@@ -285,6 +285,13 @@ public class AssertUtil {
         checkNotStatus(oozieClient, entityType, data, expectedStatus);
     }
 
+    /**
+     * Checks size of the content a two locations
+     * @param firstPath path to the first location
+     * @param secondPath path to the second location
+     * @param fs hadoop file system for the locations
+     * @throws IOException
+     */
     public static void checkContentSize(String firstPath, String secondPath, FileSystem fs) throws
         IOException {
         final ContentSummary firstSummary = fs.getContentSummary(new Path(firstPath));
