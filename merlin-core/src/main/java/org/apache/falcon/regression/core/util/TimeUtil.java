@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
+import junit.framework.Assert;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -98,56 +99,87 @@ public class TimeUtil {
       return dates;
     }
 
-    public static List<String> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                            FEED_TYPE dataType) {
-          int counter=0, skip=0;
-          List<String> dates = new ArrayList<String>();
+    /**
+     * Get format string corresponding to the FEED_TYPE
+     * @param feedType type of the feed
+     * @return format string
+     */
+    public static String getFormatStringForFeedType(FEED_TYPE feedType) {
+        switch (feedType) {
+            case MINUTELY:
+                return "yyyy/MM/dd/HH/mm";
+            case HOURLY:
+                return "yyyy/MM/dd/HH";
+            case DAILY:
+                return "yyyy/MM/dd";
+            case MONTHLY:
+                return "yyyy/MM";
+            case YEARLY:
+                return "yyyy";
+            default:
+                Assert.fail("Unexpected feedType = " + feedType);
+        }
+        return null;
+    }
 
-          while (!startDate.isAfter(endDate) && counter<1000) {
+    /**
+     * Convert list of dates to list of string according to the supplied format
+     * @param dates list of dates
+     * @param formatString format string to be used for converting dates
+     * @return list of strings corresponding to given dates
+     */
+    public static List<String> convertDatesToString(List<DateTime> dates,
+                                                    String formatString) {
+        List<String> dateString= new ArrayList<String>();
+        DateTimeFormatter formatter = DateTimeFormat.forPattern(formatString);
+        formatter.withZoneUTC();
+        for (DateTime date : dates) {
+            dateString.add(formatter.print(date));
+        }
+        return dateString;
+    }
 
-                if(counter == 1 && skip == 0){
-                    skip=1;
-                }
-
-                switch(dataType){
-                    case MINUTELY:
-                          DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusMinutes(skip)));
-                          startDate = startDate.plusMinutes(skip);
-                          break;
-
-                    case HOURLY:
-                          formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusHours(skip)));
-                          startDate = startDate.plusHours(skip);
-                          break;
-
-                    case DAILY:
-                          formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusDays(skip)));
-                          startDate = startDate.plusDays(skip);
-                          break;
-
-                    case MONTHLY:
-                          formatter = DateTimeFormat.forPattern("yyyy/MM");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusMonths(skip)));
-                          startDate = startDate.plusMonths(skip);
-                          break;
-
-                    case YEARLY:
-                          formatter = DateTimeFormat.forPattern("yyyy");
-                          formatter.withZoneUTC();
-                          dates.add(formatter.print(startDate.plusYears(skip)));
-                          startDate = startDate.plusYears(skip);
-                }//end of switch
-              ++counter;
-          }//end of while
-
-          return dates;
+    /**
+     * Get all possible dates between start and end date gap between subsequent dates be one unit
+     * of feedType
+     * @param startDate start date
+     * @param endDate end date
+     * @param feedType type of the feed
+     * @return list of dates
+     */
+    public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
+                                                    FEED_TYPE feedType) {
+        final List<DateTime> dates = new ArrayList<DateTime>();
+        if(!startDate.isAfter(endDate)) {
+            dates.add(startDate);
+        }
+        for (int counter = 0; !startDate.isAfter(endDate) && counter < 1000; ++counter) {
+            switch (feedType) {
+                case MINUTELY:
+                    startDate = startDate.plusMinutes(1);
+                    dates.add(startDate);
+                    break;
+                case HOURLY:
+                    startDate = startDate.plusHours(1);
+                    dates.add(startDate);
+                    break;
+                case DAILY:
+                    startDate = startDate.plusDays(1);
+                    dates.add(startDate);
+                    break;
+                case MONTHLY:
+                    startDate = startDate.plusMonths(1);
+                    dates.add(startDate);
+                    break;
+                case YEARLY:
+                    startDate = startDate.plusYears(1);
+                    dates.add(startDate);
+                    break;
+                default:
+                    Assert.fail("Unexpected feedType = " + feedType);
+            }//end of switch
+        }//end of for
+        return dates;
     }
 
     public static String getTimeWrtSystemTime(int minutes)  {

@@ -54,7 +54,6 @@ import org.apache.hadoop.security.authentication.client.AuthenticationException;
 
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
@@ -354,62 +353,6 @@ public class Util {
 
     return finalResult;
   }
-
-
-
-    public static List<String> filterDataOnRetentionHCat(int time, String interval, String dataType,
-                                                      DateTime endDate,
-                                                      List<String> inputData) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        List<String> finalData = new ArrayList<String>();
-
-        //determine what kind of data is there in the feed!
-
-        final String appender;
-        if (dataType.equalsIgnoreCase("yearly")) {
-            appender = "/01/01/00/01";
-        } else if (dataType.equalsIgnoreCase("monthly")) {
-            appender = "/01/00/01";
-        } else if (dataType.equalsIgnoreCase("daily")) {
-            appender = "/00/01"; //because we already take care of that!
-        } else if (dataType
-                .equalsIgnoreCase("hourly")) {
-            appender = "/01";
-        } else {
-            appender = "";
-        }
-
-        //convert the start and end date boundaries to the same format
-        //end date is today's date
-        formatter.print(endDate);
-        final String startLimit;
-        final DateTime today = new DateTime(endDate, DateTimeZone.UTC);
-
-        if (interval.equalsIgnoreCase("minutes")) {
-            startLimit = formatter.print(today.minusMinutes(time));
-        } else if (interval.equalsIgnoreCase("hours")) {
-            startLimit = formatter.print(today.minusHours(time));
-        } else if (interval.equalsIgnoreCase("days")) {
-            startLimit = formatter.print(today.minusDays(time));
-        } else if (interval.equalsIgnoreCase("months")) {
-            startLimit = formatter.print(today.minusDays(31 * time));
-        } else {
-            startLimit = null;
-            Assert.fail("Unexpected value of interval: " + interval);
-        }
-
-        //now to actually check!
-        for (String testDate : inputData) {
-            if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if ((testDate + appender).compareTo(startLimit) > 0) {
-                    finalData.add(testDate);
-                }
-            } else {
-                finalData.add(testDate);
-            }
-        }
-        return finalData;
-    }
 
 
     public static int executeCommandGetExitCode(String command) {

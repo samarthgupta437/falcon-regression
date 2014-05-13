@@ -281,24 +281,6 @@ public class HadoopUtil {
         return returnList;
     }
 
-    public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates,
-                                                         String prefix, String... copyFrom)
-    throws Exception {
-        deleteDirIfExists(prefix, fs);
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-        for (int i = 0; i < dataDates.size(); i++) {
-            dataDates.set(i, prefix + dataDates.get(i));
-        }
-
-        for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
-        }
-
-        HadoopUtil.flattenDataInFolders(fs, dataFolder, copyFrom);
-        return dataFolder;
-    }
-
     public static boolean isDirPresent(FileSystem fs, String path) throws IOException {
 
         boolean isPresent = fs.exists(new Path(path));
@@ -371,19 +353,17 @@ public class HadoopUtil {
         }
     }
 
-    public static void flattenDataInFolders(FileSystem fs,
-                                            List<String> remoteLocations, String... inputPath)
-    throws Exception {
+    public static ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
+                                                          FileSystem fileSystem,
+                                                          String baseHDFSLocation)
+        throws IOException {
+        deleteDirIfExists(baseHDFSLocation, fileSystem);
+        ArrayList<String> dataFolder = new ArrayList<String>();
 
-        if (inputPath.length == 0) {
-            for (String remoteLocation : remoteLocations) {
-                logger.info("generating empty folder: " + remoteLocation);
+        for (String dataDate : dataDates)
+            dataFolder.add(baseHDFSLocation + "/" + dataDate);
 
-                if (!fs.exists(new Path(remoteLocation)))
-                    fs.mkdirs(new Path(remoteLocation));
-            }
-        } else {
-            flattenAndPutDataInFolder(fs, inputPath[0], remoteLocations);
-        }
+        flattenAndPutDataInFolder(fileSystem, localData, dataFolder);
+        return dataFolder;
     }
 }

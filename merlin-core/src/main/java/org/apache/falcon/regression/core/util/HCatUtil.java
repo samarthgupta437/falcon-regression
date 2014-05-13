@@ -19,21 +19,11 @@
 package org.apache.falcon.regression.core.util;
 
 
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hive.hcatalog.api.HCatAddPartitionDesc;
 import org.apache.hive.hcatalog.api.HCatClient;
-import org.apache.hive.hcatalog.api.HCatCreateTableDesc;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatException;
-import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HCatUtil {
 
@@ -51,100 +41,5 @@ public class HCatUtil {
         hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
         hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
         return HCatClient.create(hcatConf);
-    }
-
-    public static HCatClient getHCatClient(ColoHelper helper) throws HCatException {
-        return getHCatClient(helper.getProcessHelper().getHCatEndpoint(),
-                helper.getProcessHelper().getHiveMetaStorePrincipal());
-    }
-
-    public static void deleteTable(HCatClient cli, String dbName, String tabName)
-            throws HCatException {
-        cli.dropTable(dbName, tabName, true);
-    }
-
-
-    public static void createPartitionedTable(FEED_TYPE dataType, String dbName, String tableName,
-                                              HCatClient client, String tableLoc)
-            throws HCatException {
-        ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
-
-        //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
-
-        cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
-        cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
-
-        switch (dataType) {
-            case MINUTELY:
-                ptnCols.add(
-                        new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
-            case HOURLY:
-                ptnCols.add(
-                        new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
-            case DAILY:
-                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
-            case MONTHLY:
-                ptnCols.add(
-                        new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
-            case YEARLY:
-                ptnCols.add(
-                        new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
-            default:
-                break;
-        }
-        HCatCreateTableDesc tableDesc = HCatCreateTableDesc
-                .create(dbName, tableName, cols)
-                .fileFormat("rcfile")
-                .ifNotExists(true)
-                .partCols(ptnCols)
-                .isTableExternal(true)
-                .location(tableLoc)
-                .build();
-        client.dropTable(dbName, tableName, true);
-        client.createTable(tableDesc);
-    }
-
-    public static void createHCatTestData(HCatClient cli, FileSystem fs, FEED_TYPE dataType,
-                                          String dbName, String tableName,
-                                          ArrayList<String> dataFolder) throws HCatException {
-        HCatUtil.addPartitionsToExternalTable(cli, dataType, dbName, tableName, dataFolder);
-    }
-
-    public static void addPartitionsToExternalTable(HCatClient client, FEED_TYPE dataType,
-                                                    String dbName, String tableName,
-                                                    ArrayList<String> dataFolder)
-            throws HCatException {
-        //Adding specific partitions that map to an external location
-        Map<String, String> ptn = new HashMap<String, String>();
-        for (String aDataFolder : dataFolder) {
-            String[] parts = aDataFolder.split("/");
-            int s = parts.length - 1;
-            int subtractValue = 0;
-
-            switch (dataType) {
-                case MINUTELY:
-                    ptn.put("minute", parts[s]);
-                    ++subtractValue;
-                case HOURLY:
-                    ptn.put("hour", parts[s - subtractValue]);
-                    ++subtractValue;
-                case DAILY:
-                    ptn.put("day", parts[s - subtractValue]);
-                    ++subtractValue;
-                case MONTHLY:
-                    ptn.put("month", parts[s - subtractValue]);
-                    ++subtractValue;
-                case YEARLY:
-                    ptn.put("year", parts[s - subtractValue]);
-                default:
-                    break;
-            }
-            //Each HCat partition maps to a directory, not to a file
-            HCatAddPartitionDesc addPtn = HCatAddPartitionDesc.create(dbName,
-                    tableName, aDataFolder, ptn).build();
-            client.addPartition(addPtn);
-            ptn.clear();
-        }
     }
 }

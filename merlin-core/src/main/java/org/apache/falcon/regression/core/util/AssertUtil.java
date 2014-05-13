@@ -23,6 +23,8 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
@@ -31,6 +33,7 @@ import org.apache.oozie.client.OozieClientException;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.util.List;
 
 public class AssertUtil {
@@ -54,8 +57,8 @@ public class AssertUtil {
 
     /**
      * Checks that two lists have same size
-     * @param oneList first list
-     * @param anotherList second list
+     * @param expected expected list
+     * @param actual actual list
      */
     public static void checkForListSizes(List<?> expected, List<?> actual) {
         if(expected.size() != actual.size()) {
@@ -282,4 +285,20 @@ public class AssertUtil {
         checkNotStatus(oozieClient, entityType, data, expectedStatus);
     }
 
+    /**
+     * Checks size of the content a two locations
+     * @param firstPath path to the first location
+     * @param secondPath path to the second location
+     * @param fs hadoop file system for the locations
+     * @throws IOException
+     */
+    public static void checkContentSize(String firstPath, String secondPath, FileSystem fs) throws
+        IOException {
+        final ContentSummary firstSummary = fs.getContentSummary(new Path(firstPath));
+        final ContentSummary secondSummary = fs.getContentSummary(new Path(secondPath));
+        logger.info(firstPath + " : firstSummary = " + firstSummary.toString(false));
+        logger.info(secondPath + " : secondSummary = " + secondSummary.toString(false));
+        Assert.assertEquals(firstSummary.getLength(), secondSummary.getLength(),
+            "Contents at the two locations don't have same size.");
+    }
 }

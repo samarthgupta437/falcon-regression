@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.generated.dependencies.Frequency;
 import org.apache.falcon.regression.core.generated.process.EngineType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -54,7 +55,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -132,7 +132,8 @@ public class HCatProcessTest extends BaseTestClass {
         final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset = HadoopUtil
+            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -177,7 +178,8 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
+        AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+            outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
     }
 
     @Test(dataProvider = "generateSeparators")
@@ -188,8 +190,10 @@ public class HCatProcessTest extends BaseTestClass {
         final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final ArrayList<String> dataset = HadoopUtil
+            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset2 = HadoopUtil
+            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -277,7 +281,8 @@ public class HCatProcessTest extends BaseTestClass {
         final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset = HadoopUtil
+            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -338,8 +343,10 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/dt=" + dataDates.get(0));
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir2 + "/dt=" + dataDates.get(0));
+        AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+            outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
+        AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+            outputHDFSDir2 + "/dt=" + dataDates.get(0), clusterFS);
     }
 
 
@@ -351,8 +358,10 @@ public class HCatProcessTest extends BaseTestClass {
         final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final ArrayList<String> dataset = HadoopUtil
+            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset2 = HadoopUtil
+            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -460,7 +469,8 @@ public class HCatProcessTest extends BaseTestClass {
         final String datePattern = StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset = HadoopUtil
+            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -508,7 +518,8 @@ public class HCatProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut, ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0), outputHDFSDir + "/" + dataDates.get(0));
+        AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+            outputHDFSDir + "/" + dataDates.get(0), clusterFS);
     }
 
     @Test(dataProvider = "generateSeparators")
@@ -519,7 +530,8 @@ public class HCatProcessTest extends BaseTestClass {
         final String datePattern = StringUtils.join(new String[] {"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final ArrayList<String> dataset = HadoopUtil.createPeriodicDataset(dataDates,
+            localHCatData, clusterFS, inputHDFSDir);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -564,20 +576,8 @@ public class HCatProcessTest extends BaseTestClass {
                 clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED, defaultTimeOut,
                 ENTITY_TYPE.PROCESS);
 
-        checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
-                outputHDFSDir + "/dt=" + dataDates.get(0));
-    }
-
-    private void checkContentSize(String inputPath, String outputPath) throws IOException {
-        final ContentSummary inputContentSummary =
-                clusterFS.getContentSummary(new Path(inputPath));
-        final ContentSummary outputContentSummary =
-                clusterFS.getContentSummary(new Path(outputPath));
-        logger.info("inputContentSummary = " + inputContentSummary.toString(false));
-        logger.info("outputContentSummary = " + outputContentSummary.toString(false));
-        Assert.assertEquals(inputContentSummary.getLength(),
-                outputContentSummary.getLength(),
-                "Unexpected size of the output.");
+        AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
+            outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
     }
 
     private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations, String partitionCol,
@@ -593,17 +593,6 @@ public class HCatProcessTest extends BaseTestClass {
             partitionDesc.add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition).build());
         }
         clusterHC.addPartitions(partitionDesc);
-    }
-
-    private ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData, FileSystem fileSystem,
-                                                    String baseHDFSLocation) throws IOException {
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates)
-            dataFolder.add(baseHDFSLocation + "/" + dataDate);
-
-        HadoopUtil.flattenAndPutDataInFolder(fileSystem, localData, dataFolder);
-        return dataFolder;
     }
 
     public static List<String> getDatesList(String startDate, String endDate, String datePattern,

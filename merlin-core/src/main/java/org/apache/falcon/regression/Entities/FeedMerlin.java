@@ -73,77 +73,6 @@ public class FeedMerlin extends Feed {
         return "";
     }
 
-    public void generateData(HCatClient cli, FileSystem fs, String... copyFrom) throws Exception {
-        FEED_TYPE dataType;
-        ArrayList<String> dataFolder;
-        String ur = getTable().getUri();
-        if (ur.contains(";")) {
-            String[] parts = ur.split("#")[1].split(";");
-            int len = parts.length;
-            dataType = getDataType(len);
-        } else {
-            dataType = FEED_TYPE.YEARLY;
-        }
-        String dbName = ur.split("#")[0].split(":")[1];
-        String tableName = ur.split("#")[0].split(":")[2];
-
-        String loc = cli.getTable(dbName, tableName).getLocation();
-        loc = loc + "/";
-
-        dataFolder = createTestData(fs, dataType, loc, copyFrom);
-        HCatUtil.createHCatTestData(cli, fs, dataType, dbName, tableName, dataFolder);
-    }
-
-    public void generateData(FileSystem fs, String... copyFrom) throws Exception {
-        FEED_TYPE dataType;
-        String pathValue = "";
-        for (Location location : getLocations().getLocation()) {
-            if (location.getType().equals(LocationType.DATA)) {
-                pathValue = location.getPath();
-            }
-        }
-        String[] parts = pathValue.split("\\$");
-        int len = parts.length;
-        if (len != 2) {
-            dataType = getDataType(len - 1);
-        } else {
-            dataType = FEED_TYPE.YEARLY;
-        }
-        String loc = pathValue.substring(0, pathValue.indexOf("$"));
-        createTestData(fs, dataType, loc, copyFrom);
-    }
-
-    public ArrayList<String> createTestData(FileSystem fs, FEED_TYPE dataType, String loc,
-                                            String... copyFrom) throws Exception {
-        ArrayList<String> dataFolder;
-        DateTime start = new DateTime(getClusters().getCluster().get(0).getValidity()
-                .getStart(), DateTimeZone.UTC);
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-        String startDate = formatter.print(start);
-        DateTime end = new DateTime(getClusters().getCluster().get(0).getValidity().getEnd(),
-                DateTimeZone.UTC);
-        String endDate = formatter.print(end);
-        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-
-        dataFolder = HadoopUtil.createTestDataInHDFS(fs,
-                TimeUtil.getDatesOnEitherSide(startDateJoda, endDateJoda, dataType), loc, copyFrom);
-        return dataFolder;
-    }
-
-    public FEED_TYPE getDataType(int len) {
-        if (len == 5) {
-            return FEED_TYPE.MINUTELY;
-        } else if (len == 4) {
-            return FEED_TYPE.HOURLY;
-        } else if (len == 3) {
-            return FEED_TYPE.DAILY;
-        } else if (len == 2) {
-            return FEED_TYPE.MONTHLY;
-        }
-        return null;
-    }
-
     public String insertRetentionValueInFeed(String retentionValue) {
         //insert retentionclause
         getClusters().getCluster().get(0).getRetention()
@@ -156,7 +85,7 @@ public class FeedMerlin extends Feed {
         return toString();
     }
 
-    public String setTableValue(String pathValue, String dBName, String tableName) {
+    public String setTableValue(String dBName, String tableName, String pathValue) {
         getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
         //set the value
         return toString();
