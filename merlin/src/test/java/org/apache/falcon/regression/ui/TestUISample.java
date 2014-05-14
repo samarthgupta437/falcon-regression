@@ -19,35 +19,67 @@
 package org.apache.falcon.regression.ui;
 
 
+import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.process.Process;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.ui.pages.ClustersPage;
 import org.apache.falcon.regression.ui.pages.EntitiesPage;
-import org.apache.falcon.regression.ui.pages.FeedsPage;
+import org.apache.falcon.regression.ui.pages.ProcessPage;
+import org.apache.falcon.regression.ui.pages.ProcessesPage;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.Assert;
 
-
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
+
 
 public class TestUISample extends BaseTestClass {
 
+    private ColoHelper cluster = servers.get(0);
+    private String aggregateWorkflowDir = baseHDFSDir + "/TestUISample/aggregator";
+
     @BeforeMethod
-    public void setUp() {
+    public void setUp() throws Exception {
+        uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         openBrowser();
+        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = new Bundle(bundles[0], cluster);
+        bundles[0].generateUniqueBundle();
+        bundles[0].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[0].submitBundle(cluster);
     }
 
     @AfterMethod
     public void tearDown() {
         closeBrowser();
+        removeBundles();
     }
 
     @Test
-    public void test() throws InterruptedException, IOException {
-        EntitiesPage page = new FeedsPage(DRIVER, prism);
+    public void testFalconEnities() throws JAXBException, IOException {
+
+        EntitiesPage page = new ProcessesPage(DRIVER, cluster);
         page.navitageTo();
-        String status = page.getEntityStatus("agregated-logs16-67fb8cb3-4660-498d-b1e5-bbfa39b4c943");
+        String status = page.getEntityStatus(bundles[0].getProcessName());
         Assert.assertNotNull(status);
-        Assert.assertEquals(status, "UNKNOWN");
+        Assert.assertEquals(status, "UNKNOWN"); //TODO: Should be changed when BUG-17796 be resolved
+
+        page = new ClustersPage(DRIVER, cluster);
+        page.navitageTo();
+        status = page.getEntityStatus(bundles[0].getClusterNames().get(0));
+        Assert.assertNotNull(status);
+        Assert.assertEquals(status, "SUBMITTED");
+
+        ProcessPage page2 = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
+        page2.navitageTo();
+        Process process = page2.getEntity();
+        Assert.assertEquals(InstanceUtil.processToString(process),
+                InstanceUtil.processToString(InstanceUtil.getProcessElement(bundles[0])));
     }
 }
