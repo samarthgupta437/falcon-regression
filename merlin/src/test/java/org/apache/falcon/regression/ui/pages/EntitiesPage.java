@@ -1,0 +1,85 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.falcon.regression.ui.pages;
+
+
+import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public abstract class EntitiesPage extends Page {
+
+    private final static String ACTIVE_NXT_BTN
+            = "//ul/li[not(@class)]/a[contains(text(),'»')]";
+    protected final static String ENTITIES_TABLE
+            = "//table[@id='entity-list']/tbody/tr";
+    EntitiesPage(WebDriver driver, PrismHelper helper) {
+        super(driver, helper);
+        URL += "/index.html?type=";
+
+        expectedElement = ENTITIES_TABLE;
+    }
+
+    public String getEntityStatus(String entityName) {
+        navitageTo();
+        while (true) {
+            String status = getEntitiesOnPage().get(entityName);
+            if (status != null) return status;
+            if (nextPagePresent()) {
+                goNextPage();
+            } else {
+                break;
+            }
+        }
+        return null;
+    }
+
+    private void goNextPage() {
+        WebElement nextButton = driver.findElement(By.xpath(ACTIVE_NXT_BTN));
+        nextButton.click();
+        waitForElement(expectedElement, 10);
+    }
+
+    private boolean nextPagePresent() {
+        try {
+            new WebDriverWait(driver, 10).until(new Condition(ACTIVE_NXT_BTN));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    private Map<String,String> getEntitiesOnPage() {
+        List<WebElement> lines = driver.findElements(By.xpath(ENTITIES_TABLE));
+        Map<String, String> entities = new HashMap<String, String>();
+        for (WebElement line : lines) {
+            WebElement name = line.findElement(By.xpath("./td[1]/a"));
+            WebElement status = line.findElement(By.xpath("./td[2]"));
+            entities.put(name.getText(), status.getText());
+        }
+        return entities;
+    }
+}

@@ -28,6 +28,10 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.OozieClient;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,6 +60,7 @@ public class BaseTestClass {
     public static final String PRISM_PREFIX = "prism";
     protected Bundle[] bundles;
 
+    protected static WebDriver DRIVER;
 
     public BaseTestClass() {
         // loginFromKeytab as the current user
@@ -115,4 +120,25 @@ public class BaseTestClass {
             }
         }
     }
+
+    protected void openBrowser() {
+
+        FirefoxProfile profile = new FirefoxProfile();
+        DRIVER = new FirefoxDriver(profile);
+        DesiredCapabilities capability = DesiredCapabilities.firefox();
+        capability.setBrowserName("firefox");
+        capability.setCapability(FirefoxDriver.PROFILE, profile);
+        DRIVER.manage().window().maximize();
+
+    }
+
+    public void closeBrowser() {
+        if (DRIVER != null) {
+            DRIVER.close();
+            DRIVER.quit();
+            DRIVER = null;
+        }
+    }
+
+
 }
