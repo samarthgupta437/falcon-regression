@@ -18,13 +18,13 @@
 
 package org.apache.falcon.regression.ui.pages;
 
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.openqa.selenium.WebDriver;
 
 public class FeedsPage extends EntitiesPage {
 
     public FeedsPage(WebDriver driver, PrismHelper helper) {
-        super(driver, helper);
-        URL += "feed";
+        super(driver, helper, ENTITY_TYPE.FEED);
     }
 }

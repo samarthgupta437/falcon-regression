@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.ui.pages;
 
 
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
@@ -36,9 +37,9 @@ public abstract class EntitiesPage extends Page {
             = "//ul/li[not(@class)]/a[contains(text(),'»')]";
     protected final static String ENTITIES_TABLE
             = "//table[@id='entity-list']/tbody/tr";
-    EntitiesPage(WebDriver driver, PrismHelper helper) {
+    EntitiesPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type) {
         super(driver, helper);
-        URL += "/index.html?type=";
+        URL += "/index.html?type=" + type.toString().toLowerCase();
 
         expectedElement = ENTITIES_TABLE;
     }

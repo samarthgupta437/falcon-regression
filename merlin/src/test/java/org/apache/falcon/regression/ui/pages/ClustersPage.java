@@ -18,13 +18,13 @@
 
 package org.apache.falcon.regression.ui.pages;
 
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.openqa.selenium.WebDriver;
 
 public class ClustersPage extends EntitiesPage {
 
     public ClustersPage(WebDriver driver, PrismHelper helper) {
-        super(driver, helper);
-        URL += "cluster";
+        super(driver, helper, ENTITY_TYPE.CLUSTER);
     }
 }
