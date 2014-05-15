@@ -96,16 +96,17 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[2] = new Bundle(b, cluster3);
         setBundleWFPath(bundles[0], bundles[1], bundles[2]);
         bundles[1].addClusterToBundle(bundles[2].getClusters().get(0),
-          ClusterType.TARGET, null, null);
+            ClusterType.TARGET, null, null);
         usualGrind(cluster3, bundles[1]);
     }
 
     @BeforeClass(alwaysRun = true)
     public void setup() throws Exception {
-        for (String wfPath : new String[]{WORKFLOW_PATH, WORKFLOW_PATH2, aggregatorPath, aggregator1Path}) {
+        for (String wfPath : new String[]{WORKFLOW_PATH, WORKFLOW_PATH2, aggregatorPath,
+            aggregator1Path}) {
             uploadDirToClusters(wfPath, OSUtil.RESOURCES_OOZIE);
         }
-       Util.restartService(cluster3.getClusterHelper());
+        Util.restartService(cluster3.getClusterHelper());
 
     }
 
@@ -116,7 +117,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessFrequencyInEachColoWithOneProcessRunning_Monthly()
-            throws Exception {
+        throws Exception {
         final String START_TIME = TimeUtil.getTimeWrtSystemTime(-20);
         String endTime = TimeUtil.getTimeWrtSystemTime(4000 * 60);
         bundles[1].setProcessPeriodicity(1, TimeUnit.months);
@@ -126,73 +127,74 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
-      InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
-      waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
+        waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
-      List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-              ENTITY_TYPE.PROCESS);
+        List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
+            ENTITY_TYPE.PROCESS);
 
 
         String updatedProcess = InstanceUtil
-                .setProcessFrequency(bundles[1].getProcessData(),
-                        new Frequency(5, TimeUnit.minutes));
+            .setProcessFrequency(bundles[1].getProcessData(),
+                new Frequency(5, TimeUnit.minutes));
 
         logger.info("updated process: " + updatedProcess);
 
         //now to update
         while (Util
-                .parseResponse(prism.getProcessHelper()
-                        .update((bundles[1].getProcessData()), updatedProcess))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            .parseResponse(prism.getProcessHelper()
+                .update((bundles[1].getProcessData()), updatedProcess))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
 
         String prismString = getResponse(prism, bundles[1], true);
         Assert.assertEquals(Util.getProcessObject(prismString).getFrequency(),
-                Util.getProcessObject(updatedProcess).getFrequency());
+            Util.getProcessObject(updatedProcess).getFrequency());
         Thread.sleep(60000);
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, false);
+            bundles[1].getProcessData(), true, false);
         waitingForBundleFinish(cluster3, oldBundleId, 5);
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),1,10);
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1, 10);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                Util.readEntityName(bundles[1].getProcessData()), true, true);
+            Util.readEntityName(bundles[1].getProcessData()), true, true);
 
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessRollStartTimeForwardInEachColoWithOneProcessRunning()
-            throws Exception {
+        throws Exception {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
-        List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
+        List<String> oldNominalTimes =
+            OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
 
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getStart()
         ), 20);
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getStart()
         ), 30);
 
         bundles[1].setProcessValidity(newStartTime, newEndTime);
@@ -201,15 +203,15 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         logger.info("updated process: " + bundles[1].getProcessData());
         while (Util.parseResponse(
-                prism.getProcessHelper()
-                        .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            prism.getProcessHelper()
+                .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
 
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, false);
+            bundles[1].getProcessData(), true, false);
 
         dualComparison(bundles[1], cluster3);
         while (!OozieUtil.isBundleOver(cluster3, oldBundleId)) {
@@ -218,44 +220,44 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         int finalNumberOfInstances =
-                InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+            InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
         Assert.assertEquals(finalNumberOfInstances,
-                getExpectedNumberOfWorkflowInstances(TimeUtil
-                        .dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getStart()
-                        ),
-                        TimeUtil
-                                .dateToOozieDate(
-                                        bundles[1].getProcessObject().getClusters().getCluster()
-                                                .get(0).getValidity()
-                                                .getEnd()
-                                )));
+            getExpectedNumberOfWorkflowInstances(TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                            .getValidity().getStart()
+                    ),
+                TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster()
+                            .get(0).getValidity()
+                            .getEnd()
+                    )));
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
         int expectedNumberOfWorkflows =
-                getExpectedNumberOfWorkflowInstances(newStartTime, TimeUtil
-                        .dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getEnd()
-                        ));
+            getExpectedNumberOfWorkflowInstances(newStartTime, TimeUtil
+                .dateToOozieDate(
+                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        .getValidity().getEnd()
+                ));
         Assert.assertEquals(OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId),
-                expectedNumberOfWorkflows);
+            expectedNumberOfWorkflows);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1800000)
     public void updateProcessConcurrencyWorkflowExecutionInEachColoWithOneColoDown()
-            throws Exception {
+        throws Exception {
         try {
             //bundles[1].generateUniqueBundle();
             bundles[1].submitBundle(prism);
             //now to schedule in 1 colo and let it remain in another
             AssertUtil.assertSucceeded(
-                    cluster3.getProcessHelper()
-                            .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+                cluster3.getProcessHelper()
+                    .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
             String oldBundleId = InstanceUtil
-                    .getLatestBundleID(cluster3,
-                            Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+                .getLatestBundleID(cluster3,
+                    Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
             Thread.sleep(25000);
 
             int initialConcurrency = bundles[1].getProcessObject().getParallel();
@@ -266,64 +268,66 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             //suspend
             Util.shutDownService(cluster3.getProcessHelper());
             AssertUtil.assertPartial(
-                    prism.getProcessHelper()
-                            .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
+                prism.getProcessHelper()
+                    .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
             //now to update
 
             String prismString = getResponse(prism, bundles[1], true);
             Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
-                    initialConcurrency);
+                initialConcurrency);
             Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                    WORKFLOW_PATH);
+                WORKFLOW_PATH);
             Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
-                    bundles[1].getProcessObject().getOrder());
+                bundles[1].getProcessObject().getOrder());
 
             String coloString = getResponse(cluster2, bundles[1], true);
             Assert.assertEquals(Util.getProcessObject(coloString).getWorkflow().getPath(),
-                    WORKFLOW_PATH2);
+                WORKFLOW_PATH2);
 
             Util.startService(cluster3.getProcessHelper());
 
             dualComparisonFailure(bundles[1], cluster3);
             //ensure that the running process has new coordinators created; while the submitted
             // one is updated correctly.
-            AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil
+                .checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
             waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
             while (Util.parseResponse(
-                    prism.getProcessHelper()
-                            .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
-                    .getStatus() != APIResult.Status.SUCCEEDED) {
+                prism.getProcessHelper()
+                    .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
+                .getStatus() != APIResult.Status.SUCCEEDED) {
                 logger.info("WARNING: update did not scceed, retyring ");
                 Thread.sleep(20000);
             }
             prismString = getResponse(prism, bundles[1], true);
             Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
-                    initialConcurrency + 3);
+                initialConcurrency + 3);
             Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                    WORKFLOW_PATH2);
+                WORKFLOW_PATH2);
             Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
-                    bundles[1].getProcessObject().getOrder());
+                bundles[1].getProcessObject().getOrder());
             dualComparison(bundles[1], cluster3);
-            AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil
+                .checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
             waitingForBundleFinish(cluster3, oldBundleId);
             int finalNumberOfInstances =
-                    InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
-                            Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+                InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
+                    Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
 
             int expectedInstances =
-                    getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                            .getValidity().getStart()
-                            ),
-                            TimeUtil
-                                    .dateToOozieDate(
-                                            bundles[1].getProcessObject().getClusters().getCluster()
-                                                    .get(0).getValidity()
-                                                    .getEnd()
-                                    ));
+                getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                            .getValidity().getStart()
+                    ),
+                    TimeUtil
+                        .dateToOozieDate(
+                            bundles[1].getProcessObject().getClusters().getCluster()
+                                .get(0).getValidity()
+                                .getEnd()
+                        ));
             Assert.assertEquals(finalNumberOfInstances, expectedInstances,
-                    "number of instances doesnt match :(");
+                "number of instances doesnt match :(");
         } finally {
             Util.restartService(cluster3.getClusterHelper());
         }
@@ -338,36 +342,36 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
         logger.info("original process: " + bundles[1].getProcessData());
 
         String updatedProcess = InstanceUtil
-                .setProcessFrequency(bundles[1].getProcessData(),
-                        new Frequency(7, TimeUnit.minutes));
+            .setProcessFrequency(bundles[1].getProcessData(),
+                new Frequency(7, TimeUnit.minutes));
 
         logger.info("updated process: " + updatedProcess);
 
         //now to update
 
         ServiceResponse response =
-                prism.getProcessHelper().update(updatedProcess, updatedProcess);
+            prism.getProcessHelper().update(updatedProcess, updatedProcess);
         AssertUtil.assertSucceeded(response);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, false);
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),1,10);
+            bundles[1].getProcessData(), true, false);
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1, 10);
 
         String prismString = getResponse(prism, bundles[1], true);
         Assert.assertEquals(Util.getProcessObject(prismString).getFrequency(),
-                Util.getProcessObject(updatedProcess).getFrequency());
+            Util.getProcessObject(updatedProcess).getFrequency());
         dualComparison(bundles[1], cluster3);
         waitingForBundleFinish(cluster3, oldBundleId);
 
@@ -381,32 +385,34 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         String originalProcessData = bundles[1].getProcessData();
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         Thread.sleep(20000);
-        List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
+        List<String> oldNominalTimes =
+            OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
         bundles[1].setProcessName("myNewProcessName");
 
         //now to update
         ServiceResponse response =
-                prism.getProcessHelper().update((bundles[1].getProcessData()), bundles[1].getProcessData());
+            prism.getProcessHelper()
+                .update((bundles[1].getProcessData()), bundles[1].getProcessData());
         AssertUtil.assertFailed(response);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                Util.readEntityName(originalProcessData), false, false);
+            Util.readEntityName(originalProcessData), false, false);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessConcurrencyInEachColoWithOneProcessRunning()
-            throws Exception {
+        throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-2);
         String endTime = TimeUtil.getTimeWrtSystemTime(10);
         bundles[1].setProcessValidity(startTime, endTime);
@@ -415,12 +421,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
 
@@ -429,65 +435,66 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         //now to update
         DateTime updateTime = new DateTime(DateTimeZone.UTC);
         Thread.sleep(60000);
-        List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
+        List<String> oldNominalTimes =
+            OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
         logger.info("updating at " + updateTime);
         while (Util
-                .parseResponse(updateProcessConcurrency(bundles[1],
-                        bundles[1].getProcessObject().getParallel() + 3))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            .parseResponse(updateProcessConcurrency(bundles[1],
+                bundles[1].getProcessObject().getParallel() + 3))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             logger.info("WARNING: update did not scceed, retyring ");
             Thread.sleep(20000);
         }
 
         String prismString = getResponse(prism, bundles[1], true);
         Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
-                bundles[1].getProcessObject().getParallel() + 3);
+            bundles[1].getProcessObject().getParallel() + 3);
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated
         // correctly.
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(),
-                false, true);
+            bundles[1].getProcessData(),
+            false, true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
         // future : should be verified using cord xml
         Job.Status status = OozieUtil.getOozieJobStatus(cluster3.getFeedHelper().getOozieClient(),
-                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         boolean doesExist = false;
         while (status != Job.Status.SUCCEEDED && status != Job.Status.FAILED &&
-                status != Job.Status.DONEWITHERROR) {
+            status != Job.Status.DONEWITHERROR) {
             int statusCount = InstanceUtil
-                    .getInstanceCountWithStatus(cluster3,
-                            Util.readEntityName(bundles[1].getProcessData()),
-                            org.apache.oozie.client.CoordinatorAction.Status.RUNNING,
-                            ENTITY_TYPE.PROCESS);
+                .getInstanceCountWithStatus(cluster3,
+                    Util.readEntityName(bundles[1].getProcessData()),
+                    org.apache.oozie.client.CoordinatorAction.Status.RUNNING,
+                    ENTITY_TYPE.PROCESS);
             if (statusCount == bundles[1].getProcessObject().getParallel() + 3) {
                 doesExist = true;
                 break;
             }
             status = OozieUtil.getOozieJobStatus(cluster3.getFeedHelper().getOozieClient(),
-                    Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
             Assert.assertNotNull(status,
-                    "status must not be null!");
+                "status must not be null!");
             Thread.sleep(30000);
         }
 
         Assert.assertTrue(doesExist, "Er! The desired concurrency levels are never reached!!!");
         int expectedNumberOfInstances =
-                getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getStart()
-                        ),
-                        TimeUtil
-                                .dateToOozieDate(
-                                        bundles[1].getProcessObject().getClusters().getCluster()
-                                                .get(0).getValidity()
-                                                .getEnd()
-                                ));
+            getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        .getValidity().getStart()
+                ),
+                TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster()
+                            .get(0).getValidity()
+                            .getEnd()
+                    ));
         Assert.assertEquals(OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId),
-                expectedNumberOfInstances);
+            expectedNumberOfInstances);
     }
 
 
@@ -496,58 +503,58 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
 
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getEnd()
         ), 4);
         bundles[1].setProcessValidity(TimeUtil.dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                                .getStart()
-                ),
-                newEndTime);
+                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getStart()
+            ),
+            newEndTime);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         ServiceResponse response = prism.getProcessHelper()
-                .update(bundles[1].getProcessData(), bundles[1].getProcessData());
+            .update(bundles[1].getProcessData(), bundles[1].getProcessData());
         for (int i = 0; i < 10 &&
-                Util.parseResponse(response).getStatus() != APIResult.Status.SUCCEEDED; ++ i) {
+            Util.parseResponse(response).getStatus() != APIResult.Status.SUCCEEDED; ++i) {
             response = prism.getProcessHelper()
-                    .update(bundles[1].getProcessData(), bundles[1].getProcessData());
+                .update(bundles[1].getProcessData(), bundles[1].getProcessData());
             java.util.concurrent.TimeUnit.SECONDS.sleep(6);
         }
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
-                APIResult.Status.SUCCEEDED, "Process update did not succeed.");
+            APIResult.Status.SUCCEEDED, "Process update did not succeed.");
 
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), false, true);
+            bundles[1].getProcessData(), false, true);
 
         int i = 0;
 
         while (OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId)
-                != getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                                .getStart()
-                ),
-                TimeUtil
-                        .dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity()
-                                        .getEnd()
-                        ))
-                && i < 10) {
+            != getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getStart()
+            ),
+            TimeUtil
+                .dateToOozieDate(
+                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        .getValidity()
+                        .getEnd()
+                ))
+            && i < 10) {
             Thread.sleep(1000);
             i++;
         }
@@ -561,27 +568,27 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         // one is updated
         // correctly.
         int finalNumberOfInstances = InstanceUtil
-                .getProcessInstanceList(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
-                .size();
+            .getProcessInstanceList(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
+            .size();
         Assert.assertEquals(finalNumberOfInstances,
-                getExpectedNumberOfWorkflowInstances(TimeUtil
-                        .dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getStart()
-                        ),
-                        TimeUtil
-                                .dateToOozieDate(
-                                        bundles[1].getProcessObject().getClusters().getCluster()
-                                                .get(0).getValidity()
-                                                .getEnd()
-                                )));
+            getExpectedNumberOfWorkflowInstances(TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                            .getValidity().getStart()
+                    ),
+                TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster()
+                            .get(0).getValidity()
+                            .getEnd()
+                    )));
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessConcurrencyInEachColoWithOneProcessSuspended()
-            throws Exception {
+        throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-2);
         String endTime = TimeUtil.getTimeWrtSystemTime(7);
         bundles[1].setProcessValidity(startTime, endTime);
@@ -589,63 +596,63 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
 
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
         //now to update
         while (Util
-                .parseResponse(updateProcessConcurrency(bundles[1],
-                        bundles[1].getProcessObject().getParallel() + 3))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            .parseResponse(updateProcessConcurrency(bundles[1],
+                bundles[1].getProcessObject().getParallel() + 3))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             logger.info("WARNING: update did not scceed, retyring ");
             Thread.sleep(20000);
         }
 
         String prismString = getResponse(prism, bundles[1], true);
         Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
-                bundles[1].getProcessObject().getParallel() + 3);
+            bundles[1].getProcessObject().getParallel() + 3);
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), false, true);
+            bundles[1].getProcessData(), false, true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
         AssertUtil.assertSucceeded(cluster3.getProcessHelper()
-                .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
+            .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
         AssertUtil.checkStatus(cluster3OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
         Job.Status status = OozieUtil.getOozieJobStatus(cluster3.getFeedHelper().getOozieClient(),
-                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         boolean doesExist = false;
         while (status != Job.Status.SUCCEEDED && status != Job.Status.FAILED &&
-                status != Job.Status.DONEWITHERROR) {
+            status != Job.Status.DONEWITHERROR) {
             if (InstanceUtil
-                    .getInstanceCountWithStatus(cluster3,
-                            Util.readEntityName(bundles[1].getProcessData()),
-                            org.apache.oozie.client.CoordinatorAction.Status.RUNNING,
-                            ENTITY_TYPE.PROCESS) ==
-                    bundles[1].getProcessObject().getParallel()) {
+                .getInstanceCountWithStatus(cluster3,
+                    Util.readEntityName(bundles[1].getProcessData()),
+                    org.apache.oozie.client.CoordinatorAction.Status.RUNNING,
+                    ENTITY_TYPE.PROCESS) ==
+                bundles[1].getProcessObject().getParallel()) {
                 doesExist = true;
                 break;
             }
             status = OozieUtil.getOozieJobStatus(cluster3.getFeedHelper().getOozieClient(),
-                    Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         }
 
         Assert.assertTrue(doesExist, "Er! The desired concurrency levels are never reached!!!");
@@ -653,23 +660,23 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         waitingForBundleFinish(cluster3, oldBundleId);
 
         int finalNumberOfInstances =
-                InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+            InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
 
         int expectedInstances =
-                getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getStart()
-                        ),
-                        TimeUtil
-                                .dateToOozieDate(
-                                        bundles[1].getProcessObject().getClusters().getCluster()
-                                                .get(0).getValidity()
-                                                .getEnd()
-                                ));
+            getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        .getValidity().getStart()
+                ),
+                TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster()
+                            .get(0).getValidity()
+                            .getEnd()
+                    ));
 
         Assert.assertEquals(finalNumberOfInstances, expectedInstances,
-                "number of instances doesnt match :(");
+            "number of instances doesnt match :(");
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
@@ -685,24 +692,24 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             logger.info("process to be scheduled: " + bundles[1].getProcessData());
 
             AssertUtil.assertSucceeded(
-                    cluster3.getProcessHelper()
-                            .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+                cluster3.getProcessHelper()
+                    .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
             InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
             String oldBundleId = InstanceUtil
-                    .getLatestBundleID(cluster3,
-                            Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+                .getLatestBundleID(cluster3,
+                    Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
             List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                    ENTITY_TYPE.PROCESS);
+                ENTITY_TYPE.PROCESS);
 
 
             //now to update
             Util.shutDownService(cluster3.getClusterHelper());
 
             ServiceResponse response =
-                    updateProcessConcurrency(bundles[1],
-                            bundles[1].getProcessObject().getParallel() + 3);
+                updateProcessConcurrency(bundles[1],
+                    bundles[1].getProcessObject().getParallel() + 3);
             AssertUtil.assertPartial(response);
 
             Util.startService(cluster3.getClusterHelper());
@@ -710,69 +717,70 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             String prismString = getResponse(prism, bundles[1], true);
             dualComparisonFailure(bundles[1], cluster3);
             Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
-                    bundles[1].getProcessObject().getParallel());
+                bundles[1].getProcessObject().getParallel());
 
             //ensure that the running process has new coordinators created; while the submitted
             // one is updated correctly.
             AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1],
-                    Job.Status.RUNNING);
+                Job.Status.RUNNING);
 
             while (Util
-                    .parseResponse(updateProcessConcurrency(bundles[1],
-                            bundles[1].getProcessObject().getParallel() + 3))
-                    .getStatus() != APIResult.Status.SUCCEEDED) {
+                .parseResponse(updateProcessConcurrency(bundles[1],
+                    bundles[1].getProcessObject().getParallel() + 3))
+                .getStatus() != APIResult.Status.SUCCEEDED) {
                 logger.info("WARNING: update did not scceed, retyring ");
                 Thread.sleep(20000);
             }
             dualComparison(bundles[1], cluster3);
             dualComparison(bundles[1], cluster2);
 
-            Job.Status status = OozieUtil.getOozieJobStatus(cluster3.getFeedHelper().getOozieClient(),
+            Job.Status status =
+                OozieUtil.getOozieJobStatus(cluster3.getFeedHelper().getOozieClient(),
                     Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
             boolean doesExist = false;
             while (status != Job.Status.SUCCEEDED && status != Job.Status.FAILED &&
-                    status != Job.Status.DONEWITHERROR) {
+                status != Job.Status.DONEWITHERROR) {
                 if (InstanceUtil
-                        .getInstanceCountWithStatus(cluster3,
-                                Util.readEntityName(bundles[1].getProcessData()),
-                                org.apache.oozie.client.CoordinatorAction.Status.RUNNING,
-                                ENTITY_TYPE.PROCESS) ==
-                        bundles[1].getProcessObject().getParallel() + 3) {
+                    .getInstanceCountWithStatus(cluster3,
+                        Util.readEntityName(bundles[1].getProcessData()),
+                        org.apache.oozie.client.CoordinatorAction.Status.RUNNING,
+                        ENTITY_TYPE.PROCESS) ==
+                    bundles[1].getProcessObject().getParallel() + 3) {
                     doesExist = true;
                     break;
                 }
                 status = OozieUtil.getOozieJobStatus(cluster3.getFeedHelper().getOozieClient(),
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+                    Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
                 Thread.sleep(30000);
             }
             Assert.assertTrue(doesExist, "Er! The desired concurrency levels are never reached!!!");
             OozieUtil.verifyNewBundleCreation(cluster3, InstanceUtil
-                            .getLatestBundleID(cluster3,
-                                    Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS),
-                    oldNominalTimes, Util.readEntityName(bundles[1].getProcessData()), false,
-                    true
+                    .getLatestBundleID(cluster3,
+                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS),
+                oldNominalTimes, Util.readEntityName(bundles[1].getProcessData()), false,
+                true
             );
 
             waitingForBundleFinish(cluster3, oldBundleId);
 
             int finalNumberOfInstances =
-                    InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
-                            Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+                InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
+                    Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
 
             int expectedInstances =
-                    getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                            .getValidity().getStart()
-                            ),
-                            TimeUtil
-                                    .dateToOozieDate(
-                                            bundles[1].getProcessObject().getClusters().getCluster()
-                                                    .get(0).getValidity()
-                                                    .getEnd()
-                                    ));
+                getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                            .getValidity().getStart()
+                    ),
+                    TimeUtil
+                        .dateToOozieDate(
+                            bundles[1].getProcessObject().getClusters().getCluster()
+                                .get(0).getValidity()
+                                .getEnd()
+                        ));
             Assert.assertEquals(finalNumberOfInstances, expectedInstances,
-                    "number of instances doesnt match :(");
+                "number of instances doesnt match :(");
         } finally {
             Util.restartService(cluster3.getProcessHelper());
         }
@@ -780,7 +788,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessConcurrencyExecutionWorkflowInEachColoWithOneProcessRunning()
-            throws Exception {
+        throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-2);
         String endTime = TimeUtil.getTimeWrtSystemTime(6);
         bundles[1].setProcessValidity(startTime, endTime);
@@ -788,17 +796,16 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
-
+            ENTITY_TYPE.PROCESS);
 
 
         int initialConcurrency = bundles[1].getProcessObject().getParallel();
@@ -814,46 +821,46 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         logger.info("updating @ " + updateTime);
 
         while (Util.parseResponse(
-                prism.getProcessHelper().update((bundles[1].getProcessData()), bundles[1]
-                        .getProcessData())).getStatus() != APIResult.Status.SUCCEEDED) {
+            prism.getProcessHelper().update((bundles[1].getProcessData()), bundles[1]
+                .getProcessData())).getStatus() != APIResult.Status.SUCCEEDED) {
             Thread.sleep(10000);
         }
         String prismString = getResponse(prism, bundles[1], true);
         Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
-                initialConcurrency + 3);
+            initialConcurrency + 3);
         Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                aggregator1Path);
+            aggregator1Path);
         Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
-                bundles[1].getProcessObject().getOrder());
+            bundles[1].getProcessObject().getOrder());
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         waitingForBundleFinish(cluster3, oldBundleId);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, true);
+            bundles[1].getProcessData(), true, true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
         int finalNumberOfInstances =
-                InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+            InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
         int expectedInstances =
-                getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getStart()
-                        ),
-                        TimeUtil
-                                .dateToOozieDate(
-                                        bundles[1].getProcessObject().getClusters().getCluster()
-                                                .get(0).getValidity()
-                                                .getEnd()
-                                ));
+            getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        .getValidity().getStart()
+                ),
+                TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster()
+                            .get(0).getValidity()
+                            .getEnd()
+                    ));
 
         Assert.assertEquals(finalNumberOfInstances, expectedInstances,
-                "number of instances doesnt match :(");
+            "number of instances doesnt match :(");
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessConcurrencyExecutionWorkflowInEachColoWithOneProcessSuspended()
-            throws Exception {
+        throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(2);
         String endTime = TimeUtil.getTimeWrtSystemTime(6);
         bundles[1].setProcessValidity(startTime, endTime);
@@ -861,18 +868,18 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         int initialConcurrency = bundles[1].getProcessObject().getParallel();
 
@@ -881,54 +888,54 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].getProcessObject().setOrder(getRandomExecutionType(bundles[1]));
         //suspend
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
 
         //now to update
         String updateTime = new DateTime(DateTimeZone.UTC).plusMinutes(2).toString();
         logger.info("updating @ " + updateTime);
         while (Util.parseResponse(
-                prism.getProcessHelper()
-                        .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            prism.getProcessHelper()
+                .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             Thread.sleep(10000);
         }
 
         AssertUtil.assertSucceeded(cluster3.getProcessHelper()
-                .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
+            .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
 
         String prismString = getResponse(prism, bundles[1], true);
         Assert.assertEquals(Util.getProcessObject(prismString).getParallel(),
-                initialConcurrency + 3);
+            initialConcurrency + 3);
         Assert.assertEquals(Util.getProcessObject(prismString).getWorkflow().getPath(),
-                aggregator1Path);
+            aggregator1Path);
         Assert.assertEquals(Util.getProcessObject(prismString).getOrder(),
-                bundles[1].getProcessObject().getOrder());
+            bundles[1].getProcessObject().getOrder());
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         waitingForBundleFinish(cluster3, oldBundleId);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, true);
+            bundles[1].getProcessData(), true, true);
         AssertUtil.checkNotStatus(cluster3OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
         int finalNumberOfInstances =
-                InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+            InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
 
         int expectedInstances =
-                getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getStart()
-                        ),
-                        TimeUtil
-                                .dateToOozieDate(
-                                        bundles[1].getProcessObject().getClusters().getCluster()
-                                                .get(0).getValidity()
-                                                .getEnd()
-                                ));
+            getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        .getValidity().getStart()
+                ),
+                TimeUtil
+                    .dateToOozieDate(
+                        bundles[1].getProcessObject().getClusters().getCluster()
+                            .get(0).getValidity()
+                            .getEnd()
+                    ));
 
         Assert.assertEquals(finalNumberOfInstances, expectedInstances,
-                "number of instances doesnt match :(");
+            "number of instances doesnt match :(");
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
@@ -940,18 +947,18 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         Thread.sleep(20000);
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
 
         String newFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[1]) + "2";
@@ -962,18 +969,17 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         logger.info(inputFeed);
         AssertUtil.assertSucceeded(
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
 
         while (Util.parseResponse(
-                prism.getProcessHelper()
-                        .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            prism.getProcessHelper()
+                .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             Thread.sleep(20000);
         }
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, false);
+            bundles[1].getProcessData(), true, false);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1, 10);
-
 
 
         bundles[1].verifyDependencyListing();
@@ -983,9 +989,9 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         // one is updated correctly.
         waitingForBundleFinish(cluster3, oldBundleId);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, true);
+            bundles[1].getProcessData(), true, true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
-     }
+    }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessAddNewInputInEachColoWithOneProcessSuspended() throws Exception {
@@ -996,17 +1002,17 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
 
         String newFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[1]) + "2";
@@ -1016,24 +1022,24 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         inputFeed = Util.setFeedName(inputFeed, newFeedName);
 
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
         AssertUtil.assertSucceeded(
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
 
         while (Util.parseResponse(
-                prism.getProcessHelper()
-                        .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            prism.getProcessHelper()
+                .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             Thread.sleep(10000);
         }
 
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, false);
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),1,10);
+            bundles[1].getProcessData(), true, false);
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1, 10);
 
         AssertUtil.assertSucceeded(cluster3.getProcessHelper()
-                .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
+            .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
 
         bundles[1].verifyDependencyListing();
 
@@ -1042,7 +1048,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         // one is updated correctly.
         waitingForBundleFinish(cluster3, oldBundleId);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, true);
+            bundles[1].getProcessData(), true, true);
         AssertUtil.checkNotStatus(cluster3OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
 
     }
@@ -1060,57 +1066,56 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             String inputFeed = BundleUtil.getInputFeedFromBundle(bundles[1]);
             bundles[1].addProcessInput(newFeedName, "inputData2");
             inputFeed = Util.setFeedName(inputFeed, newFeedName);
-            String updatedProcess =  bundles[1].getProcessData();
+            String updatedProcess = bundles[1].getProcessData();
 
 
             //now to schedule in 1 colo and let it remain in another
             AssertUtil.assertSucceeded(
-                    cluster3.getProcessHelper()
-                            .schedule(URLS.SCHEDULE_URL, originalProcess));
+                cluster3.getProcessHelper()
+                    .schedule(URLS.SCHEDULE_URL, originalProcess));
             InstanceUtil.waitTillInstancesAreCreated(cluster3, originalProcess, 0, 10);
 
             String oldBundleId = InstanceUtil
-                    .getLatestBundleID(cluster3,
-                            Util.readEntityName(originalProcess), ENTITY_TYPE.PROCESS);
+                .getLatestBundleID(cluster3,
+                    Util.readEntityName(originalProcess), ENTITY_TYPE.PROCESS);
 
-            InstanceUtil.waitTillInstancesAreCreated(cluster3,originalProcess,0,10);
+            InstanceUtil.waitTillInstancesAreCreated(cluster3, originalProcess, 0, 10);
             List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                    ENTITY_TYPE.PROCESS);
-
+                ENTITY_TYPE.PROCESS);
 
 
             //submit new feed
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
+                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
 
 
             Util.shutDownService(cluster3.getProcessHelper());
 
             AssertUtil.assertPartial(
-                    prism.getProcessHelper()
-                            .update(updatedProcess, updatedProcess));
+                prism.getProcessHelper()
+                    .update(updatedProcess, updatedProcess));
 
             Util.startService(cluster3.getProcessHelper());
             bundles[1].verifyDependencyListing();
 
             dualComparison(bundles[1], cluster3);
-            Assert.assertFalse(Util.isDefinitionSame(cluster2,prism,originalProcess));
+            Assert.assertFalse(Util.isDefinitionSame(cluster2, prism, originalProcess));
 
 
             //ensure that the running process has new coordinators created; while the submitted
             // one is updated correctly.
             OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                    bundles[1].getProcessData(), false, false);
+                bundles[1].getProcessData(), false, false);
             AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1],
-                    Job.Status.RUNNING);
+                Job.Status.RUNNING);
 
             waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
             while (Util.parseResponse(
-                    prism.getProcessHelper()
-                            .update(updatedProcess, updatedProcess))
+                prism.getProcessHelper()
+                    .update(updatedProcess, updatedProcess))
 
-                    .getStatus() != APIResult.Status.SUCCEEDED) {
+                .getStatus() != APIResult.Status.SUCCEEDED) {
                 logger.info("update didnt SUCCEED in last attempt");
                 Thread.sleep(10000);
             }
@@ -1118,16 +1123,16 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             Assert.assertTrue(Util.isDefinitionSame(cluster2, prism, originalProcess));
             bundles[1].verifyDependencyListing();
             OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                    updatedProcess, true, false);
+                updatedProcess, true, false);
             waitingForBundleFinish(cluster3, oldBundleId);
 
 
-            InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),1,10);
+            InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1, 10);
 
             OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                    bundles[1].getProcessData(), true, true);
+                bundles[1].getProcessData(), true, true);
             AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1],
-                    Job.Status.RUNNING);
+                Job.Status.RUNNING);
 
 
         } finally {
@@ -1140,37 +1145,37 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getEnd()
         ), -2);
         bundles[1].setProcessValidity(TimeUtil.dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                                .getStart()
-                ),
-                newEndTime);
+                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getStart()
+            ),
+            newEndTime);
         while (Util.parseResponse(
-                (prism.getProcessHelper()
-                        .update(bundles[1].getProcessData(), bundles[1].getProcessData())))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            (prism.getProcessHelper()
+                .update(bundles[1].getProcessData(), bundles[1].getProcessData())))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), false, true);
+            bundles[1].getProcessData(), false, true);
 
 
         bundles[1].verifyDependencyListing();
@@ -1180,24 +1185,24 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         int finalNumberOfInstances = InstanceUtil
-                .getProcessInstanceList(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
-                .size();
+            .getProcessInstanceList(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
+            .size();
         Assert.assertEquals(finalNumberOfInstances,
-                getExpectedNumberOfWorkflowInstances(bundles[1]
-                        .getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart(),
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                .getValidity().getEnd()));
+            getExpectedNumberOfWorkflowInstances(bundles[1]
+                    .getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getStart(),
+                bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    .getValidity().getEnd()));
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
         int expectedNumberOfWorkflows =
-                getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                                bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                        .getValidity().getStart()
-                        ),
-                        newEndTime);
+            getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
+                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        .getValidity().getStart()
+                ),
+                newEndTime);
         Assert.assertEquals(OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId),
-                expectedNumberOfWorkflows);
+            expectedNumberOfWorkflows);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
@@ -1209,37 +1214,37 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         Thread.sleep(30000);
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getEnd()
         ), 4);
         bundles[1].setProcessValidity(TimeUtil.dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                                .getStart()
-                ),
-                newEndTime);
+                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getStart()
+            ),
+            newEndTime);
 
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
         while (Util.parseResponse(
-                prism.getProcessHelper()
-                        .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
-                .getStatus() != APIResult.Status.SUCCEEDED) {
+            prism.getProcessHelper()
+                .update((bundles[1].getProcessData()), bundles[1].getProcessData()))
+            .getStatus() != APIResult.Status.SUCCEEDED) {
             logger.info("update didnt SUCCEED in last attempt");
             Thread.sleep(10000);
         }
         AssertUtil.assertSucceeded(cluster3.getProcessHelper()
-                .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
+            .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
 
         dualComparison(bundles[1], cluster2);
 
@@ -1248,15 +1253,15 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         int finalNumberOfInstances = InstanceUtil
-                .getProcessInstanceList(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
-                .size();
+            .getProcessInstanceList(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
+            .size();
         Assert.assertEquals(finalNumberOfInstances,
-                getExpectedNumberOfWorkflowInstances(bundles[1]
-                        .getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart(),
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                .getValidity().getEnd()));
+            getExpectedNumberOfWorkflowInstances(bundles[1]
+                    .getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getStart(),
+                bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    .getValidity().getEnd()));
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
@@ -1278,40 +1283,41 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
-        List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
+        List<String> oldNominalTimes =
+            OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
 
         logger.info("original process: " + bundles[1].getProcessData());
 
         String updatedProcess = InstanceUtil
-                .setProcessFrequency(bundles[1].getProcessData(),
-                        new Frequency(5, TimeUnit.minutes));
+            .setProcessFrequency(bundles[1].getProcessData(),
+                new Frequency(5, TimeUnit.minutes));
 
         logger.info("updated process: " + updatedProcess);
 
         //now to update
         ServiceResponse response =
-                prism.getProcessHelper().update(updatedProcess, updatedProcess);
+            prism.getProcessHelper().update(updatedProcess, updatedProcess);
         AssertUtil.assertSucceeded(response);
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),1,10);
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1, 10);
 
         String prismString = dualComparison(bundles[1], cluster2);
         Assert.assertEquals(Util.getProcessObject(prismString).getFrequency(),
-                new Frequency(5, TimeUnit.minutes));
+            new Frequency(5, TimeUnit.minutes));
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated
         // correctly.
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, true);
+            bundles[1].getProcessData(), true, true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
@@ -1319,7 +1325,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void
     updateProcessFrequencyInEachColoWithOneProcessRunning_dailyToMonthly_withStartChange()
-            throws Exception {
+        throws Exception {
         //set daily process
         final String START_TIME = TimeUtil.getTimeWrtSystemTime(-20);
         String endTime = TimeUtil.getTimeWrtSystemTime(4000 * 60);
@@ -1330,121 +1336,121 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         logger.info("original process: " + bundles[1].getProcessData());
 
         String updatedProcess = InstanceUtil
-                .setProcessFrequency(bundles[1].getProcessData(),
-                        new Frequency(1, TimeUnit.months));
+            .setProcessFrequency(bundles[1].getProcessData(),
+                new Frequency(1, TimeUnit.months));
         updatedProcess = InstanceUtil
-                .setProcessValidity(updatedProcess, TimeUtil.getTimeWrtSystemTime(10),
-                        endTime);
+            .setProcessValidity(updatedProcess, TimeUtil.getTimeWrtSystemTime(10),
+                endTime);
 
         logger.info("updated process: " + updatedProcess);
 
         //now to update
         ServiceResponse response =
-                prism.getProcessHelper().update(updatedProcess, updatedProcess);
+            prism.getProcessHelper().update(updatedProcess, updatedProcess);
         AssertUtil.assertSucceeded(response);
         String prismString = dualComparison(bundles[1], cluster2);
         Assert.assertEquals(Util.getProcessObject(prismString).getFrequency(),
-                new Frequency(1, TimeUnit.months));
+            new Frequency(1, TimeUnit.months));
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, true);
+            bundles[1].getProcessData(), true, true);
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessRollStartTimeBackwardsToPastInEachColoWithOneProcessRunning()
-            throws Exception {
+        throws Exception {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        InstanceUtil.waitTillInstancesAreCreated(cluster3,bundles[1].getProcessData(),0,10);
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
 
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
-                ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getStart()
         ), -3);
         bundles[1].setProcessValidity(newStartTime, TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getEnd()
         ));
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         AssertUtil.assertSucceeded(
-                prism.getProcessHelper()
-                        .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
+            prism.getProcessHelper()
+                .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
 
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
-                bundles[1].getProcessData(), true, true);
+            bundles[1].getProcessData(), true, true);
         bundles[1].verifyDependencyListing();
         dualComparison(bundles[1], cluster3);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessRollStartTimeForwardInEachColoWithOneProcessSuspended()
-            throws Exception {
+        throws Exception {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData())
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData())
         );
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         Thread.sleep(30000);
 
         OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId);
         String oldStartTime = TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getStart()
         );
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getStart()
         ), 3);
         bundles[1].setProcessValidity(newStartTime, TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getEnd()
         ));
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData())
+            cluster3.getProcessHelper()
+                .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData())
         );
 
         AssertUtil.assertSucceeded(
-                prism.getProcessHelper()
-                        .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
+            prism.getProcessHelper()
+                .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
 
         dualComparison(bundles[1], cluster2);
 
@@ -1454,58 +1460,60 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
         int finalNumberOfInstances =
-                InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
-                        Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+            InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
+                Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
         Assert.assertEquals(finalNumberOfInstances,
-                getExpectedNumberOfWorkflowInstances(oldStartTime,
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
-                                .getValidity().getEnd()));
+            getExpectedNumberOfWorkflowInstances(oldStartTime,
+                bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    .getValidity().getEnd()));
         Assert.assertEquals(InstanceUtil
-                .getProcessInstanceList(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
-                .size(), getExpectedNumberOfWorkflowInstances(newStartTime,
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()));
+            .getProcessInstanceList(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
+            .size(), getExpectedNumberOfWorkflowInstances(newStartTime,
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getEnd()));
 
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessRollStartTimeBackwardsInEachColoWithOneProcessSuspended()
-            throws Exception {
+        throws Exception {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
         String oldBundleId = InstanceUtil
-                .getLatestBundleID(cluster3,
-                        Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster3,
+                Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS);
         Thread.sleep(30000);
 
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getStart()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getStart()
         ), -3);
         bundles[1].setProcessValidity(newStartTime, TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
-                        .getEnd()
+            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                .getEnd()
         ));
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         AssertUtil.assertSucceeded(
-                cluster3.getProcessHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
+            cluster3.getProcessHelper()
+                .suspend(URLS.SUSPEND_URL, bundles[1].getProcessData()));
         AssertUtil.assertSucceeded(
-                prism.getProcessHelper()
-                        .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
+            prism.getProcessHelper()
+                .update(bundles[1].getProcessData(), bundles[1].getProcessData()));
         AssertUtil.assertSucceeded(cluster3.getProcessHelper()
-                .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
-        List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
+            .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
+        List<String> oldNominalTimes =
+            OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
 
-        OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes, bundles[1].getProcessData(), true, false);
+        OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
+            bundles[1].getProcessData(), true, false);
 
         bundles[1].verifyDependencyListing();
 
@@ -1516,86 +1524,87 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
 
+    @Test(timeOut = 1200000)
+    public void
+    updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException,
+        IOException, OozieClientException, IllegalAccessException, NoSuchMethodException,
+        InvocationTargetException, AuthenticationException {
+        Bundle b = BundleUtil.readELBundles()[0][0];
+        HadoopFileEditor hadoopFileEditor = null;
+        try {
 
-  @Test(timeOut = 1200000)
-  public void
-  updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException,
-          IOException, OozieClientException, IllegalAccessException, NoSuchMethodException,
-          InvocationTargetException, AuthenticationException {
-    Bundle b = BundleUtil.readELBundles()[0][0];
-    HadoopFileEditor hadoopFileEditor = null;
-    try {
+            b = new Bundle(b, cluster1);
+            b.submitBundle(prism);
 
-      b = new Bundle(b, cluster1);
-      b.submitBundle(prism);
+            b.setProcessValidity(TimeUtil.getTimeWrtSystemTime(-10),
+                TimeUtil.getTimeWrtSystemTime(15));
+            b.submitAndScheduleBundle(prism);
 
-      b.setProcessValidity(TimeUtil.getTimeWrtSystemTime(-10),
-        TimeUtil.getTimeWrtSystemTime(15));
-      b.submitAndScheduleBundle(prism);
+            InstanceUtil.waitTillInstanceReachState(serverOC.get(1),
+                Util.readEntityName(b.getProcessData()), 0, CoordinatorAction.Status.RUNNING, 10,
+                ENTITY_TYPE.PROCESS);
 
-      InstanceUtil.waitTillInstanceReachState(serverOC.get(1),
-        Util.readEntityName(b.getProcessData()),0,CoordinatorAction.Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+            //save old data
+            String oldBundleID = InstanceUtil
+                .getLatestBundleID(cluster1,
+                    Util.readEntityName(b.getProcessData()), ENTITY_TYPE.PROCESS);
 
-      //save old data
-      String oldBundleID = InstanceUtil
-        .getLatestBundleID(cluster1,
-          Util.readEntityName(b.getProcessData()), ENTITY_TYPE.PROCESS);
+            List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster1,
+                oldBundleID,
+                ENTITY_TYPE.PROCESS);
 
-      List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster1,
-              oldBundleID,
-              ENTITY_TYPE.PROCESS);
+            //update workflow.xml
+            hadoopFileEditor = new HadoopFileEditor(cluster1FS);
+            hadoopFileEditor.edit(new ProcessMerlin(b
+                .getProcessData()).getWorkflow().getPath() + "/workflow.xml", "</workflow-app>",
+                "<!-- some comment -->");
 
-      //update workflow.xml
-      hadoopFileEditor = new HadoopFileEditor(cluster1FS);
-      hadoopFileEditor.edit(new ProcessMerlin(b
-        .getProcessData()).getWorkflow().getPath()+"/workflow.xml","</workflow-app>","<!-- some comment -->");
+            //update
+            prism.getProcessHelper().update(b.getProcessData(),
+                b.getProcessData());
 
-      //update
-      prism.getProcessHelper().update(b.getProcessData(),
-        b.getProcessData());
+            Thread.sleep(20000);
+            //verify new bundle creation
+            OozieUtil.verifyNewBundleCreation(cluster1, oldBundleID, oldNominalTimes,
+                b.getProcessData(), true, true);
 
-      Thread.sleep(20000);
-      //verify new bundle creation
-      OozieUtil.verifyNewBundleCreation(cluster1, oldBundleID, oldNominalTimes,
-              b.getProcessData(), true, true);
-
-    } finally {
-      b.deleteBundle(prism);
-        if (hadoopFileEditor != null) {
-            hadoopFileEditor.restore();
+        } finally {
+            b.deleteBundle(prism);
+            if (hadoopFileEditor != null) {
+                hadoopFileEditor.restore();
+            }
         }
+
     }
 
-  }
-
     public ServiceResponse updateProcessConcurrency(Bundle bundle, int concurrency)
-            throws Exception {
+        throws Exception {
         String oldData = bundle.getProcessData();
         Process updatedProcess = bundle.getProcessObject();
         updatedProcess.setParallel(concurrency);
 
         return prism.getProcessHelper()
-                .update(oldData, prism.getProcessHelper().toString(updatedProcess));
+            .update(oldData, prism.getProcessHelper().toString(updatedProcess));
     }
 
     private String dualComparison(Bundle bundle, ColoHelper coloHelper) throws Exception {
         String prismResponse = getResponse(prism, bundle, true);
         String coloResponse = getResponse(coloHelper, bundle, true);
         Assert.assertTrue(XmlUtil.isIdentical(prismResponse, coloResponse),
-                "Process definition should have been identical");
+            "Process definition should have been identical");
         return getResponse(prism, bundle, true);
     }
 
     private void dualComparisonFailure(Bundle bundle, ColoHelper coloHelper) throws Exception {
         Assert.assertFalse(XmlUtil.isIdentical(getResponse(prism, bundle, true),
-                getResponse(coloHelper, bundle, true)), "Process definition should not have been " +
-                "identical"); 
+            getResponse(coloHelper, bundle, true)), "Process definition should not have been " +
+            "identical");
     }
 
     private String getResponse(PrismHelper prism, Bundle bundle, boolean bool)
-            throws Exception {
+        throws Exception {
         ServiceResponse response = prism.getProcessHelper()
-                .getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
+            .getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, bundle.getProcessData());
         if (bool)
             AssertUtil.assertSucceeded(response);
         else
@@ -1608,27 +1617,26 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
 
-
     private void waitForProcessToReachACertainState(ColoHelper coloHelper, Bundle bundle,
                                                     Job.Status state)
-            throws Exception {
+        throws Exception {
 
         while (OozieUtil.getOozieJobStatus(coloHelper.getFeedHelper().getOozieClient(),
-                Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS) != state) {
+            Util.readEntityName(bundle.getProcessData()), ENTITY_TYPE.PROCESS) != state) {
             //keep waiting
             Thread.sleep(10000);
         }
 
         //now check if the coordinator is in desired state
         CoordinatorJob coord = getDefaultOozieCoord(coloHelper, InstanceUtil
-                .getLatestBundleID(coloHelper, Util.readEntityName(bundle.getProcessData()),
-                        ENTITY_TYPE.PROCESS));
+            .getLatestBundleID(coloHelper, Util.readEntityName(bundle.getProcessData()),
+                ENTITY_TYPE.PROCESS));
 
         while (coord.getStatus() != state) {
             Thread.sleep(10000);
             coord = getDefaultOozieCoord(coloHelper, InstanceUtil
-                    .getLatestBundleID(coloHelper, Util.readEntityName(bundle.getProcessData()),
-                            ENTITY_TYPE.PROCESS));
+                .getLatestBundleID(coloHelper, Util.readEntityName(bundle.getProcessData()),
+                    ENTITY_TYPE.PROCESS));
         }
     }
 
@@ -1658,13 +1666,14 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     public ServiceResponse updateProcessFrequency(Bundle bundle,
-                                                  org.apache.falcon.regression.core.generated.dependencies.Frequency frequency)
-            throws Exception {
+                                                  org.apache.falcon.regression.core.generated
+                                                      .dependencies.Frequency frequency)
+        throws Exception {
         String oldData = bundle.getProcessData();
         Process updatedProcess = bundle.getProcessObject();
         updatedProcess.setFrequency(frequency);
         return prism.getProcessHelper()
-                .update(oldData, prism.getProcessHelper().toString(updatedProcess));
+            .update(oldData, prism.getProcessHelper().toString(updatedProcess));
     }
 
     //need to expand this function more later
@@ -1690,7 +1699,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     private void waitingForBundleFinish(ColoHelper coloHelper, String bundleId, int minutes)
-            throws Exception {
+        throws Exception {
         int wait = 0;
         while (!OozieUtil.isBundleOver(coloHelper, bundleId)) {
             //keep waiting
@@ -1719,7 +1728,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     private CoordinatorJob getDefaultOozieCoord(ColoHelper coloHelper, String bundleId)
-            throws Exception {
+        throws Exception {
         OozieClient client = coloHelper.getFeedHelper().getOozieClient();
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 

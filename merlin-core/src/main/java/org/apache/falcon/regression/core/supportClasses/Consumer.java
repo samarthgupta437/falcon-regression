@@ -73,13 +73,13 @@ public class Consumer extends Thread {
     public void readMessage() throws JMSException {
         // Getting JMS connection from the server
         ConnectionFactory connectionFactory
-                = new ActiveMQConnectionFactory(url);
+            = new ActiveMQConnectionFactory(url);
         Connection connection = connectionFactory.createConnection();
         connection.start();
 
         // Creating session for sending messages
         Session session = connection.createSession(false,
-                Session.AUTO_ACKNOWLEDGE);
+            Session.AUTO_ACKNOWLEDGE);
 
         // Getting the queue 'TESTQUEUE'
         Destination destination = session.createTopic(subject);

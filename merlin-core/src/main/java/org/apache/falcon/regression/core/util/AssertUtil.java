@@ -40,28 +40,30 @@ public class AssertUtil {
 
     /**
      * Checks that any path in list doesn't contains a string
+     *
      * @param paths list of paths
      * @param shouldNotBePresent string that shouldn't be present
      */
     private static final Logger logger = Logger.getLogger(OozieUtil.class);
 
     public static void failIfStringFoundInPath(
-            List<Path> paths, String... shouldNotBePresent) {
+        List<Path> paths, String... shouldNotBePresent) {
         for (Path path : paths) {
             for (String aShouldNotBePresent : shouldNotBePresent)
                 if (path.toUri().toString().contains(aShouldNotBePresent))
                     Assert.fail("String " + aShouldNotBePresent + " was not expected in path " +
-                            path.toUri().toString());
+                        path.toUri().toString());
         }
     }
 
     /**
      * Checks that two lists have same size
+     *
      * @param expected expected list
-     * @param actual actual list
+     * @param actual   actual list
      */
     public static void checkForListSizes(List<?> expected, List<?> actual) {
-        if(expected.size() != actual.size()) {
+        if (expected.size() != actual.size()) {
             logger.info("expected = " + expected);
             logger.info("actual = " + actual);
             logger.info("expected.size() = " + expected.size());
@@ -72,9 +74,10 @@ public class AssertUtil {
 
     /**
      * Checks that two lists has expected diff element
+     *
      * @param initialState first list
-     * @param finalState second list
-     * @param filename expected diff element
+     * @param finalState   second list
+     * @param filename     expected diff element
      * @param expectedDiff diff count (positive for new elements)
      */
     public static void compareDataStoreStates(List<String> initialState,
@@ -99,8 +102,9 @@ public class AssertUtil {
 
     /**
      * Checks that two lists has expected diff element
+     *
      * @param initialState first list
-     * @param finalState second list
+     * @param finalState   second list
      * @param expectedDiff diff count (positive for new elements)
      */
     public static void compareDataStoreStates(List<String> initialState,
@@ -122,57 +126,62 @@ public class AssertUtil {
 
     /**
      * Checks that ServiceResponse status is SUCCEEDED
+     *
      * @param response ServiceResponse
      * @throws JAXBException
      */
     public static void assertSucceeded(ServiceResponse response) throws JAXBException {
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
-                APIResult.Status.SUCCEEDED, "Status should be SUCCEEDED");
+            APIResult.Status.SUCCEEDED, "Status should be SUCCEEDED");
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200,
-                "Status code should be 200");
+            "Status code should be 200");
         Assert.assertNotNull(Util.parseResponse(response).getMessage(), "Status message is null");
     }
 
     /**
      * Checks that ProcessInstancesResult status is SUCCEEDED
+     *
      * @param response ProcessInstancesResult
      */
     public static void assertSucceeded(ProcessInstancesResult response) {
         Assert.assertNotNull(response.getMessage());
         Assert.assertEquals(response.getStatus(), APIResult.Status.SUCCEEDED,
-                "Status should be SUCCEEDED");
+            "Status should be SUCCEEDED");
     }
 
     /**
      * Checks that ServiceResponse status is status FAILED
+     *
      * @param response ServiceResponse
-     * @param message message for exception
+     * @param message  message for exception
      * @throws JAXBException
      */
     public static void assertFailed(final ServiceResponse response, final String message)
-    throws JAXBException {
+        throws JAXBException {
         assertFailedWithStatus(response, 400, message);
     }
 
     /**
      * Checks that ServiceResponse status is status FAILED with some status code
-     * @param response ServiceResponse
+     *
+     * @param response   ServiceResponse
      * @param statusCode expected status code
-     * @param message message for exception
+     * @param message    message for exception
      * @throws JAXBException
      */
     public static void assertFailedWithStatus(final ServiceResponse response, final int statusCode,
                                               final String message) throws JAXBException {
         Assert.assertNotEquals(response.message, "null", "response message should not be null");
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
-                APIResult.Status.FAILED, message);
+            APIResult.Status.FAILED, message);
         Assert.assertEquals(Util.parseResponse(response).getStatusCode(), statusCode,
-                message);
+            message);
         Assert.assertNotNull(Util.parseResponse(response).getRequestId(), "RequestId is null");
     }
 
     /**
      * Checks that ServiceResponse status is status PARTIAL
+     *
      * @param response ServiceResponse
      * @throws JAXBException
      */
@@ -184,6 +193,7 @@ public class AssertUtil {
 
     /**
      * Checks that ServiceResponse status is status FAILED with status code 400
+     *
      * @param response ServiceResponse
      * @throws JAXBException
      */
@@ -197,9 +207,10 @@ public class AssertUtil {
     /**
      * Checks that status of some entity job is equal to expected. Method can wait
      * 100 seconds for expected status.
-     * @param oozieClient OozieClient
-     * @param entityType FEED or PROCESS
-     * @param data feed or proceess XML
+     *
+     * @param oozieClient    OozieClient
+     * @param entityType     FEED or PROCESS
+     * @param data           feed or proceess XML
      * @param expectedStatus expected Job.Status of entity
      * @throws JAXBException
      * @throws OozieClientException
@@ -207,7 +218,7 @@ public class AssertUtil {
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
                                    Job.Status expectedStatus)
-            throws JAXBException, OozieClientException, InterruptedException {
+        throws JAXBException, OozieClientException, InterruptedException {
         String name = null;
         if (entityType == ENTITY_TYPE.FEED) {
             name = Util.readDatasetName(data);
@@ -215,16 +226,17 @@ public class AssertUtil {
             name = Util.readEntityName(data);
         }
         Assert.assertEquals(
-                OozieUtil.verifyOozieJobStatus(oozieClient, name, entityType, expectedStatus), true,
-                "Status should be " + expectedStatus);
+            OozieUtil.verifyOozieJobStatus(oozieClient, name, entityType, expectedStatus), true,
+            "Status should be " + expectedStatus);
     }
 
     /**
      * Checks that status of some entity job is equal to expected. Method can wait
      * 100 seconds for expected status.
-     * @param oozieClient OozieClient
-     * @param entityType FEED or PROCESS
-     * @param bundle Bundle with feed or process data
+     *
+     * @param oozieClient    OozieClient
+     * @param entityType     FEED or PROCESS
+     * @param bundle         Bundle with feed or process data
      * @param expectedStatus expected Job.Status of entity
      * @throws JAXBException
      * @throws OozieClientException
@@ -232,7 +244,7 @@ public class AssertUtil {
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, Bundle bundle,
                                    Job.Status expectedStatus)
-            throws InterruptedException, OozieClientException, JAXBException {
+        throws InterruptedException, OozieClientException, JAXBException {
         String data = null;
         if (entityType == ENTITY_TYPE.FEED) {
             data = bundle.getDataSets().get(0);
@@ -244,16 +256,17 @@ public class AssertUtil {
 
     /**
      * Checks that status of some entity job is NOT equal to expected
-     * @param oozieClient OozieClient
-     * @param entityType FEED or PROCESS
-     * @param data feed or proceess XML
+     *
+     * @param oozieClient    OozieClient
+     * @param entityType     FEED or PROCESS
+     * @param data           feed or proceess XML
      * @param expectedStatus expected Job.Status of entity
      * @throws JAXBException
      * @throws OozieClientException
      */
     public static void checkNotStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
                                       Job.Status expectedStatus)
-            throws JAXBException, OozieClientException {
+        throws JAXBException, OozieClientException {
         String processName = null;
         if (entityType == ENTITY_TYPE.FEED) {
             processName = Util.readDatasetName(data);
@@ -261,21 +274,22 @@ public class AssertUtil {
             processName = Util.readEntityName(data);
         }
         Assert.assertNotEquals(OozieUtil.getOozieJobStatus(oozieClient, processName,
-                entityType), expectedStatus, "Status should not be " + expectedStatus);
+            entityType), expectedStatus, "Status should not be " + expectedStatus);
     }
 
     /**
      * Checks that status of some entity job is NOT equal to expected
-     * @param oozieClient OozieClient
-     * @param entityType FEED or PROCESS
-     * @param bundle Bundle with feed or process data
+     *
+     * @param oozieClient    OozieClient
+     * @param entityType     FEED or PROCESS
+     * @param bundle         Bundle with feed or process data
      * @param expectedStatus expected Job.Status of entity
      * @throws JAXBException
      * @throws OozieClientException
      */
     public static void checkNotStatus(OozieClient oozieClient, ENTITY_TYPE entityType,
                                       Bundle bundle, Job.Status expectedStatus)
-            throws JAXBException, OozieClientException {
+        throws JAXBException, OozieClientException {
         String data = null;
         if (entityType == ENTITY_TYPE.FEED) {
             data = bundle.getDataSets().get(0);
@@ -287,9 +301,10 @@ public class AssertUtil {
 
     /**
      * Checks size of the content a two locations
-     * @param firstPath path to the first location
+     *
+     * @param firstPath  path to the first location
      * @param secondPath path to the second location
-     * @param fs hadoop file system for the locations
+     * @param fs         hadoop file system for the locations
      * @throws IOException
      */
     public static void checkContentSize(String firstPath, String secondPath, FileSystem fs) throws

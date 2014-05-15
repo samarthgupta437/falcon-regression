@@ -28,7 +28,7 @@ import org.apache.hive.hcatalog.common.HCatException;
 public class HCatUtil {
 
     public static HCatClient getHCatClient(String hCatEndPoint, String hiveMetaStorePrinciple)
-    throws HCatException {
+        throws HCatException {
         HiveConf hcatConf = new HiveConf();
         hcatConf.set("hive.metastore.local", "false");
         hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, hCatEndPoint);
@@ -36,7 +36,7 @@ public class HCatUtil {
         hcatConf.setBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL, MerlinConstants.IS_SECURE);
         hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
         hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
-                HCatSemanticAnalyzer.class.getName());
+            HCatSemanticAnalyzer.class.getName());
         hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
         hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
         hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");

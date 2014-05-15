@@ -55,7 +55,8 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+        baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
@@ -76,7 +77,8 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
@@ -104,6 +106,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     /**
      * Schedule process. Try to suspend instances with start/end parameters which are
      * wider then process validity range. Should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -116,21 +119,22 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:21Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:21Z");
         InstanceUtil.validateResponse(result, 5, 5, 0, 0, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
         InstanceUtil.validateSuccessWithStatusCode(result, 400);
     }
 
     /**
      * Schedule single-instance process. Wait till instance succeed. Try to suspend
      * succeeded instance. Action should be performed successfully as indempotent action.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -144,22 +148,24 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         //wait for instance to succeed
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0, 0)
-                    .equals(CoordinatorAction.Status.SUCCEEDED))
+                .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0,
+                    0)
+                .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
 
             logger.info("still in for loop: testProcessInstanceSuspend_succeeded");
             Thread.sleep(20000);
         }
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 0);
     }
 
     /**
      * Schedule process. Check that all instances are running. Suspend them. Check that all are
      * suspended. In every action valid time range is used.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -172,21 +178,22 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 5, 0, 0, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 0, 5, 0, 0);
     }
 
     /**
      * Schedule process and try to perform -suspend action without date range parameters.
      * Attempt should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -199,13 +206,14 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()), null);
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()), null);
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
     /**
      * Schedule process with 3 running and 2 waiting instances expected. Suspend ones which are
      * running. Check that now 3 are suspended and 2 are still waiting.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -218,20 +226,21 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
         InstanceUtil.validateResponse(result, 5, 3, 0, 2, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:15Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:15Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
         InstanceUtil.validateResponse(result, 5, 0, 3, 2, 0);
     }
 
     /**
      * Try to suspend process which wasn't submitted and scheduled. Action should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -244,8 +253,8 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r =
-                prism.getProcessHelper()
-                        .getProcessInstanceSuspend("invalidName", "?start=2010-01-02T01:20Z");
+            prism.getProcessHelper()
+                .getProcessInstanceSuspend("invalidName", "?start=2010-01-02T01:20Z");
         if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND))
             Assert.assertTrue(false);
     }
@@ -253,6 +262,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     /**
      * Schedule process. Perform -suspend action using only -start parameter which points to start
      * time of process. Check that only 1 instance is suspended then.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -265,21 +275,22 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.SUSPENDED);
         prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
     }
 
     /**
      * Schedule process with number of instances running. Perform -suspend action using only -start
      * parameter with value which points to expected last time of instantiation. Check that only
      * the last instance is suspended.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -292,15 +303,15 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 5, 0, 0, 0);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:20Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:20Z");
         result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 4, 1, 0, 0);
     }
 

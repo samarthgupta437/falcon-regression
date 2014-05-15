@@ -55,7 +55,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+        baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(ProcessInstanceRunningTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -76,7 +77,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
@@ -117,8 +119,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
@@ -134,8 +136,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
     }
 
@@ -149,17 +151,18 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
     @Test(groups = {"singleCluster"})
     public void getNonExistenceProcessInstance() throws Exception {
         ProcessInstancesResult r =
-                prism.getProcessHelper()
-                        .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
-        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND, "Unexpected status code");
+            prism.getProcessHelper()
+                .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
+            "Unexpected status code");
     }
 
 
@@ -169,9 +172,10 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
-        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND, "Unexpected status code");
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
+            "Unexpected status code");
     }
 
 
@@ -182,18 +186,18 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         Job.Status status = null;
         for (int i = 0; i < 45; i++) {
             status = InstanceUtil.getDefaultCoordinatorStatus(cluster,
-                    Util.getProcessName(bundles[0].getProcessData()), 0);
+                Util.getProcessName(bundles[0].getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED || status == Job.Status.KILLED)
                 break;
             Thread.sleep(45000);
         }
         Assert.assertNotNull(status);
         Assert.assertEquals(status, Job.Status.SUCCEEDED,
-                "The job did not succeeded even in long time");
+            "The job did not succeeded even in long time");
 
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(result);
     }
 

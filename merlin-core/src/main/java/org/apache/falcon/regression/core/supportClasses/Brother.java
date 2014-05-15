@@ -97,7 +97,7 @@ public class Brother extends Thread {
                 output = entityManagerHelper.getStatus(url, data);
             }
             logger.info("Brother " + this.getName() + "'s response to the " + operation + " is: " +
-                    output);
+                output);
         } catch (Exception e) {
             e.printStackTrace();
         }

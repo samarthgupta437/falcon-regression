@@ -41,14 +41,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProcessMerlin extends org.apache.falcon.regression.core.generated
-        .process.Process {
+    .process.Process {
     public ProcessMerlin(String processData)
-    throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        throws JAXBException, IllegalAccessException, NoSuchMethodException,
+        InvocationTargetException {
         Process element = InstanceUtil.getProcessElement(processData);
         Field[] fields = Process.class.getDeclaredFields();
         for (Field fld : fields) {
             PropertyUtils.setProperty(this, fld.getName(),
-                    PropertyUtils.getProperty(element, fld.getName()));
+                PropertyUtils.getProperty(element, fld.getName()));
         }
     }
 
@@ -57,8 +58,8 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
         p.setName(name);
         p.setValue(value);
         if (null == getProperties() || null == getProperties()
-                .getProperty() || getProperties().getProperty().size()
-                <= 0) {
+            .getProperty() || getProperties().getProperty().size()
+            <= 0) {
             Properties props = new Properties();
             props.addProperty(p);
             setProperties(props);
@@ -87,9 +88,9 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
         Map<String, FeedMerlin> inpFeeds = getInputFeeds(b);
         for (FeedMerlin feedElement : inpFeeds.values()) {
             feedElement.getClusters().getCluster().get(0).getValidity()
-                    .setStart(TimeUtil.oozieDateToDate(startDate).toDate());
+                .setStart(TimeUtil.oozieDateToDate(startDate).toDate());
             feedElement.getClusters().getCluster().get(0).getValidity()
-                    .setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
+                .setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
             InstanceUtil.writeFeedElement(b, feedElement, feedElement.getName());
         }
         return b;

@@ -73,9 +73,9 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "submit", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.SUBMIT_URL);
+                new Brother("brother" + i, "submit", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                    prism,
+                    URLS.SUBMIT_URL);
         }
         for (Brother brother : brothers) {
             brother.start();
@@ -84,7 +84,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
             brother.join();
         }
         for (Brother brother : brothers) {
-            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            logger.info(brother.getName() + " output: \n" +
+                Util.prettyPrintXml(brother.getOutput().getMessage()));
             AssertUtil.assertSucceeded(brother.getOutput());
         }
     }
@@ -96,9 +97,9 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getDataSets().get(1));
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "submit", ENTITY_TYPE.PROCESS, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.SUBMIT_URL);
+                new Brother("brother" + i, "submit", ENTITY_TYPE.PROCESS, brotherGrimm, bundles[0],
+                    prism,
+                    URLS.SUBMIT_URL);
         }
         for (Brother brother : brothers) {
             brother.start();
@@ -107,7 +108,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
             brother.join();
         }
         for (Brother brother : brothers) {
-            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            logger.info(brother.getName() + " output: \n" +
+                Util.prettyPrintXml(brother.getOutput().getMessage()));
             AssertUtil.assertSucceeded(brother.getOutput());
         }
     }
@@ -118,9 +120,9 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         bundles[0].submitBundle(prism);
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "delete", ENTITY_TYPE.PROCESS, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.DELETE_URL);
+                new Brother("brother" + i, "delete", ENTITY_TYPE.PROCESS, brotherGrimm, bundles[0],
+                    prism,
+                    URLS.DELETE_URL);
         }
         for (Brother brother : brothers) {
             brother.start();
@@ -129,7 +131,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
             brother.join();
         }
         for (Brother brother : brothers) {
-            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            logger.info(brother.getName() + " output: \n" +
+                Util.prettyPrintXml(brother.getOutput().getMessage()));
             AssertUtil.assertSucceeded(brother.getOutput());
         }
     }
@@ -140,9 +143,10 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         bundles[0].submitBundle(prism);
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "schedule", ENTITY_TYPE.PROCESS, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.SCHEDULE_URL);
+                new Brother("brother" + i, "schedule", ENTITY_TYPE.PROCESS, brotherGrimm,
+                    bundles[0],
+                    prism,
+                    URLS.SCHEDULE_URL);
         }
         for (Brother brother : brothers) {
             brother.start();
@@ -151,7 +155,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
             brother.join();
         }
         for (Brother brother : brothers) {
-            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            logger.info(brother.getName() + " output: \n" +
+                Util.prettyPrintXml(brother.getOutput().getMessage()));
             AssertUtil.assertSucceeded(brother.getOutput());
         }
     }
@@ -162,21 +167,22 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         brothers = new Brother[4];
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getDataSets().get(0));
-        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         Thread.sleep(15000);
         prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0));
         Thread.sleep(15000);
         for (int i = 1; i <= 2; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.RESUME_URL);
+                new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                    prism,
+                    URLS.RESUME_URL);
         }
         for (int i = 3; i <= 4; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "suspend", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.SUSPEND_URL);
+                new Brother("brother" + i, "suspend", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                    prism,
+                    URLS.SUSPEND_URL);
         }
         for (Brother brother : brothers) {
             brother.start();
@@ -185,7 +191,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
             brother.join();
         }
         for (Brother brother : brothers) {
-            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            logger.info(brother.getName() + " output: \n" +
+                Util.prettyPrintXml(brother.getOutput().getMessage()));
             AssertUtil.assertSucceeded(brother.getOutput());
         }
     }
@@ -194,7 +201,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
     public void resumeParallel() throws Exception {
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getDataSets().get(0));
-        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         Thread.sleep(15000);
         prism.getFeedHelper().resume(URLS.RESUME_URL, bundles[0].getDataSets().get(0));
         Thread.sleep(5000);
@@ -202,9 +210,9 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         Thread.sleep(15000);
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.RESUME_URL);
+                new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                    prism,
+                    URLS.RESUME_URL);
         }
         for (Brother brother : brothers) {
             brother.start();
@@ -213,7 +221,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
             brother.join();
         }
         for (Brother brother : brothers) {
-            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            logger.info(brother.getName() + " output: \n" +
+                Util.prettyPrintXml(brother.getOutput().getMessage()));
             AssertUtil.assertSucceeded(brother.getOutput());
         }
     }
@@ -223,9 +232,9 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
     public void submitSameClusterParallel() throws Exception {
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                    new Brother("brother" + i, "submit", ENTITY_TYPE.CLUSTER, brotherGrimm, bundles[0],
-                            prism,
-                            URLS.SUBMIT_URL);
+                new Brother("brother" + i, "submit", ENTITY_TYPE.CLUSTER, brotherGrimm, bundles[0],
+                    prism,
+                    URLS.SUBMIT_URL);
         }
         for (Brother brother : brothers) {
             brother.start();
@@ -234,7 +243,8 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
             brother.join();
         }
         for (Brother brother : brothers) {
-            logger.info(brother.getName() + " output: \n" + Util.prettyPrintXml(brother.getOutput().getMessage()));
+            logger.info(brother.getName() + " output: \n" +
+                Util.prettyPrintXml(brother.getOutput().getMessage()));
             AssertUtil.assertSucceeded(brother.getOutput());
         }
     }

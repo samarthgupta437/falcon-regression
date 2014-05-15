@@ -81,8 +81,9 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         process = bundles[0].setProcessFeeds(process, feed, 0, 0, 1);
 
         process = InstanceUtil.setProcessCluster(process, null,
-                XmlUtil.createProcessValidity(processStartTime, "2099-01-01T00:00Z"));
-        process = InstanceUtil.setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
+            XmlUtil.createProcessValidity(processStartTime, "2099-01-01T00:00Z"));
+        process = InstanceUtil
+            .setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
         bundles[0].setProcessData(process);
 
@@ -100,10 +101,10 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         // submit and schedule a process with error in workflow .
         //it will get killed
         bundles[0].setProcessValidity(TimeUtil.getTimeWrtSystemTime(-11),
-                TimeUtil.getTimeWrtSystemTime(6));
+            TimeUtil.getTimeWrtSystemTime(6));
 
         bundles[0].setInputFeedDataPath(
-                baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+            baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
 
         String prefix = InstanceUtil.getFeedPrefix(BundleUtil.getInputFeedFromBundle(bundles[0]));

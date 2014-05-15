@@ -59,8 +59,8 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BUNDLE-APP", propOrder = {
-        "controls",
-        "coordinator"
+    "controls",
+    "coordinator"
 })
 public class BUNDLEAPP {
 

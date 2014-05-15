@@ -65,7 +65,7 @@ public class HadoopFileEditor {
             fs.copyToLocalFile(file, new Path(currentFile));
             FileUtils.copyFile(new File(currentFile), new File(currentFile + ".bck"));
             BufferedWriter bufwriter = new BufferedWriter(new FileWriter
-                    ("tmp"));
+                ("tmp"));
             BufferedReader br = new BufferedReader(new FileReader(currentFile));
             String line;
             boolean isInserted = false;
@@ -101,7 +101,7 @@ public class HadoopFileEditor {
             fs.delete(new Path(paths.get(i)), false);
             FileUtils.deleteQuietly(new File(files.get(i)));
             FileUtils.copyFile(new File(files.get(i) + ".bck"),
-                    new File(files.get(i)));
+                new File(files.get(i)));
             fs.copyFromLocalFile(new Path(files.get(i)), new Path(paths.get(i)));
             FileUtils.deleteQuietly(new File(files.get(i)));
             FileUtils.deleteQuietly(new File(files.get(i) + ".bck"));

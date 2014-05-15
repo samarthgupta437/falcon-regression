@@ -61,7 +61,8 @@ public class FeedSuspendTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         //submit the cluster
-        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
+        ServiceResponse response =
+            prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         AssertUtil.assertSucceeded(response);
 
         feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
@@ -75,11 +76,13 @@ public class FeedSuspendTest extends BaseTestClass {
     /**
      * Schedule feed, suspend it. Check that web response reflects success and feed status is
      * "suspended".
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void suspendScheduledFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
@@ -90,11 +93,13 @@ public class FeedSuspendTest extends BaseTestClass {
     /**
      * Try to suspend running feed twice. Response should reflect success,
      * feed status should be suspended.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void suspendAlreadySuspendedFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
@@ -108,11 +113,13 @@ public class FeedSuspendTest extends BaseTestClass {
 
     /**
      * Remove feed. Attempt to suspend it should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void suspendDeletedFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
@@ -124,6 +131,7 @@ public class FeedSuspendTest extends BaseTestClass {
 
     /**
      * Attempt to suspend non existent feed should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -134,6 +142,7 @@ public class FeedSuspendTest extends BaseTestClass {
 
     /**
      * Attempt to suspend non scheduled feed should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})

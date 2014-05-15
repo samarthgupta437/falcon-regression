@@ -82,23 +82,25 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
     /**
      * Submits and schedules feed with a cluster it depends on
+     *
      * @throws JAXBException
      * @throws IOException
      * @throws URISyntaxException
      * @throws AuthenticationException
      */
     private void submitFirstClusterScheduleFirstFeed()
-    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         Assert.assertEquals(Util.parseResponse(prism.getClusterHelper()
-                .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0))).getStatusCode(), 200);
+            .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0))).getStatusCode(), 200);
         ServiceResponse response = prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
         AssertUtil.assertSucceeded(response);
     }
 
     /**
      * Submits and schedules a feed and then tries to do the same on it. Checks that status
      * hasn't changed and response is successful.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -108,29 +110,31 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
         //get created bundle id
         String bundleId = InstanceUtil
-                .getLatestBundleID(cluster, Util.readEntityName(bundles[0].getDataSets().get(0)),
-                        ENTITY_TYPE.FEED);;
+            .getLatestBundleID(cluster, Util.readEntityName(bundles[0].getDataSets().get(0)),
+                ENTITY_TYPE.FEED);
+        ;
 
         //try to submit and schedule the same process again
         ServiceResponse response = prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
         AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
 
         //check that new bundle wasn't created
         OozieUtil.verifyNewBundleCreation(cluster, bundleId, null, bundles[0].getDataSets().get
-                (0), false, false);
+            (0), false, false);
     }
 
     /**
      * Try to submit and schedule feed without submitting cluster it depends on.
      * Request should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void snsFeedWithoutCluster() throws Exception {
         ServiceResponse response = prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
 
         AssertUtil.assertFailed(response);
     }
@@ -138,6 +142,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     /**
      * Submits and schedules feed. Removes it. Submitted and schedules removed feed.
      * Checks response and status of feed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -145,13 +150,13 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         submitFirstClusterScheduleFirstFeed();
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
         Assert.assertEquals(
-                Util.parseResponse(prism.getFeedHelper()
-                        .delete(URLS.DELETE_URL, bundles[0].getDataSets().get(0)))
-                        .getStatusCode(), 200);
+            Util.parseResponse(prism.getFeedHelper()
+                .delete(URLS.DELETE_URL, bundles[0].getDataSets().get(0)))
+                .getStatusCode(), 200);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
 
         ServiceResponse response = prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
         AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
     }
@@ -159,6 +164,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     /**
      * Suspends feed, submit and schedules it. Checks that response is successful,
      * feed status hasn't changed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -168,12 +174,12 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
         Assert.assertEquals(Util.parseResponse(
                 prism.getFeedHelper()
-                        .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)))
+                    .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)))
                 .getStatusCode(),
-                200);
+            200);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
         ServiceResponse response = prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
 
         AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);

@@ -58,11 +58,12 @@ public class FeedSubmitTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         //submit the cluster
-        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
+        ServiceResponse response =
+            prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         AssertUtil.assertSucceeded(response);
         feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
-    
+
     @AfterMethod(alwaysRun = true)
     public void tearDown() {
         removeBundles();
@@ -70,6 +71,7 @@ public class FeedSubmitTest extends BaseTestClass {
 
     /**
      * Submit correctly adjusted feed. Response should reflect success.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -80,6 +82,7 @@ public class FeedSubmitTest extends BaseTestClass {
 
     /**
      * Submit and remove feed. Try to submit it again. Response should reflect success.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -96,6 +99,7 @@ public class FeedSubmitTest extends BaseTestClass {
 
     /**
      * Submit feed. Get its definition. Try to submit it again. Should succeed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -112,6 +116,7 @@ public class FeedSubmitTest extends BaseTestClass {
 
     /**
      * Try to submit correctly adjusted feed twice. Should succeed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})

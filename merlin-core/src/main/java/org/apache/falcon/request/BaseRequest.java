@@ -59,7 +59,7 @@ public class BaseRequest {
     }
 
     public BaseRequest(String url, String method, String user, String data)
-    throws URISyntaxException {
+        throws URISyntaxException {
         this.method = method;
         this.url = url;
         this.requestData = null;
@@ -99,7 +99,7 @@ public class BaseRequest {
     private static final Logger LOGGER = Logger.getLogger(BaseRequest.class);
 
     private HttpResponse execute(HttpRequest request)
-    throws IOException, AuthenticationException, URISyntaxException {
+        throws IOException, AuthenticationException, URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(this.url);
 
         /*falcon now reads a user.name parameter in the request.
@@ -118,7 +118,7 @@ public class BaseRequest {
         /*get the token and add it to the header.
         works in secure and un secure mode.*/
         AuthenticatedURL.Token token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-                uri.getHost(), uri.getPort());
+            uri.getHost(), uri.getPort());
         request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
         DefaultHttpClient client = new DefaultHttpClient();
         LOGGER.info("Request Url: " + request.getRequestLine().getUri());
@@ -126,7 +126,7 @@ public class BaseRequest {
 
         for (Header header : request.getAllHeaders()) {
             LOGGER.info(String.format("Request Header: Name=%s Value=%s", header.getName(),
-                    header.getValue()));
+                header.getValue()));
         }
         HttpResponse response = client.execute(target, request);
 
@@ -135,9 +135,9 @@ public class BaseRequest {
         if ((response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED)) {
             Header[] wwwAuthHeaders = response.getHeaders(RequestKeys.WWW_AUTHENTICATE);
             if (wwwAuthHeaders != null && wwwAuthHeaders.length != 0 &&
-                    wwwAuthHeaders[0].getValue().trim().startsWith(RequestKeys.NEGOTIATE)) {
+                wwwAuthHeaders[0].getValue().trim().startsWith(RequestKeys.NEGOTIATE)) {
                 token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-                        uri.getHost(), uri.getPort(), true);
+                    uri.getHost(), uri.getPort(), true);
 
                 request.removeHeaders(RequestKeys.COOKIE);
                 request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
@@ -145,8 +145,8 @@ public class BaseRequest {
                 LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
                 for (Header header : request.getAllHeaders()) {
                     LOGGER.info(
-                            String.format("Request Header: Name=%s Value=%s", header.getName(),
-                                    header.getValue())
+                        String.format("Request Header: Name=%s Value=%s", header.getName(),
+                            header.getValue())
                     );
                 }
                 response = client.execute(target, request);
@@ -155,7 +155,7 @@ public class BaseRequest {
         LOGGER.info("Response Status: " + response.getStatusLine());
         for (Header header : response.getAllHeaders()) {
             LOGGER.info(String.format("Response Header: Name=%s Value=%s", header.getName(),
-                    header.getValue()));
+                header.getValue()));
         }
         return response;
     }

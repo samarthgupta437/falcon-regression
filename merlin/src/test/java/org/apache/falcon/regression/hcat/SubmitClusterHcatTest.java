@@ -65,7 +65,7 @@ public class SubmitClusterHcatTest extends BaseTestClass {
 */
             logger.info("Cluster: " + clusterData);
             ServiceResponse r =
-                    prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, clusterData);
+                prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, clusterData);
             AssertUtil.assertSucceeded(r);
 
             logger.info("Feed: " + feedData01);

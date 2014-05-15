@@ -71,6 +71,7 @@ public class FeedScheduleTest extends BaseTestClass {
     /**
      * Tries to schedule already scheduled feed. Request should be considered as correct.
      * Feed status shouldn't change.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -90,6 +91,7 @@ public class FeedScheduleTest extends BaseTestClass {
 
     /**
      * Schedule correct feed. Feed should got running.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -106,11 +108,13 @@ public class FeedScheduleTest extends BaseTestClass {
 
     /**
      * Tries to schedule already scheduled and suspended feed. Suspended status shouldn't change.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void scheduleSuspendedFeed() throws Exception {
-        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
         //now suspend
         AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
@@ -122,11 +126,13 @@ public class FeedScheduleTest extends BaseTestClass {
 
     /**
      * Schedules and deletes feed. Tries to schedule it. Request should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void scheduleKilledFeed() throws Exception {
-        AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
         //now suspend
         AssertUtil.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, feed));
@@ -137,6 +143,7 @@ public class FeedScheduleTest extends BaseTestClass {
 
     /**
      * Tries to schedule feed which wasn't submitted. Request should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})

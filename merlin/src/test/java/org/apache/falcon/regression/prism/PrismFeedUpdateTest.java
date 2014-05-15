@@ -78,7 +78,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
     @Test(enabled = true, timeOut = 1200000)
     public void updateFeedQueue_dependentMultipleProcess_oneProcessZeroInput() throws Exception {
-        //cluster1colo and cluster2colo are source. feed01 on cluster1colo target cluster2colo, feed02 on cluster2colo target cluster1colo
+        //cluster1colo and cluster2colo are source. feed01 on cluster1colo target cluster2colo,
+        // feed02 on cluster2colo target cluster1colo
 
         //get 3 unique bundles
         //set cluster colos
@@ -98,20 +99,20 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         //set clusters to null;
         feed01 = InstanceUtil
-                .setFeedCluster(feed01,
-                        XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null);
+            .setFeedCluster(feed01,
+                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null);
         outputFeed = InstanceUtil
-                .setFeedCluster(outputFeed,
-                        XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null);
+            .setFeedCluster(outputFeed,
+                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null);
 
 
         //set new feed input data
         feed01 = Util.setFeedPathValue(feed01,
-                baseTestDir + "/feed01/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
+            baseTestDir + "/feed01/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
 
 
         //generate data in both the colos cluster1colo and cluster2colo
@@ -123,25 +124,25 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         //set clusters for feed01
         feed01 = InstanceUtil
-                .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
-                        null);
+            .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+                null);
         feed01 = InstanceUtil
-                .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
-                        null);
+            .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
-                XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+            XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
-                XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
+            XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
 
         //submit and schedule feeds
@@ -160,19 +161,19 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
 
         process01 = InstanceUtil
-                .setProcessCluster(process01, null,
-                        XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
+            .setProcessCluster(process01, null,
+                XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
         process01 = InstanceUtil
-                .setProcessCluster(process01, Util.readClusterName(bundles[0].getClusters().get(0)),
-                        XmlUtil.createProcessValidity(processStartTime, processEndTime));
+            .setProcessCluster(process01, Util.readClusterName(bundles[0].getClusters().get(0)),
+                XmlUtil.createProcessValidity(processStartTime, processEndTime));
         process01 = InstanceUtil
-                .setProcessCluster(process01, Util.readClusterName(bundles[1].getClusters().get(0)),
-                        XmlUtil.createProcessValidity(processStartTime, processEndTime));
+            .setProcessCluster(process01, Util.readClusterName(bundles[1].getClusters().get(0)),
+                XmlUtil.createProcessValidity(processStartTime, processEndTime));
 
         //get 2nd process :
         String process02 = process01;
         process02 = InstanceUtil
-                .setProcessName(process02, "zeroInputProcess" + new Random().nextInt());
+            .setProcessName(process02, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
         feed.add(outputFeed);
         process02 = bundles[0].setProcessFeeds(process02, feed, 0, 0, 1);
@@ -185,7 +186,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         logger.info("Wait till process goes into running ");
 
-			        //change feed location path
+        //change feed location path
         outputFeed = Util.setFeedProperty(outputFeed, "queueName", "myQueue");
 
         logger.info("updated feed: " + outputFeed);

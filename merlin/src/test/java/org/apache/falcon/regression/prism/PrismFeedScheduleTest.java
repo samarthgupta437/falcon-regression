@@ -69,13 +69,13 @@ public class PrismFeedScheduleTest extends BaseTestClass {
 
     @Test(groups = {"prism", "0.2"})
     public void testFeedScheduleOn1ColoWhileAnotherColoHasSuspendedFeed()
-    throws Exception {
+        throws Exception {
         logger.info("cluster: " + bundles[0].getClusters().get(0));
         logger.info("feed: " + bundles[0].getDataSets().get(0));
 
         bundles[0].submitAndScheduleFeed();
         AssertUtil.assertSucceeded(prism.getFeedHelper()
-                .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
         bundles[1].submitAndScheduleFeed();
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);

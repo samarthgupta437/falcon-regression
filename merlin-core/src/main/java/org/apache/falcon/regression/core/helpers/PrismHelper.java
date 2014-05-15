@@ -60,13 +60,13 @@ public class PrismHelper {
             this.envFileName = envFileName;
             this.prefix = prefix;
             clusterHelper =
-                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
-                            prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
+                    prefix);
             processHelper =
-                    EntityHelperFactory
-                            .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
+                EntityHelperFactory
+                    .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
             feedHelper =
-                    EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
 
         } catch (Exception e) {
             logger.info(e.getMessage());
