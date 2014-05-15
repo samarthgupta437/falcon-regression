@@ -69,7 +69,8 @@ public class ELValidationsTest extends BaseTestClass {
 
     @Test(groups = {"0.1", "0.2"})
     public void startInstBeforeFeedStart_today02() throws Exception {
-        String response = testWith(prism, cluster, "2009-02-02T20:00Z", "2011-12-31T00:00Z", "2009-02-02T20:00Z",
+        String response =
+            testWith(prism, cluster, "2009-02-02T20:00Z", "2011-12-31T00:00Z", "2009-02-02T20:00Z",
                 "2011-12-31T00:00Z", "now(-40,0)", "currentYear(20,30,24,20)", false);
         validate(response);
     }
@@ -77,14 +78,14 @@ public class ELValidationsTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void startInstAfterFeedEnd() throws Exception {
         String response = testWith(prism, cluster, null, null, null, null,
-                "currentYear(10,0,22,0)", "now(4,20)", false);
+            "currentYear(10,0,22,0)", "now(4,20)", false);
         validate(response);
     }
 
     @Test(groups = {"singleCluster"})
     public void bothInstReverse() throws Exception {
         String response = testWith(prism, cluster, null, null, null, null,
-                "now(0,0)", "now(-100,0)", false);
+            "now(0,0)", "now(-100,0)", false);
         validate(response);
     }
 
@@ -96,46 +97,49 @@ public class ELValidationsTest extends BaseTestClass {
     @DataProvider(name = "EL-DP")
     public Object[][] getELData(Method m) throws Exception {
         return new Object[][]{
-                {"now(-3,0)","now(4,20)"},
-                {"yesterday(22,0)","now(4,20)"},
-                {"currentMonth(0,22,0)","now(4,20)"},
-                {"lastMonth(30,22,0)","now(4,20)"},
-                {"currentYear(0,0,22,0)","currentYear(1,1,22,0)"},
-                {"currentMonth(0,22,0)","currentMonth(1,22,20)"},
-                {"lastMonth(30,22,0)","lastMonth(60,2,40)"},
-                {"lastYear(12,0,22,0)", "lastYear(13,1,22,0)"}
+            {"now(-3,0)", "now(4,20)"},
+            {"yesterday(22,0)", "now(4,20)"},
+            {"currentMonth(0,22,0)", "now(4,20)"},
+            {"lastMonth(30,22,0)", "now(4,20)"},
+            {"currentYear(0,0,22,0)", "currentYear(1,1,22,0)"},
+            {"currentMonth(0,22,0)", "currentMonth(1,22,20)"},
+            {"lastMonth(30,22,0)", "lastMonth(60,2,40)"},
+            {"lastYear(12,0,22,0)", "lastYear(13,1,22,0)"}
         };
     }
 
     private void validate(String response) {
         if ((response.contains("End instance ") || response.contains("Start instance"))
-                && (response.contains("for feed") || response.contains("of feed"))
-                && (response.contains("is before the start of feed") || response.contains("is after the end of feed"))) {
+            && (response.contains("for feed") || response.contains("of feed"))
+            && (response.contains("is before the start of feed") ||
+            response.contains("is after the end of feed"))) {
             return;
         }
-        if (response.contains("End instance") && response.contains("is before the start instance")) {
+        if (response.contains("End instance") &&
+            response.contains("is before the start instance")) {
             return;
         }
         Assert.fail("Response is not valid");
     }
 
     private String testWith(PrismHelper prismHelper, ColoHelper server, String feedStart,
-                           String feedEnd, String processStart,
-                           String processEnd,
-                           String startInstance, String endInstance, boolean isMatch)
-    throws IOException, JAXBException, ParseException, URISyntaxException, InterruptedException {
+                            String feedEnd, String processStart,
+                            String processEnd,
+                            String startInstance, String endInstance, boolean isMatch)
+        throws IOException, JAXBException, ParseException, URISyntaxException,
+        InterruptedException {
         HadoopUtil.uploadDir(server.getClusterHelper().getHadoopFS(),
-                aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
+            aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle = new Bundle(bundle, server.getEnvFileName(), server.getPrefix());
         bundle.generateUniqueBundle();
         bundle.setProcessWorkflow(aggregateWorkflowDir);
-        if(feedStart != null && feedEnd != null){
+        if (feedStart != null && feedEnd != null) {
             bundle.setFeedValidity(feedStart, feedEnd,
-                    BundleUtil.getInputFeedNameFromBundle
-                            (bundle));
+                BundleUtil.getInputFeedNameFromBundle
+                    (bundle));
         }
-        if(processStart != null && processEnd != null){
+        if (processStart != null && processEnd != null) {
             bundle.setProcessValidity(processStart, processEnd);
         }
         try {
@@ -161,7 +165,7 @@ public class ELValidationsTest extends BaseTestClass {
             List<String> bundles = null;
             for (int i = 0; i < 10; ++i) {
                 bundles = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
-                        Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                    Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
                 if (bundles.size() > 0) {
                     break;
                 }
@@ -170,7 +174,8 @@ public class ELValidationsTest extends BaseTestClass {
             Assert.assertTrue(bundles != null && bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
             logger.info("coord id: " + coordID);
-            List<String> missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);
+            List<String> missingDependencies =
+                OozieUtil.getMissingDependencies(prismHelper, coordID);
             for (int i = 0; i < 10 && missingDependencies == null; ++i) {
                 Thread.sleep(30000);
                 missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);
@@ -185,7 +190,7 @@ public class ELValidationsTest extends BaseTestClass {
             logger.info("nominalTime:" + jobNominalTime);
             SimpleDateFormat df = new SimpleDateFormat("dd MMM yyyy HH:mm:ss");
             logger.info(
-                    "nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
+                "nominalTime in GMT string: " + df.format(jobNominalTime.getTime()) + " GMT");
             TimeZone z = time.getTimeZone();
             int offset = z.getRawOffset();
             int offsetHrs = offset / 1000 / 60 / 60;
@@ -201,9 +206,9 @@ public class ELValidationsTest extends BaseTestClass {
 
             int frequency = bundle.getInitialDatasetFrequency();
             List<String> qaDependencyList =
-                    getQADepedencyList(time, bundle.getStartInstanceProcess(time),
-                            bundle.getEndInstanceProcess(time),
-                            frequency, bundle);
+                getQADepedencyList(time, bundle.getStartInstanceProcess(time),
+                    bundle.getEndInstanceProcess(time),
+                    frequency, bundle);
             for (String qaDependency : qaDependencyList)
                 logger.info("qa qaDependencyList: " + qaDependency);
 
@@ -225,8 +230,8 @@ public class ELValidationsTest extends BaseTestClass {
     }
 
     private List<String> getQADepedencyList(Calendar nominalTime, Date startRef,
-                                                  Date endRef, int frequency,
-                                                  Bundle bundle) throws JAXBException {
+                                            Date endRef, int frequency,
+                                            Bundle bundle) throws JAXBException {
         logger.info("start ref:" + startRef);
         logger.info("end ref:" + endRef);
         Calendar initialTime = Calendar.getInstance();

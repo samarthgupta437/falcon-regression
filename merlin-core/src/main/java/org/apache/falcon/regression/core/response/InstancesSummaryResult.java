@@ -91,7 +91,7 @@ public class InstancesSummaryResult extends APIResult {
         @Override
         public String toString() {
             return "cluster: " + (this.cluster == null ? "" : this.cluster)
-                    + "summaryMap: " + summaryMap.toString();
+                + "summaryMap: " + summaryMap.toString();
         }
     }
 

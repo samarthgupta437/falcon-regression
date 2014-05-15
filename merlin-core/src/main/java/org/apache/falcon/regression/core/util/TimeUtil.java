@@ -40,67 +40,68 @@ instanceUtil to here , pending item.
  */
 
 public class TimeUtil {
-  public static String get20roundedTime(String oozieBaseTime) {
-    DateTime startTime =
-      new DateTime(oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
+    public static String get20roundedTime(String oozieBaseTime) {
+        DateTime startTime =
+            new DateTime(oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
 
-    if (startTime.getMinuteOfHour() < 20)
-      startTime = startTime.minusMinutes(startTime.getMinuteOfHour());
-    else if (startTime.getMinuteOfHour() < 40)
-      startTime = startTime.minusMinutes(startTime.getMinuteOfHour()+20);
-    else
-      startTime = startTime.minusMinutes(startTime.getMinuteOfHour()+40);
-    return dateToOozieDate(startTime.toDate());
+        if (startTime.getMinuteOfHour() < 20)
+            startTime = startTime.minusMinutes(startTime.getMinuteOfHour());
+        else if (startTime.getMinuteOfHour() < 40)
+            startTime = startTime.minusMinutes(startTime.getMinuteOfHour() + 20);
+        else
+            startTime = startTime.minusMinutes(startTime.getMinuteOfHour() + 40);
+        return dateToOozieDate(startTime.toDate());
 
-  }
+    }
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
-      DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-      if (minuteSkip == 0) {
-        minuteSkip = 1;
-      }
-      DateTime today = new DateTime(DateTimeZone.UTC);
-      Util.logger.info("today is: " + today.toString());
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        if (minuteSkip == 0) {
+            minuteSkip = 1;
+        }
+        DateTime today = new DateTime(DateTimeZone.UTC);
+        Util.logger.info("today is: " + today.toString());
 
-      List<String> dates = new ArrayList<String>();
-      dates.add(formatter.print(today));
+        List<String> dates = new ArrayList<String>();
+        dates.add(formatter.print(today));
 
-      //first lets get all dates before today
-      for (int backward = 1; backward <= interval; backward += minuteSkip) {
-        dates.add(formatter.print(today.minusMinutes(backward)));
-      }
+        //first lets get all dates before today
+        for (int backward = 1; backward <= interval; backward += minuteSkip) {
+            dates.add(formatter.print(today.minusMinutes(backward)));
+        }
 
-      //now the forward dates
-      for (int i = 0; i <= interval; i += minuteSkip) {
-        dates.add(formatter.print(today.plusMinutes(i)));
-      }
+        //now the forward dates
+        for (int i = 0; i <= interval; i += minuteSkip) {
+            dates.add(formatter.print(today.plusMinutes(i)));
+        }
 
-      return dates;
+        return dates;
     }
 
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip) {
-      DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-      formatter.withZoneUTC();
-      Util.logger.info("generating data between " + formatter.print(startDate) + " and " +
-        formatter.print(endDate));
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        formatter.withZoneUTC();
+        Util.logger.info("generating data between " + formatter.print(startDate) + " and " +
+            formatter.print(endDate));
 
-      List<String> dates = new ArrayList<String>();
+        List<String> dates = new ArrayList<String>();
 
 
-      while (!startDate.isAfter(endDate)) {
-        dates.add(formatter.print(startDate.plusMinutes(minuteSkip)));
-        if (minuteSkip == 0) {
-          minuteSkip = 1;
+        while (!startDate.isAfter(endDate)) {
+            dates.add(formatter.print(startDate.plusMinutes(minuteSkip)));
+            if (minuteSkip == 0) {
+                minuteSkip = 1;
+            }
+            startDate = startDate.plusMinutes(minuteSkip);
         }
-        startDate = startDate.plusMinutes(minuteSkip);
-      }
 
-      return dates;
+        return dates;
     }
 
     /**
      * Get format string corresponding to the FEED_TYPE
+     *
      * @param feedType type of the feed
      * @return format string
      */
@@ -124,13 +125,14 @@ public class TimeUtil {
 
     /**
      * Convert list of dates to list of string according to the supplied format
-     * @param dates list of dates
+     *
+     * @param dates        list of dates
      * @param formatString format string to be used for converting dates
      * @return list of strings corresponding to given dates
      */
     public static List<String> convertDatesToString(List<DateTime> dates,
                                                     String formatString) {
-        List<String> dateString= new ArrayList<String>();
+        List<String> dateString = new ArrayList<String>();
         DateTimeFormatter formatter = DateTimeFormat.forPattern(formatString);
         formatter.withZoneUTC();
         for (DateTime date : dates) {
@@ -142,15 +144,16 @@ public class TimeUtil {
     /**
      * Get all possible dates between start and end date gap between subsequent dates be one unit
      * of feedType
+     *
      * @param startDate start date
-     * @param endDate end date
-     * @param feedType type of the feed
+     * @param endDate   end date
+     * @param feedType  type of the feed
      * @return list of dates
      */
     public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                    FEED_TYPE feedType) {
+                                                      FEED_TYPE feedType) {
         final List<DateTime> dates = new ArrayList<DateTime>();
-        if(!startDate.isAfter(endDate)) {
+        if (!startDate.isAfter(endDate)) {
             dates.add(startDate);
         }
         for (int counter = 0; !startDate.isAfter(endDate) && counter < 1000; ++counter) {
@@ -182,7 +185,7 @@ public class TimeUtil {
         return dates;
     }
 
-    public static String getTimeWrtSystemTime(int minutes)  {
+    public static String getTimeWrtSystemTime(int minutes) {
 
         DateTime jodaTime = new DateTime(DateTimeZone.UTC);
         if (minutes > 0)
@@ -192,7 +195,7 @@ public class TimeUtil {
 
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         DateTimeZone tz = DateTimeZone.getDefault();
-        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(),false));
+        return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(), false));
     }
 
     public static String addMinsToTime(String time, int minutes) {
@@ -241,10 +244,10 @@ public class TimeUtil {
                                                       DateTime endDateJoda, String prefix,
                                                       int interval) throws IOException {
         List<String> dataDates =
-                getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+            getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
-        if(!prefix.endsWith("/"))
-          prefix = prefix+"/";
+        if (!prefix.endsWith("/"))
+            prefix = prefix + "/";
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -253,7 +256,7 @@ public class TimeUtil {
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-        InstanceUtil.putDataInFolders(colo, dataFolder,"");
+        InstanceUtil.putDataInFolders(colo, dataFolder, "");
 
     }
 
@@ -262,18 +265,18 @@ public class TimeUtil {
                                                                   DateTime endDateJoda,
                                                                   String prefix,
                                                                   int interval) throws IOException {
-      List<String> dataDates =
-        getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+        List<String> dataDates =
+            getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
 
-      for (int i = 0; i < dataDates.size(); i++)
-        dataDates.set(i, prefix + dataDates.get(i));
+        for (int i = 0; i < dataDates.size(); i++)
+            dataDates.set(i, prefix + dataDates.get(i));
 
-      List<String> dataFolder = new ArrayList<String>();
+        List<String> dataFolder = new ArrayList<String>();
 
-      for (String dataDate : dataDates) dataFolder.add(dataDate);
+        for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-      InstanceUtil.createHDFSFolders(colo, dataFolder);
-      return dataFolder;
+        InstanceUtil.createHDFSFolders(colo, dataFolder);
+        return dataFolder;
     }
 
     public static Date getMinutes(String expression, Calendar time) {

@@ -49,18 +49,18 @@ public class XmlUtil {
 
     public static org.apache.falcon.regression.core.generated.process.Validity
     createProcessValidity(
-            String startTime, String endTime) {
+        String startTime, String endTime) {
         org.apache.falcon.regression.core.generated.process.Validity v =
-                new org.apache.falcon.regression.core.generated.process.Validity();
+            new org.apache.falcon.regression.core.generated.process.Validity();
         logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
-                + TimeUtil.oozieDateToDate(endTime).toDate());
+            + TimeUtil.oozieDateToDate(endTime).toDate());
         v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
         v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
         return v;
     }
 
     public static boolean isIdentical(String expected, String actual)
-    throws IOException, SAXException {
+        throws IOException, SAXException {
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreAttributeOrder(true);
         Diff diff = XMLUnit.compareXML(expected, actual);

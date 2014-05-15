@@ -48,7 +48,8 @@ public class FeedMerlin extends Feed {
     private static Logger logger = Logger.getLogger(FeedMerlin.class);
 
     public FeedMerlin(String entity)
-    throws JAXBException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        throws JAXBException, NoSuchMethodException, InvocationTargetException,
+        IllegalAccessException {
         Feed element = InstanceUtil.getFeedElement(entity);
         Field[] fields = Feed.class.getDeclaredFields();
         for (Field fld : fields) {
@@ -58,7 +59,7 @@ public class FeedMerlin extends Feed {
                 continue;
             }
             PropertyUtils.setProperty(this, fld.getName(),
-                    PropertyUtils.getProperty(element, fld.getName()));
+                PropertyUtils.getProperty(element, fld.getName()));
         }
     }
 
@@ -76,10 +77,10 @@ public class FeedMerlin extends Feed {
     public String insertRetentionValueInFeed(String retentionValue) {
         //insert retentionclause
         getClusters().getCluster().get(0).getRetention()
-                .setLimit(new Frequency(retentionValue));
+            .setLimit(new Frequency(retentionValue));
 
         for (org.apache.falcon.regression.core.generated.feed.Cluster cluster :
-                getClusters().getCluster()) {
+            getClusters().getCluster()) {
             cluster.getRetention().setLimit(new Frequency(retentionValue));
         }
         return toString();

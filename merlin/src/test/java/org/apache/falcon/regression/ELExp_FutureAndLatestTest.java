@@ -69,7 +69,8 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         String startDate = TimeUtil.getTimeWrtSystemTime(-150);
         String endDate = TimeUtil.getTimeWrtSystemTime(100);
 
-        b.setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(
+            baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         b.setProcessWorkflow(aggregateWorkflowDir);
         prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
@@ -95,7 +96,8 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         logger.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
-        bundles[0].setInputFeedDataPath(baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedDataPath(
+            baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setInputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setInputFeedValidity("2010-04-01T00:00Z", "2015-04-01T00:00Z");
         String processStart = TimeUtil.getTimeWrtSystemTime(-3);
@@ -116,7 +118,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         bundles[0].setDatasetInstances("latest(-3)", "latest(0)");
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
     @Test(groups = {"singleCluster"})
@@ -124,7 +126,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         bundles[0].setDatasetInstances("future(0,10)", "future(3,10)");
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
     @AfterClass(alwaysRun = true)

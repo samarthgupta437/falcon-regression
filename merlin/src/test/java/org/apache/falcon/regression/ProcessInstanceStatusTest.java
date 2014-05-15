@@ -42,6 +42,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +58,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedInputTimedOutPath = baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputTimedOutPath = baseTestHDFSDir + "/output-data/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+        baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedInputTimedOutPath =
+        baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputTimedOutPath =
+        baseTestHDFSDir + "/output-data/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(ProcessInstanceStatusTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -84,7 +88,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -116,11 +121,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     /**
      * time out is set as 3 minutes .... getStatus is for a large range in past.
      * 6 instance should be materialized and one in running and other in waiting
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceStatus_StartAndEnd_checkNoInstanceAfterEndDate()
-            throws Exception {
+        throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-03T10:22Z");
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
@@ -128,8 +134,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T10:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T10:20Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
         InstanceUtil.validateResponse(r, 6, 1, 0, 5, 0);
     }
@@ -137,6 +143,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     /**
      * Perform -getStatus using only -start parameter within time-range of non-materialized
      * instances. There should be no instances returned in response.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -148,8 +155,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T05:00Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T05:00Z");
         AssertUtil.assertSucceeded(r);
         Assert.assertEquals(r.getInstances(), null);
     }
@@ -157,6 +164,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     /**
      * Schedule process. Perform -getStatus using -end parameter which is out of process
      * validity range. Attempt should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -167,8 +175,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:30Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:30Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
@@ -183,7 +191,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
             bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
             bundles[0].submitAndScheduleBundle(prism);
             ProcessInstancesResult r = prism.getProcessHelper()
-                    .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), "");
+                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), "");
             InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
         } catch (Exception e) {
             if (!e.getMessage().contains("Expected BEGIN_OBJECT but was STRING at line 1 column"))
@@ -194,6 +202,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     /**
      * Schedule process with number of instances. Perform -getStatus request with valid
      * parameters. Attempt should succeed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -203,14 +212,15 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
     /**
      * Schedule process. Perform -getStatus using -start parameter which is out of process
      * validity range. Attempt should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -221,14 +231,15 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T00:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T00:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
     /**
      * Schedule and then delete process. Try to get the status of its instances. Attempt should
      * fail with an appropriate code.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -240,8 +251,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND))
             Assert.assertTrue(false);
     }
@@ -249,6 +260,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     /**
      * Schedule process and then suspend it. -getStatus of first instance only -start parameter.
      * Instance should be suspended.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -260,14 +272,15 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.SUSPENDED);
     }
 
     /**
      * Schedule process. Try to -getStatus using -start/-end parameters with values which were
      * reversed i.e. -start is further then -end. Attempt should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -277,14 +290,15 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:20Z&end=2010-01-02T01:07Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:20Z&end=2010-01-02T01:07Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
     /**
      * Schedule process. Perform -getStatus using -start/-end parameters which are out of process
      * validity range. Attempt should fail.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -293,19 +307,20 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(
-                feedOutputPath);
+            feedOutputPath);
         bundles[0].setProcessConcurrency(2);
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
     }
 
     /**
      * Schedule process. Suspend and then resume it. -getStatus of its instances. Check that
      * response reflects that instances are running.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -322,8 +337,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
@@ -331,6 +346,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * Schedule process. -getStatus of it's first instance using only -start parameter which
      * points to start time of process validity. Check that response reflects expected status of
      * instance.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -340,14 +356,15 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
     }
 
     /**
      * Schedule process. Try to perform -getStatus using valid -start parameter but invalid
      * process name. Attempt should fail with an appropriate status code.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -356,7 +373,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus("invalidProcess", "?start=2010-01-01T01:00Z");
+            .getProcessInstanceStatus("invalidProcess", "?start=2010-01-01T01:00Z");
         if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
             Assert.assertTrue(false);
     }
@@ -364,6 +381,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     /**
      * Schedule process. Suspend it. -getStatus of it's instances. Check if response reflects
      * their status as suspended.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -377,14 +395,15 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.SUSPENDED);
     }
 
     /**
      * Schedule process. Try to -getStatus without time range parameters. Attempt should fails
      * with an appropriate status code.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -393,13 +412,14 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), null);
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), null);
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
     /**
      * Schedule process with timeout set to 2 minutes. Wait till it become timed-out. -getStatus
      * of that process. Check that all materialized instances are failed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -415,12 +435,13 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         Status status = null;
         while (status != Status.TIMEDOUT) {
             status = InstanceUtil
-                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
+                .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0,
+                    0);
             Thread.sleep(15000);
         }
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateFailedInstances(r, 3);
     }
 }

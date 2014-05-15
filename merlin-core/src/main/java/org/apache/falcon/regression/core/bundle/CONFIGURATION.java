@@ -68,7 +68,7 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CONFIGURATION", propOrder = {
-        "property"
+    "property"
 })
 public class CONFIGURATION {
 
@@ -125,9 +125,9 @@ public class CONFIGURATION {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "", propOrder = {
-            "name",
-            "value",
-            "description"
+        "name",
+        "value",
+        "description"
     })
     public static class Property {
 

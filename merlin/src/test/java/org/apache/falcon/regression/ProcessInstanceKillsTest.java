@@ -57,7 +57,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + testDir;
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+        baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(ProcessInstanceKillsTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -80,7 +81,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -113,6 +115,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     /**
      * Schedule process. Perform -kill action using only -start parameter. Check that action
      * succeeded and only one instance was killed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -125,8 +128,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.KILLED);
     }
 
@@ -134,6 +137,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * Schedule process. Check that in case when -start and -end parameters are equal -kill
      * action results in the same way as in case with only -start parameter is used. Only one
      * instance should be killed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -148,8 +152,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T00:03Z&end=2010-01-02T00:03Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T00:03Z&end=2010-01-02T00:03Z");
         InstanceUtil.validateResponse(r, 1, 0, 0, 0, 1);
     }
 
@@ -157,6 +161,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * Schedule process. Perform -kill action on instances between -start and -end dates which
      * expose range of last 3 instances which have been materialized already and those which
      * should be. Check that only existent instances are killed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -170,8 +175,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T00:03Z&end=2010-01-02T00:30Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T00:03Z&end=2010-01-02T00:30Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         Thread.sleep(15000);
         logger.info(r.toString());
@@ -180,8 +185,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
     /**
      * Generate data. Schedule process. Try to perform -kill
      * operation using -start and -end which are both in future with respect to process start.
-     * @throws Exception
-     * TODO amend test with validations
+     *
+     * @throws Exception TODO amend test with validations
      */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
@@ -193,8 +198,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         String startTimeData = TimeUtil.getTimeWrtSystemTime(-150);
         String endTimeData = TimeUtil.getTimeWrtSystemTime(50);
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
-                TimeUtil.oozieDateToDate(startTimeData),
-                TimeUtil.oozieDateToDate(endTimeData), baseTestHDFSDir + "/", 1);
+            TimeUtil.oozieDateToDate(startTimeData),
+            TimeUtil.oozieDateToDate(endTimeData), baseTestHDFSDir + "/", 1);
         bundles[0].setProcessValidity(startTime, endTime);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -205,14 +210,15 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         String startTimeRequest = TimeUtil.getTimeWrtSystemTime(-17);
         String endTimeRequest = TimeUtil.getTimeWrtSystemTime(23);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + startTimeRequest + "&end=" + endTimeRequest);
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=" + startTimeRequest + "&end=" + endTimeRequest);
         logger.info(r.toString());
     }
 
     /**
      * Schedule process. Check that -kill action is not performed when time range between -start
      * and -end parameters is in future and don't include existing instances.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -230,8 +236,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         String startTime = TimeUtil.getTimeWrtSystemTime(1);
         String endTime = TimeUtil.getTimeWrtSystemTime(40);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=" + startTime + "&end=" + endTime);
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=" + startTime + "&end=" + endTime);
         Thread.sleep(15000);
         logger.info(r.getMessage());
         Assert.assertEquals(r.getInstances(), null);
@@ -241,6 +247,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * Schedule process. Perform -kill action within time range which includes 3 running instances.
      * Get status of instances within wider range. Check that only mentioned 3 instances are
      * killed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -253,18 +260,19 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:05Z&end=2010-01-02T01:15Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:05Z&end=2010-01-02T01:15Z");
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 2, 0, 0, 3);
     }
 
     /**
      * Schedule process. Perform -kill action on last expected instance. Get status of instances
      * which are in wider range. Check that only last is killed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -277,18 +285,19 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:20Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:20Z");
         Thread.sleep(15000);
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 4, 0, 0, 1);
     }
 
     /**
      * Schedule process. Suspend one running instance. Perform -kill action on it. Check that
      * mentioned instance is really killed.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -301,18 +310,19 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.KILLED);
     }
 
     /**
      * Schedule single instance process. Wait till it finished. Try to kill the instance. Check
      * that instance still succeeded.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -325,14 +335,14 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         for (int i = 0; i < 30; i++) {
             if (InstanceUtil
-                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0)
-                    .equals(CoordinatorAction.Status.SUCCEEDED))
+                .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0)
+                .equals(CoordinatorAction.Status.SUCCEEDED))
                 break;
             Thread.sleep(30000);
         }
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.SUCCEEDED);
     }
 

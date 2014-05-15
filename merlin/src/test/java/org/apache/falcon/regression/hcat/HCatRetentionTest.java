@@ -68,7 +68,7 @@ public class HCatRetentionTest extends BaseTestClass {
     public static HCatClient cli;
     final String testDir = "/HCatRetentionTest/";
     final String baseTestHDFSDir = baseHDFSDir + testDir;
-    final String dBName="default";
+    final String dBName = "default";
     final ColoHelper cluster = servers.get(0);
     final FileSystem clusterFS = serverFS.get(0);
     final OozieClient clusterOC = serverOC.get(0);
@@ -115,7 +115,7 @@ public class HCatRetentionTest extends BaseTestClass {
             final List<DateTime> dataDates =
                 TimeUtil.getDatesOnEitherSide(dataStartTime, dataEndTime, feedType);
             final List<String> dataDateStrings = TimeUtil.convertDatesToString(dataDates,
-                    TimeUtil.getFormatStringForFeedType(feedType));
+                TimeUtil.getFormatStringForFeedType(feedType));
             AssertUtil.checkForListSizes(dataDates, dataDateStrings);
             final List<String> dataFolders = HadoopUtil.createPeriodicDataset(dataDateStrings,
                 OSUtil.OOZIE_EXAMPLE_INPUT_LATE_INPUT, clusterFS, baseTestHDFSDir);
@@ -146,22 +146,22 @@ public class HCatRetentionTest extends BaseTestClass {
             logger.info("finalData = " + finalData);
             logger.info("expectedOutput = " + expectedOutput);
             Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
-                expectedOutput.toArray(new String[expectedOutput.size()])),
+                    expectedOutput.toArray(new String[expectedOutput.size()])),
                 "expectedOutput and finalData don't match");
         }
     }
 
     private static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath,
-                                                    String dir, FEED_TYPE feedType)
-            throws IOException {
+                                                     String dir, FEED_TYPE feedType)
+        throws IOException {
         List<String> finalResult = new ArrayList<String>();
         final int dirDepth = getDirDepthForFeedType(feedType);
 
         List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper,
-                new Path(hadoopPath), dirDepth);
+            new Path(hadoopPath), dirDepth);
 
         for (Path result : results) {
-            int pathDepth = result.toString().split(dir)[1].split("/").length-1;
+            int pathDepth = result.toString().split(dir)[1].split("/").length - 1;
             if (pathDepth == dirDepth) {
                 finalResult.add(result.toString().split(dir)[1]);
             }
@@ -172,18 +172,21 @@ public class HCatRetentionTest extends BaseTestClass {
 
     /**
      * Get the expected output after retention is applied
+     *
      * @param retentionPeriod retention period
-     * @param retentionUnit retention unit
-     * @param feedType feed type
-     * @param endDateUTC end date of retention
-     * @param inputData input data on which retention was applied
+     * @param retentionUnit   retention unit
+     * @param feedType        feed type
+     * @param endDateUTC      end date of retention
+     * @param inputData       input data on which retention was applied
      * @return expected output of the retention
      */
-    private static List<String> getExpectedOutput(int retentionPeriod, RETENTION_UNITS retentionUnit,
-                                                         FEED_TYPE feedType,
-                                                         DateTime endDateUTC,
-                                                         List<String> inputData) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(TimeUtil.getFormatStringForFeedType(feedType));
+    private static List<String> getExpectedOutput(int retentionPeriod,
+                                                  RETENTION_UNITS retentionUnit,
+                                                  FEED_TYPE feedType,
+                                                  DateTime endDateUTC,
+                                                  List<String> inputData) {
+        DateTimeFormatter formatter =
+            DateTimeFormat.forPattern(TimeUtil.getFormatStringForFeedType(feedType));
         List<String> finalData = new ArrayList<String>();
 
         //convert the end date to the same format
@@ -246,7 +249,7 @@ public class HCatRetentionTest extends BaseTestClass {
         throws HCatException {
         //Adding specific partitions that map to an external location
         Map<String, String> ptn = new HashMap<String, String>();
-        for(int i = 0; i < dataDates.size(); ++i) {
+        for (int i = 0; i < dataDates.size(); ++i) {
             final String dataFolder = dataFolders.get(i);
             final DateTime dataDate = dataDates.get(i);
             switch (feedType) {
@@ -309,7 +312,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static DateTime getEndLimit(int time, RETENTION_UNITS interval,
-                                          DateTime today) {
+                                        DateTime today) {
         switch (interval) {
             case MINUTES:
                 return today.minusMinutes(time);
@@ -329,10 +332,13 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) throws Exception {
-        RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS, RETENTION_UNITS.MONTHS};// "minutes","years",
+        RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS,
+            RETENTION_UNITS.MONTHS};// "minutes","years",
         int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered
         // in validation scenarios.
-        FEED_TYPE[] dataTypes = new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
+        FEED_TYPE[] dataTypes =
+            new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY,
+                FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
         Object[][] testData = new Object[units.length * periods.length * dataTypes.length][3];
 
         int i = 0;

@@ -58,8 +58,8 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "COORDINATOR", propOrder = {
-        "appPath",
-        "configuration"
+    "appPath",
+    "configuration"
 })
 public class COORDINATOR {
 

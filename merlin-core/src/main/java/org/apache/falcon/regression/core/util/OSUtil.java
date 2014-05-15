@@ -23,17 +23,17 @@ import org.apache.commons.lang.StringUtils;
 public class OSUtil {
 
     public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith
-            ("windows");
+        ("windows");
     public static final String SEPARATOR = System.getProperty("file.separator", "/");
     public static final String RESOURCES =
-            String.format("src%stest%sresources%s", SEPARATOR, SEPARATOR, SEPARATOR);
+        String.format("src%stest%sresources%s", SEPARATOR, SEPARATOR, SEPARATOR);
     public static final String RESOURCES_OOZIE = String.format(RESOURCES + "oozie%s", SEPARATOR);
     public static final String OOZIE_EXAMPLE_INPUT_DATA =
-            String.format(RESOURCES + "OozieExampleInputData%s", SEPARATOR);
+        String.format(RESOURCES + "OozieExampleInputData%s", SEPARATOR);
     public static final String OOZIE_EXAMPLE_INPUT_LATE_INPUT =
-            OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData";
+        OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData";
     public static final String NORMAL_INPUT =
-            String.format(OOZIE_EXAMPLE_INPUT_DATA + "normalInput%s", SEPARATOR);
+        String.format(OOZIE_EXAMPLE_INPUT_DATA + "normalInput%s", SEPARATOR);
 
     public static String getPath(String... pathParts) {
         return StringUtils.join(pathParts, OSUtil.SEPARATOR);

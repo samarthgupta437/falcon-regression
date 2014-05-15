@@ -42,9 +42,9 @@ public class RetryAnalyzer implements IRetryAnalyzer {
     public boolean retry(ITestResult result) {
         if (count < maxCount) {
             logger.info(
-                    ">>>>> Error in " + result.getName() + "with status " + (result.getStatus()) +
-                            " Retrying " +
-                            count + 1 + ". time\n");
+                ">>>>> Error in " + result.getName() + "with status " + (result.getStatus()) +
+                    " Retrying " +
+                    count + 1 + ". time\n");
             count += 1;
             return true;
         }

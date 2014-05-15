@@ -26,5 +26,5 @@
 //
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "uri:oozie:bundle:0.1",
-        elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED) package org.apache
-        .falcon.regression.core.bundle;
+    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED) package org.apache
+    .falcon.regression.core.bundle;

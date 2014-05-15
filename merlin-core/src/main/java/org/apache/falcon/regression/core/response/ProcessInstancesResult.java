@@ -76,8 +76,8 @@ public class ProcessInstancesResult extends APIResult {
         @Override
         public String toString() {
             return "{instance:" + this.instance + ", status:" + this.status
-                    + (this.logFile == null ? "" : ", log:" + this.logFile)
-                    + "}";
+                + (this.logFile == null ? "" : ", log:" + this.logFile)
+                + "}";
         }
     }
 
@@ -98,7 +98,7 @@ public class ProcessInstancesResult extends APIResult {
             int index = 0;
             for (String instance : sortedInstances) {
                 instances[index++] = new ProcessInstance(instance,
-                        WorkflowStatus.valueOf(instMap.get(instance)));
+                    WorkflowStatus.valueOf(instMap.get(instance)));
             }
         }
     }
@@ -163,8 +163,8 @@ public class ProcessInstancesResult extends APIResult {
         @Override
         public String toString() {
             return "{action:" + this.action + ", status:" + this.status
-                    + (this.logFile == null ? "" : ", log:" + this.logFile)
-                    + "}";
+                + (this.logFile == null ? "" : ", log:" + this.logFile)
+                + "}";
         }
     }
 

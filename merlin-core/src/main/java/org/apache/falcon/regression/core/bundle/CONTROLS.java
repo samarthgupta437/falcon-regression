@@ -54,7 +54,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CONTROLS", propOrder = {
-        "kickOffTime"
+    "kickOffTime"
 })
 public class CONTROLS {
 

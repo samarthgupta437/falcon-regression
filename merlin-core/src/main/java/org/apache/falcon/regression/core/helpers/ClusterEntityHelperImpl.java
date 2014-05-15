@@ -51,14 +51,14 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     public ServiceResponse delete(String url, String data, String user)
-    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         url += "/cluster/" + Util.readClusterName(data) + colo;
         return Util.sendRequest(url, "delete", user);
     }
 
     public ServiceResponse getEntityDefinition(String url, String data, String user)
-    throws JAXBException,
-    IOException, URISyntaxException, AuthenticationException {
+        throws JAXBException,
+        IOException, URISyntaxException, AuthenticationException {
         url += "/cluster/" + Util.readClusterName(data);
         return Util.sendRequest(url, "get", user);
     }
@@ -88,7 +88,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     public ServiceResponse submitEntity(String url, String data, String user)
-    throws IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         logger.info("Submitting cluster: \n" + Util.prettyPrintXml(data));
         url += "/cluster" + colo;
@@ -110,7 +110,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ServiceResponse submitEntity(Util.URLS url, String data, String user)
-    throws IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return submitEntity(this.hostname + url.getValue(), data, user);
     }
 
@@ -122,7 +122,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ServiceResponse delete(Util.URLS deleteUrl, String data, String user)
-    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         // TODO Auto-generated method stub
         return delete(this.hostname + deleteUrl.getValue(), data, user);
     }
@@ -135,36 +135,36 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ProcessInstancesResult getRunningInstance(
-            Util.URLS processRunningInstance, String name, String user) {
+        Util.URLS processRunningInstance, String name, String user) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceStatus(
-            String readEntityName, String params, String user) {
+        String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
 
 
     public ProcessInstancesResult getProcessInstanceSuspend(
-            String readEntityName, String params, String user) {
+        String readEntityName, String params, String user) {
         // TODO Auto-generated method stub
         return null;
     }
 
     public String list() {
         return Util.executeCommandGetOutput(
-                BASE_COMMAND + " entity -list -url " + this.hostname + " -type cluster");
+            BASE_COMMAND + " entity -list -url " + this.hostname + " -type cluster");
     }
 
     @Override
     public String getDependencies(String entityName) {
 
         return Util.executeCommandGetOutput(
-                BASE_COMMAND + " entity -dependency -url " + this.hostname +
-                        " -type cluster -name " + entityName);
+            BASE_COMMAND + " entity -dependency -url " + this.hostname +
+                " -type cluster -name " + entityName);
     }
 
     @Override
@@ -181,7 +181,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ServiceResponse getEntityDefinition(Util.URLS url, String data, String user)
-    throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(this.hostname + url.getValue(), data, user);
     }
 
@@ -194,7 +194,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     public ServiceResponse update(String oldEntity,
                                   String newEntity,
                                   String updateTime, String user)
-    throws IOException, JAXBException {
+        throws IOException, JAXBException {
         return null;
     }
 
@@ -218,14 +218,14 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ProcessInstancesResult getProcessInstanceRerun(
-            String readEntityName, String string, String user) {
+        String readEntityName, String string, String user) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceResume(
-            String readEntityName, String string, String user) {
+        String readEntityName, String string, String user) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -234,7 +234,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     public InstancesSummaryResult getInstanceSummary(String readEntityName,
                                                      String string
     ) throws
-    IOException, URISyntaxException {
+        IOException, URISyntaxException {
         logger.info("Not Valid for Cluster Entity");
         return null;
     }

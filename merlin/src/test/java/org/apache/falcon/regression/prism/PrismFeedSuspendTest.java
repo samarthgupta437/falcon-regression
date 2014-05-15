@@ -74,19 +74,19 @@ public class PrismFeedSuspendTest extends BaseTestClass {
 
         //delete using prism
         AssertUtil.assertSucceeded(prism.getFeedHelper()
-                .delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
+            .delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
         //suspend using prism
         AssertUtil.assertFailed(prism.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         //verify
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper()
-                .delete(Util.URLS.DELETE_URL, bundles[1].getDataSets().get(0)));
+            .delete(Util.URLS.DELETE_URL, bundles[1].getDataSets().get(0)));
         //suspend on the other one
         AssertUtil.assertFailed(prism.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
         AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
     }
@@ -100,8 +100,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
         for (int i = 0; i < 2; i++) {
             //suspend using prism
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
             //verify
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
@@ -111,8 +111,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
         for (int i = 0; i < 2; i++) {
             //suspend on the other one
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
             );
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.SUSPENDED);
@@ -123,14 +123,14 @@ public class PrismFeedSuspendTest extends BaseTestClass {
     @Test()
     public void testSuspendNonExistentFeedOnBothColos() throws Exception {
         AssertUtil.assertFailed(prism.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.assertFailed(prism.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
 
         AssertUtil.assertFailed(cluster1.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.assertFailed(cluster2.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
     }
 
     @Test()
@@ -139,14 +139,14 @@ public class PrismFeedSuspendTest extends BaseTestClass {
         bundles[1].submitFeed();
 
         AssertUtil.assertFailed(prism.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.assertFailed(prism.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
 
         AssertUtil.assertFailed(cluster1.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.assertFailed(cluster2.getFeedHelper()
-                .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
 
 
     }
@@ -162,16 +162,16 @@ public class PrismFeedSuspendTest extends BaseTestClass {
 
             //suspend using prism
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
             //verify
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
 
             //suspend on the other one
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.SUSPENDED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -190,28 +190,28 @@ public class PrismFeedSuspendTest extends BaseTestClass {
 
             //delete using coloHelpers
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper()
-                            .delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0))
             );
 
             Util.shutDownService(cluster1.getFeedHelper());
 
             //suspend using prism
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
             //verify
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
 
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper()
-                            .delete(Util.URLS.DELETE_URL, bundles[1].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .delete(Util.URLS.DELETE_URL, bundles[1].getDataSets().get(0))
             );
             //suspend on the other one
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
             );
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
@@ -233,8 +233,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
 
             //suspend using prism
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
             //verify
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
@@ -243,14 +243,14 @@ public class PrismFeedSuspendTest extends BaseTestClass {
             Util.shutDownService(cluster1.getFeedHelper());
 
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
 
             //suspend on the other one
             AssertUtil.assertSucceeded(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
             AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
             AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.SUSPENDED);
 
@@ -264,21 +264,21 @@ public class PrismFeedSuspendTest extends BaseTestClass {
 
     @Test(groups = {"prism", "0.2"})
     public void testSuspendNonExistentFeedOnBothColosWhen1ColoIsDown()
-    throws Exception {
+        throws Exception {
         try {
             Util.shutDownService(cluster1.getFeedHelper());
 
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
             );
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
 
             AssertUtil.assertFailed(
-                    cluster2.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+                cluster2.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
@@ -296,17 +296,17 @@ public class PrismFeedSuspendTest extends BaseTestClass {
             Util.shutDownService(cluster1.getFeedHelper());
 
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
             AssertUtil.assertFailed(
-                    prism.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+                prism.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
 
 
             AssertUtil.assertFailed(
-                    cluster2.getFeedHelper()
-                            .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
+                cluster2.getFeedHelper()
+                    .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());

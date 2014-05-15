@@ -64,7 +64,8 @@ public class FeedStatusTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         //submit the cluster
-        ServiceResponse response = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
+        ServiceResponse response =
+            prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         AssertUtil.assertSucceeded(response);
         feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
@@ -77,11 +78,13 @@ public class FeedStatusTest extends BaseTestClass {
     /**
      * Schedules feed. Queries a feed status and checks the response
      * correctness and a feed status correspondence.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void getStatusForScheduledFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         logger.info(feed);
         AssertUtil.assertSucceeded(response);
 
@@ -97,11 +100,13 @@ public class FeedStatusTest extends BaseTestClass {
     /**
      * Schedules and suspends feed. Queries a feed status and checks the response
      * correctness and a feed status correspondence.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void getStatusForSuspendedFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
 
         AssertUtil.assertSucceeded(response);
 
@@ -119,6 +124,7 @@ public class FeedStatusTest extends BaseTestClass {
     /**
      * Submits feed. Queries a feed status and checks the response
      * correctness and a feed status correspondence.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -137,12 +143,13 @@ public class FeedStatusTest extends BaseTestClass {
 
     /**
      * Removes feed. Queries a feed status. Checks that the response correctness.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
     public void getStatusForDeletedFeed() throws Exception {
         ServiceResponse response =
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
@@ -152,12 +159,13 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.assertFailed(response);
 
         Assert.assertTrue(
-                response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
+            response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
         AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
     }
 
     /**
      * Queries a status of feed which wasn't submitted and checks the response.
+     *
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
@@ -165,7 +173,7 @@ public class FeedStatusTest extends BaseTestClass {
         ServiceResponse response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
         AssertUtil.assertFailed(response);
         Assert.assertTrue(
-                response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
+            response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
 
     }
 }

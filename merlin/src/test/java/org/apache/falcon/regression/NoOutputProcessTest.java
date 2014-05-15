@@ -40,6 +40,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,8 @@ public class NoOutputProcessTest extends BaseTestClass {
         DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
         DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -114,16 +116,16 @@ public class NoOutputProcessTest extends BaseTestClass {
     public void checkForJMSMsgWhenNoOutput() throws Exception {
         logger.info("attaching consumer to:   " + "FALCON.ENTITY.TOPIC");
         Consumer consumer =
-                new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
+            new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         consumer.start();
         Thread.sleep(15000);
 
         //wait for all the instances to complete
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
         Assert.assertEquals(consumer.getMessageData().size(), 3,
-                " Message for all the 3 instance not found");
+            " Message for all the 3 instance not found");
 
         consumer.interrupt();
 
@@ -135,9 +137,10 @@ public class NoOutputProcessTest extends BaseTestClass {
     @Test(enabled = true, groups = {"singleCluster"})
     public void rm() throws Exception {
         Consumer consumerInternalMsg =
-                new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
+            new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         Consumer consumerProcess =
-                new Consumer("FALCON." + bundles[0].getProcessName(), cluster.getClusterHelper().getActiveMQ());
+            new Consumer("FALCON." + bundles[0].getProcessName(),
+                cluster.getClusterHelper().getActiveMQ());
 
         consumerInternalMsg.start();
         consumerProcess.start();
@@ -147,12 +150,12 @@ public class NoOutputProcessTest extends BaseTestClass {
         //wait for all the instances to complete
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
         Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
-                " Message for all the 3 instance not found");
+            " Message for all the 3 instance not found");
         Assert.assertEquals(consumerProcess.getMessageData().size(), 3,
-                " Message for all the 3 instance not found");
+            " Message for all the 3 instance not found");
 
         consumerInternalMsg.interrupt();
         consumerProcess.interrupt();

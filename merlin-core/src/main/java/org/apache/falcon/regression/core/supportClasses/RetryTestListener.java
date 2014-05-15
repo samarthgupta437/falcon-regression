@@ -46,7 +46,7 @@ public class RetryTestListener extends TestListenerAdapter {
             count++;
             result.setStatus(ITestResult.SKIP);
             logger.info("Error in " + result.getName() + " with status "
-                    + result.getStatus() + " Retrying " + count + " of 3 times");
+                + result.getStatus() + " Retrying " + count + " of 3 times");
             logger.info("Setting test run attempt status to Skipped");
         } else {
             count = 0;
