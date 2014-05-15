@@ -159,6 +159,7 @@
             <properties>
                 <hadoop2.version>2.2.0</hadoop2.version>
                 <hive.version>0.13.0</hive.version>
+                <oozie.version>4.0.0.2.1.2.0-402</oozie.version>
             </properties>
             <dependencyManagement>
                 <dependencies>
