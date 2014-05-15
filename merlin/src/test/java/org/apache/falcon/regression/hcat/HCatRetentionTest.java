@@ -337,8 +337,10 @@ public class HCatRetentionTest extends BaseTestClass {
         int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered
         // in validation scenarios.
         FEED_TYPE[] dataTypes =
-            new FEED_TYPE[]{FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY,
-                FEED_TYPE.MONTHLY, FEED_TYPE.YEARLY};
+            new FEED_TYPE[]{
+                //disabling since falcon has support is for only for single hcat partition
+                //FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY,
+                FEED_TYPE.YEARLY};
         Object[][] testData = new Object[units.length * periods.length * dataTypes.length][3];
 
         int i = 0;
