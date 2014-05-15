@@ -63,13 +63,13 @@ public class TestUISample extends BaseTestClass {
     }
 
     @Test
-    public void testFalconEnities() throws JAXBException, IOException {
+    public void testFalconEntities() throws JAXBException, IOException {
 
         EntitiesPage page = new ProcessesPage(DRIVER, cluster);
         page.navitageTo();
         String status = page.getEntityStatus(bundles[0].getProcessName());
         Assert.assertNotNull(status);
-        Assert.assertEquals(status, "UNKNOWN"); //TODO: Should be changed when BUG-17796 be resolved
+        Assert.assertEquals(status, "SUBMITTED");
 
         page = new ClustersPage(DRIVER, cluster);
         page.navitageTo();
