@@ -37,6 +37,7 @@ import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 
 public class TestUISample extends BaseTestClass {
@@ -56,8 +57,8 @@ public class TestUISample extends BaseTestClass {
     }
 
     @AfterMethod
-    public void tearDown() {
-        closeBrowser();
+    public void tearDown(Method method) throws IOException {
+        closeBrowser(this.getClass().getSimpleName() + "." + method.getName());
         removeBundles();
     }
 
