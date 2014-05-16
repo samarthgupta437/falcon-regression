@@ -42,6 +42,7 @@ public class EntityPage<T> extends Page {
         notFoundMsg = String.format(" %s '%s' not found!", type, entityName);
     }
 
+    @SuppressWarnings("unchecked")
     public T getEntity() throws JAXBException, IOException {
         String entity = driver.findElement(By.id("entity-def-textarea")).getText();
         JAXBContext jc = JAXBContext.newInstance(type);
