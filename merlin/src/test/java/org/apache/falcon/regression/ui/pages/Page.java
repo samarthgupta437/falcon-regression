@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 
 
 public abstract class Page {
+    protected final static int DEFAULT_TIMEOUT = 10;
     protected String URL;
     protected WebDriver driver;
 
@@ -42,7 +43,7 @@ public abstract class Page {
     
     public void navigateTo() {
         driver.get(URL);
-        waitForElement(expectedElement, 10);
+        waitForElement(expectedElement, DEFAULT_TIMEOUT);
     }
 
     public void waitForElement(final String xpath, final long timeoutSeconds) {

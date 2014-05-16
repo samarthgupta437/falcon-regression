@@ -62,12 +62,12 @@ public abstract class EntitiesPage extends Page {
     private void goNextPage() {
         WebElement nextButton = driver.findElement(By.xpath(ACTIVE_NXT_BTN));
         nextButton.click();
-        waitForElement(expectedElement, 10);
+        waitForElement(expectedElement, DEFAULT_TIMEOUT);
     }
 
     private boolean nextPagePresent() {
         try {
-            new WebDriverWait(driver, 10).until(new Condition(ACTIVE_NXT_BTN));
+            new WebDriverWait(driver, DEFAULT_TIMEOUT).until(new Condition(ACTIVE_NXT_BTN));
             return true;
         } catch (TimeoutException e) {
             return false;
