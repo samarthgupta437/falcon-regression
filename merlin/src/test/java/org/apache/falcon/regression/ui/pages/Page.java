@@ -33,6 +33,7 @@ public abstract class Page {
     protected WebDriver driver;
 
     protected String expectedElement;
+    protected String notFoundMsg;
 
     Page(WebDriver driver, PrismHelper helper) {
         this.driver = driver;
@@ -49,7 +50,7 @@ public abstract class Page {
         try {
             new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath));
         } catch (TimeoutException e) {
-            TimeoutException ex = new TimeoutException("");
+            TimeoutException ex = new TimeoutException(notFoundMsg);
             ex.initCause(e);
             throw ex;
         }

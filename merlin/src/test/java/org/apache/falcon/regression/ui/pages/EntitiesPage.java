@@ -42,6 +42,7 @@ public abstract class EntitiesPage extends Page {
         URL += "/index.html?type=" + type.toString().toLowerCase();
 
         expectedElement = ENTITIES_TABLE;
+        notFoundMsg = String.format("No entities on %sS page", type);
     }
 
     public String getEntityStatus(String entityName) {

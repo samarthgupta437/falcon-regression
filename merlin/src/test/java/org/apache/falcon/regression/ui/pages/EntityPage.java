@@ -39,6 +39,7 @@ public class EntityPage<T> extends Page {
         URL += String.format("/entity.html?type=%s&id=%s", type, entityName);
         this.type = entity;
         expectedElement = "//textarea[@id='entity-def-textarea' and contains(text(), 'xml')]";
+        notFoundMsg = String.format(" %s '%s' not found!", type, entityName);
     }
 
     public T getEntity() throws JAXBException, IOException {
