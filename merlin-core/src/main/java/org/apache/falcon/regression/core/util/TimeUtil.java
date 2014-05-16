@@ -220,7 +220,7 @@ public class TimeUtil {
         return fmt.print(jodaTime);
     }
 
-    public static void sleepTill(PrismHelper prismHelper, String startTimeOfLateCoord) {
+    public static void sleepTill(String startTimeOfLateCoord) {
 
         DateTime finalDate = new DateTime(oozieDateToDate(startTimeOfLateCoord));
 

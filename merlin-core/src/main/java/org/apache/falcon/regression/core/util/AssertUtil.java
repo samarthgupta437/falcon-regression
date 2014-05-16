@@ -38,14 +38,14 @@ import java.util.List;
 
 public class AssertUtil {
 
+    private static final Logger logger = Logger.getLogger(AssertUtil.class);
+
     /**
      * Checks that any path in list doesn't contains a string
      *
      * @param paths list of paths
      * @param shouldNotBePresent string that shouldn't be present
      */
-    private static final Logger logger = Logger.getLogger(OozieUtil.class);
-
     public static void failIfStringFoundInPath(
         List<Path> paths, String... shouldNotBePresent) {
         for (Path path : paths) {
