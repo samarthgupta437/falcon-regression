@@ -264,7 +264,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
 
         //sleep till late starts
-        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 4));
+        TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 4));
 
         //check for run id to  be 1
         Assert.assertEquals(
@@ -303,7 +303,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2), 2);
 
         //sleep till late 2 starts
-        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 9));
+        TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 9));
 
         //check for run id to be 2
         Assert.assertEquals(
@@ -468,7 +468,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             inputFolderListForColo2);
 
         //sleep till late starts
-        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 4));
+        TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 4));
 
         //check for run id to  be 1
         Assert.assertTrue(
@@ -501,7 +501,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         InstanceUtil.putLateDataInFolders(cluster3, inputFolderListForColo2, 2);
 
         //sleep till late 2 starts
-        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 9));
+        TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 9));
 
         //check for run id to be 2
         Assert.assertTrue(
@@ -670,7 +670,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             inputFolderListForColo2);
 
         //sleep till late starts
-        TimeUtil.sleepTill(cluster1, TimeUtil.addMinsToTime(startTime, 4));
+        TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 4));
 
         //check for run id to  be 1
         Assert.assertTrue(

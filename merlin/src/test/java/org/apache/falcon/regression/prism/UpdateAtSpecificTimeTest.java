@@ -342,7 +342,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
                 oldProcess, true, false);
 
             //wait till update time is reached
-            TimeUtil.sleepTill(cluster_1, updateTime);
+            TimeUtil.sleepTill(updateTime);
 
             OozieUtil.verifyNewBundleCreation(cluster_2, oldBundleID_cluster2,
                 oldNominalTimes_cluster2,
@@ -430,7 +430,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
                 .verifyNewBundleCreation(cluster_1, newBundle_cluster1, oldNominalTimes_cluster1,
                     feed, false, false);
             //wait till update time is reached
-            TimeUtil.sleepTill(cluster_1, updateTime);
+            TimeUtil.sleepTill(updateTime);
 
             //verify new bundle creation with instance matching
             OozieUtil
@@ -678,7 +678,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             (TimeUtil.oozieDateToDate(updateTime)))
             Assert.assertTrue(false, "new coord start time is not correct");
 
-        TimeUtil.sleepTill(cluster_3, updateTime);
+        TimeUtil.sleepTill(updateTime);
 
         InstanceUtil.waitTillInstancesAreCreated(cluster_3,
             processBundle.getProcessData(), 1, 10);
