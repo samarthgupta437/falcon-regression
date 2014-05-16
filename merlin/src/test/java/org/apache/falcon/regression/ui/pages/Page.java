@@ -39,7 +39,7 @@ public abstract class Page {
         URL = helper.getClusterHelper().getHostname();
     }
     
-    public void navitageTo() {
+    public void navigateTo() {
         driver.get(URL);
         waitForElement(expectedElement, 10);
     }

@@ -66,19 +66,19 @@ public class TestUISample extends BaseTestClass {
     public void testFalconEntities() throws JAXBException, IOException {
 
         EntitiesPage page = new ProcessesPage(DRIVER, cluster);
-        page.navitageTo();
+        page.navigateTo();
         String status = page.getEntityStatus(bundles[0].getProcessName());
         Assert.assertNotNull(status);
         Assert.assertEquals(status, "SUBMITTED");
 
         page = new ClustersPage(DRIVER, cluster);
-        page.navitageTo();
+        page.navigateTo();
         status = page.getEntityStatus(bundles[0].getClusterNames().get(0));
         Assert.assertNotNull(status);
         Assert.assertEquals(status, "SUBMITTED");
 
         ProcessPage page2 = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
-        page2.navitageTo();
+        page2.navigateTo();
         Process process = page2.getEntity();
         Assert.assertEquals(InstanceUtil.processToString(process),
                 InstanceUtil.processToString(InstanceUtil.getProcessElement(bundles[0])));

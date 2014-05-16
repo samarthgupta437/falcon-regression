@@ -45,7 +45,7 @@ public abstract class EntitiesPage extends Page {
     }
 
     public String getEntityStatus(String entityName) {
-        navitageTo();
+        navigateTo();
         while (true) {
             String status = getEntitiesOnPage().get(entityName);
             if (status != null) return status;
