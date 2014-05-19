@@ -21,28 +21,44 @@ package org.apache.falcon.regression.core.response.graph;
 import com.google.gson.annotations.SerializedName;
 
 public class Vertex {
-    public static enum _TYPE {
-        @SerializedName("VERTEX")VERTEX,
-        @SerializedName("cluster-entity")EDGE
-    }
 
-    public static enum TYPE {
+    public static enum VERTEX_TYPE {
         @SerializedName("cluster-entity")CLUSTER_ENTITY,
         @SerializedName("feed-entity")FEED_ENTITY,
-        @SerializedName("data-center")DATA_CENTER;
+        @SerializedName("process-entity")PROCESS_ENTITY,
+
+        @SerializedName("feed-instance")FEED_INSTANCE,
+        @SerializedName("process-instance")PROCESS_INSTANCE,
+
+        @SerializedName("user")USER,
+        @SerializedName("data-center")COLO,
+        @SerializedName("classification")TAGS,
+        @SerializedName("group")GROUPS,
     }
 
     int _id;
-    _TYPE _type;
+    NODE_TYPE _type;
+
     String name;
-    TYPE type;
+    VERTEX_TYPE type;
     String timestamp;
+    String version;
+
+    String userWorkflowEngine;
+    String userWorkflowName;
+    String userWorkflowVersion;
+
+    String workflowId;
+    String runId;
+    String status;
+    String workflowEngineUrl;
+    String subflowId;
 
     public String getTimestamp() {
         return timestamp;
     }
 
-    public TYPE getType() {
+    public VERTEX_TYPE getType() {
         return type;
     }
 
@@ -50,7 +66,7 @@ public class Vertex {
         return name;
     }
 
-    public _TYPE get_type() {
+    public NODE_TYPE get_type() {
         return _type;
     }
 
@@ -62,10 +78,20 @@ public class Vertex {
     public String toString() {
         return "Vertex{" +
             "_id=" + _id +
-            ", _type='" + _type + '\'' +
+            ", _type=" + _type +
             ", name='" + name + '\'' +
-            ", type='" + type + '\'' +
+            ", type=" + type +
             ", timestamp='" + timestamp + '\'' +
+            ", version='" + version + '\'' +
+            ", userWorkflowEngine='" + userWorkflowEngine + '\'' +
+            ", userWorkflowName='" + userWorkflowName + '\'' +
+            ", userWorkflowVersion='" + userWorkflowVersion + '\'' +
+            ", workflowId='" + workflowId + '\'' +
+            ", runId='" + runId + '\'' +
+            ", status='" + status + '\'' +
+            ", workflowEngineUrl='" + workflowEngineUrl + '\'' +
+            ", subflowId='" + subflowId + '\'' +
             '}';
     }
+
 }

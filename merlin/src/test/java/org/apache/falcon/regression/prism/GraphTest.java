@@ -18,7 +18,9 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.regression.core.response.graph.AllEdges;
 import org.apache.falcon.regression.core.response.graph.AllVertices;
+import org.apache.falcon.regression.core.response.graph.Edge;
 import org.apache.falcon.regression.core.response.graph.Vertex;
 import org.apache.falcon.regression.core.util.GraphUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -42,10 +44,31 @@ public class GraphTest extends BaseTestClass {
         logger.info(allVertices);
         Assert.assertTrue(allVertices.getTotalSize() > 0, "Total number of vertices should be" +
             " greater that zero but is: " + allVertices.getTotalSize());
-        final Vertex[] results = allVertices.getResults();
-        for (Vertex result : results) {
-            logger.info(result.getType());
+        for (Vertex vertex : allVertices.getResults()) {
+            assertVertexSanity(vertex);
         }
+    }
 
+    private void assertVertexSanity(Vertex vertex) {
+        Assert.assertNotNull(vertex.get_id(),
+            "id of the vertex should be non-null: " + vertex);
+        Assert.assertNotNull(vertex.get_type(),
+            "_type of the vertex should be non-null: " + vertex);
+        Assert.assertNotNull(vertex.getName(),
+            "name of the vertex should be non-null: " + vertex);
+        Assert.assertNotNull(vertex.getType(),
+            "id of the vertex should be non-null: " + vertex);
+        Assert.assertNotNull(vertex.getTimestamp(),
+            "id of the vertex should be non-null: " + vertex);
+    }
+
+    public void testAllEdges() throws Exception {
+        final AllEdges allEdges = graphUtil.getAllEdges();
+        logger.info(allEdges);
+        Assert.assertTrue(allEdges.getTotalSize() > 0, "Total number of edges should be" +
+            " greater that zero but is: " + allEdges.getTotalSize());
+        for (Edge edge : allEdges.getResults()) {
+            logger.info(edge.get_label());
+        }
     }
 }
