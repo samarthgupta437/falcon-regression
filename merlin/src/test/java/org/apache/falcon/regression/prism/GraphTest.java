@@ -49,6 +49,16 @@ public class GraphTest extends BaseTestClass {
         }
     }
 
+    public void testAllEdges() throws Exception {
+        final AllEdges allEdges = graphUtil.getAllEdges();
+        logger.info(allEdges);
+        Assert.assertTrue(allEdges.getTotalSize() > 0, "Total number of edges should be" +
+            " greater that zero but is: " + allEdges.getTotalSize());
+        for (Edge edge : allEdges.getResults()) {
+            assertEdgeSanity(edge);
+        }
+    }
+
     private void assertVertexSanity(Vertex vertex) {
         Assert.assertNotNull(vertex.get_id(),
             "id of the vertex should be non-null: " + vertex);
@@ -62,13 +72,11 @@ public class GraphTest extends BaseTestClass {
             "id of the vertex should be non-null: " + vertex);
     }
 
-    public void testAllEdges() throws Exception {
-        final AllEdges allEdges = graphUtil.getAllEdges();
-        logger.info(allEdges);
-        Assert.assertTrue(allEdges.getTotalSize() > 0, "Total number of edges should be" +
-            " greater that zero but is: " + allEdges.getTotalSize());
-        for (Edge edge : allEdges.getResults()) {
-            logger.info(edge.get_label());
-        }
+    private void assertEdgeSanity(Edge edge) {
+        Assert.assertNotNull(edge.get_id(), "id of an edge can't be null: " + edge);
+        Assert.assertNotNull(edge.get_type(), "_type of an edge can't be null: " + edge);
+        Assert.assertNotNull(edge.get_label(), "_label of an edge can't be null: " + edge);
+        Assert.assertNotNull(edge.get_inV(), "_inV of an edge can't be null: " + edge);
+        Assert.assertNotNull(edge.get_outV(), "_outV of an edge can't be null: " + edge);
     }
 }
