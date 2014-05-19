@@ -20,6 +20,7 @@ package org.apache.falcon.regression;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
@@ -69,8 +70,8 @@ public class TestngListener implements ITestListener {
         if (BaseTestClass.getDRIVER() != null) {
             byte[] scrFile = ((TakesScreenshot)BaseTestClass.getDRIVER()).getScreenshotAs(OutputType.BYTES);
             try {
-                String filename = String.format("%s.%s.png",
-                        result.getTestClass().getRealClass().getSimpleName(), result.getName());
+                String filename = OSUtil.getPath("target", "surefire-reports", "screenshots", String.format("%s.%s.png",
+                        result.getTestClass().getRealClass().getSimpleName(), result.getName()));
                 FileUtils.writeByteArrayToFile(new File(filename), scrFile);
             } catch (IOException e) {
                 logger.info("Saving screenshot FAILED: " + e.getCause());
