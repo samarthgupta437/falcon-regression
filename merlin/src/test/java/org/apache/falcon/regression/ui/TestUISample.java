@@ -58,7 +58,7 @@ public class TestUISample extends BaseTestClass {
 
     @AfterMethod
     public void tearDown(Method method) throws IOException {
-        closeBrowser(this.getClass().getSimpleName() + "." + method.getName());
+        closeBrowser();
         removeBundles();
     }
 

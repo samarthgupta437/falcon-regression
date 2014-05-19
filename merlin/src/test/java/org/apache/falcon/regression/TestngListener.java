@@ -18,13 +18,19 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class TestngListener implements ITestListener {
@@ -60,6 +66,17 @@ public class TestngListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
         logEndOfTest(result, "FAILED");
+        if (BaseTestClass.getDRIVER() != null) {
+            byte[] scrFile = ((TakesScreenshot)BaseTestClass.getDRIVER()).getScreenshotAs(OutputType.BYTES);
+            try {
+                String filename = String.format("%s.%s.png",
+                        result.getTestClass().getRealClass().getSimpleName(), result.getName());
+                FileUtils.writeByteArrayToFile(new File(filename), scrFile);
+            } catch (IOException e) {
+                logger.info("Saving screenshot FAILED: " + e.getCause());
+            }
+        }
+
         logger.info(ExceptionUtils.getStackTrace(result.getThrowable()));
         logLine();
     }

@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.testHelper;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
@@ -29,14 +28,11 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.OozieClient;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,10 +132,12 @@ public class BaseTestClass {
 
     }
 
-    public void closeBrowser(String name) throws IOException {
+    public static WebDriver getDRIVER() {
+        return DRIVER;
+    }
+
+    public void closeBrowser() throws IOException {
         if (DRIVER != null) {
-            byte[] scrFile = ((TakesScreenshot)DRIVER).getScreenshotAs(OutputType.BYTES);
-            FileUtils.writeByteArrayToFile(new File(name + ".png"), scrFile);
             DRIVER.close();
             DRIVER.quit();
             DRIVER = null;
