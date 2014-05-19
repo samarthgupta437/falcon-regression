@@ -46,7 +46,7 @@ public abstract class EntitiesPage extends Page {
     }
 
     public String getEntityStatus(String entityName) {
-        navigateTo();
+        if (getPageNumber() != 1) navigateTo();
         while (true) {
             String status = getEntitiesOnPage().get(entityName);
             if (status != null) return status;
@@ -72,6 +72,11 @@ public abstract class EntitiesPage extends Page {
         } catch (TimeoutException e) {
             return false;
         }
+    }
+
+    public int getPageNumber() {
+        String number = driver.findElement(By.xpath("//ul[@class='pagination']/li[@class='active']/a")).getText();
+        return Integer.parseInt(number);
     }
 
     private Map<String,String> getEntitiesOnPage() {
