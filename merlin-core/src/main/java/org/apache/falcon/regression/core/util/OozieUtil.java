@@ -399,9 +399,9 @@ public class OozieUtil {
         initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
 
         if (initialNominalTimes.size() != 0) {
-            logger.info("Missing instance are : " + getListElements(initialNominalTimes));
-            logger.info("Original Bundle ID   : " + originalBundleId);
-            logger.info("New Bundle ID        : " + newBundleId);
+            logger.debug("Missing instance are : " + getListElements(initialNominalTimes));
+            logger.debug("Original Bundle ID   : " + originalBundleId);
+            logger.debug("New Bundle ID        : " + newBundleId);
 
             Assert.assertFalse(true, "some instances have gone missing after " +
                 "update");
