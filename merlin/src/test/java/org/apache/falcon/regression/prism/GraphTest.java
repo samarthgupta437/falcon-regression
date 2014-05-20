@@ -31,7 +31,7 @@ import org.apache.falcon.regression.core.response.graph.Edge;
 import org.apache.falcon.regression.core.response.graph.Vertex;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.GraphUtil;
+import org.apache.falcon.regression.core.util.GraphHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
@@ -46,7 +46,7 @@ import java.util.Random;
 @Test(groups = "embedded")
 public class GraphTest extends BaseTestClass {
     private final Logger logger = Logger.getLogger(GraphTest.class);
-    GraphUtil graphUtil;
+    GraphHelper graphHelper;
     final ColoHelper cluster = servers.get(0);
     final String baseTestHDFSDir = baseHDFSDir + "/GraphTest";
     final String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
@@ -69,7 +69,7 @@ public class GraphTest extends BaseTestClass {
             prism.getFeedHelper().listEntities(Util.URLS.LIST_URL);
         final ServiceResponse processResponse =
             prism.getProcessHelper().listEntities(Util.URLS.LIST_URL);
-        graphUtil = new GraphUtil(prism);
+        graphHelper = new GraphHelper(prism);
     }
 
     @BeforeMethod(alwaysRun = true, firstTimeOnly = true)
@@ -122,7 +122,7 @@ public class GraphTest extends BaseTestClass {
     }
 
     public void testAllVertices() throws Exception {
-        final AllVertices allVertices = graphUtil.getAllVertices();
+        final AllVertices allVertices = graphHelper.getAllVertices();
         logger.info(allVertices);
         Assert.assertTrue(allVertices.getTotalSize() > 0, "Total number of vertices should be" +
             " greater that zero but is: " + allVertices.getTotalSize());
@@ -132,7 +132,7 @@ public class GraphTest extends BaseTestClass {
     }
 
     public void testAllEdges() throws Exception {
-        final AllEdges allEdges = graphUtil.getAllEdges();
+        final AllEdges allEdges = graphHelper.getAllEdges();
         logger.info(allEdges);
         Assert.assertTrue(allEdges.getTotalSize() > 0, "Total number of edges should be" +
             " greater that zero but is: " + allEdges.getTotalSize());

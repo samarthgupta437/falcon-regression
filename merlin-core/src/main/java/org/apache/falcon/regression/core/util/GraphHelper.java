@@ -35,8 +35,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 
-public class GraphUtil {
-    private static Logger logger = Logger.getLogger(GraphUtil.class);
+public class GraphHelper {
+    private static Logger logger = Logger.getLogger(GraphHelper.class);
     private final String hostname;
 
 
@@ -62,11 +62,11 @@ public class GraphUtil {
         }
     }
 
-    public GraphUtil(String hostname) {
+    public GraphHelper(String hostname) {
         this.hostname = hostname.trim().replaceAll("/$", "");
     }
 
-    public GraphUtil(PrismHelper prismHelper) {
+    public GraphHelper(PrismHelper prismHelper) {
         this(prismHelper.getClusterHelper().getHostname());
     }
 
