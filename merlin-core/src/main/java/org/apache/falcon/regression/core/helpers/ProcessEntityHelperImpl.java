@@ -87,6 +87,13 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.sendRequest(url, "post", data, user);
     }
 
+    public ServiceResponse listEntities(Util.URLS url, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        logger.info("fetching process list");
+        return Util.sendRequest(this.hostname + url.getValue() + "/process" + colo,
+            "get", null, user);
+    }
+
     public ServiceResponse submitEntity(String url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("Submitting process: " + Util.prettyPrintXml(data));

@@ -233,6 +233,14 @@ public abstract class IEntityManagerHelper {
             ".principal", "none");
     }
 
+    public ServiceResponse listEntities(URLS url)
+        throws IOException, URISyntaxException, AuthenticationException {
+        return listEntities(url, null);
+    }
+
+    public abstract ServiceResponse listEntities(URLS url, String user)
+        throws IOException, URISyntaxException, AuthenticationException;
+
     public ServiceResponse submitEntity(String url, String data)
         throws IOException, URISyntaxException, AuthenticationException {
         return submitEntity(url, data, null);

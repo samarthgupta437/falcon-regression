@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
+import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.response.graph.AllEdges;
 import org.apache.falcon.regression.core.response.graph.AllVertices;
 import org.apache.falcon.regression.core.response.graph.Edge;
@@ -61,7 +62,13 @@ public class GraphTest extends BaseTestClass {
     FeedMerlin[] outputFeeds = new FeedMerlin[numOutputFeeds];
 
     @BeforeClass(alwaysRun = true)
-    public void init() {
+    public void init() throws Exception {
+        final ServiceResponse clusterResponse =
+            prism.getClusterHelper().listEntities(Util.URLS.LIST_URL);
+        final ServiceResponse feedResponse =
+            prism.getFeedHelper().listEntities(Util.URLS.LIST_URL);
+        final ServiceResponse processResponse =
+            prism.getProcessHelper().listEntities(Util.URLS.LIST_URL);
         graphUtil = new GraphUtil(prism);
     }
 
