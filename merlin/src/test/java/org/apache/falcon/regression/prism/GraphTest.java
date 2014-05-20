@@ -18,25 +18,100 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.regression.Entities.FeedMerlin;
+import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.generated.feed.LocationType;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.graph.AllEdges;
 import org.apache.falcon.regression.core.response.graph.AllVertices;
 import org.apache.falcon.regression.core.response.graph.Edge;
 import org.apache.falcon.regression.core.response.graph.Vertex;
+import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.GraphUtil;
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.Random;
 
 @Test(groups = "embedded")
 public class GraphTest extends BaseTestClass {
     private final Logger logger = Logger.getLogger(GraphTest.class);
     GraphUtil graphUtil;
+    final ColoHelper cluster = servers.get(0);
+    final String baseTestHDFSDir = baseHDFSDir + "/GraphTest";
+    final String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    final String feedInputPath =
+        baseTestHDFSDir + "/input/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    final String feedOutputPath =
+        baseTestHDFSDir + "/output/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    // use 5 <= x < 10 input feeds
+    final int numInputFeeds = 5 + new Random().nextInt(5);
+    // use 5 <= x < 10 output feeds
+    final int numOutputFeeds = 5 + new Random().nextInt(5);
+    FeedMerlin[] inputFeeds = new FeedMerlin[numInputFeeds];
+    FeedMerlin[] outputFeeds = new FeedMerlin[numOutputFeeds];
 
     @BeforeClass(alwaysRun = true)
-    public void setup() {
+    public void init() {
         graphUtil = new GraphUtil(prism);
+    }
+
+    @BeforeMethod(alwaysRun = true, firstTimeOnly = true)
+    public void setUp() throws Exception {
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        bundle.generateUniqueBundle();
+        bundles[0] = new Bundle(bundle, cluster);
+        bundles[0].submitClusters(prism);
+        logger.info("numInputFeeds = " + numInputFeeds);
+        logger.info("numOutputFeeds = " + numOutputFeeds);
+        FeedMerlin inputFeedMerlin = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        inputFeedMerlin.setLocation(LocationType.DATA, feedInputPath);
+        final String inputFeedString = inputFeedMerlin.toString();
+        //submit all input feeds
+        for(int count = 0; count < numInputFeeds; ++count) {
+            inputFeeds[count] = new FeedMerlin(inputFeedString);
+            inputFeeds[count].setName("infeed-" + count + "-" + inputFeedMerlin.getName());
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL,
+                inputFeeds[count].toString()));
+        }
+        FeedMerlin outputFeedMerlin = new FeedMerlin(BundleUtil.getOutputFeedFromBundle(bundles[0]));
+        outputFeedMerlin.setLocation(LocationType.DATA, feedOutputPath);
+        final String outputFeedString = outputFeedMerlin.toString();
+        //submit all output feeds
+        for(int count = 0; count < numOutputFeeds; ++count) {
+            outputFeeds[count] = new FeedMerlin(outputFeedString);
+            outputFeeds[count].setName("outfeed" + count + "-" + outputFeedMerlin.getName());
+            AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL,
+                outputFeeds[count].toString()));
+        }
+    }
+
+    @AfterMethod(alwaysRun = true, lastTimeOnly = true)
+    public void tearDown() {
+        removeBundles();
+        for (FeedMerlin inputFeed : inputFeeds) {
+            deleteQuietly(prism.getFeedHelper(), inputFeed.toString());
+        }
+        for (FeedMerlin outputFeed : outputFeeds) {
+            deleteQuietly(prism.getFeedHelper(), outputFeed.toString());
+        }
+    }
+
+    private void deleteQuietly(IEntityManagerHelper helper, String feed) {
+        try {
+            helper.delete(Util.URLS.DELETE_URL, feed);
+        } catch (Exception e) {
+            logger.info("Caught exception: " + ExceptionUtils.getStackTrace(e));
+        }
     }
 
     public void testAllVertices() throws Exception {

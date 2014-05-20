@@ -50,10 +50,13 @@ public class FeedMerlin extends Feed {
     public FeedMerlin(String entity)
         throws JAXBException, NoSuchMethodException, InvocationTargetException,
         IllegalAccessException {
-        Feed element = InstanceUtil.getFeedElement(entity);
+        this(InstanceUtil.getFeedElement(entity));
+    }
+
+    public FeedMerlin(Feed element)
+        throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         Field[] fields = Feed.class.getDeclaredFields();
         for (Field fld : fields) {
-            logger.info("current field: " + fld.getName());
             if ("acl".equals(fld.getName())) {
                 this.setACL(element.getACL());
                 continue;
@@ -102,4 +105,11 @@ public class FeedMerlin extends Feed {
         return null;
     }
 
+    public void setLocation(LocationType lacationType, String feedInputPath) {
+        for (Location location : getLocations().getLocation()) {
+            if(location.getType() == lacationType) {
+                location.setPath(feedInputPath);
+            }
+        }
+    }
 }
