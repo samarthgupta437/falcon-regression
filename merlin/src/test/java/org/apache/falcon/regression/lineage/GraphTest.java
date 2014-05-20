@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.prism;
+package org.apache.falcon.regression.lineage;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
