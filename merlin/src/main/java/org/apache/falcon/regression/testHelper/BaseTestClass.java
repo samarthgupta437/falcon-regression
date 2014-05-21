@@ -126,7 +126,6 @@ public class BaseTestClass {
         FirefoxProfile profile = new FirefoxProfile();
         DRIVER = new FirefoxDriver(profile);
         DesiredCapabilities capability = DesiredCapabilities.firefox();
-        capability.setBrowserName("firefox");
         capability.setCapability(FirefoxDriver.PROFILE, profile);
         DRIVER.manage().window().maximize();
 
