@@ -55,6 +55,9 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         super(envFileName, prefix);
     }
 
+    public String getEntityType() {
+        return "process";
+    }
 
     public ServiceResponse delete(String url, String data, String user)
         throws IOException, URISyntaxException, JAXBException, AuthenticationException {

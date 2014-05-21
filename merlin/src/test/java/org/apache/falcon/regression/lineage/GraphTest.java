@@ -41,7 +41,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.List;
 import java.util.Random;
 
 @Test(groups = "embedded")
@@ -64,14 +63,12 @@ public class GraphTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-        final List<String> processes = CleanupUtil.getAllProcesses(prism);
-        final List<String> feeds = CleanupUtil.getAllFeeds(prism);
-        final List<String> clusters = CleanupUtil.getAllClusters(prism);
         graphHelper = new GraphHelper(prism);
     }
 
     @BeforeMethod(alwaysRun = true, firstTimeOnly = true)
     public void setUp() throws Exception {
+        CleanupUtil.cleanAllEntities(prism);
         Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         bundles[0] = new Bundle(bundle, cluster);

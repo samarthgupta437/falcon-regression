@@ -87,6 +87,10 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
+    public String getEntityType() {
+        return "cluster";
+    }
+
     public ServiceResponse listEntities(Util.URLS url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("fetching cluster list");
