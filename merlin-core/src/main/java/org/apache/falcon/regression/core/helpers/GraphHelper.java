@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.util;
+package org.apache.falcon.regression.core.helpers;
 
 import com.google.gson.GsonBuilder;
 import junit.framework.Assert;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.graph.AllEdges;
 import org.apache.falcon.regression.core.response.graph.AllVertices;
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;

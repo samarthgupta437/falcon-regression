@@ -24,14 +24,14 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
-import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.response.graph.AllEdges;
 import org.apache.falcon.regression.core.response.graph.AllVertices;
 import org.apache.falcon.regression.core.response.graph.Edge;
 import org.apache.falcon.regression.core.response.graph.Vertex;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.GraphHelper;
+import org.apache.falcon.regression.core.helpers.GraphHelper;
+import org.apache.falcon.regression.core.util.CleanupUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
@@ -41,6 +41,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.List;
 import java.util.Random;
 
 @Test(groups = "embedded")
@@ -63,12 +64,9 @@ public class GraphTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-        final ServiceResponse clusterResponse =
-            prism.getClusterHelper().listEntities(Util.URLS.LIST_URL);
-        final ServiceResponse feedResponse =
-            prism.getFeedHelper().listEntities(Util.URLS.LIST_URL);
-        final ServiceResponse processResponse =
-            prism.getProcessHelper().listEntities(Util.URLS.LIST_URL);
+        final List<String> processes = CleanupUtil.getAllProcesses(prism);
+        final List<String> feeds = CleanupUtil.getAllFeeds(prism);
+        final List<String> clusters = CleanupUtil.getAllClusters(prism);
         graphHelper = new GraphHelper(prism);
     }
 
