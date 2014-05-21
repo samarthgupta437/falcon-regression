@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.falcon.regression.ui.pages.ClustersPage;
 import org.apache.falcon.regression.ui.pages.EntitiesPage;
+import org.apache.falcon.regression.ui.pages.EntitiesPage.EntityStatus;
 import org.apache.falcon.regression.ui.pages.ProcessPage;
 import org.apache.falcon.regression.ui.pages.ProcessesPage;
 import org.testng.annotations.AfterMethod;
@@ -67,15 +68,15 @@ public class TestUISample extends BaseTestClass {
 
         EntitiesPage page = new ProcessesPage(DRIVER, cluster);
         page.navigateTo();
-        String status = page.getEntityStatus(bundles[0].getProcessName());
+        EntityStatus status = page.getEntityStatus(bundles[0].getProcessName());
         Assert.assertNotNull(status);
-        Assert.assertEquals(status, "SUBMITTED");
+        Assert.assertEquals(status, EntityStatus.SUBMITTED);
 
         page = new ClustersPage(DRIVER, cluster);
         page.navigateTo();
         status = page.getEntityStatus(bundles[0].getClusterNames().get(0));
         Assert.assertNotNull(status);
-        Assert.assertEquals(status, "SUBMITTED");
+        Assert.assertEquals(status, EntityStatus.SUBMITTED);
 
         ProcessPage page2 = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
         page2.navigateTo();

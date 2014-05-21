@@ -45,11 +45,11 @@ public abstract class EntitiesPage extends Page {
         notFoundMsg = String.format("No entities on %sS page", type);
     }
 
-    public String getEntityStatus(String entityName) {
+    public EntityStatus getEntityStatus(String entityName) {
         if (getPageNumber() != 1) navigateTo();
         while (true) {
             String status = getEntitiesOnPage().get(entityName);
-            if (status != null) return status;
+            if (status != null) return EntityStatus.valueOf(status);
             if (nextPagePresent()) {
                 goNextPage();
             } else {
@@ -88,5 +88,9 @@ public abstract class EntitiesPage extends Page {
             entities.put(name.getText(), status.getText());
         }
         return entities;
+    }
+
+    public enum EntityStatus {
+        UNKNOWN, SUBMITTED, RUNNING, SUSPENDED
     }
 }
