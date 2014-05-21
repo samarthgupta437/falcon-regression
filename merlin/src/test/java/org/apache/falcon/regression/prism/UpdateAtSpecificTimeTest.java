@@ -143,10 +143,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         throws JAXBException, InterruptedException, IOException, URISyntaxException,
         OozieClientException, IllegalAccessException, NoSuchMethodException,
         InvocationTargetException, AuthenticationException {
+
         processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
-            TimeUtil.getTimeWrtSystemTime(20));
+                TimeUtil.getTimeWrtSystemTime(20));
         processBundle.submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
+
         //get old process details
         String oldProcess = processBundle.getProcessData();
 
@@ -154,18 +155,19 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             .getLatestBundleID(cluster_1,
                 Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
 
+        InstanceUtil.waitTillInstancesAreCreated(cluster_1, oldProcess, 0, 10);
+
         List<String> initialNominalTimes = OozieUtil.getActionsNominalTime(cluster_1,
             oldBundleId, ENTITY_TYPE.PROCESS);
 
-        InstanceUtil.waitTillInstancesAreCreated(cluster_1, oldProcess, 0, 10);
 
         // update process by adding property
         processBundle.setProcessProperty("someProp", "someValue");
         ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-            processBundle.getProcessData(), TimeUtil.getTimeWrtSystemTime(-10000));
+            processBundle.getProcessData(),TimeUtil.getTimeWrtSystemTime(-10000), null);
         AssertUtil.assertSucceeded(r);
 
-        //check new coord created with current tim
+        //check new coord created with current time
         OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleId, initialNominalTimes,
             processBundle.getProcessData(), true,
             false);
@@ -246,6 +248,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
      */
 
         try {
+            Util.startService(cluster_2.getProcessHelper());
             String startTime = TimeUtil.getTimeWrtSystemTime(-15);
             processBundle.setProcessValidity(startTime,
                 TimeUtil.getTimeWrtSystemTime(60));
@@ -324,7 +327,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             //send second update request
             r = prism.getProcessHelper().update(oldProcess,
                 processBundle.getProcessData(),
-                updateTime);
+                updateTime, null);
             AssertUtil.assertSucceeded(r);
 
 
@@ -484,7 +487,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
         ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-            processBundle.getProcessData(), updateTime);
+            processBundle.getProcessData(), updateTime, null);
         AssertUtil.assertSucceeded(r);
 
         //verify new bundle creation with instances matching
@@ -579,7 +582,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             endTime);
         String updateTime = TimeUtil.getTimeWrtSystemTime(2);
         ServiceResponse r = prism.getProcessHelper().update(oldProcess,
-            processBundle.getProcessData(), updateTime);
+            processBundle.getProcessData(), updateTime, null);
         AssertUtil.assertSucceeded(r);
         Thread.sleep(10000);
         //verify new bundle creation
@@ -643,7 +646,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         String updateTime = TimeUtil.addMinsToTime(endTime_cluster1, 4);
         processBundle.setProcessProperty("someProp", "someVal");
         ServiceResponse r = prism.getProcessHelper().update(processBundle.getProcessData(),
-            processBundle.getProcessData(), updateTime);
+            processBundle.getProcessData(), updateTime, null);
         AssertUtil.assertSucceeded(r);
 
         //check for new bundle to be created
