@@ -20,8 +20,8 @@ package org.apache.falcon.regression.core.helpers;
 
 import com.google.gson.GsonBuilder;
 import junit.framework.Assert;
-import org.apache.falcon.regression.core.response.graph.AllEdges;
-import org.apache.falcon.regression.core.response.graph.AllVertices;
+import org.apache.falcon.regression.core.response.graph.EdgesResult;
+import org.apache.falcon.regression.core.response.graph.VerticesResult;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -91,26 +91,26 @@ public class GraphHelper {
         return hostname + url.getValue();
     }
 
-    public AllVertices getAllVertices()
+    public VerticesResult getAllVertices()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
         HttpResponse response = runGetRequest(getUrl(URL.VERTICES_ALL));
         String responseString = getResponseString(response);
         logger.info(Util.prettyPrintXmlOrJson(responseString));
-        final AllVertices allVertices = new GsonBuilder().create().fromJson(responseString,
-            AllVertices.class);
+        final VerticesResult allVertices = new GsonBuilder().create().fromJson(responseString,
+            VerticesResult.class);
         return allVertices;
     }
 
-    public AllEdges getAllEdges()
+    public EdgesResult getAllEdges()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
         HttpResponse response = runGetRequest(getUrl(URL.EDGES_ALL));
         String responseString = getResponseString(response);
         logger.info(Util.prettyPrintXmlOrJson(responseString));
-        final AllEdges allEdges = new GsonBuilder().create().fromJson(responseString,
-            AllEdges.class);
-        return allEdges;
+        final EdgesResult edgesResult = new GsonBuilder().create().fromJson(responseString,
+            EdgesResult.class);
+        return edgesResult;
     }
 
 }

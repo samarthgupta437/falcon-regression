@@ -18,47 +18,20 @@
 
 package org.apache.falcon.regression.core.response.graph;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Arrays;
 
-public class Edge extends GraphEntity {
+public class VerticesResult extends GraphResult {
+    Vertex[] results;
 
-    public static enum LEBEL_TYPE {
-        @SerializedName("stored-in")STORED_IN,
-        @SerializedName("runs-on")RUNS_ON,
-        @SerializedName("input")INPUT,
-        @SerializedName("output")OUTPUT,
-
-        @SerializedName("instance-of")INSTANCE_ENTITY_EDGE,
-
-        @SerializedName("collocated")CLUSTER_COLO,
-        @SerializedName("owned-by")OWNED_BY,
-        @SerializedName("grouped-as")GROUPS,
-    }
-
-    int _outV;
-    int _inV;
-    LEBEL_TYPE _label;
-
-    public int get_outV() {
-        return _outV;
-    }
-
-    public int get_inV() {
-        return _inV;
-    }
-
-    public LEBEL_TYPE get_label() {
-        return _label;
+    public Vertex[] getResults() {
+        return results;
     }
 
     @Override
     public String toString() {
-        return "Edge{" +
-            "_id='" + _id + '\'' +
-            ", _type=" + _type +
-            ", _outV=" + _outV +
-            ", _inV=" + _inV +
-            ", _label=" + _label +
+        return "AllVertices{" +
+            "totalSize=" + totalSize +
+            ", results=" + Arrays.toString(results) +
             '}';
     }
 

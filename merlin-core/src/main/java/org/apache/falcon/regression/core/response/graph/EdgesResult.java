@@ -20,9 +20,12 @@ package org.apache.falcon.regression.core.response.graph;
 
 import java.util.Arrays;
 
-public class AllEdges {
-    int totalSize;
+public class EdgesResult extends GraphResult {
     Edge[] results;
+
+    public Edge[] getResults() {
+        return results;
+    }
 
     @Override
     public String toString() {
@@ -30,14 +33,6 @@ public class AllEdges {
             "totalSize=" + totalSize +
             ", results=" + Arrays.toString(results) +
             '}';
-    }
-
-    public int getTotalSize() {
-        return totalSize;
-    }
-
-    public Edge[] getResults() {
-        return results;
     }
 
 }

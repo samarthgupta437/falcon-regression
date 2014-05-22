@@ -20,24 +20,30 @@ package org.apache.falcon.regression.core.response.graph;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Vertex {
+public class Vertex extends GraphEntity {
 
     public static enum VERTEX_TYPE {
-        @SerializedName("cluster-entity")CLUSTER_ENTITY,
-        @SerializedName("feed-entity")FEED_ENTITY,
-        @SerializedName("process-entity")PROCESS_ENTITY,
+        @SerializedName("cluster-entity")CLUSTER_ENTITY("cluster-entity"),
+        @SerializedName("feed-entity")FEED_ENTITY("feed-entity"),
+        @SerializedName("process-entity")PROCESS_ENTITY("process-entity"),
 
-        @SerializedName("feed-instance")FEED_INSTANCE,
-        @SerializedName("process-instance")PROCESS_INSTANCE,
+        @SerializedName("feed-instance")FEED_INSTANCE("feed-instance"),
+        @SerializedName("process-instance")PROCESS_INSTANCE("process-instance"),
 
-        @SerializedName("user")USER,
-        @SerializedName("data-center")COLO,
-        @SerializedName("classification")TAGS,
-        @SerializedName("group")GROUPS,
+        @SerializedName("user")USER("user"),
+        @SerializedName("data-center")COLO("data-center"),
+        @SerializedName("classification")TAGS("classification"),
+        @SerializedName("group")GROUPS("group"),;
+
+        private final String value;
+        VERTEX_TYPE(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
-
-    int _id;
-    NODE_TYPE _type;
 
     String name;
     VERTEX_TYPE type;
@@ -64,14 +70,6 @@ public class Vertex {
 
     public String getName() {
         return name;
-    }
-
-    public NODE_TYPE get_type() {
-        return _type;
-    }
-
-    public int get_id() {
-        return _id;
     }
 
     @Override

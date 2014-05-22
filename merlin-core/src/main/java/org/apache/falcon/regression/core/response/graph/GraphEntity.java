@@ -18,26 +18,16 @@
 
 package org.apache.falcon.regression.core.response.graph;
 
-import java.util.Arrays;
+public abstract class GraphEntity {
+    int _id;
+    NODE_TYPE _type;
 
-public class AllVertices {
-    int totalSize;
-    Vertex[] results;
-
-    public int getTotalSize() {
-        return totalSize;
+    public NODE_TYPE get_type() {
+        return _type;
     }
 
-    public Vertex[] getResults() {
-        return results;
-    }
-
-    @Override
-    public String toString() {
-        return "AllVertices{" +
-            "totalSize=" + totalSize +
-            ", results=" + Arrays.toString(results) +
-            '}';
+    public int get_id() {
+        return _id;
     }
 
 }
