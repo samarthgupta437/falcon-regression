@@ -26,6 +26,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.generated.cluster.Cluster;
@@ -247,6 +248,33 @@ public class Util {
         File[] files = dir.listFiles();
         if (files != null) Arrays.sort(files);
         return files;
+    }
+
+    public static void deleteAllEntities(PrismHelper helper)
+            throws IOException, JSchException, AuthenticationException, JAXBException,
+            URISyntaxException {
+        Path local = new Path("tempFile");
+        File file = new File(local.toString());
+        FileSystem fs = helper.getClusterHelper().getHadoopFS();
+
+        for (String processFile : getProcessStoreInfo(helper.getProcessHelper())) {
+            fs.copyToLocalFile(new Path(processFile), local);
+            helper.getProcessHelper().delete(URLS.DELETE_URL, FileUtils.readFileToString(file));
+        }
+
+
+        for (String feedFile : getDataSetStoreInfo(helper.getFeedHelper())) {
+            fs.copyToLocalFile(new Path(feedFile), local);
+            helper.getFeedHelper().delete(URLS.DELETE_URL, FileUtils.readFileToString(file));
+        }
+
+
+        for (String clusterFile : getClusterStoreInfo(helper.getClusterHelper())) {
+            fs.copyToLocalFile(new Path(clusterFile), local);
+            helper.getClusterHelper().delete(URLS.DELETE_URL, FileUtils.readFileToString(file));
+        }
+
+        if (file.exists()) file.delete();
     }
 
     public static String readEntityName(String data) throws JAXBException {
