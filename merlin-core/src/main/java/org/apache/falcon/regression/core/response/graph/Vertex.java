@@ -45,6 +45,7 @@ public class Vertex extends GraphEntity {
         }
     }
 
+    int _id;
     String name;
     VERTEX_TYPE type;
     String timestamp;
@@ -59,6 +60,10 @@ public class Vertex extends GraphEntity {
     String status;
     String workflowEngineUrl;
     String subflowId;
+
+    public int get_id() {
+        return _id;
+    }
 
     public String getTimestamp() {
         return timestamp;

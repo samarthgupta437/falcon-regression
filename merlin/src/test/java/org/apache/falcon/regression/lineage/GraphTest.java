@@ -162,7 +162,7 @@ public class GraphTest extends BaseTestClass {
             GraphAssert.assertVertexPresence(feedVertices, feedName);
         }
         for(int i = 0; i < numOutputFeeds; ++i) {
-            final String feedName = inputFeeds[i].getName();
+            final String feedName = outputFeeds[i].getName();
             final VerticesResult feedVertices = graphHelper.getVertices("name", feedName);
             GraphAssert.assertVertexSanity(feedVertices);
             GraphAssert.assertVerticesPresenceMinOccur(feedVertices,

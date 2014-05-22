@@ -19,15 +19,10 @@
 package org.apache.falcon.regression.core.response.graph;
 
 public abstract class GraphEntity {
-    int _id;
     NODE_TYPE _type;
 
     public NODE_TYPE get_type() {
         return _type;
-    }
-
-    public int get_id() {
-        return _id;
     }
 
 }

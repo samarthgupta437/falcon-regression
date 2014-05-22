@@ -35,9 +35,14 @@ public class Edge extends GraphEntity {
         @SerializedName("grouped-as")GROUPS,
     }
 
+    String _id;
     int _outV;
     int _inV;
     LEBEL_TYPE _label;
+
+    public String get_id() {
+        return _id;
+    }
 
     public int get_outV() {
         return _outV;
@@ -55,7 +60,6 @@ public class Edge extends GraphEntity {
     public String toString() {
         return "Edge{" +
             "_id='" + _id + '\'' +
-            ", _type=" + _type +
             ", _outV=" + _outV +
             ", _inV=" + _inV +
             ", _label=" + _label +
