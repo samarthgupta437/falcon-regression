@@ -25,7 +25,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
-import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.falcon.regression.testHelper.BaseUITestClass;
 import org.apache.falcon.regression.ui.pages.ClustersPage;
 import org.apache.falcon.regression.ui.pages.EntitiesPage;
 import org.apache.falcon.regression.ui.pages.EntitiesPage.EntityStatus;
@@ -41,7 +41,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 
-public class TestUISample extends BaseTestClass {
+public class TestUISample extends BaseUITestClass {
 
     private ColoHelper cluster = servers.get(0);
     private String aggregateWorkflowDir = baseHDFSDir + "/TestUISample/aggregator";
