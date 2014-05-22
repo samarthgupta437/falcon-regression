@@ -38,7 +38,7 @@ public class Generator {
     }
 
     public static Generator getNameGenerator(String prefix, String postfix) {
-        return new Generator(prefix, postfix, "%s%03d_%s");
+        return new Generator(prefix, postfix, "%s%03d-%s");
     }
 
     public static Generator getHadoopPathGenerator(String prefix, String postfix) {

@@ -130,4 +130,11 @@ public class CleanupUtil {
         cleanAllClustersQuietly(prism);
     }
 
+    public static void deleteQuietly(IEntityManagerHelper helper, String feed) {
+        try {
+            helper.delete(Util.URLS.DELETE_URL, feed);
+        } catch (Exception e) {
+            logger.info("Caught exception: " + ExceptionUtils.getStackTrace(e));
+        }
+    }
 }

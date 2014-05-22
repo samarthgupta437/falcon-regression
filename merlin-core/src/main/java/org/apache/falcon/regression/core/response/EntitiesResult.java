@@ -22,22 +22,24 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @XmlRootElement(name = "entities")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class EntitiesResult {
     @XmlElement(name = "entity")
-    EntityResult[] entities;
+    List<EntityResult> entities = new ArrayList<EntityResult>();
 
-    public EntityResult[] getEntities() {
+    public List<EntityResult> getEntities() {
         return entities;
     }
 
     @Override
     public String toString() {
         return "EntitiesResult{" +
-            "entities=" + Arrays.toString(entities) +
+            "entities=" + entities +
             '}';
     }
 }
