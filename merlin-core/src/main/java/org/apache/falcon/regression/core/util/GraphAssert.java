@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.response.graph.Edge;
 import org.apache.falcon.regression.core.response.graph.EdgesResult;
 import org.apache.falcon.regression.core.response.graph.GraphResult;
+import org.apache.falcon.regression.core.response.graph.NODE_TYPE;
 import org.apache.falcon.regression.core.response.graph.Vertex;
 import org.apache.falcon.regression.core.response.graph.VerticesResult;
 import org.apache.log4j.Logger;
@@ -30,7 +31,7 @@ import org.testng.Assert;
 public class GraphAssert {
     private static Logger logger = Logger.getLogger(GraphAssert.class);
 
-    private static void assertUserVertexAbsent(VerticesResult verticesResult) {
+    private static void assertUserVertexAbsent(final VerticesResult verticesResult) {
         for(Vertex vertex : verticesResult.getResults()) {
             if(vertex.getType().equals(Vertex.VERTEX_TYPE.USER.getValue())) {
                 Assert.fail("Unexpected vertex for user is present: " + vertex);
@@ -38,18 +39,19 @@ public class GraphAssert {
         }
     }
 
-    public static void checkVerticesPresence(GraphResult graphResult, int minNumOfVertices) {
+    public static void checkVerticesPresence(final GraphResult graphResult,
+                                             final int minNumOfVertices) {
         Assert.assertTrue(graphResult.getTotalSize() >= minNumOfVertices,
             "graphResult should have at least " + minNumOfVertices + " vertex");
     }
 
-    public static void assertVertexSanity(VerticesResult verticesResult) {
+    public static void assertVertexSanity(final VerticesResult verticesResult) {
         Assert.assertEquals(verticesResult.getResults().length, verticesResult.getTotalSize(),
             "Size of vertices don't match");
         for (Vertex vertex : verticesResult.getResults()) {
             Assert.assertNotNull(vertex.get_id(),
                 "id of the vertex should be non-null: " + vertex);
-            Assert.assertNotNull(vertex.get_type(),
+            Assert.assertEquals(vertex.get_type(), NODE_TYPE.VERTEX,
                 "_type of the vertex should be non-null: " + vertex);
             Assert.assertNotNull(vertex.getName(),
                 "name of the vertex should be non-null: " + vertex);
@@ -60,20 +62,21 @@ public class GraphAssert {
         }
     }
 
-    public static void assertEdgeSanity(EdgesResult edgesResult) {
+    public static void assertEdgeSanity(final EdgesResult edgesResult) {
         for (Edge edge : edgesResult.getResults()) {
             Assert.assertNotNull(edge.get_id(), "id of an edge can't be null: " + edge);
-            Assert.assertNotNull(edge.get_type(), "_type of an edge can't be null: " + edge);
+            Assert.assertEquals(edge.get_type(), NODE_TYPE.EDGE,
+                "_type of an edge can't be null: " + edge);
             Assert.assertNotNull(edge.get_label(), "_label of an edge can't be null: " + edge);
             Assert.assertNotNull(edge.get_inV(), "_inV of an edge can't be null: " + edge);
             Assert.assertNotNull(edge.get_outV(), "_outV of an edge can't be null: " + edge);
         }
     }
 
-    public static void assertUserVertexPresence(VerticesResult verticesResult) {
+    public static void assertUserVertexPresence(final VerticesResult verticesResult) {
         checkVerticesPresence(verticesResult, 1);
         for(Vertex vertex : verticesResult.getResults()) {
-            if(vertex.getType().equals(Vertex.VERTEX_TYPE.USER.getValue())) {
+            if(vertex.getType() == Vertex.VERTEX_TYPE.USER) {
                 if(vertex.getName().equals(MerlinConstants.CURRENT_USER_NAME)) {
                     return;
                 }
@@ -83,12 +86,22 @@ public class GraphAssert {
             MerlinConstants.CURRENT_USER_NAME));
     }
 
-    private static void assertVerticesPresenceMinOccur(VerticesResult verticesResult,
+    public static void assertVertexPresence(final VerticesResult verticesResult, final String name) {
+        checkVerticesPresence(verticesResult, 1);
+        for (Vertex vertex : verticesResult.getResults()) {
+            if (vertex.getName().equals(name)) {
+                return;
+            }
+        }
+        Assert.fail(String.format("Vertex of name: %s is not present.", name));
+    }
+
+    public static void assertVerticesPresenceMinOccur(VerticesResult verticesResult,
                                                        Vertex.VERTEX_TYPE vertex_type,
                                                        final int minOccurrence) {
         int occurrence = 0;
         for(Vertex vertex : verticesResult.getResults()) {
-            if(vertex.getType().equals(vertex_type)) {
+            if(vertex.getType() == vertex_type) {
                 logger.info("Found vertex: " + vertex);
                 occurrence++;
                 if(occurrence >= minOccurrence) {

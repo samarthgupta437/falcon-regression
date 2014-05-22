@@ -19,7 +19,9 @@
 package org.apache.falcon.regression.core.helpers;
 
 import com.google.gson.GsonBuilder;
+import com.sun.tools.javac.util.Pair;
 import junit.framework.Assert;
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.response.graph.EdgesResult;
 import org.apache.falcon.regression.core.response.graph.VerticesResult;
 import org.apache.falcon.regression.core.util.Util;
@@ -86,8 +88,15 @@ public class GraphHelper {
         return request.run();
     }
 
-    private String getUrl(URL url) {
-        Assert.assertNotNull(hostname);
+    private String getUrl(URL url, Pair<String, String>... paramPairs) {
+        Assert.assertNotNull(hostname, "Hostname can't be null.");
+        if(paramPairs.length > 0) {
+            String[] params = new String[paramPairs.length];
+            for (int i = 0; i < paramPairs.length; ++i) {
+                params[i] = StringUtils.join(new String[] {paramPairs[i].fst, paramPairs[i].snd}, "=");
+            }
+            return hostname + url.getValue() + "/?" + StringUtils.join(params, "&");
+        }
         return hostname + url.getValue();
     }
 
@@ -100,6 +109,19 @@ public class GraphHelper {
         final VerticesResult allVertices = new GsonBuilder().create().fromJson(responseString,
             VerticesResult.class);
         return allVertices;
+    }
+
+    public VerticesResult getVertices(String key, String value)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        HttpResponse response = runGetRequest(getUrl(URL.VERTICES,
+            new Pair<String, String>("key", key),
+            new Pair<String, String>("value", value)));
+        String responseString = getResponseString(response);
+        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        final VerticesResult verticesResult = new GsonBuilder().create().fromJson(responseString,
+            VerticesResult.class);
+        return verticesResult;
     }
 
     public EdgesResult getAllEdges()

@@ -18,11 +18,13 @@
 
 package org.apache.falcon.regression.lineage;
 
+import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.graph.EdgesResult;
+import org.apache.falcon.regression.core.response.graph.Vertex;
 import org.apache.falcon.regression.core.response.graph.VerticesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -44,6 +46,7 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Random;
 
 @Test(groups = "embedded")
@@ -62,6 +65,7 @@ public class GraphTest extends BaseTestClass {
     final int numInputFeeds = 5 + new Random().nextInt(5);
     // use 5 <= x < 10 output feeds
     final int numOutputFeeds = 5 + new Random().nextInt(5);
+    ClusterMerlin clusterMerlin;
     FeedMerlin[] inputFeeds;
     FeedMerlin[] outputFeeds;
 
@@ -76,6 +80,10 @@ public class GraphTest extends BaseTestClass {
         Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         bundles[0] = new Bundle(bundle, cluster);
+        final List<String> clusterStrings = bundles[0].getClusters();
+        Assert.assertEquals(clusterStrings.size(), 1, "Expecting only 1 clusterMerlin.");
+        clusterMerlin = new ClusterMerlin(clusterStrings.get(0));
+
         bundles[0].submitClusters(prism);
         logger.info("numInputFeeds = " + numInputFeeds);
         logger.info("numOutputFeeds = " + numOutputFeeds);
@@ -117,13 +125,13 @@ public class GraphTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true, lastTimeOnly = true)
     public void tearDown() {
-        removeBundles();
         for (FeedMerlin inputFeed : inputFeeds) {
             CleanupUtil.deleteQuietly(prism.getFeedHelper(), inputFeed.toString());
         }
         for (FeedMerlin outputFeed : outputFeeds) {
             CleanupUtil.deleteQuietly(prism.getFeedHelper(), outputFeed.toString());
         }
+        removeBundles();
     }
 
     public void testAllVertices() throws Exception {
@@ -131,6 +139,57 @@ public class GraphTest extends BaseTestClass {
         logger.info(verticesResult);
         GraphAssert.assertVertexSanity(verticesResult);
         GraphAssert.assertUserVertexPresence(verticesResult);
+        GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.COLO, 1);
+        GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.GROUPS, 1);
+        GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
+        GraphAssert.assertVerticesPresenceMinOccur(verticesResult,
+            Vertex.VERTEX_TYPE.FEED_ENTITY, numInputFeeds + numOutputFeeds);
+    }
+
+    public void testVerticesFilterByName() throws Exception {
+        final String clusterName = clusterMerlin.getName();
+        final VerticesResult clusterVertices = graphHelper.getVertices("name", clusterName);
+        GraphAssert.assertVertexSanity(clusterVertices);
+        GraphAssert.assertVerticesPresenceMinOccur(clusterVertices,
+            Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
+        GraphAssert.assertVertexPresence(clusterVertices, clusterName);
+        for(int i = 0; i < numInputFeeds; ++i) {
+            final String feedName = inputFeeds[i].getName();
+            final VerticesResult feedVertices = graphHelper.getVertices("name", feedName);
+            GraphAssert.assertVertexSanity(feedVertices);
+            GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
+                Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
+            GraphAssert.assertVertexPresence(feedVertices, feedName);
+        }
+        for(int i = 0; i < numOutputFeeds; ++i) {
+            final String feedName = inputFeeds[i].getName();
+            final VerticesResult feedVertices = graphHelper.getVertices("name", feedName);
+            GraphAssert.assertVertexSanity(feedVertices);
+            GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
+                Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
+            GraphAssert.assertVertexPresence(feedVertices, feedName);
+        }
+
+    }
+
+    public void testVerticesFilterByType() throws Exception {
+        final VerticesResult clusterVertices =
+            graphHelper.getVertices("type", Vertex.VERTEX_TYPE.CLUSTER_ENTITY.getValue());
+        GraphAssert.assertVertexSanity(clusterVertices);
+        GraphAssert.assertVerticesPresenceMinOccur(clusterVertices,
+            Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
+        GraphAssert.assertVertexPresence(clusterVertices, clusterMerlin.getName());
+        final VerticesResult feedVertices =
+            graphHelper.getVertices("type", Vertex.VERTEX_TYPE.FEED_ENTITY.getValue());
+        GraphAssert.assertVertexSanity(feedVertices);
+        GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
+            Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
+        for (FeedMerlin oneFeed : inputFeeds) {
+            GraphAssert.assertVertexPresence(feedVertices, oneFeed.getName());
+        }
+        for (FeedMerlin oneFeed : outputFeeds) {
+            GraphAssert.assertVertexPresence(feedVertices, oneFeed.getName());
+        }
     }
 
     public void testAllEdges() throws Exception {
