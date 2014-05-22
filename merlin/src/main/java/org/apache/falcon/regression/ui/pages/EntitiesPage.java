@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class EntitiesPage extends Page {
+public class EntitiesPage extends Page {
 
     private final static String ACTIVE_NXT_BTN
             = "//ul/li[not(@class)]/a[contains(text(),'»')]";
@@ -39,7 +39,7 @@ public abstract class EntitiesPage extends Page {
             = "//table[@id='entity-list']/tbody/tr";
     private final static String PAGE_NUMBER = "//ul[@class='pagination']/li[@class='active']/a";
 
-    EntitiesPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type) {
+    public EntitiesPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type) {
         super(driver, helper);
         URL += "/index.html?type=" + type.toString().toLowerCase();
 
