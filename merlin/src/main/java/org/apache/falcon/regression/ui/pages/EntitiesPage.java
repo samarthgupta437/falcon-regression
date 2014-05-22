@@ -37,6 +37,8 @@ public abstract class EntitiesPage extends Page {
             = "//ul/li[not(@class)]/a[contains(text(),'»')]";
     protected final static String ENTITIES_TABLE
             = "//table[@id='entity-list']/tbody/tr";
+    private final static String PAGE_NUMBER = "//ul[@class='pagination']/li[@class='active']/a";
+
     EntitiesPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type) {
         super(driver, helper);
         URL += "/index.html?type=" + type.toString().toLowerCase();
@@ -75,7 +77,7 @@ public abstract class EntitiesPage extends Page {
     }
 
     public int getPageNumber() {
-        String number = driver.findElement(By.xpath("//ul[@class='pagination']/li[@class='active']/a")).getText();
+        String number = driver.findElement(By.xpath(PAGE_NUMBER)).getText();
         return Integer.parseInt(number);
     }
 
