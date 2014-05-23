@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,7 +140,15 @@ public class HadoopUtil {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        FileStatus[] stats = fs.listStatus(location);
+        FileStatus[] stats ;
+        try {
+
+            stats = fs.listStatus(location);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return new ArrayList<Path>();
+        }
 
         //Util.print("getAllFilesRecursivelyHDFS: "+location);
 
@@ -206,8 +215,9 @@ public class HadoopUtil {
     public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
                                         final String srcFileLocation)
         throws IOException {
-        logger.info(String.format("Copying local dir %s to hdfs location %s", srcFileLocation,
-            dstHdfsDir));
+        logger.info(String.format("Copying local dir %s to hdfs location %s on %s",
+            srcFileLocation,
+            dstHdfsDir, fs.getConf().get("fs.default.name")));
         fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
     }
 
