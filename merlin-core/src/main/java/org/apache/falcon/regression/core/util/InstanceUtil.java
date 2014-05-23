@@ -1232,8 +1232,8 @@ public class InstanceUtil {
                     coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
             for (CoordinatorAction coordinatorAction : coordinatorActions) {
-                logger.info(String.format("Coordinator Action %s status is %s",
-                    coordinatorAction.getId(), coordinatorAction.getStatus()));
+                logger.info(String.format("Coordinator Action %s status is %s on oozie %s",
+                    coordinatorAction.getId(), coordinatorAction.getStatus(), client.getOozieUrl()));
                 if (expectedStatus == coordinatorAction.getStatus()) {
                     instanceWithStatus++;
                 }
