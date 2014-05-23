@@ -96,9 +96,9 @@ public class GraphAssert {
         Assert.fail(String.format("Vertex of name: %s is not present.", name));
     }
 
-    public static void assertVerticesPresenceMinOccur(VerticesResult verticesResult,
-                                                       Vertex.VERTEX_TYPE vertex_type,
-                                                       final int minOccurrence) {
+    public static void assertVerticesPresenceMinOccur(final VerticesResult verticesResult,
+                                                      final Vertex.VERTEX_TYPE vertex_type,
+                                                      final int minOccurrence) {
         int occurrence = 0;
         for(Vertex vertex : verticesResult.getResults()) {
             if(vertex.getType() == vertex_type) {
@@ -111,5 +111,22 @@ public class GraphAssert {
         }
         Assert.fail(String.format("Expected at least %d vertices of type %s. But found only %d",
             minOccurrence, vertex_type, occurrence));
+    }
+
+    public static void assertEdgePresenceMinOccur(final EdgesResult edgesResult,
+                                                  final Edge.LEBEL_TYPE edgeLabel,
+                                                  final int minOccurrence) {
+        int occurrence = 0;
+        for(Edge edge : edgesResult.getResults()) {
+            if(edge.get_label() == edgeLabel) {
+                logger.info("Found edge: " + edge);
+                occurrence++;
+                if(occurrence >= minOccurrence) {
+                    return;
+                }
+            }
+        }
+        Assert.fail(String.format("Expected at least %d vertices of type %s. But found only %d",
+            minOccurrence, edgeLabel, occurrence));
     }
 }

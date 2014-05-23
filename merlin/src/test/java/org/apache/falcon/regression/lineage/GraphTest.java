@@ -23,6 +23,7 @@ import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.response.graph.Edge;
 import org.apache.falcon.regression.core.response.graph.EdgesResult;
 import org.apache.falcon.regression.core.response.graph.Vertex;
 import org.apache.falcon.regression.core.response.graph.VerticesResult;
@@ -198,6 +199,11 @@ public class GraphTest extends BaseTestClass {
         Assert.assertTrue(edgesResult.getTotalSize() > 0, "Total number of edges should be" +
             " greater that zero but is: " + edgesResult.getTotalSize());
         GraphAssert.assertEdgeSanity(edgesResult);
+        GraphAssert.assertEdgePresenceMinOccur(edgesResult, Edge.LEBEL_TYPE.CLUSTER_COLO, 1);
+        GraphAssert.assertEdgePresenceMinOccur(edgesResult, Edge.LEBEL_TYPE.STORED_IN,
+            numInputFeeds + numOutputFeeds);
+        GraphAssert.assertEdgePresenceMinOccur(edgesResult, Edge.LEBEL_TYPE.OWNED_BY,
+            1 + numInputFeeds + numOutputFeeds);
     }
 
 }
