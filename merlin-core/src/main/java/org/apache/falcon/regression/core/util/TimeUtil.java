@@ -256,7 +256,7 @@ public class TimeUtil {
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-        InstanceUtil.putDataInFolders(colo, dataFolder, "");
+        InstanceUtil.putDataInFolders(colo, dataFolder, "oneFile");
 
     }
 

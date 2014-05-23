@@ -616,6 +616,10 @@ public class InstanceUtil {
         if ((null != type) && type.equals("late")) {
             inputPath = OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData";
         }
+        else if ((null !=type) && type.equals("oneFile")) {
+             inputPath = OSUtil.SINGLE_FILE  ;
+        }
+
         File[] files = new File(inputPath).listFiles();
         assert files != null;
 

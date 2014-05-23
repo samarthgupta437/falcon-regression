@@ -34,6 +34,8 @@ public class OSUtil {
         OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData";
     public static final String NORMAL_INPUT =
         String.format(OOZIE_EXAMPLE_INPUT_DATA + "normalInput%s", SEPARATOR);
+    public static final String SINGLE_FILE =
+        String.format(OOZIE_EXAMPLE_INPUT_DATA + "SingleFile%s", SEPARATOR);
 
     public static String getPath(String... pathParts) {
         return StringUtils.join(pathParts, OSUtil.SEPARATOR);
