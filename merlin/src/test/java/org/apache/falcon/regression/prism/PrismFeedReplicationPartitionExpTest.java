@@ -64,8 +64,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     private String testBaseDir1 = baseTestDir + "/localDC/rc/billing";
     private String testBaseDir2 = baseTestDir + "/clusterPath/localDC/rc/billing";
     private String testBaseDir3 = baseTestDir + "/dataBillingRC/fetlrc/billing";
-    private String testBaseDir4 = baseTestDir + "/data/fetlrc/billing";
+    private String testBaseDir4 = baseTestDir + "/sourcetarget";
     private String testDirWithDate = testBaseDir1 + testDate;
+    private String testDirWithDate_sourcetarget = testBaseDir4 + testDate;
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private String testFile1 = OSUtil.RESOURCES
         + OSUtil.getPath("ReplicationResources", "feed-s4Replication.xml");
@@ -96,16 +97,33 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         uploadDataToServer3(testDirWithDate + "05/ua2/", testFile2);
         uploadDataToServer3(testDirWithDate + "10/ua2/", testFile3);
         uploadDataToServer3(testDirWithDate + "15/ua2/", testFile4);
+        uploadDataToServer3(testDirWithDate + "20/ua2/", testFile4);
 
         uploadDataToServer3(testDirWithDate + "00/ua1/", testFile1);
         uploadDataToServer3(testDirWithDate + "05/ua1/", testFile2);
         uploadDataToServer3(testDirWithDate + "10/ua1/", testFile3);
         uploadDataToServer3(testDirWithDate + "15/ua1/", testFile4);
+        uploadDataToServer3(testDirWithDate + "20/ua1/", testFile4);
 
         uploadDataToServer3(testDirWithDate + "00/ua3/", testFile1);
         uploadDataToServer3(testDirWithDate + "05/ua3/", testFile2);
         uploadDataToServer3(testDirWithDate + "10/ua3/", testFile3);
         uploadDataToServer3(testDirWithDate + "15/ua3/", testFile4);
+        uploadDataToServer3(testDirWithDate + "20/ua3/", testFile4);
+
+        //data for test normalTest_1s2t_pst where both source target partition are required
+
+        uploadDataToServer3(testDirWithDate_sourcetarget + "00/ua3/ua2/", testFile1);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "05/ua3/ua2/", testFile2);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "10/ua3/ua2/", testFile3);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "15/ua3/ua2/", testFile4);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "20/ua3/ua2/", testFile4);
+
+        uploadDataToServer3(testDirWithDate_sourcetarget + "00/ua3/ua1/", testFile1);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "05/ua3/ua1/", testFile2);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "10/ua3/ua1/", testFile3);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "15/ua3/ua1/", testFile4);
+        uploadDataToServer3(testDirWithDate_sourcetarget + "20/ua3/ua1/", testFile4);
 
 
         uploadDataToServer3(testBaseDir3 + testDate + "00/ua2/", testFile1);
@@ -777,7 +795,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z")
             , XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-            "${cluster.colo}");
+            "${cluster.colo}", testBaseDir4+ dateTemplate+"/");
 
         logger.info("feed: " + feed);
 
@@ -789,7 +807,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Thread.sleep(15000);
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
             CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
-        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 3,
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
             CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
@@ -800,17 +818,17 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
         List<Path> ua1ReplicatedData = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster1, new Path(testBaseDir1 + "/ua1" + testDate));
-        //check for no ua2 or ua3 in ua1
-        AssertUtil.failIfStringFoundInPath(ua1ReplicatedData, "ua2", "ua3");
+        //check for no ua2  in ua1
+        AssertUtil.failIfStringFoundInPath(ua1ReplicatedData, "ua2");
 
         List<Path> ua2ReplicatedData = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate));
-        AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1", "ua3");
+        AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1");
 
 
-        List<Path> ua1ReplicatedData00 = HadoopUtil
+        List<Path> ua1ReplicatedData05 = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster1,
-                new Path(testBaseDir1 + "/ua1" + testDate + "00/"), "_SUCCESS");
+                new Path(testBaseDir1 + "/ua1" + testDate + "05/"), "_SUCCESS");
         List<Path> ua1ReplicatedData10 = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster1,
                 new Path(testBaseDir1 + "/ua1" + testDate + "10/"), "_SUCCESS");
@@ -822,14 +840,21 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "15"),
                 "_SUCCESS");
 
-        List<Path> ua3OriginalData10ua1 = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "10/ua1"), "_SUCCESS");
-        List<Path> ua3OriginalData10ua2 = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "10/ua2"), "_SUCCESS");
-        List<Path> ua3OriginalData15ua2 = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, new Path(testDirWithDate + "15/ua2"), "_SUCCESS");
 
-        AssertUtil.checkForListSizes(ua1ReplicatedData00, new ArrayList<Path>());
+        List<Path> ua3OriginalData05ua1 = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate_sourcetarget + "05/ua3/ua1"),
+                "_SUCCESS");
+        List<Path> ua3OriginalData10ua1 = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate_sourcetarget + "10/ua3/ua1"),
+                "_SUCCESS");
+        List<Path> ua3OriginalData10ua2 = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate_sourcetarget + "10/ua3/ua2"),
+                "_SUCCESS");
+        List<Path> ua3OriginalData15ua2 = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate_sourcetarget + "15/ua3/ua2"),
+                "_SUCCESS");
+
+        AssertUtil.checkForListSizes(ua1ReplicatedData05, ua3OriginalData05ua1);
         AssertUtil.checkForListSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
         AssertUtil.checkForListSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
         AssertUtil.checkForListSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
