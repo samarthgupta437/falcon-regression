@@ -251,9 +251,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         HadoopUtil.createDir(testDirWithDate + "05/ua3/", cluster3FS);
 
         HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "00/ua3/"),
-            "feed-s4Replication.xml");
+            testFile1);
         HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "05/ua3/"),
-            OSUtil.RESOURCES + "log_01.txt");
+            testFile2);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
             CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
@@ -620,12 +620,12 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         AssertUtil.failIfStringFoundInPath(ua2ReplicatedData, "ua1");
 
 
-        List<Path> ua1ReplicatedData00 = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster1,
-                new Path(testBaseDir1 + "/ua1" + testDate + "00/"), "_SUCCESS");
         List<Path> ua1ReplicatedData05 = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster1,
                 new Path(testBaseDir1 + "/ua1" + testDate + "05/"), "_SUCCESS");
+        List<Path> ua1ReplicatedData10 = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster1,
+                new Path(testBaseDir1 + "/ua1" + testDate + "10/"), "_SUCCESS");
 
         List<Path> ua2ReplicatedData10 = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "10"),
@@ -634,14 +634,20 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             .getAllFilesRecursivelyHDFS(cluster2, new Path(testBaseDir1 + "/ua2" + testDate + "15"),
                 "_SUCCESS");
 
+        List<Path> ua3OriginalData10ua1 = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "10/ua1"),
+                "_SUCCESS");
         List<Path> ua3OriginalData05ua1 = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "05/ua3"), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "05/ua1"),
+                "_SUCCESS");
         List<Path> ua3OriginalData10ua2 = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "10/ua3"), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "10/ua2"),
+                "_SUCCESS");
         List<Path> ua3OriginalData15ua2 = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "15/ua3"), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testDirWithDate + "15/ua2"),
+                "_SUCCESS");
 
-        AssertUtil.checkForListSizes(ua1ReplicatedData00, new ArrayList<Path>());
+        AssertUtil.checkForListSizes(ua1ReplicatedData10, ua3OriginalData10ua1);
         AssertUtil.checkForListSizes(ua1ReplicatedData05, ua3OriginalData05ua1);
         AssertUtil.checkForListSizes(ua2ReplicatedData10, ua3OriginalData10ua2);
         AssertUtil.checkForListSizes(ua2ReplicatedData15, ua3OriginalData15ua2);
