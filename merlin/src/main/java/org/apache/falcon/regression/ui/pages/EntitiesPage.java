@@ -48,7 +48,7 @@ public class EntitiesPage extends Page {
     }
 
     public EntityStatus getEntityStatus(String entityName) {
-        if (getPageNumber() != 1) navigateTo();
+        navigateTo();
         while (true) {
             String status = getEntitiesOnPage().get(entityName);
             if (status != null) return EntityStatus.valueOf(status);
