@@ -18,12 +18,12 @@
 
 package org.apache.falcon.regression.core.response.graph;
 
-import java.util.Arrays;
+import java.util.List;
 
 public class VerticesResult extends GraphResult {
-    Vertex[] results;
+    List<Vertex> results;
 
-    public Vertex[] getResults() {
+    public List<Vertex> getResults() {
         return results;
     }
 
@@ -31,7 +31,7 @@ public class VerticesResult extends GraphResult {
     public String toString() {
         return "AllVertices{" +
             "totalSize=" + totalSize +
-            ", results=" + Arrays.toString(results) +
+            ", results=" + results +
             '}';
     }
 

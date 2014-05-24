@@ -19,11 +19,12 @@
 package org.apache.falcon.regression.core.response.graph;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class EdgesResult extends GraphResult {
-    Edge[] results;
+    List<Edge> results;
 
-    public Edge[] getResults() {
+    public List<Edge> getResults() {
         return results;
     }
 
@@ -31,7 +32,7 @@ public class EdgesResult extends GraphResult {
     public String toString() {
         return "AllEdges{" +
             "totalSize=" + totalSize +
-            ", results=" + Arrays.toString(results) +
+            ", results=" + results +
             '}';
     }
 

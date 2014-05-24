@@ -18,6 +18,8 @@
 
 package org.apache.falcon.regression.core.response.graph;
 
+import java.util.List;
+
 public abstract class GraphResult {
     int totalSize;
 
@@ -25,5 +27,5 @@ public abstract class GraphResult {
         return totalSize;
     }
 
-    public abstract GraphEntity[] getResults();
+    public abstract List<? extends GraphEntity> getResults();
 }

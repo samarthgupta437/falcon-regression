@@ -46,7 +46,7 @@ public class GraphAssert {
     }
 
     public static void assertVertexSanity(final VerticesResult verticesResult) {
-        Assert.assertEquals(verticesResult.getResults().length, verticesResult.getTotalSize(),
+        Assert.assertEquals(verticesResult.getResults().size(), verticesResult.getTotalSize(),
             "Size of vertices don't match");
         for (Vertex vertex : verticesResult.getResults()) {
             Assert.assertNotNull(vertex.get_id(),
@@ -63,6 +63,8 @@ public class GraphAssert {
     }
 
     public static void assertEdgeSanity(final EdgesResult edgesResult) {
+        Assert.assertEquals(edgesResult.getResults().size(), edgesResult.getTotalSize(),
+            "Size of edges don't match");
         for (Edge edge : edgesResult.getResults()) {
             Assert.assertNotNull(edge.get_id(), "id of an edge can't be null: " + edge);
             Assert.assertEquals(edge.get_type(), NODE_TYPE.EDGE,
