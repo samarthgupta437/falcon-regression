@@ -41,6 +41,7 @@
 		<location name="working" path="/projectsTest/ivory/working" />
 	</locations>
 	<properties>
+        <property name="hive.metastore.client.socket.timeout" value="120"/>
 		<property name="field1" value="value1" />
 		<property name="field2" value="value2" />
 	</properties>
