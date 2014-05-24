@@ -22,7 +22,9 @@ import com.google.gson.GsonBuilder;
 import com.sun.tools.javac.util.Pair;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.regression.core.response.graph.Direction;
 import org.apache.falcon.regression.core.response.graph.EdgesResult;
+import org.apache.falcon.regression.core.response.graph.Vertex;
 import org.apache.falcon.regression.core.response.graph.VerticesResult;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.request.BaseRequest;
@@ -88,40 +90,73 @@ public class GraphHelper {
         return request.run();
     }
 
-    private String getUrl(URL url, Pair<String, String>... paramPairs) {
+    private String getUrl(final URL url, final String urlPath, final Pair<String, String>... paramPairs) {
         Assert.assertNotNull(hostname, "Hostname can't be null.");
+        String hostAndPath = hostname + url.getValue();
+        if(urlPath != null) {
+            hostAndPath += "/" + urlPath;
+        }
         if(paramPairs.length > 0) {
             String[] params = new String[paramPairs.length];
             for (int i = 0; i < paramPairs.length; ++i) {
                 params[i] = StringUtils.join(new String[] {paramPairs[i].fst, paramPairs[i].snd}, "=");
             }
-            return hostname + url.getValue() + "/?" + StringUtils.join(params, "&");
+            return hostAndPath + "/?" + StringUtils.join(params, "&");
         }
-        return hostname + url.getValue();
+        return hostAndPath;
+    }
+
+    private String getUrl(final URL url, final Pair<String, String>... paramPairs) {
+        return getUrl(url, null, paramPairs);
+    }
+
+    public String getUrlPath(String... pathParts) {
+        return StringUtils.join(pathParts, "/");
+    }
+
+    public String getUrlPath(int oneInt, String... pathParts) {
+        return oneInt + "/" + getUrlPath(pathParts);
+    }
+
+    private VerticesResult getVerticesResult(String url)
+        throws URISyntaxException, IOException, AuthenticationException {
+        HttpResponse response = runGetRequest(url);
+        String responseString = getResponseString(response);
+        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        return new GsonBuilder().create().fromJson(responseString,
+            VerticesResult.class);
     }
 
     public VerticesResult getAllVertices()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
-        HttpResponse response = runGetRequest(getUrl(URL.VERTICES_ALL));
-        String responseString = getResponseString(response);
-        logger.info(Util.prettyPrintXmlOrJson(responseString));
-        final VerticesResult allVertices = new GsonBuilder().create().fromJson(responseString,
-            VerticesResult.class);
-        return allVertices;
+        return getVerticesResult(getUrl(URL.VERTICES_ALL));
     }
 
     public VerticesResult getVertices(String key, String value)
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
-        HttpResponse response = runGetRequest(getUrl(URL.VERTICES,
+        return getVerticesResult(getUrl(URL.VERTICES,
             new Pair<String, String>("key", key),
             new Pair<String, String>("value", value)));
-        String responseString = getResponseString(response);
-        logger.info(Util.prettyPrintXmlOrJson(responseString));
-        final VerticesResult verticesResult = new GsonBuilder().create().fromJson(responseString,
-            VerticesResult.class);
-        return verticesResult;
+    }
+
+    public VerticesResult getVerticesByType(Vertex.VERTEX_TYPE vertexType)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        return getVertices("type", vertexType.getValue());
+    }
+
+    public VerticesResult getVerticesByName(String name)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        return getVertices("name", name);
+    }
+
+    public VerticesResult getVerticesByDirection(int vertexId, Direction direction)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        return getVerticesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
     public EdgesResult getAllEdges()

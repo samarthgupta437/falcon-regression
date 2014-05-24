@@ -23,6 +23,7 @@ import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.response.graph.Direction;
 import org.apache.falcon.regression.core.response.graph.Edge;
 import org.apache.falcon.regression.core.response.graph.EdgesResult;
 import org.apache.falcon.regression.core.response.graph.Vertex;
@@ -135,6 +136,7 @@ public class GraphTest extends BaseTestClass {
         removeBundles();
     }
 
+    @Test
     public void testAllVertices() throws Exception {
         final VerticesResult verticesResult = graphHelper.getAllVertices();
         logger.info(verticesResult);
@@ -147,16 +149,17 @@ public class GraphTest extends BaseTestClass {
             Vertex.VERTEX_TYPE.FEED_ENTITY, numInputFeeds + numOutputFeeds);
     }
 
+    @Test
     public void testVerticesFilterByName() throws Exception {
         final String clusterName = clusterMerlin.getName();
-        final VerticesResult clusterVertices = graphHelper.getVertices("name", clusterName);
+        final VerticesResult clusterVertices = graphHelper.getVerticesByName(clusterName);
         GraphAssert.assertVertexSanity(clusterVertices);
         GraphAssert.assertVerticesPresenceMinOccur(clusterVertices,
             Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
         GraphAssert.assertVertexPresence(clusterVertices, clusterName);
         for(int i = 0; i < numInputFeeds; ++i) {
             final String feedName = inputFeeds[i].getName();
-            final VerticesResult feedVertices = graphHelper.getVertices("name", feedName);
+            final VerticesResult feedVertices = graphHelper.getVerticesByName(feedName);
             GraphAssert.assertVertexSanity(feedVertices);
             GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
                 Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
@@ -164,7 +167,7 @@ public class GraphTest extends BaseTestClass {
         }
         for(int i = 0; i < numOutputFeeds; ++i) {
             final String feedName = outputFeeds[i].getName();
-            final VerticesResult feedVertices = graphHelper.getVertices("name", feedName);
+            final VerticesResult feedVertices = graphHelper.getVerticesByName(feedName);
             GraphAssert.assertVertexSanity(feedVertices);
             GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
                 Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
@@ -173,15 +176,16 @@ public class GraphTest extends BaseTestClass {
 
     }
 
+    @Test
     public void testVerticesFilterByType() throws Exception {
         final VerticesResult clusterVertices =
-            graphHelper.getVertices("type", Vertex.VERTEX_TYPE.CLUSTER_ENTITY.getValue());
+            graphHelper.getVerticesByType(Vertex.VERTEX_TYPE.CLUSTER_ENTITY);
         GraphAssert.assertVertexSanity(clusterVertices);
         GraphAssert.assertVerticesPresenceMinOccur(clusterVertices,
             Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
         GraphAssert.assertVertexPresence(clusterVertices, clusterMerlin.getName());
         final VerticesResult feedVertices =
-            graphHelper.getVertices("type", Vertex.VERTEX_TYPE.FEED_ENTITY.getValue());
+            graphHelper.getVerticesByType(Vertex.VERTEX_TYPE.FEED_ENTITY);
         GraphAssert.assertVertexSanity(feedVertices);
         GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
             Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
@@ -193,6 +197,7 @@ public class GraphTest extends BaseTestClass {
         }
     }
 
+    @Test
     public void testAllEdges() throws Exception {
         final EdgesResult edgesResult = graphHelper.getAllEdges();
         logger.info(edgesResult);
@@ -206,4 +211,19 @@ public class GraphTest extends BaseTestClass {
             1 + numInputFeeds + numOutputFeeds);
     }
 
+    @Test
+    public void testColoToEntityNode() throws Exception {
+        final VerticesResult verticesResult = graphHelper.getVertices("type", "data-center");
+        GraphAssert.assertVertexSanity(verticesResult);
+        Assert.assertTrue(verticesResult.getTotalSize() > 0, "Expected at least 1 colo node");
+        Assert.assertTrue(verticesResult.getTotalSize() <= 3, "Expected at most 3 colo nodes");
+        for (Vertex vertex : verticesResult.getResults()) {
+            logger.info("vertex: " + vertex);
+            final VerticesResult verticesByDirection =
+                graphHelper.getVerticesByDirection(vertex.get_id(), Direction.inComingVertices);
+            for (Vertex result : verticesByDirection.getResults()) {
+                logger.info("result: " + result);
+            }
+        }
+    }
 }
