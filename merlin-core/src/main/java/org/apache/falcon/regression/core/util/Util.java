@@ -787,6 +787,18 @@ public class Util {
             out.flush();
         }
 
+        //save console output to data
+        BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        String line;
+        while (true) {
+            while ((line=r.readLine())!=null) {
+                data.add(line);
+            }
+            if (channel.isClosed()) {
+                break;
+            }
+        }
+
         byte[] tmp = new byte[1024];
         while (true) {
             while (in.available() > 0) {
@@ -823,8 +835,6 @@ public class Util {
         Unmarshaller um = context.createUnmarshaller();
 
         return (Feed) um.unmarshal(new StringReader(feedData));
-
-
     }
 
     public static List<String> generateUniqueClusterEntity(List<String> clusterData)

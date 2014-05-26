@@ -456,7 +456,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     /*
       submit and schedule process with end time after 60 mins. Set update time
        as with +60 from start mins.
-     */
+    */
+        logger.info("Running test updateTimeAfterEndTime_Process");
         String startTime = TimeUtil.getTimeWrtSystemTime(-15);
         String endTime = TimeUtil.getTimeWrtSystemTime(60);
         processBundle.setProcessValidity(startTime, endTime);

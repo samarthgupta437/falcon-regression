@@ -616,6 +616,10 @@ public class InstanceUtil {
         if ((null != type) && type.equals("late")) {
             inputPath = OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData";
         }
+        else if ((null !=type) && type.equals("oneFile")) {
+             inputPath = OSUtil.SINGLE_FILE  ;
+        }
+
         File[] files = new File(inputPath).listFiles();
         assert files != null;
 
@@ -1232,8 +1236,8 @@ public class InstanceUtil {
                     coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
             for (CoordinatorAction coordinatorAction : coordinatorActions) {
-                logger.info(String.format("Coordinator Action %s status is %s",
-                    coordinatorAction.getId(), coordinatorAction.getStatus()));
+                logger.info(String.format("Coordinator Action %s status is %s on oozie %s",
+                    coordinatorAction.getId(), coordinatorAction.getStatus(), client.getOozieUrl()));
                 if (expectedStatus == coordinatorAction.getStatus()) {
                     instanceWithStatus++;
                 }
