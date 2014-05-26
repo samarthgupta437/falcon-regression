@@ -20,6 +20,8 @@ package org.apache.falcon.regression.ui.pages;
 
 
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.generated.cluster.Cluster;
+import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -34,12 +36,20 @@ public class EntityPage<T> extends Page {
 
     private Class<T> type;
 
-    public EntityPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type, Class<T> entity, String entityName) {
+    protected EntityPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type, Class<T> entity, String entityName) {
         super(driver, helper);
         URL += String.format("/entity.html?type=%s&id=%s", type, entityName);
         this.type = entity;
         expectedElement = "//textarea[@id='entity-def-textarea' and contains(text(), 'xml')]";
         notFoundMsg = String.format(" %s '%s' not found!", type, entityName);
+    }
+
+    public static EntityPage<Cluster> getClusterPage(WebDriver driver, PrismHelper helper, String entityName) {
+        return new EntityPage<Cluster>(driver, helper, ENTITY_TYPE.CLUSTER, Cluster.class, entityName);
+    }
+
+    public static EntityPage<Feed> getFeedPage(WebDriver driver, PrismHelper helper, String entityName) {
+        return new EntityPage<Feed>(driver, helper, ENTITY_TYPE.FEED, Feed.class, entityName);
     }
 
     @SuppressWarnings("unchecked")
