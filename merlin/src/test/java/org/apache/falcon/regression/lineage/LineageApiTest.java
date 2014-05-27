@@ -213,17 +213,35 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testColoToEntityNode() throws Exception {
-        final VerticesResult verticesResult = lineageHelper.getVertices("type", "data-center");
+        final VerticesResult verticesResult = lineageHelper.getVerticesByType(Vertex.VERTEX_TYPE.COLO);
         GraphAssert.assertVertexSanity(verticesResult);
         Assert.assertTrue(verticesResult.getTotalSize() > 0, "Expected at least 1 colo node");
         Assert.assertTrue(verticesResult.getTotalSize() <= 3, "Expected at most 3 colo nodes");
         final List<Vertex> colo1Vertex = verticesResult.filterByName(clusterMerlin.getColo());
-        AssertUtil.checkForListSizes(colo1Vertex, 1);
-        Vertex vertex = colo1Vertex.get(0);
-        logger.info("vertex: " + vertex);
+        AssertUtil.checkForListSize(colo1Vertex, 1);
+        Vertex coloVertex = colo1Vertex.get(0);
+        logger.info("coloVertex: " + coloVertex);
         final VerticesResult verticesByDirection =
-            lineageHelper.getVerticesByDirection(vertex.get_id(), Direction.inComingVertices);
-        AssertUtil.checkForListSizes(
+            lineageHelper.getVerticesByDirection(coloVertex.get_id(), Direction.inComingVertices);
+        AssertUtil.checkForListSize(
             verticesByDirection.filterByName(clusterMerlin.getName()), 1);
     }
+
+    @Test
+    public void testClusterNodeToFeedNode() throws Exception {
+        final VerticesResult clusterResult = lineageHelper.getVerticesByName(
+            clusterMerlin.getName());
+        GraphAssert.assertVertexSanity(clusterResult);
+        Vertex clusterVertex = clusterResult.getResults().get(0);
+        final VerticesResult clusterIncoming =
+            lineageHelper.getVerticesByDirection(clusterVertex.get_id(), Direction.inComingVertices);
+        GraphAssert.assertVertexSanity(clusterIncoming);
+        for(FeedMerlin feed : inputFeeds) {
+            AssertUtil.checkForListSize(clusterIncoming.filterByName(feed.getName()), 1);
+        }
+        for(FeedMerlin feed : outputFeeds) {
+            AssertUtil.checkForListSize(clusterIncoming.filterByName(feed.getName()), 1);
+        }
+    }
+
 }

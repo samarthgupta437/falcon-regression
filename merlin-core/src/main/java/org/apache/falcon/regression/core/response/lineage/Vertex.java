@@ -22,6 +22,12 @@ import com.google.gson.annotations.SerializedName;
 
 public class Vertex extends GraphEntity {
 
+    public static enum FilterKey {
+        name, type, timestamp, version,
+        userWorkflowEngine, userWorkflowName, userWorkflowVersion,
+        workflowId, runId, status, workflowEngineUrl, subflowId,
+    }
+
     public static enum VERTEX_TYPE {
         @SerializedName("cluster-entity")CLUSTER_ENTITY("cluster-entity"),
         @SerializedName("feed-entity")FEED_ENTITY("feed-entity"),

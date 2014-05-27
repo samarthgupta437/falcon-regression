@@ -78,7 +78,7 @@ public class AssertUtil {
      * @param expected expected list
      * @param actual   actual list
      */
-    public static void checkForListSizes(List<?> elements, int expectedSize) {
+    public static void checkForListSize(List<?> elements, int expectedSize) {
         if (elements.size() != expectedSize) {
             logger.info("expectedSize = " + expectedSize);
             logger.info("elements.size() = " + elements.size());

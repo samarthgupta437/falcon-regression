@@ -133,24 +133,24 @@ public class LineageHelper {
         return getVerticesResult(getUrl(URL.VERTICES_ALL));
     }
 
-    public VerticesResult getVertices(String key, String value)
+    public VerticesResult getVertices(Vertex.FilterKey key, String value)
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
         return getVerticesResult(getUrl(URL.VERTICES,
-            new Pair<String, String>("key", key),
+            new Pair<String, String>("key", key.toString()),
             new Pair<String, String>("value", value)));
     }
 
     public VerticesResult getVerticesByType(Vertex.VERTEX_TYPE vertexType)
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
-        return getVertices("type", vertexType.getValue());
+        return getVertices(Vertex.FilterKey.type, vertexType.getValue());
     }
 
     public VerticesResult getVerticesByName(String name)
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
-        return getVertices("name", name);
+        return getVertices(Vertex.FilterKey.name, name);
     }
 
     public VerticesResult getVerticesByDirection(int vertexId, Direction direction)
