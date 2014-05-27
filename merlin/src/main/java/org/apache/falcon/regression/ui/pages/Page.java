@@ -46,6 +46,10 @@ public abstract class Page {
         waitForElement(expectedElement, DEFAULT_TIMEOUT);
     }
 
+    public void refresh() {
+        driver.navigate().refresh();
+    }
+
     public void waitForElement(final String xpath, final long timeoutSeconds) {
 
         try {
