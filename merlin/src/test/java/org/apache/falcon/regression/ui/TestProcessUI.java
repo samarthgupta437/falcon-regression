@@ -29,10 +29,12 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseUITestClass;
 import org.apache.falcon.regression.ui.pages.EntitiesPage;
+import org.apache.falcon.regression.ui.pages.ProcessPage;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
@@ -45,7 +47,9 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class TestProcessUI extends BaseUITestClass {
 
@@ -127,5 +131,43 @@ public class TestProcessUI extends BaseUITestClass {
         Assert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
                 EntitiesPage.EntityStatus.RUNNING, "Process status should be RUNNING");
 
+    }
+
+    @Test
+    public void testInstances() throws Exception {
+
+        prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
+
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
+                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
+
+        ProcessPage page = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
+        page.navigateTo();
+
+        String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+        Map<Date, CoordinatorAction.Status> actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID,
+                ENTITY_TYPE.PROCESS);
+
+        checkActions(actions, page);
+
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
+                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+
+        page.refresh();
+
+        actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, ENTITY_TYPE.PROCESS);
+
+        checkActions(actions, page);
+
+    }
+
+    private void checkActions(Map<Date, CoordinatorAction.Status> actions, ProcessPage page) {
+        for(Date date : actions.keySet()) {
+            String oozieDate = TimeUtil.dateToOozieDate(date);
+            String status = page.getInstanceStatus(oozieDate);
+            Assert.assertNotNull(status, oozieDate + " instance not present on UI");
+            Assert.assertEquals(status, actions.get(date).toString(), "Status of instance '"
+                    + oozieDate + "' is not the same via oozie and via UI");
+        }
     }
 }

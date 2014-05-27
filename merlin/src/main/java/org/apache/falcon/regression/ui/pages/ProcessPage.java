@@ -21,10 +21,26 @@ package org.apache.falcon.regression.ui.pages;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+
+import java.util.List;
 
 public class ProcessPage extends EntityPage<Process> {
+
+    private final static String INSTANCE_STATUS_TEMPLATE = "//div[@id='panel-instance']//span[contains(..,'%s')]";
+
     public ProcessPage(WebDriver driver, PrismHelper helper, String entityName)  {
         super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
+    }
+
+    public String getInstanceStatus(String instanceDate) {
+        List<WebElement> status = driver.findElements(By.xpath(String.format(INSTANCE_STATUS_TEMPLATE, instanceDate)));
+        if (status.isEmpty()) {
+            return null;
+        } else {
+            return status.get(0).getAttribute("class").replace("instance-icons instance-link-", "");
+        }
     }
 }
