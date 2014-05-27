@@ -110,6 +110,7 @@
         <hortonworks.repo.url>http://repo.hortonworks.com/content/repositories/releases</hortonworks.repo.url>
         <skipCheck>false</skipCheck>
         <hive.version>0.12.0</hive.version>
+        <redirectConsoleOutput>false</redirectConsoleOutput>
     </properties>
 
     <modules>
@@ -595,7 +596,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>${redirectConsoleOutput}</redirectTestOutputToFile>
                     <forkCount>1</forkCount>
                     <reuseForks>true</reuseForks>
                     <argLine>-Denvironment=${config.file}</argLine>
