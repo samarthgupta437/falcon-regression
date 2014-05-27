@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.response.graph;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VerticesResult extends GraphResult {
@@ -33,6 +34,35 @@ public class VerticesResult extends GraphResult {
             "totalSize=" + totalSize +
             ", results=" + results +
             '}';
+    }
+
+    public List<Vertex> filterByType(Vertex.VERTEX_TYPE vertex_type) {
+        return filterVerticesByType(vertex_type, results);
+    }
+
+    public List<Vertex> filterVerticesByType(Vertex.VERTEX_TYPE vertex_type,
+                                             List<Vertex> vertexList) {
+        List<Vertex> result = new ArrayList<Vertex>();
+        for (Vertex vertex : vertexList) {
+            if(vertex.getType() == vertex_type) {
+                result.add(vertex);
+            }
+        }
+        return result;
+    }
+
+    public List<Vertex> filterByName(String name) {
+        return filterVerticesByName(name, results);
+    }
+
+    public List<Vertex> filterVerticesByName(String name, List<Vertex> vertexList) {
+        List<Vertex> result = new ArrayList<Vertex>();
+        for (Vertex vertex : vertexList) {
+            if(vertex.getName().equals(name)) {
+                result.add(vertex);
+            }
+        }
+        return result;
     }
 
 }

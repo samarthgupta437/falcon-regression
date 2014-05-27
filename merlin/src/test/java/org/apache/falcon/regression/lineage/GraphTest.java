@@ -217,13 +217,13 @@ public class GraphTest extends BaseTestClass {
         GraphAssert.assertVertexSanity(verticesResult);
         Assert.assertTrue(verticesResult.getTotalSize() > 0, "Expected at least 1 colo node");
         Assert.assertTrue(verticesResult.getTotalSize() <= 3, "Expected at most 3 colo nodes");
-        for (Vertex vertex : verticesResult.getResults()) {
-            logger.info("vertex: " + vertex);
-            final VerticesResult verticesByDirection =
-                graphHelper.getVerticesByDirection(vertex.get_id(), Direction.inComingVertices);
-            for (Vertex result : verticesByDirection.getResults()) {
-                logger.info("result: " + result);
-            }
-        }
+        final List<Vertex> colo1Vertex = verticesResult.filterByName(clusterMerlin.getColo());
+        AssertUtil.checkForListSizes(colo1Vertex, 1);
+        Vertex vertex = colo1Vertex.get(0);
+        logger.info("vertex: " + vertex);
+        final VerticesResult verticesByDirection =
+            graphHelper.getVerticesByDirection(vertex.get_id(), Direction.inComingVertices);
+        AssertUtil.checkForListSizes(
+            verticesByDirection.filterByName(clusterMerlin.getName()), 1);
     }
 }
