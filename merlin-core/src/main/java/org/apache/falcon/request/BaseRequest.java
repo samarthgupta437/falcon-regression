@@ -37,6 +37,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.log4j.Logger;
+import org.apache.falcon.regression.core.util.Util;
 
 import java.io.IOException;
 import java.net.URI;
@@ -117,9 +118,12 @@ public class BaseRequest {
 
         /*get the token and add it to the header.
         works in secure and un secure mode.*/
-        AuthenticatedURL.Token token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-            uri.getHost(), uri.getPort());
-        request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+        AuthenticatedURL.Token token;
+        if(Util.getAuthentication().equalsIgnoreCase("true")){
+                token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
+                    uri.getHost(), uri.getPort());
+            request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+        }
         DefaultHttpClient client = new DefaultHttpClient();
         LOGGER.info("Request Url: " + request.getRequestLine().getUri());
         LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
@@ -136,11 +140,13 @@ public class BaseRequest {
             Header[] wwwAuthHeaders = response.getHeaders(RequestKeys.WWW_AUTHENTICATE);
             if (wwwAuthHeaders != null && wwwAuthHeaders.length != 0 &&
                 wwwAuthHeaders[0].getValue().trim().startsWith(RequestKeys.NEGOTIATE)) {
-                token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-                    uri.getHost(), uri.getPort(), true);
+                if(Util.getAuthentication().equalsIgnoreCase("true")){
+                	token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
+                			uri.getHost(), uri.getPort(), true);
 
-                request.removeHeaders(RequestKeys.COOKIE);
-                request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+                	request.removeHeaders(RequestKeys.COOKIE);
+                	request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+	        }
                 LOGGER.info("Request Url: " + request.getRequestLine().getUri());
                 LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
                 for (Header header : request.getAllHeaders()) {

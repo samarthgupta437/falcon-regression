@@ -1208,4 +1208,16 @@ public class Util {
 
         return result;
     }
+    public static String getAuthentication() throws IOException{
+        Properties properties = new Properties();
+        final InputStream resourceAsStream =
+            Util.class.getResourceAsStream("/" + MERLIN_PROPERTIES);
+        properties.load(resourceAsStream);
+        resourceAsStream.close();
+        String authenticate=properties.getProperty("isAuthenticationSet");
+        if(authenticate == null){
+                authenticate = "true";
+        }
+        return authenticate;
+    }
 }
