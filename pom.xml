@@ -110,7 +110,7 @@
         <hortonworks.repo.url>http://repo.hortonworks.com/content/repositories/releases</hortonworks.repo.url>
         <skipCheck>false</skipCheck>
         <hive.version>0.12.0</hive.version>
-        <redirectConsoleOutput>false</redirectConsoleOutput>
+        <redirectConsoleOutput>true</redirectConsoleOutput>
     </properties>
 
     <modules>
