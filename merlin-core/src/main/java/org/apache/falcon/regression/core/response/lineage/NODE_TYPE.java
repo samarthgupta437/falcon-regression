@@ -16,29 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.response.graph;
+package org.apache.falcon.regression.core.response.lineage;
 
-public enum Direction {
-    outGoingEdges("outE"),
-    inComingEdges("inE"),
-    bothEdges("bothE"),
-    outgoingVertices("out"),
-    inComingVertices("in"),
-    bothVertices("both"),
-    outgoingVerticesCount("outCount"),
-    incomingVerticesCount("inCount"),
-    bothVerticesCount("bothCount"),
-    outgoingVerticesIds("outIds"),
-    incomingVerticesIds("inIds"),
-    bothVerticesIds("bothIds");
+import com.google.gson.annotations.SerializedName;
 
-    private final String value;
-
-    Direction(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
+public enum NODE_TYPE {
+    @SerializedName("vertex")VERTEX,
+    @SerializedName("edge")EDGE,
 }

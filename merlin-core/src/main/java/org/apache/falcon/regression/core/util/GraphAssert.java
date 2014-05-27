@@ -19,12 +19,12 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
-import org.apache.falcon.regression.core.response.graph.Edge;
-import org.apache.falcon.regression.core.response.graph.EdgesResult;
-import org.apache.falcon.regression.core.response.graph.GraphResult;
-import org.apache.falcon.regression.core.response.graph.NODE_TYPE;
-import org.apache.falcon.regression.core.response.graph.Vertex;
-import org.apache.falcon.regression.core.response.graph.VerticesResult;
+import org.apache.falcon.regression.core.response.lineage.Edge;
+import org.apache.falcon.regression.core.response.lineage.EdgesResult;
+import org.apache.falcon.regression.core.response.lineage.GraphResult;
+import org.apache.falcon.regression.core.response.lineage.NODE_TYPE;
+import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.response.graph;
+package org.apache.falcon.regression.core.response.lineage;
 
 public abstract class GraphEntity {
     NODE_TYPE _type;

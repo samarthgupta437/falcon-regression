@@ -16,16 +16,23 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.response.graph;
+package org.apache.falcon.regression.core.response.lineage;
 
 import java.util.List;
 
-public abstract class GraphResult {
-    int totalSize;
+public class EdgesResult extends GraphResult {
+    List<Edge> results;
 
-    public int getTotalSize() {
-        return totalSize;
+    public List<Edge> getResults() {
+        return results;
     }
 
-    public abstract List<? extends GraphEntity> getResults();
+    @Override
+    public String toString() {
+        return "AllEdges{" +
+            "totalSize=" + totalSize +
+            ", results=" + results +
+            '}';
+    }
+
 }

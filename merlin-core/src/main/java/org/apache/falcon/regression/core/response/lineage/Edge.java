@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.response.graph;
+package org.apache.falcon.regression.core.response.lineage;
 
 import com.google.gson.annotations.SerializedName;
 

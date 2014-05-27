@@ -16,11 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.response.graph;
+package org.apache.falcon.regression.core.response.lineage;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
-public enum NODE_TYPE {
-    @SerializedName("vertex")VERTEX,
-    @SerializedName("edge")EDGE,
+public abstract class GraphResult {
+    int totalSize;
+
+    public int getTotalSize() {
+        return totalSize;
+    }
+
+    public abstract List<? extends GraphEntity> getResults();
 }

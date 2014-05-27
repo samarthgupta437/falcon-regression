@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.response.graph;
+package org.apache.falcon.regression.core.response.lineage;
 
 import java.util.ArrayList;
 import java.util.List;

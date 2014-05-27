@@ -16,24 +16,29 @@
  * limitations under the License.
  */
 
-package org.apache.falcon.regression.core.response.graph;
+package org.apache.falcon.regression.core.response.lineage;
 
-import java.util.Arrays;
-import java.util.List;
+public enum Direction {
+    outGoingEdges("outE"),
+    inComingEdges("inE"),
+    bothEdges("bothE"),
+    outgoingVertices("out"),
+    inComingVertices("in"),
+    bothVertices("both"),
+    outgoingVerticesCount("outCount"),
+    incomingVerticesCount("inCount"),
+    bothVerticesCount("bothCount"),
+    outgoingVerticesIds("outIds"),
+    incomingVerticesIds("inIds"),
+    bothVerticesIds("bothIds");
 
-public class EdgesResult extends GraphResult {
-    List<Edge> results;
+    private final String value;
 
-    public List<Edge> getResults() {
-        return results;
+    Direction(String value) {
+        this.value = value;
     }
 
-    @Override
-    public String toString() {
-        return "AllEdges{" +
-            "totalSize=" + totalSize +
-            ", results=" + results +
-            '}';
+    public String getValue() {
+        return value;
     }
-
 }

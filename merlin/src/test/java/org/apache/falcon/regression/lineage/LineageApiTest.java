@@ -23,14 +23,14 @@ import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.generated.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.graph.Direction;
-import org.apache.falcon.regression.core.response.graph.Edge;
-import org.apache.falcon.regression.core.response.graph.EdgesResult;
-import org.apache.falcon.regression.core.response.graph.Vertex;
-import org.apache.falcon.regression.core.response.graph.VerticesResult;
+import org.apache.falcon.regression.core.helpers.LineageHelper;
+import org.apache.falcon.regression.core.response.lineage.Direction;
+import org.apache.falcon.regression.core.response.lineage.Edge;
+import org.apache.falcon.regression.core.response.lineage.EdgesResult;
+import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.helpers.GraphHelper;
 import org.apache.falcon.regression.core.util.CleanupUtil;
 import org.apache.falcon.regression.core.util.Generator;
 import org.apache.falcon.regression.core.util.GraphAssert;
@@ -52,12 +52,12 @@ import java.util.List;
 import java.util.Random;
 
 @Test(groups = "embedded")
-public class GraphTest extends BaseTestClass {
+public class LineageApiTest extends BaseTestClass {
     private static final String datePattern = "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private static final Logger logger = Logger.getLogger(GraphTest.class);
-    GraphHelper graphHelper;
+    private static final Logger logger = Logger.getLogger(LineageApiTest.class);
+    LineageHelper lineageHelper;
     final ColoHelper cluster = servers.get(0);
-    final String baseTestHDFSDir = baseHDFSDir + "/GraphTest";
+    final String baseTestHDFSDir = baseHDFSDir + "/LineageApiTest";
     final String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     final String feedInputPath =
         baseTestHDFSDir + "/input";
@@ -73,7 +73,7 @@ public class GraphTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-        graphHelper = new GraphHelper(prism);
+        lineageHelper = new LineageHelper(prism);
     }
 
     @BeforeMethod(alwaysRun = true, firstTimeOnly = true)
@@ -138,7 +138,7 @@ public class GraphTest extends BaseTestClass {
 
     @Test
     public void testAllVertices() throws Exception {
-        final VerticesResult verticesResult = graphHelper.getAllVertices();
+        final VerticesResult verticesResult = lineageHelper.getAllVertices();
         logger.info(verticesResult);
         GraphAssert.assertVertexSanity(verticesResult);
         GraphAssert.assertUserVertexPresence(verticesResult);
@@ -152,14 +152,14 @@ public class GraphTest extends BaseTestClass {
     @Test
     public void testVerticesFilterByName() throws Exception {
         final String clusterName = clusterMerlin.getName();
-        final VerticesResult clusterVertices = graphHelper.getVerticesByName(clusterName);
+        final VerticesResult clusterVertices = lineageHelper.getVerticesByName(clusterName);
         GraphAssert.assertVertexSanity(clusterVertices);
         GraphAssert.assertVerticesPresenceMinOccur(clusterVertices,
             Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
         GraphAssert.assertVertexPresence(clusterVertices, clusterName);
         for(int i = 0; i < numInputFeeds; ++i) {
             final String feedName = inputFeeds[i].getName();
-            final VerticesResult feedVertices = graphHelper.getVerticesByName(feedName);
+            final VerticesResult feedVertices = lineageHelper.getVerticesByName(feedName);
             GraphAssert.assertVertexSanity(feedVertices);
             GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
                 Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
@@ -167,7 +167,7 @@ public class GraphTest extends BaseTestClass {
         }
         for(int i = 0; i < numOutputFeeds; ++i) {
             final String feedName = outputFeeds[i].getName();
-            final VerticesResult feedVertices = graphHelper.getVerticesByName(feedName);
+            final VerticesResult feedVertices = lineageHelper.getVerticesByName(feedName);
             GraphAssert.assertVertexSanity(feedVertices);
             GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
                 Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
@@ -179,13 +179,13 @@ public class GraphTest extends BaseTestClass {
     @Test
     public void testVerticesFilterByType() throws Exception {
         final VerticesResult clusterVertices =
-            graphHelper.getVerticesByType(Vertex.VERTEX_TYPE.CLUSTER_ENTITY);
+            lineageHelper.getVerticesByType(Vertex.VERTEX_TYPE.CLUSTER_ENTITY);
         GraphAssert.assertVertexSanity(clusterVertices);
         GraphAssert.assertVerticesPresenceMinOccur(clusterVertices,
             Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
         GraphAssert.assertVertexPresence(clusterVertices, clusterMerlin.getName());
         final VerticesResult feedVertices =
-            graphHelper.getVerticesByType(Vertex.VERTEX_TYPE.FEED_ENTITY);
+            lineageHelper.getVerticesByType(Vertex.VERTEX_TYPE.FEED_ENTITY);
         GraphAssert.assertVertexSanity(feedVertices);
         GraphAssert.assertVerticesPresenceMinOccur(feedVertices,
             Vertex.VERTEX_TYPE.FEED_ENTITY, 1);
@@ -199,7 +199,7 @@ public class GraphTest extends BaseTestClass {
 
     @Test
     public void testAllEdges() throws Exception {
-        final EdgesResult edgesResult = graphHelper.getAllEdges();
+        final EdgesResult edgesResult = lineageHelper.getAllEdges();
         logger.info(edgesResult);
         Assert.assertTrue(edgesResult.getTotalSize() > 0, "Total number of edges should be" +
             " greater that zero but is: " + edgesResult.getTotalSize());
@@ -213,7 +213,7 @@ public class GraphTest extends BaseTestClass {
 
     @Test
     public void testColoToEntityNode() throws Exception {
-        final VerticesResult verticesResult = graphHelper.getVertices("type", "data-center");
+        final VerticesResult verticesResult = lineageHelper.getVertices("type", "data-center");
         GraphAssert.assertVertexSanity(verticesResult);
         Assert.assertTrue(verticesResult.getTotalSize() > 0, "Expected at least 1 colo node");
         Assert.assertTrue(verticesResult.getTotalSize() <= 3, "Expected at most 3 colo nodes");
@@ -222,7 +222,7 @@ public class GraphTest extends BaseTestClass {
         Vertex vertex = colo1Vertex.get(0);
         logger.info("vertex: " + vertex);
         final VerticesResult verticesByDirection =
-            graphHelper.getVerticesByDirection(vertex.get_id(), Direction.inComingVertices);
+            lineageHelper.getVerticesByDirection(vertex.get_id(), Direction.inComingVertices);
         AssertUtil.checkForListSizes(
             verticesByDirection.filterByName(clusterMerlin.getName()), 1);
     }

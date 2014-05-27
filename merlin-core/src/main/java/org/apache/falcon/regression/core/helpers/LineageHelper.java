@@ -22,10 +22,10 @@ import com.google.gson.GsonBuilder;
 import com.sun.tools.javac.util.Pair;
 import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
-import org.apache.falcon.regression.core.response.graph.Direction;
-import org.apache.falcon.regression.core.response.graph.EdgesResult;
-import org.apache.falcon.regression.core.response.graph.Vertex;
-import org.apache.falcon.regression.core.response.graph.VerticesResult;
+import org.apache.falcon.regression.core.response.lineage.Direction;
+import org.apache.falcon.regression.core.response.lineage.EdgesResult;
+import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -39,8 +39,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 
-public class GraphHelper {
-    private static Logger logger = Logger.getLogger(GraphHelper.class);
+public class LineageHelper {
+    private static Logger logger = Logger.getLogger(LineageHelper.class);
     private final String hostname;
 
 
@@ -66,11 +66,11 @@ public class GraphHelper {
         }
     }
 
-    public GraphHelper(String hostname) {
+    public LineageHelper(String hostname) {
         this.hostname = hostname.trim().replaceAll("/$", "");
     }
 
-    public GraphHelper(PrismHelper prismHelper) {
+    public LineageHelper(PrismHelper prismHelper) {
         this(prismHelper.getClusterHelper().getHostname());
     }
 
