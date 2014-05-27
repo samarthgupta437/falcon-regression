@@ -170,4 +170,31 @@ public class TestProcessUI extends BaseUITestClass {
                     + oozieDate + "' is not the same via oozie and via UI");
         }
     }
+
+    @Test
+    public void testLineageLink() throws Exception {
+
+        prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
+
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
+                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+
+        String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+        Map<Date, CoordinatorAction.Status> actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID,
+                ENTITY_TYPE.PROCESS);
+
+        ProcessPage page = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
+        page.navigateTo();
+
+        for(Date date : actions.keySet()) {
+            String oozieDate = TimeUtil.dateToOozieDate(date);
+            boolean isPresent = page.isLineageLinkPresent(oozieDate);
+            if(actions.get(date) == CoordinatorAction.Status.SUCCEEDED) {
+                Assert.assertTrue(isPresent, "Lineage button should be present for instance: " + oozieDate);
+            } else {
+                Assert.assertFalse(isPresent, "Lineage button should not be present for instance: " + oozieDate);
+            }
+        }
+
+    }
 }

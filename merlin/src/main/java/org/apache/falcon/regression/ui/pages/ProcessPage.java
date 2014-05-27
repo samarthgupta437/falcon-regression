@@ -30,6 +30,7 @@ import java.util.List;
 public class ProcessPage extends EntityPage<Process> {
 
     private final static String INSTANCE_STATUS_TEMPLATE = "//div[@id='panel-instance']//span[contains(..,'%s')]";
+    private final static String LINEAGE_LINK_TEMPLATE = "//a[@class='lineage-href' and @data-instance-name='%s']";
 
     public ProcessPage(WebDriver driver, PrismHelper helper, String entityName)  {
         super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
@@ -42,5 +43,10 @@ public class ProcessPage extends EntityPage<Process> {
         } else {
             return status.get(0).getAttribute("class").replace("instance-icons instance-link-", "");
         }
+    }
+
+    public boolean isLineageLinkPresent(String instanceDate) {
+        List<WebElement> lineage = driver.findElements(By.xpath(String.format(LINEAGE_LINK_TEMPLATE, instanceDate)));
+        return !lineage.isEmpty();
     }
 }
