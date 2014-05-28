@@ -34,6 +34,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.joda.time.DateTime;
@@ -43,7 +44,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -185,18 +189,14 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * an appropriate message.
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_dateEmpty() {
-        try {
-            bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-            bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-            bundles[0].submitAndScheduleBundle(prism);
-            ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), "");
-            InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
-        } catch (Exception e) {
-            if (!e.getMessage().contains("Expected BEGIN_OBJECT but was STRING at line 1 column"))
-                Assert.assertTrue(false);
-        }
+    public void testProcessInstanceStatus_dateEmpty()
+            throws JAXBException, AuthenticationException, IOException, URISyntaxException {
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
+        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
+        bundles[0].submitAndScheduleBundle(prism);
+        ProcessInstancesResult r = prism.getProcessHelper()
+            .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), null);
+        InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
 
     /**
