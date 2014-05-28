@@ -29,6 +29,7 @@ import java.util.List;
 
 public class ProcessPage extends EntityPage<Process> {
 
+    private final static String INSTANCES_PANEL = "//div[@id='panel-instance']//span";
     private final static String INSTANCE_STATUS_TEMPLATE = "//div[@id='panel-instance']//span[contains(..,'%s')]";
     private final static String LINEAGE_LINK_TEMPLATE = "//a[@class='lineage-href' and @data-instance-name='%s']";
 
@@ -37,6 +38,7 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     public String getInstanceStatus(String instanceDate) {
+        waitForInstancesPanel();
         List<WebElement> status = driver.findElements(By.xpath(String.format(INSTANCE_STATUS_TEMPLATE, instanceDate)));
         if (status.isEmpty()) {
             return null;
@@ -46,7 +48,12 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     public boolean isLineageLinkPresent(String instanceDate) {
+        waitForInstancesPanel();
         List<WebElement> lineage = driver.findElements(By.xpath(String.format(LINEAGE_LINK_TEMPLATE, instanceDate)));
         return !lineage.isEmpty();
+    }
+
+    private void waitForInstancesPanel() {
+        waitForElement(INSTANCES_PANEL, DEFAULT_TIMEOUT, "Instances panel didn't appear");
     }
 }
