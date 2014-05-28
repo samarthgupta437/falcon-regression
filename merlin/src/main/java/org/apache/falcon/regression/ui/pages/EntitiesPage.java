@@ -64,7 +64,7 @@ public class EntitiesPage extends Page {
     private void goNextPage() {
         WebElement nextButton = driver.findElement(By.xpath(ACTIVE_NXT_BTN));
         nextButton.click();
-        waitForElement(expectedElement, DEFAULT_TIMEOUT);
+        waitForElement(expectedElement, DEFAULT_TIMEOUT, "Next page didn't load");
     }
 
     private boolean nextPagePresent() {

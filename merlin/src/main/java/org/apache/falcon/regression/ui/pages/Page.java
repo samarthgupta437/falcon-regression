@@ -43,19 +43,19 @@ public abstract class Page {
     
     public void navigateTo() {
         driver.get(URL);
-        waitForElement(expectedElement, DEFAULT_TIMEOUT);
+        waitForElement(expectedElement, DEFAULT_TIMEOUT, notFoundMsg);
     }
 
     public void refresh() {
         driver.navigate().refresh();
     }
 
-    public void waitForElement(final String xpath, final long timeoutSeconds) {
+    public void waitForElement(final String xpath, final long timeoutSeconds, String errMessage) {
 
         try {
             new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath));
         } catch (TimeoutException e) {
-            TimeoutException ex = new TimeoutException(notFoundMsg);
+            TimeoutException ex = new TimeoutException(errMessage);
             ex.initCause(e);
             throw ex;
         }
