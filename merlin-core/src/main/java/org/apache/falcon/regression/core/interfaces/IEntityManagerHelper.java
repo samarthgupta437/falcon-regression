@@ -46,11 +46,22 @@ import java.util.Properties;
 
 public abstract class IEntityManagerHelper {
 
+	public static boolean AUTHENTICATE = setAuthenticate();
+	
     private Logger logger = Logger.getLogger(IEntityManagerHelper.class);
 
     protected String CLIENT_LOCATION = OSUtil.RESOURCES
         + OSUtil.getPath("IvoryClient", "IvoryCLI.jar");
     protected String BASE_COMMAND = "java -jar " + CLIENT_LOCATION;
+    
+    private static boolean setAuthenticate() {
+        String value = Util.readPropertiesFile("Merlin.properties", "isAuthenticationSet");
+        value = (null == value) ? "true" : value;
+        if(value.equalsIgnoreCase("false")) {
+                return false;
+        }
+        return true;
+    }
 
     public String getActiveMQ() {
         return activeMQ;
