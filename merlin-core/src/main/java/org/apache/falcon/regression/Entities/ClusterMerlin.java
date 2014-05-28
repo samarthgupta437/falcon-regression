@@ -48,4 +48,14 @@ public class ClusterMerlin extends Cluster {
         }
         return null;
     }
+
+    @Override
+    public String toString() {
+        try {
+            return InstanceUtil.ClusterElementToString(this);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

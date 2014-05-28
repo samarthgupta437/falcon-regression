@@ -55,6 +55,8 @@ import java.util.Random;
 public class LineageApiTest extends BaseTestClass {
     private static final String datePattern = "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(LineageApiTest.class);
+    private static final String testTag =
+        Edge.LEBEL_TYPE.TESTNAME.toString().toLowerCase() + "=LineageApiTest";
     LineageHelper lineageHelper;
     final ColoHelper cluster = servers.get(0);
     final String baseTestHDFSDir = baseHDFSDir + "/LineageApiTest";
@@ -85,11 +87,12 @@ public class LineageApiTest extends BaseTestClass {
         final List<String> clusterStrings = bundles[0].getClusters();
         Assert.assertEquals(clusterStrings.size(), 1, "Expecting only 1 clusterMerlin.");
         clusterMerlin = new ClusterMerlin(clusterStrings.get(0));
-
-        bundles[0].submitClusters(prism);
+        clusterMerlin.setTags(testTag);
+        AssertUtil.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, clusterMerlin.toString()));
         logger.info("numInputFeeds = " + numInputFeeds);
         logger.info("numOutputFeeds = " + numOutputFeeds);
         final FeedMerlin inputMerlin = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        inputMerlin.setTags(testTag);
         inputFeeds = generateFeeds(numInputFeeds, inputMerlin,
             Generator.getNameGenerator("infeed", inputMerlin.getName()),
             Generator.getHadoopPathGenerator(feedInputPath, datePattern));
@@ -99,6 +102,7 @@ public class LineageApiTest extends BaseTestClass {
         }
 
         FeedMerlin outputMerlin = new FeedMerlin(BundleUtil.getOutputFeedFromBundle(bundles[0]));
+        outputMerlin.setTags(testTag);
         outputFeeds = generateFeeds(numOutputFeeds, outputMerlin,
             Generator.getNameGenerator("outfeed", outputMerlin.getName()),
             Generator.getHadoopPathGenerator(feedOutputPath, datePattern));
@@ -143,7 +147,7 @@ public class LineageApiTest extends BaseTestClass {
         GraphAssert.assertVertexSanity(verticesResult);
         GraphAssert.assertUserVertexPresence(verticesResult);
         GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.COLO, 1);
-        GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.GROUPS, 1);
+        GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.TAGS, 1);
         GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
         GraphAssert.assertVerticesPresenceMinOccur(verticesResult,
             Vertex.VERTEX_TYPE.FEED_ENTITY, numInputFeeds + numOutputFeeds);
