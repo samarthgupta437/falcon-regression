@@ -38,7 +38,7 @@ public class EntityPage<T> extends Page {
 
     protected EntityPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type, Class<T> entity, String entityName) {
         super(driver, helper);
-        URL += String.format("/entity.html?type=%s&id=%s", type, entityName);
+        URL += String.format("/entity.html?type=%s&id=%s", type.toString().toLowerCase(), entityName);
         this.type = entity;
         expectedElement = "//textarea[@id='entity-def-textarea' and contains(text(), 'xml')]";
         notFoundMsg = String.format(" %s '%s' not found!", type, entityName);
