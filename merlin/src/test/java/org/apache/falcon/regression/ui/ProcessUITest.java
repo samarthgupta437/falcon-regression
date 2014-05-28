@@ -51,12 +51,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class TestProcessUI extends BaseUITestClass {
+public class ProcessUITest extends BaseUITestClass {
 
     private ColoHelper cluster = servers.get(0);
     private String baseTestDir = baseHDFSDir + "/TestProcessUI";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    private Logger logger = Logger.getLogger(TestProcessUI.class);
+    private Logger logger = Logger.getLogger(ProcessUITest.class);
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + datePattern;
     private FileSystem clusterFS = serverFS.get(0);
