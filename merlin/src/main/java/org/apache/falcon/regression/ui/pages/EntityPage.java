@@ -19,9 +19,9 @@
 package org.apache.falcon.regression.ui.pages;
 
 
+import org.apache.falcon.entity.v0.cluster.Cluster;
+import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.generated.cluster.Cluster;
-import org.apache.falcon.regression.core.generated.feed.Feed;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;

@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.ui.pages;
 
-import org.apache.falcon.regression.core.generated.process.Process;
+import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.openqa.selenium.WebDriver;
