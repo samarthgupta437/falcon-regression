@@ -22,10 +22,10 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Inputs;
-import org.apache.falcon.regression.core.generated.process.Process;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.entity.v0.process.Inputs;
+import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -717,7 +717,7 @@ public class AuthorizationTest extends BaseTestClass {
         input.setStart(startEl);
         input.setEnd(endEl);
         input.setName("inputData");
-        inputs.getInput().add(input);
+        inputs.getInputs().add(input);
         process.setInputs(inputs);
         return InstanceUtil.processToString(process);
     }

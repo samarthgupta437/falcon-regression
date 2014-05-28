@@ -19,8 +19,8 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.entity.v0.feed.ActionType;
+import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -77,8 +77,8 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
         Bundle.submitCluster(bundles[0], bundles[1]);
         String feedOutput01 = bundles[0].getDataSets().get(0);
-        org.apache.falcon.regression.core.generated.dependencies.Frequency delay =
-            new org.apache.falcon.regression.core.generated.dependencies.Frequency(
+        org.apache.falcon.entity.v0.Frequency delay =
+            new org.apache.falcon.entity.v0.Frequency(
                 "hours(5)");
 
         feedOutput01 = InstanceUtil

@@ -22,14 +22,14 @@ import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.feed.CatalogTable;
-import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
-import org.apache.falcon.regression.core.generated.feed.Retention;
-import org.apache.falcon.regression.core.generated.process.Input;
+import org.apache.falcon.entity.v0.feed.CatalogTable;
+import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.entity.v0.feed.Feed;
+import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.entity.v0.feed.Retention;
+import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
@@ -672,23 +672,23 @@ public class InstanceUtil {
         }
     }
 
-    public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
+    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
         Bundle bundle)
         throws JAXBException {
         JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
 
-        return (org.apache.falcon.regression.core.generated.cluster.Cluster) u
+        return (org.apache.falcon.entity.v0.cluster.Cluster) u
             .unmarshal((new StringReader(bundle.getClusters().get(0))));
     }
 
     public static void writeClusterElement(Bundle bundle,
-                                           org.apache.falcon.regression.core.generated.cluster
+                                           org.apache.falcon.entity.v0.cluster
                                                .Cluster c)
         throws JAXBException {
         JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(c, sw);
@@ -709,7 +709,7 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static String setFeedCluster(String feed,
-                                        org.apache.falcon.regression.core.generated.feed.Validity
+                                        org.apache.falcon.entity.v0.feed.Validity
                                             v1,
                                         Retention r1, String n1, ClusterType t1, String partition,
                                         String... locations) throws JAXBException {
@@ -723,15 +723,15 @@ public class InstanceUtil {
     }
 
     public static String setFeedClusterWithTable(String feed,
-                                                 org.apache.falcon.regression.core.generated.feed
+                                                 org.apache.falcon.entity.v0.feed
                                                      .Validity
                                                      v1,
                                                  Retention r1, String n1, ClusterType t1,
                                                  String partition, String tableUri,
                                                  String... locations) throws JAXBException {
 
-        org.apache.falcon.regression.core.generated.feed.Cluster c1 =
-            new org.apache.falcon.regression.core.generated.feed.Cluster();
+        org.apache.falcon.entity.v0.feed.Cluster c1 =
+            new org.apache.falcon.entity.v0.feed.Cluster();
         c1.setName(n1);
         c1.setRetention(r1);
         if (t1 != null)
@@ -746,12 +746,12 @@ public class InstanceUtil {
         }
 
 
-        org.apache.falcon.regression.core.generated.feed.Locations ls =
-            new org.apache.falcon.regression.core.generated.feed.Locations();
+        org.apache.falcon.entity.v0.feed.Locations ls =
+            new org.apache.falcon.entity.v0.feed.Locations();
         if (null != locations && locations.length > 0) {
             for (int i = 0; i < locations.length; i++) {
-                org.apache.falcon.regression.core.generated.feed.Location l =
-                    new org.apache.falcon.regression.core.generated.feed.Location();
+                org.apache.falcon.entity.v0.feed.Location l =
+                    new org.apache.falcon.entity.v0.feed.Location();
                 l.setPath(locations[i]);
                 if (i == 0)
                     l.setType(LocationType.DATA);
@@ -764,19 +764,19 @@ public class InstanceUtil {
                 else
                     Assert.assertTrue(false, "correct value of locations were not passed");
 
-                ls.getLocation().add(l);
+                ls.getLocations().add(l);
             }
 
             c1.setLocations(ls);
         }
         Feed f = getFeedElement(feed);
 
-        int numberOfInitialClusters = f.getClusters().getCluster().size();
+        int numberOfInitialClusters = f.getClusters().getClusters().size();
         if (n1 == null)
             for (int i = 0; i < numberOfInitialClusters; i++)
-                f.getClusters().getCluster().set(i, null);
+                f.getClusters().getClusters().set(i, null);
         else {
-            f.getClusters().getCluster().add(c1);
+            f.getClusters().getClusters().add(c1);
         }
         return feedElementToString(f);
     }
@@ -846,7 +846,7 @@ public class InstanceUtil {
      */
     public static String getFeedPrefix(String feed) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
-        String p = feedElement.getLocations().getLocation().get(0).getPath();
+        String p = feedElement.getLocations().getLocations().get(0).getPath();
         p = p.substring(0, p.indexOf("$"));
         return p;
     }
@@ -862,12 +862,12 @@ public class InstanceUtil {
      */
     public static String setProcessCluster(String process,
                                            String clusterName,
-                                           org.apache.falcon.regression.core.generated.process
+                                           org.apache.falcon.entity.v0.process
                                                .Validity validity) throws JAXBException {
 
 
-        org.apache.falcon.regression.core.generated.process.Cluster c =
-            new org.apache.falcon.regression.core.generated.process.Cluster();
+        org.apache.falcon.entity.v0.process.Cluster c =
+            new org.apache.falcon.entity.v0.process.Cluster();
 
         c.setName(clusterName);
         c.setValidity(validity);
@@ -876,9 +876,9 @@ public class InstanceUtil {
 
 
         if (clusterName == null)
-            p.getClusters().getCluster().set(0, null);
+            p.getClusters().getClusters().set(0, null);
         else {
-            p.getClusters().getCluster().add(c);
+            p.getClusters().getClusters().add(c);
         }
         return processToString(p);
 
@@ -919,14 +919,14 @@ public class InstanceUtil {
     public static String addProcessInputFeed(String process, String feed,
                                              String feedName) throws JAXBException {
         Process processElement = InstanceUtil.getProcessElement(process);
-        Input in1 = processElement.getInputs().getInput().get(0);
+        Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
         in2.setEnd(in1.getEnd());
         in2.setFeed(feed);
         in2.setName(feedName);
         in2.setPartition(in1.getPartition());
         in2.setStart(in1.getStart());
-        processElement.getInputs().getInput().add(in2);
+        processElement.getInputs().getInputs().add(in2);
         return processToString(processElement);
     }
 
@@ -1007,7 +1007,7 @@ public class InstanceUtil {
 
     public static String setFeedFilePath(String feed, String path) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
-        feedElement.getLocations().getLocation().get(0).setPath(path);
+        feedElement.getLocations().getLocations().get(0).setPath(path);
         return InstanceUtil.feedElementToString(feedElement);
 
     }
@@ -1062,10 +1062,10 @@ public class InstanceUtil {
 
         Process processElement = InstanceUtil.getProcessElement(process);
 
-        for (int i = 0; i < processElement.getClusters().getCluster().size(); i++) {
-            processElement.getClusters().getCluster().get(i).getValidity().setStart(
+        for (int i = 0; i < processElement.getClusters().getClusters().size(); i++) {
+            processElement.getClusters().getClusters().get(i).getValidity().setStart(
                 TimeUtil.oozieDateToDate(startTime).toDate());
-            processElement.getClusters().getCluster().get(i).getValidity()
+            processElement.getClusters().getClusters().get(i).getValidity()
                 .setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
 
         }
@@ -1150,23 +1150,23 @@ public class InstanceUtil {
     }
 
     public static String ClusterElementToString(
-        org.apache.falcon.regression.core.generated.cluster.Cluster c)
+        org.apache.falcon.entity.v0.cluster.Cluster c)
         throws JAXBException {
         JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(c, sw);
         return sw.toString();
     }
 
-    public static org.apache.falcon.regression.core.generated.cluster.Cluster getClusterElement(
+    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
         String clusterData) throws JAXBException {
         JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.regression.core.generated.cluster.Cluster.class);
+            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
 
-        return (org.apache.falcon.regression.core.generated.cluster.Cluster) u
+        return (org.apache.falcon.entity.v0.cluster.Cluster) u
             .unmarshal((new StringReader(clusterData)));
     }
 

@@ -20,12 +20,12 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.Cluster;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.Location;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.Cluster;
+import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.entity.v0.feed.Feed;
+import org.apache.falcon.entity.v0.feed.Location;
+import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -71,7 +71,7 @@ public class FeedMerlin extends Feed {
     all Merlin specific operations
      */
     public String getTargetCluster() {
-        for (Cluster c : getClusters().getCluster()) {
+        for (Cluster c : getClusters().getClusters()) {
             if (c.getType().equals(ClusterType.TARGET))
                 return c.getName();
         }
@@ -80,11 +80,11 @@ public class FeedMerlin extends Feed {
 
     public String insertRetentionValueInFeed(String retentionValue) {
         //insert retentionclause
-        getClusters().getCluster().get(0).getRetention()
+        getClusters().getClusters().get(0).getRetention()
             .setLimit(new Frequency(retentionValue));
 
-        for (org.apache.falcon.regression.core.generated.feed.Cluster cluster :
-            getClusters().getCluster()) {
+        for (org.apache.falcon.entity.v0.feed.Cluster cluster :
+            getClusters().getClusters()) {
             cluster.getRetention().setLimit(new Frequency(retentionValue));
         }
         return toString();
@@ -107,7 +107,7 @@ public class FeedMerlin extends Feed {
     }
 
     public String getLocation(LocationType locationType) {
-        for (Location location : getLocations().getLocation()) {
+        for (Location location : getLocations().getLocations()) {
             if(location.getType() == locationType) {
                 return location.getPath();
             }
@@ -117,7 +117,7 @@ public class FeedMerlin extends Feed {
     }
 
     public void setLocation(LocationType locationType, String feedInputPath) {
-        for (Location location : getLocations().getLocation()) {
+        for (Location location : getLocations().getLocations()) {
             if(location.getType() == locationType) {
                 location.setPath(feedInputPath);
             }

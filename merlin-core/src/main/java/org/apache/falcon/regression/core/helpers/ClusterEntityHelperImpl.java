@@ -23,7 +23,7 @@
 package org.apache.falcon.regression.core.helpers;
 
 import com.jcraft.jsch.JSchException;
-import org.apache.falcon.regression.core.generated.cluster.Cluster;
+import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;

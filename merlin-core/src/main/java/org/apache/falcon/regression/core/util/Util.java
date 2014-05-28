@@ -28,15 +28,15 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
-import org.apache.falcon.regression.core.generated.cluster.Cluster;
-import org.apache.falcon.regression.core.generated.cluster.Interface;
-import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.Location;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
-import org.apache.falcon.regression.core.generated.feed.Property;
-import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.feed.Feed;
+import org.apache.falcon.entity.v0.cluster.Cluster;
+import org.apache.falcon.entity.v0.cluster.Interface;
+import org.apache.falcon.entity.v0.cluster.Interfacetype;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.Location;
+import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.entity.v0.feed.Property;
+import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
@@ -375,7 +375,7 @@ public class Util {
         Feed feedObject = InstanceUtil.getFeedElement(feed);
 
         boolean found = false;
-        for (Property prop : feedObject.getProperties().getProperty()) {
+        for (Property prop : feedObject.getProperties().getProperties()) {
             //check if it is present
             if (prop.getName().equalsIgnoreCase(propertyName)) {
                 prop.setValue(propertyValue);
@@ -388,7 +388,7 @@ public class Util {
             Property property = new Property();
             property.setName(propertyName);
             property.setValue(propertyValue);
-            feedObject.getProperties().getProperty().add(property);
+            feedObject.getProperties().getProperties().add(property);
         }
 
 
@@ -402,7 +402,7 @@ public class Util {
         Unmarshaller um = context.createUnmarshaller();
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
-        for (Location location : feedObject.getLocations().getLocation()) {
+        for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType().equals(LocationType.DATA)) {
                 return location.getPath();
             }
@@ -552,7 +552,7 @@ public class Util {
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
         //set the value
-        for (Location location : feedObject.getLocations().getLocation()) {
+        for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType().equals(LocationType.DATA)) {
                 location.setPath(pathValue);
             }
@@ -638,7 +638,7 @@ public class Util {
         Feed feedObject =
             (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
         //set the value
-        feedObject.getClusters().getCluster().get(clusterIndex).setName(clusterName);
+        feedObject.getClusters().getClusters().get(clusterIndex).setName(clusterName);
         StringWriter feedWriter = new StringWriter();
         feedContext.createMarshaller().marshal(feedObject, feedWriter);
         return feedWriter.toString().trim();
@@ -943,7 +943,7 @@ public class Util {
         String hcat_endpoint = readPropertiesFile(filename, prefix + "hcat_endpoint");
 
         //now read and set relevant values
-        for (Interface iface : clusterObject.getInterfaces().getInterface()) {
+        for (Interface iface : clusterObject.getInterfaces().getInterfaces()) {
             if (iface.getType().equals(Interfacetype.READONLY)) {
                 iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_readonly"));
             } else if (iface.getType().equals(Interfacetype.WRITE)) {
@@ -964,15 +964,15 @@ public class Util {
         // properties in the cluster needed when secure mode is on
         if (MerlinConstants.IS_SECURE) {
             // get the properties object for the cluster
-            org.apache.falcon.regression.core.generated.cluster.Properties clusterProperties =
+            org.apache.falcon.entity.v0.cluster.Properties clusterProperties =
                 clusterObject.getProperties();
             // add the namenode principal to the properties object
-            clusterProperties.getProperty().add(getFalconClusterPropertyObject(
+            clusterProperties.getProperties().add(getFalconClusterPropertyObject(
                 "dfs.namenode.kerberos.principal",
                 readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none")));
 
             // add the hive meta store principal to the properties object
-            clusterProperties.getProperty().add(getFalconClusterPropertyObject(
+            clusterProperties.getProperties().add(getFalconClusterPropertyObject(
                 "hive.metastore.kerberos" +
                     ".principal",
                 readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
@@ -982,13 +982,13 @@ public class Util {
             // Until oozie has better integration with secure hive we need to send the properites to
             // falcon.
             // hive.metastore.sasl.enabled = true
-            clusterProperties.getProperty()
+            clusterProperties.getProperties()
                 .add(getFalconClusterPropertyObject("hive.metastore.sasl" +
                     ".enabled", "true"));
             // Only set the metastore uri if its not empty or null.
             if (null != hcat_endpoint && !hcat_endpoint.isEmpty()) {
                 //hive.metastore.uris
-                clusterProperties.getProperty()
+                clusterProperties.getProperties()
                     .add(getFalconClusterPropertyObject("hive.metastore.uris", hcat_endpoint));
             }
         }
@@ -1002,11 +1002,11 @@ public class Util {
         return writer.toString();
     }
 
-    public static org.apache.falcon.regression.core.generated.cluster.Property
+    public static org.apache.falcon.entity.v0.cluster.Property
     getFalconClusterPropertyObject
         (String name, String value) {
-        org.apache.falcon.regression.core.generated.cluster.Property property = new org
-            .apache.falcon.regression.core.generated.cluster.Property();
+        org.apache.falcon.entity.v0.cluster.Property property = new org
+            .apache.falcon.entity.v0.cluster.Property();
         property.setName(name);
         property.setValue(value);
         return property;
