@@ -107,10 +107,10 @@ public class HCatRetentionTest extends BaseTestClass {
                 .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
         } else {
             final DateTime dataStartTime = new DateTime(
-                feedElement.getClusters().getCluster().get(0).getValidity().getStart(),
+                feedElement.getClusters().getClusters().get(0).getValidity().getStart(),
                 DateTimeZone.UTC).withSecondOfMinute(0);
             final DateTime dataEndTime = new DateTime(
-                feedElement.getClusters().getCluster().get(0).getValidity().getEnd(),
+                feedElement.getClusters().getClusters().get(0).getValidity().getEnd(),
                 DateTimeZone.UTC).withSecondOfMinute(0);
             final List<DateTime> dataDates =
                 TimeUtil.getDatesOnEitherSide(dataStartTime, dataEndTime, feedType);

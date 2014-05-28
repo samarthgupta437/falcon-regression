@@ -19,9 +19,9 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.process.*;
-import org.apache.falcon.regression.core.generated.process.Process;
+import org.apache.falcon.entity.v0.feed.Feed;
+import org.apache.falcon.entity.v0.process.*;
+import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -174,11 +174,11 @@ public class BundleUtil {
         String processData = bundle.getProcessData();
 
         JAXBContext processContext = JAXBContext.newInstance(
-            org.apache.falcon.regression.core.generated.process.Process.class);
+            org.apache.falcon.entity.v0.process.Process.class);
         Unmarshaller unmarshaller = processContext.createUnmarshaller();
         Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
 
-        for (Output output : processObject.getOutputs().getOutput()) {
+        for (Output output : processObject.getOutputs().getOutputs()) {
             for (String feed : bundle.getDataSets()) {
                 if (Util.readDatasetName(feed).equalsIgnoreCase(output.getFeed())) {
                     return feed;
@@ -197,7 +197,7 @@ public class BundleUtil {
             dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
         }
 
-        return dataElement.getLocations().getLocation().get(0).getPath();
+        return dataElement.getLocations().getLocations().get(0).getPath();
 
     }
 
@@ -209,7 +209,7 @@ public class BundleUtil {
         Unmarshaller unmarshaller = processContext.createUnmarshaller();
         Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
 
-        for (Input input : processObject.getInputs().getInput()) {
+        for (Input input : processObject.getInputs().getInputs()) {
             for (String feed : bundle.getDataSets()) {
                 if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
                     return feed;

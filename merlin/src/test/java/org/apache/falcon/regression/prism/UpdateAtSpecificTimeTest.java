@@ -20,9 +20,9 @@ package org.apache.falcon.regression.prism;
 
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.ActionType;
+import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
@@ -128,7 +128,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         String feed = submitAndScheduleFeed(processBundle);
         InstanceUtil.waitTillInstancesAreCreated(cluster_1, feed, 0, 10);
         //update frequency
-        Frequency f = new Frequency(21, Frequency.TimeUnit.minutes);
+        Frequency f = new Frequency("" + 21, Frequency.TimeUnit.minutes);
         String updatedFeed = InstanceUtil.setFeedFrequency(feed, f);
 
         ServiceResponse r = prism.getFeedHelper().update(feed, updatedFeed, "abc", null);
@@ -204,7 +204,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         InstanceUtil.waitTillInstancesAreCreated(cluster_1, feed, 0, 10);
 
         //update frequency
-        Frequency f = new Frequency(7, Frequency.TimeUnit.minutes);
+        Frequency f = new Frequency("" + 7, Frequency.TimeUnit.minutes);
         String updatedFeed = InstanceUtil.setFeedFrequency(feed, f);
 
         r = prism.getFeedHelper().update(feed, updatedFeed,

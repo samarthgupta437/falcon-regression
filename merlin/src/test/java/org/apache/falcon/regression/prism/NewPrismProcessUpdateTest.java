@@ -20,11 +20,11 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
-import org.apache.falcon.regression.core.generated.process.ExecutionType;
-import org.apache.falcon.regression.core.generated.process.Process;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.Frequency.TimeUnit;
+import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.entity.v0.process.ExecutionType;
+import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
@@ -142,7 +142,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         String updatedProcess = InstanceUtil
             .setProcessFrequency(bundles[1].getProcessData(),
-                new Frequency(5, TimeUnit.minutes));
+                new Frequency("" + 5, TimeUnit.minutes));
 
         logger.info("updated process: " + updatedProcess);
 
@@ -189,11 +189,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
 
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getStart()
         ), 20);
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getStart()
         ), 30);
 
@@ -225,12 +225,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Assert.assertEquals(finalNumberOfInstances,
             getExpectedNumberOfWorkflowInstances(TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        bundles[1].getProcessObject().getClusters().getClusters().get(0)
                             .getValidity().getStart()
                     ),
                 TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster()
+                        bundles[1].getProcessObject().getClusters().getClusters()
                             .get(0).getValidity()
                             .getEnd()
                     )));
@@ -238,7 +238,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int expectedNumberOfWorkflows =
             getExpectedNumberOfWorkflowInstances(newStartTime, TimeUtil
                 .dateToOozieDate(
-                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    bundles[1].getProcessObject().getClusters().getClusters().get(0)
                         .getValidity().getEnd()
                 ));
         Assert.assertEquals(OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId),
@@ -317,12 +317,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
             int expectedInstances =
                 getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        bundles[1].getProcessObject().getClusters().getClusters().get(0)
                             .getValidity().getStart()
                     ),
                     TimeUtil
                         .dateToOozieDate(
-                            bundles[1].getProcessObject().getClusters().getCluster()
+                            bundles[1].getProcessObject().getClusters().getClusters()
                                 .get(0).getValidity()
                                 .getEnd()
                         ));
@@ -356,7 +356,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         String updatedProcess = InstanceUtil
             .setProcessFrequency(bundles[1].getProcessData(),
-                new Frequency(7, TimeUnit.minutes));
+                new Frequency("" + 7, TimeUnit.minutes));
 
         logger.info("updated process: " + updatedProcess);
 
@@ -484,12 +484,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Assert.assertTrue(doesExist, "Er! The desired concurrency levels are never reached!!!");
         int expectedNumberOfInstances =
             getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    bundles[1].getProcessObject().getClusters().getClusters().get(0)
                         .getValidity().getStart()
                 ),
                 TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster()
+                        bundles[1].getProcessObject().getClusters().getClusters()
                             .get(0).getValidity()
                             .getEnd()
                     ));
@@ -516,11 +516,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
 
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getEnd()
         ), 4);
         bundles[1].setProcessValidity(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                     .getStart()
             ),
             newEndTime);
@@ -545,12 +545,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         while (OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId)
             != getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                     .getStart()
             ),
             TimeUtil
                 .dateToOozieDate(
-                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    bundles[1].getProcessObject().getClusters().getClusters().get(0)
                         .getValidity()
                         .getEnd()
                 ))
@@ -574,12 +574,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Assert.assertEquals(finalNumberOfInstances,
             getExpectedNumberOfWorkflowInstances(TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        bundles[1].getProcessObject().getClusters().getClusters().get(0)
                             .getValidity().getStart()
                     ),
                 TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster()
+                        bundles[1].getProcessObject().getClusters().getClusters()
                             .get(0).getValidity()
                             .getEnd()
                     )));
@@ -665,12 +665,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         int expectedInstances =
             getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    bundles[1].getProcessObject().getClusters().getClusters().get(0)
                         .getValidity().getStart()
                 ),
                 TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster()
+                        bundles[1].getProcessObject().getClusters().getClusters()
                             .get(0).getValidity()
                             .getEnd()
                     ));
@@ -770,12 +770,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
             int expectedInstances =
                 getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                        bundles[1].getProcessObject().getClusters().getClusters().get(0)
                             .getValidity().getStart()
                     ),
                     TimeUtil
                         .dateToOozieDate(
-                            bundles[1].getProcessObject().getClusters().getCluster()
+                            bundles[1].getProcessObject().getClusters().getClusters()
                                 .get(0).getValidity()
                                 .getEnd()
                         ));
@@ -844,12 +844,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
         int expectedInstances =
             getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    bundles[1].getProcessObject().getClusters().getClusters().get(0)
                         .getValidity().getStart()
                 ),
                 TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster()
+                        bundles[1].getProcessObject().getClusters().getClusters()
                             .get(0).getValidity()
                             .getEnd()
                     ));
@@ -924,12 +924,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         int expectedInstances =
             getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    bundles[1].getProcessObject().getClusters().getClusters().get(0)
                         .getValidity().getStart()
                 ),
                 TimeUtil
                     .dateToOozieDate(
-                        bundles[1].getProcessObject().getClusters().getCluster()
+                        bundles[1].getProcessObject().getClusters().getClusters()
                             .get(0).getValidity()
                             .getEnd()
                     ));
@@ -1159,11 +1159,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             ENTITY_TYPE.PROCESS);
 
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getEnd()
         ), -2);
         bundles[1].setProcessValidity(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                     .getStart()
             ),
             newEndTime);
@@ -1190,14 +1190,14 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             .size();
         Assert.assertEquals(finalNumberOfInstances,
             getExpectedNumberOfWorkflowInstances(bundles[1]
-                    .getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getProcessObject().getClusters().getClusters().get(0).getValidity()
                     .getStart(),
-                bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                bundles[1].getProcessObject().getClusters().getClusters().get(0)
                     .getValidity().getEnd()));
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
         int expectedNumberOfWorkflows =
             getExpectedNumberOfWorkflowInstances(TimeUtil.dateToOozieDate(
-                    bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                    bundles[1].getProcessObject().getClusters().getClusters().get(0)
                         .getValidity().getStart()
                 ),
                 newEndTime);
@@ -1224,11 +1224,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
         String newEndTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getEnd()
         ), 4);
         bundles[1].setProcessValidity(TimeUtil.dateToOozieDate(
-                bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+                bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                     .getStart()
             ),
             newEndTime);
@@ -1258,9 +1258,9 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             .size();
         Assert.assertEquals(finalNumberOfInstances,
             getExpectedNumberOfWorkflowInstances(bundles[1]
-                    .getProcessObject().getClusters().getCluster().get(0).getValidity()
+                    .getProcessObject().getClusters().getClusters().get(0).getValidity()
                     .getStart(),
-                bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                bundles[1].getProcessObject().getClusters().getClusters().get(0)
                     .getValidity().getEnd()));
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
@@ -1299,7 +1299,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         String updatedProcess = InstanceUtil
             .setProcessFrequency(bundles[1].getProcessData(),
-                new Frequency(5, TimeUnit.minutes));
+                new Frequency("" + 5, TimeUnit.minutes));
 
         logger.info("updated process: " + updatedProcess);
 
@@ -1311,7 +1311,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         String prismString = dualComparison(bundles[1], cluster2);
         Assert.assertEquals(Util.getProcessObject(prismString).getFrequency(),
-            new Frequency(5, TimeUnit.minutes));
+            new Frequency("" + 5, TimeUnit.minutes));
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated
@@ -1352,7 +1352,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         String updatedProcess = InstanceUtil
             .setProcessFrequency(bundles[1].getProcessData(),
-                new Frequency(1, TimeUnit.months));
+                new Frequency("" + 1, TimeUnit.months));
         updatedProcess = InstanceUtil
             .setProcessValidity(updatedProcess, TimeUtil.getTimeWrtSystemTime(10),
                 endTime);
@@ -1365,7 +1365,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(response);
         String prismString = dualComparison(bundles[1], cluster2);
         Assert.assertEquals(Util.getProcessObject(prismString).getFrequency(),
-            new Frequency(1, TimeUnit.months));
+            new Frequency("" + 1, TimeUnit.months));
         dualComparison(bundles[1], cluster3);
         //ensure that the running process has new coordinators created; while the submitted
         // one is updated correctly.
@@ -1393,11 +1393,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             ENTITY_TYPE.PROCESS);
 
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getStart()
         ), -3);
         bundles[1].setProcessValidity(newStartTime, TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getEnd()
         ));
 
@@ -1429,15 +1429,15 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         OozieUtil.getNumberOfWorkflowInstances(cluster3, oldBundleId);
         String oldStartTime = TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getStart()
         );
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getStart()
         ), 3);
         bundles[1].setProcessValidity(newStartTime, TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getEnd()
         ));
 
@@ -1464,13 +1464,13 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
         Assert.assertEquals(finalNumberOfInstances,
             getExpectedNumberOfWorkflowInstances(oldStartTime,
-                bundles[1].getProcessObject().getClusters().getCluster().get(0)
+                bundles[1].getProcessObject().getClusters().getClusters().get(0)
                     .getValidity().getEnd()));
         Assert.assertEquals(InstanceUtil
             .getProcessInstanceList(cluster3,
                 Util.readEntityName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS)
             .size(), getExpectedNumberOfWorkflowInstances(newStartTime,
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getEnd()));
 
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
@@ -1490,11 +1490,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         Thread.sleep(30000);
 
         String newStartTime = TimeUtil.addMinsToTime(TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getStart()
         ), -3);
         bundles[1].setProcessValidity(newStartTime, TimeUtil.dateToOozieDate(
-            bundles[1].getProcessObject().getClusters().getCluster().get(0).getValidity()
+            bundles[1].getProcessObject().getClusters().getClusters().get(0).getValidity()
                 .getEnd()
         ));
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
@@ -1666,8 +1666,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     public ServiceResponse updateProcessFrequency(Bundle bundle,
-                                                  org.apache.falcon.regression.core.generated
-                                                      .dependencies.Frequency frequency)
+                                                  org.apache.falcon.entity.v0.Frequency frequency)
         throws Exception {
         String oldData = bundle.getProcessData();
         Process updatedProcess = bundle.getProcessObject();

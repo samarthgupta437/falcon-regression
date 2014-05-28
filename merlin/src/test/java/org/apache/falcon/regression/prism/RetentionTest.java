@@ -20,10 +20,10 @@ package org.apache.falcon.regression.prism;
 
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.Location;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.Feed;
+import org.apache.falcon.entity.v0.feed.Location;
+import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
@@ -130,7 +130,7 @@ public class RetentionTest extends BaseTestClass {
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
         //set the value
-        for (Location location : feedObject.getLocations().getLocation()) {
+        for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType().equals(LocationType.DATA)) {
                 location.setPath(pathValue);
             }
@@ -317,11 +317,11 @@ public class RetentionTest extends BaseTestClass {
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
         //insert retentionclause
-        feedObject.getClusters().getCluster().get(0).getRetention()
+        feedObject.getClusters().getClusters().get(0).getRetention()
             .setLimit(new Frequency(retentionValue));
 
-        for (org.apache.falcon.regression.core.generated.feed.Cluster cluster : feedObject
-            .getClusters().getCluster()) {
+        for (org.apache.falcon.entity.v0.feed.Cluster cluster : feedObject
+            .getClusters().getClusters()) {
             cluster.getRetention().setLimit(new Frequency(retentionValue));
         }
 
@@ -437,7 +437,7 @@ public class RetentionTest extends BaseTestClass {
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
-        for (Location location : feedObject.getLocations().getLocation()) {
+        for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType().equals(LocationType.DATA)) {
                 locationType = location.getPath();
             }

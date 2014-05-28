@@ -20,10 +20,10 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.process.Properties;
-import org.apache.falcon.regression.core.generated.process.Property;
+import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.entity.v0.process.Properties;
+import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -40,8 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProcessMerlin extends org.apache.falcon.regression.core.generated
-    .process.Process {
+public class ProcessMerlin extends Process {
     public ProcessMerlin(String processData)
         throws JAXBException, IllegalAccessException, NoSuchMethodException,
         InvocationTargetException {
@@ -58,13 +57,13 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
         p.setName(name);
         p.setValue(value);
         if (null == getProperties() || null == getProperties()
-            .getProperty() || getProperties().getProperty().size()
+            .getProperties() || getProperties().getProperties().size()
             <= 0) {
             Properties props = new Properties();
-            props.addProperty(p);
+            props.getProperties().add(p);
             setProperties(props);
         } else {
-            getProperties().getProperty().add(p);
+            getProperties().getProperties().add(p);
         }
     }
 
@@ -79,17 +78,17 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
     }
 
     public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) throws Exception {
-        Date start = getClusters().getCluster().get(0).getValidity().getStart();
+        Date start = getClusters().getClusters().get(0).getValidity().getStart();
         Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         String startDate = formatter.format(start);
-        Date end = getClusters().getCluster().get(0).getValidity().getEnd();
+        Date end = getClusters().getClusters().get(0).getValidity().getEnd();
         String endDate = formatter.format(end);
 
         Map<String, FeedMerlin> inpFeeds = getInputFeeds(b);
         for (FeedMerlin feedElement : inpFeeds.values()) {
-            feedElement.getClusters().getCluster().get(0).getValidity()
+            feedElement.getClusters().getClusters().get(0).getValidity()
                 .setStart(TimeUtil.oozieDateToDate(startDate).toDate());
-            feedElement.getClusters().getCluster().get(0).getValidity()
+            feedElement.getClusters().getClusters().get(0).getValidity()
                 .setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
             InstanceUtil.writeFeedElement(b, feedElement, feedElement.getName());
         }
@@ -98,7 +97,7 @@ public class ProcessMerlin extends org.apache.falcon.regression.core.generated
 
     public Map<String, FeedMerlin> getInputFeeds(Bundle b) throws Exception {
         Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
-        for (Input input : getInputs().getInput()) {
+        for (Input input : getInputs().getInputs()) {
             for (String feed : b.getDataSets()) {
                 if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
                     FeedMerlin feedO = new FeedMerlin(feed);

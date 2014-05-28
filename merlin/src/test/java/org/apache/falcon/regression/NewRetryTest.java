@@ -20,10 +20,10 @@ package org.apache.falcon.regression;
 
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.process.PolicyType;
-import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.process.Retry;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.process.PolicyType;
+import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.entity.v0.process.Retry;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -552,7 +552,8 @@ public class NewRetryTest extends BaseTestClass {
             Process oldProcessObject = bundles[0].getProcessObject();
 
             Retry retry = bundles[0].getProcessObject().getRetry();
-            retry.setDelay(new Frequency("minutes(" + (retry.getDelay().getFrequency() - 1) + ")"));
+            retry.setDelay(new Frequency(
+                "minutes(" + (Integer.parseInt(retry.getDelay().getFrequency()) - 1) + ")"));
 
             bundles[0].setRetry(retry);
 

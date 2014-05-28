@@ -20,11 +20,11 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.generated.process.EngineType;
-import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.process.Properties;
-import org.apache.falcon.regression.core.generated.process.Property;
+import org.apache.falcon.entity.v0.Frequency.TimeUnit;
+import org.apache.falcon.entity.v0.process.EngineType;
+import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.entity.v0.process.Properties;
+import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
@@ -136,7 +136,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -168,7 +168,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -195,7 +195,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -215,7 +215,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -240,7 +240,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);

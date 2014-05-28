@@ -18,10 +18,10 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.Retention;
-import org.apache.falcon.regression.core.generated.feed.Validity;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.ActionType;
+import org.apache.falcon.entity.v0.feed.Retention;
+import org.apache.falcon.entity.v0.feed.Validity;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.apache.log4j.Logger;
@@ -47,11 +47,11 @@ public class XmlUtil {
         return r;
     }
 
-    public static org.apache.falcon.regression.core.generated.process.Validity
+    public static org.apache.falcon.entity.v0.process.Validity
     createProcessValidity(
         String startTime, String endTime) {
-        org.apache.falcon.regression.core.generated.process.Validity v =
-            new org.apache.falcon.regression.core.generated.process.Validity();
+        org.apache.falcon.entity.v0.process.Validity v =
+            new org.apache.falcon.entity.v0.process.Validity();
         logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
             + TimeUtil.oozieDateToDate(endTime).toDate());
         v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
