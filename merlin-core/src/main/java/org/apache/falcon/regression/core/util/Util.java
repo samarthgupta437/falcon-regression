@@ -1036,6 +1036,7 @@ public class Util {
 
     public enum URLS {
 
+        LIST_URL("/api/entities/list"),
         SUBMIT_URL("/api/entities/submit"),
         GET_ENTITY_DEFINITION("/api/entities/definition"),
         DELETE_URL("/api/entities/delete"),

@@ -36,6 +36,7 @@ import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.AuthOozieClient;
+import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
@@ -233,6 +234,14 @@ public abstract class IEntityManagerHelper {
             ".principal", "none");
     }
 
+    public ServiceResponse listEntities(URLS url)
+        throws IOException, URISyntaxException, AuthenticationException {
+        return listEntities(url, null);
+    }
+
+    public abstract ServiceResponse listEntities(URLS url, String user)
+        throws IOException, URISyntaxException, AuthenticationException;
+
     public ServiceResponse submitEntity(String url, String data)
         throws IOException, URISyntaxException, AuthenticationException {
         return submitEntity(url, data, null);
@@ -272,6 +281,17 @@ public abstract class IEntityManagerHelper {
 
     public abstract ServiceResponse submitAndSchedule(URLS url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException;
+
+    public abstract String getEntityType();
+
+    private String getUrlPrefixPart(URLS url) {
+        return this.hostname + url.getValue() + "/" + getEntityType() + "/";
+    }
+
+    public ServiceResponse deleteByName(URLS deleteUrl, String entityName, String user)
+        throws AuthenticationException, IOException, URISyntaxException {
+        return Util.sendRequest(getUrlPrefixPart(deleteUrl) + entityName + colo, "delete", user);
+    }
 
     public ServiceResponse delete(String url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {

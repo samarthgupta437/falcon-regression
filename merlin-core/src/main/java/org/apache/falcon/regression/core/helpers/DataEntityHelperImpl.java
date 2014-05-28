@@ -54,6 +54,11 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         super(envFileName, prefix);
     }
 
+    public String getEntityType() {
+        return "feed";
+    }
+
+
     public ServiceResponse delete(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "delete", user);
@@ -99,6 +104,13 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         return submitAndSchedule(this.hostname + url.getValue(), data, user);
+    }
+
+    public ServiceResponse listEntities(Util.URLS url, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        logger.info("fetching feed list");
+        return Util.sendRequest(this.hostname + url.getValue() + "/feed" + colo,
+            "get", null, user);
     }
 
     public ServiceResponse submitEntity(String url, String data, String user)

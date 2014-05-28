@@ -37,6 +37,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.lang.reflect.Field;
@@ -50,10 +51,13 @@ public class FeedMerlin extends Feed {
     public FeedMerlin(String entity)
         throws JAXBException, NoSuchMethodException, InvocationTargetException,
         IllegalAccessException {
-        Feed element = InstanceUtil.getFeedElement(entity);
+        this(InstanceUtil.getFeedElement(entity));
+    }
+
+    public FeedMerlin(Feed element)
+        throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         Field[] fields = Feed.class.getDeclaredFields();
         for (Field fld : fields) {
-            logger.info("current field: " + fld.getName());
             if ("acl".equals(fld.getName())) {
                 this.setACL(element.getACL());
                 continue;
@@ -102,4 +106,21 @@ public class FeedMerlin extends Feed {
         return null;
     }
 
+    public String getLocation(LocationType locationType) {
+        for (Location location : getLocations().getLocation()) {
+            if(location.getType() == locationType) {
+                return location.getPath();
+            }
+        }
+        Assert.fail("Unexpected locationType: " + locationType);
+        return null;
+    }
+
+    public void setLocation(LocationType locationType, String feedInputPath) {
+        for (Location location : getLocations().getLocation()) {
+            if(location.getType() == locationType) {
+                location.setPath(feedInputPath);
+            }
+        }
+    }
 }
