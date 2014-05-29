@@ -85,7 +85,7 @@ public class LineageGraphTest extends BaseUITestClass {
         bundles[0].setProcessValidity(startTime, endTime);
         bundles[0].setProcessPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setProcessConcurrency(5);
-        bundles[0].setInputFeedPeriodicity(5, Frequency.TimeUnit.minutes);
+        bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath);
         Process process = InstanceUtil.getProcessElement(bundles[0]);
         Inputs inputs = new Inputs();
