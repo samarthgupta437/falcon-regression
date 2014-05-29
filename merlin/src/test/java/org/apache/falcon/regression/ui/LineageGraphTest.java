@@ -24,10 +24,10 @@ import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.graph.AllVertices;
-import org.apache.falcon.regression.core.response.graph.Vertex;
+import org.apache.falcon.regression.core.helpers.LineageHelper;
+import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.GraphHelper;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -144,8 +144,8 @@ public class LineageGraphTest extends BaseUITestClass {
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
         /**process instances*/
-        GraphHelper graphUtil = new GraphHelper(prism);
-        AllVertices allVertices = graphUtil.getAllVertices();
+        LineageHelper graphUtil = new LineageHelper(prism);
+        VerticesResult allVertices = graphUtil.getAllVertices();
         List<String> processInstances = new ArrayList<String>();
         for (Vertex vertex : allVertices.getResults()) {
             if (!vertex.getName().equals(processName) && vertex.getName().contains(processName)) {
@@ -208,8 +208,8 @@ public class LineageGraphTest extends BaseUITestClass {
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
         /**process instances*/
-        GraphHelper graphUtil = new GraphHelper(prism);
-        AllVertices allVertices = graphUtil.getAllVertices();
+        LineageHelper graphUtil = new LineageHelper(prism);
+        VerticesResult allVertices = graphUtil.getAllVertices();
         List<String> processInstances = new ArrayList<String>();
         for (Vertex vertex : allVertices.getResults()) {
             if (!vertex.getName().equals(processName) && vertex.getName().contains(processName)) {
