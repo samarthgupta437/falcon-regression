@@ -18,16 +18,19 @@
 
 package org.apache.falcon.regression.lineage;
 
+import com.google.gson.GsonBuilder;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.Edge;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VertexResult;
 import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -37,6 +40,7 @@ import org.apache.falcon.regression.core.util.GraphAssert;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -88,7 +92,8 @@ public class LineageApiTest extends BaseTestClass {
         Assert.assertEquals(clusterStrings.size(), 1, "Expecting only 1 clusterMerlin.");
         clusterMerlin = new ClusterMerlin(clusterStrings.get(0));
         clusterMerlin.setTags(testTag);
-        AssertUtil.assertSucceeded(prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, clusterMerlin.toString()));
+        AssertUtil.assertSucceeded(
+            prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, clusterMerlin.toString()));
         logger.info("numInputFeeds = " + numInputFeeds);
         logger.info("numOutputFeeds = " + numOutputFeeds);
         final FeedMerlin inputMerlin = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundles[0]));
@@ -151,6 +156,33 @@ public class LineageApiTest extends BaseTestClass {
         GraphAssert.assertVerticesPresenceMinOccur(verticesResult, Vertex.VERTEX_TYPE.CLUSTER_ENTITY, 1);
         GraphAssert.assertVerticesPresenceMinOccur(verticesResult,
             Vertex.VERTEX_TYPE.FEED_ENTITY, numInputFeeds + numOutputFeeds);
+    }
+
+    @Test
+    public void testVertexId() throws Exception {
+        final VerticesResult userResult =
+            lineageHelper.getVerticesByName(MerlinConstants.CURRENT_USER_NAME);
+        GraphAssert.assertVertexSanity(userResult);
+        final int vertexId = userResult.getResults().get(0).get_id();
+        final VertexResult userVertex =
+            lineageHelper.getVertexById(vertexId);
+        Assert.assertEquals(userResult.getResults().get(0), userVertex.getResults(),
+            "Same vertex should have been returned.");
+    }
+
+    @Test
+    public void testVertexNoId() throws Exception {
+        final VerticesResult userResult =
+            lineageHelper.getVerticesByName(MerlinConstants.CURRENT_USER_NAME);
+        GraphAssert.assertVertexSanity(userResult);
+        final int vertexId = userResult.getResults().get(0).get_id();
+        HttpResponse response = lineageHelper.runGetRequest(
+            lineageHelper.getUrl(LineageHelper.URL.VERTICES, ""));
+        String responseString = lineageHelper.getResponseString(response);
+        logger.info(response);
+        logger.info(responseString);
+        Assert.assertNotEquals(response.getStatusLine().getStatusCode(), 500,
+            "We should not get internal server error");
     }
 
     @Test

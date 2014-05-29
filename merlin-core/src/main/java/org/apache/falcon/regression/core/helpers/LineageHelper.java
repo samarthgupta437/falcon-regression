@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VertexResult;
 import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.request.BaseRequest;
@@ -74,7 +75,7 @@ public class LineageHelper {
         this(prismHelper.getClusterHelper().getHostname());
     }
 
-    private String getResponseString(HttpResponse response) throws IOException {
+    public String getResponseString(HttpResponse response) throws IOException {
         BufferedReader reader = new BufferedReader(
             new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
         StringBuilder sb = new StringBuilder();
@@ -84,13 +85,14 @@ public class LineageHelper {
         return sb.toString();
     }
 
-    private HttpResponse runGetRequest(String url)
+    public HttpResponse runGetRequest(String url)
         throws URISyntaxException, IOException, AuthenticationException {
         final BaseRequest request = new BaseRequest(url, "get", null);
         return request.run();
     }
 
-    private String getUrl(final URL url, final String urlPath, final Pair<String, String>... paramPairs) {
+    public String getUrl(final URL url, final String urlPath, final Pair<String,
+        String>... paramPairs) {
         Assert.assertNotNull(hostname, "Hostname can't be null.");
         String hostAndPath = hostname + url.getValue();
         if(urlPath != null) {
@@ -127,6 +129,15 @@ public class LineageHelper {
             VerticesResult.class);
     }
 
+    private VertexResult getVertexResult(String url)
+        throws URISyntaxException, IOException, AuthenticationException {
+        HttpResponse response = runGetRequest(url);
+        String responseString = getResponseString(response);
+        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        return new GsonBuilder().create().fromJson(responseString,
+            VertexResult.class);
+    }
+
     public VerticesResult getAllVertices()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
@@ -139,6 +150,12 @@ public class LineageHelper {
         return getVerticesResult(getUrl(URL.VERTICES,
             new Pair<String, String>("key", key.toString()),
             new Pair<String, String>("value", value)));
+    }
+
+    public VertexResult getVertexById(int vertexId)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        return getVertexResult(getUrl(URL.VERTICES, getUrlPath(vertexId)));
     }
 
     public VerticesResult getVerticesByType(Vertex.VERTEX_TYPE vertexType)
