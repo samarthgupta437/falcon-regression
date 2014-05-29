@@ -18,12 +18,11 @@
 
 package org.apache.falcon.regression.ui;
 
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.process.*;
+import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Inputs;
-import org.apache.falcon.regression.core.generated.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.graph.AllVertices;
 import org.apache.falcon.regression.core.response.graph.Vertex;
@@ -95,7 +94,7 @@ public class LineageGraphTest extends BaseUITestClass {
         input.setStart("now(0,0)");
         input.setEnd("now(0,4)");
         input.setName("inputData");
-        inputs.getInput().add(input);
+        inputs.getInputs().add(input);
         process.setInputs(inputs);
 
         bundles[0].setProcessData(InstanceUtil.processToString(process));

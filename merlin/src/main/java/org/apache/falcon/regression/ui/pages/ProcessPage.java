@@ -21,6 +21,7 @@ package org.apache.falcon.regression.ui.pages;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ProcessPage extends EntityPage<Process> {
+    private Logger logger = Logger.getLogger(ProcessPage.class);
 
     public ProcessPage(WebDriver driver, PrismHelper helper, String entityName) {
         super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
@@ -38,39 +40,32 @@ public class ProcessPage extends EntityPage<Process> {
 
     private boolean isLineageOpened = false;
 
-    private static final String LINE_AGE_BUTTON_XPATH = "//a[contains(., " +
-        "'Lineage')]";
+    private static final String LINE_AGE_BUTTON_XPATH =
+        "//div[@id='panel-instance']//table/tbody/tr/td[contains(.., " +
+            "'%s')]/a[contains(., 'Lineage')]";
     private static final String CLOSE_LINE_AGE_BUTTON_XPATH =
         "//div[@class='modal-footer']/button" +
             "[contains(., 'Close')]";
-    private static final String INSTANCES_PANEL_XPATH =
-        "//div[@id='panel-instance']//table/tbody/tr";
-    private static final String INSTANCE_NAME_XPATH = ".//td[1]";
     private static final String VERTICES_BLOCKS_XPATH = "//*[name() = 'svg']/*[name()" +
         "='g']//*[name() = 'g'][not(@class='lineage-link')]";
     private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
-    private static final String LINEAGE_GRAPH_XPATH = "//*[name()='svg'][@id='lineage-graph']";
     private static final String LINEAGE_INFO_PANEL = "//div[@id='lineage-info-panel']";
 
     /**
      * @param nominalTime - particular instance of process, defined by it's start time
      */
     public void openLineage(String nominalTime) throws InterruptedException {
-        waitForElement(INSTANCES_PANEL_XPATH, 5);
-        List<WebElement> instances = driver.findElements(By.xpath(INSTANCES_PANEL_XPATH));
-        for (WebElement instance : instances) {
-            String instanceName = instance.findElement(By.xpath(INSTANCE_NAME_XPATH)).getText();
-            System.out.println("Working with instance: " + instanceName);
-            if (instanceName.trim().equals(nominalTime)) {
-                WebElement lineage = driver.findElement(By.xpath(LINE_AGE_BUTTON_XPATH));
-                if (lineage != null) {
-                    instance.findElement(By.xpath(LINE_AGE_BUTTON_XPATH)).click();
-                    waitForElement(LINEAGE_GRAPH_XPATH, 5);
-                    Thread.sleep(3000);
-                    isLineageOpened = true;
-                    return;
-                }
-            }
+        waitForElement(String.format(LINE_AGE_BUTTON_XPATH, nominalTime), 5);
+        logger.info("Working with instance: " + nominalTime);
+        WebElement lineage =
+            driver.findElement(By.xpath(String.format(LINE_AGE_BUTTON_XPATH, nominalTime)));
+        if (lineage != null) {
+            logger.info("Opening lineage...");
+            lineage.click();
+            waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, 3);
+            isLineageOpened = true;
+        } else {
+            logger.info("Lineage button not found");
         }
     }
 
@@ -109,10 +104,7 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     /**
-     * Vertex is defined by it's name and particular time of it's creation
-     *
-     * @param entityName
-     * @param nominalTime
+     * Vertex is defined by it's entity name and particular time of it's creation
      */
     public void clickOnVertex(String entityName, String nominalTime) throws InterruptedException {
         if (isLineageOpened) {
@@ -126,6 +118,9 @@ public class ProcessPage extends EntityPage<Process> {
         }
     }
 
+    /**
+     * @return
+     */
     public HashMap<String, String> getPanelInfo() {
         HashMap<String, String> map = null;
         if (isLineageOpened) {
