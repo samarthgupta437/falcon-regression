@@ -248,4 +248,21 @@ public class LineageApiTest extends BaseTestClass {
         }
     }
 
+    @Test
+    public void testUserToEntityNode() throws Exception {
+        final VerticesResult userResult = lineageHelper.getVerticesByName(
+            MerlinConstants.CURRENT_USER_NAME);
+        GraphAssert.assertVertexSanity(userResult);
+        Vertex clusterVertex = userResult.getResults().get(0);
+        final VerticesResult userIncoming =
+            lineageHelper.getVerticesByDirection(clusterVertex.get_id(), Direction.inComingVertices);
+        GraphAssert.assertVertexSanity(userIncoming);
+        AssertUtil.checkForListSize(userIncoming.filterByName(clusterMerlin.getName()), 1);
+        for(FeedMerlin feed : inputFeeds) {
+            AssertUtil.checkForListSize(userIncoming.filterByName(feed.getName()), 1);
+        }
+        for(FeedMerlin feed : outputFeeds) {
+            AssertUtil.checkForListSize(userIncoming.filterByName(feed.getName()), 1);
+        }
+    }
 }
