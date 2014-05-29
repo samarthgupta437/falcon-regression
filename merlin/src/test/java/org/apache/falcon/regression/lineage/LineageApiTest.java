@@ -179,10 +179,34 @@ public class LineageApiTest extends BaseTestClass {
         HttpResponse response = lineageHelper.runGetRequest(
             lineageHelper.getUrl(LineageHelper.URL.VERTICES, ""));
         String responseString = lineageHelper.getResponseString(response);
-        logger.info(response);
-        logger.info(responseString);
+        logger.info("response: " + response);
+        logger.info("responseString: " + responseString);
         Assert.assertNotEquals(response.getStatusLine().getStatusCode(), 500,
             "We should not get internal server error");
+    }
+
+    @Test
+    public void testVertexInvalidId() throws Exception {
+        final VerticesResult allVerticesResult =
+            lineageHelper.getAllVertices();
+        GraphAssert.assertVertexSanity(allVerticesResult);
+        int invalidVertexId = -1;
+        for (Vertex vertex : allVerticesResult.getResults()) {
+            if(invalidVertexId <= vertex.get_id()) {
+                invalidVertexId = vertex.get_id() + 1;
+            }
+        }
+
+        HttpResponse response = lineageHelper.runGetRequest(
+            lineageHelper.getUrl(LineageHelper.URL.VERTICES, "" + invalidVertexId));
+        String responseString = lineageHelper.getResponseString(response);
+        logger.info("response: " + response);
+        logger.info("responseString: " + responseString);
+        Assert.assertTrue(
+            responseString.matches(String.format(".*Vertex.*%d.*not.*found.*\n?", invalidVertexId)),
+            "Unexpected responseString: " + responseString);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 404,
+            "We should get 404 Not Found error");
     }
 
     @Test
