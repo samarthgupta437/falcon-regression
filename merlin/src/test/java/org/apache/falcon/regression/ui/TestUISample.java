@@ -40,12 +40,13 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 
+@Test(groups = "lineage-ui")
 public class TestUISample extends BaseUITestClass {
 
     private ColoHelper cluster = servers.get(0);
     private String aggregateWorkflowDir = baseHDFSDir + "/TestUISample/aggregator";
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         openBrowser();
@@ -56,7 +57,7 @@ public class TestUISample extends BaseUITestClass {
         bundles[0].submitBundle(cluster);
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws IOException {
         closeBrowser();
         removeBundles();

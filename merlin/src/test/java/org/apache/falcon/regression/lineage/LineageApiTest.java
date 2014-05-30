@@ -55,7 +55,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Random;
 
-@Test(groups = "embedded")
+@Test(groups = "lineage-rest")
 public class LineageApiTest extends BaseTestClass {
     private static final String datePattern = "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(LineageApiTest.class);
