@@ -328,7 +328,6 @@ public class LineageApiTest extends BaseTestClass {
         final VerticesResult userIncoming =
             lineageHelper.getVerticesByDirection(clusterVertex.get_id(), Direction.inComingVertices);
         GraphAssert.assertVertexSanity(userIncoming);
-        AssertUtil.checkForListSize(userIncoming.filterByName(clusterMerlin.getName()), 1);
         for(FeedMerlin feed : inputFeeds) {
             AssertUtil.checkForListSize(userIncoming.filterByName(feed.getName()), 1);
         }
