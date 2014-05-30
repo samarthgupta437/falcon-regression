@@ -211,17 +211,31 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testVertexProperties() throws Exception {
+        //testing properties of a user vertex
         final VerticesResult userResult =
             lineageHelper.getVerticesByName(MerlinConstants.CURRENT_USER_NAME);
         GraphAssert.assertVertexSanity(userResult);
         final int userVertexId = userResult.getResults().get(0).get_id();
-        final VertexResult userVertex =
+        final VertexResult userProperties =
             lineageHelper.getVertexProperties(userVertexId);
         Assert.assertEquals(userResult.getResults().get(0).getName(),
-            userVertex.getResults().getName(),
+            userProperties.getResults().getName(),
             "Same vertex should have been returned.");
-        Assert.assertEquals(userVertex.getResults().getType(), Vertex.VERTEX_TYPE.USER,
+        Assert.assertEquals(userProperties.getResults().getType(), Vertex.VERTEX_TYPE.USER,
             "The vertex should match");
+        Assert.assertNotNull(userProperties.getResults().getTimestamp(),
+            "Timestamp should not be null");
+
+        //testing properties of colo vertices
+        final VerticesResult coloResult = lineageHelper.getVerticesByType(Vertex.VERTEX_TYPE.COLO);
+        GraphAssert.assertVertexSanity(coloResult);
+        for (Vertex coloVertex : coloResult.getResults()) {
+            final int coloVertexId = coloVertex.get_id();
+            final VertexResult coloProperties = lineageHelper.getVertexProperties(coloVertexId);
+            Assert.assertEquals(coloProperties.getResults().getType(), Vertex.VERTEX_TYPE.COLO);
+            Assert.assertNotNull(coloProperties.getResults().getTimestamp(),
+                "Timestamp should not be null");
+        }
     }
 
     @Test
