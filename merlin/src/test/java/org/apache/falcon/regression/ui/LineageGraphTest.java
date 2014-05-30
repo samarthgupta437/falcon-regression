@@ -43,6 +43,7 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.codehaus.jettison.json.JSONException;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -69,6 +70,8 @@ public class LineageGraphTest extends BaseUITestClass {
     private FileSystem clusterFS = serverFS.get(0);
     private OozieClient clusterOC = serverOC.get(0);
     private String processName = null;
+    int inputEnd = 4;
+    List<String> processInstances;
 
     @BeforeClass
     public void setUp() throws Exception {
@@ -92,7 +95,7 @@ public class LineageGraphTest extends BaseUITestClass {
         Input input = new Input();
         input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(bundles[0])));
         input.setStart("now(0,0)");
-        input.setEnd("now(0,4)");
+        input.setEnd(String.format("now(0,%d)", inputEnd));
         input.setName("inputData");
         inputs.getInputs().add(input);
         process.setInputs(inputs);
@@ -115,11 +118,22 @@ public class LineageGraphTest extends BaseUITestClass {
         bundles[0].submitBundle(prism);
 
         processName = bundles[0].getProcessName();
-
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
             CoordinatorAction.Status.SUCCEEDED, 8, ENTITY_TYPE.PROCESS);
+
+        /**process instances*/
+        LineageHelper graphUtil = new LineageHelper(prism);
+        VerticesResult allVertices = graphUtil.getAllVertices();
+        processInstances = new ArrayList<String>();
+        for (Vertex vertex : allVertices.getResults()) {
+            if (!vertex.getName().equals(processName) && vertex.getName().contains(processName)) {
+                String instance = vertex.getName().split("/")[1];
+                processInstances.add(instance);
+            }
+        }
+
         openBrowser();
     }
 
@@ -137,61 +151,50 @@ public class LineageGraphTest extends BaseUITestClass {
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
         OozieClientException, InterruptedException, NoSuchMethodException, IllegalAccessException,
         InvocationTargetException, ParseException, JSONException {
-
         String inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
         String outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
-
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
-        /**process instances*/
-        LineageHelper graphUtil = new LineageHelper(prism);
-        VerticesResult allVertices = graphUtil.getAllVertices();
-        List<String> processInstances = new ArrayList<String>();
-        for (Vertex vertex : allVertices.getResults()) {
-            if (!vertex.getName().equals(processName) && vertex.getName().contains(processName)) {
-                processInstances.add(vertex.getName().split("/")[1]);
-            }
-        }
-        logger.info("Expected process instances : " + processInstances);
+        logger.info("Working with process instances : " + processInstances);
         for (String nominalTime : processInstances) {
-            /**get expected instances*/
+            /**get expected feed instances*/
+            //input feed instances
             List<String> inputFeedinstances = new ArrayList<String>();
-            List<String> outputFeedinstances = new ArrayList<String>();
-            for (Vertex vertex : allVertices.getResults()) {
-                if (!vertex.getName().equals(inputFeedName) &&
-                    vertex.getName().contains(inputFeedName)) {
-                    inputFeedinstances.add(vertex.getName().split("/")[1]);
-                } else if (!vertex.getName().equals(outputFeedName) && vertex.getName().contains
-                    (outputFeedName)) {
-                    outputFeedinstances.add(vertex.getName().split("/")[1]);
-                }
+            for(int i = 0; i <= inputEnd; i++){
+                inputFeedinstances.add(TimeUtil.addMinsToTime(nominalTime, i));
             }
+            //output feed instance
+            String normalPattern = "yyyy'-'MM'-'dd'T'HH':'mm'Z'";
+            String WOMinutesPattern = "yyyy'-'MM'-'dd'T'HH'";
+            DateTime time = DateTimeFormat.forPattern(normalPattern).parseDateTime(nominalTime);
+            String hourlyTime = DateTimeFormat.forPattern(WOMinutesPattern).print(time);
+            time = DateTimeFormat.forPattern(WOMinutesPattern).parseDateTime(hourlyTime);
+            String outputFeedinstance = DateTimeFormat.forPattern(normalPattern).print(time);
             /**open lineage for particular process instance*/
-            processPage.openLineage(nominalTime);
+            boolean isLineagePresent = processPage.openLineage(nominalTime);
+            if(!isLineagePresent) continue;
             /**verify if number of vertices and their content is correct*/
             HashMap<String, List<String>> map = processPage.getAllVertices();
             Assert.assertTrue(map.containsKey(processName) && map.containsKey(inputFeedName)
                 && map.containsKey(outputFeedName));
             //process validation
-            List<String> instances = map.get(processName);
-            Assert.assertEquals(instances.size(), 1);
-            Assert.assertEquals(instances.get(0), nominalTime);
+            List<String> entityInstances = map.get(processName);
+            Assert.assertEquals(entityInstances.size(), 1);
+            Assert.assertEquals(entityInstances.get(0), nominalTime);
             //input feed validations
-            instances = map.get(inputFeedName);
-            logger.info("InputFeed instances on lineage UI : " + instances);
+            entityInstances = map.get(inputFeedName);
+            logger.info("InputFeed instances on lineage UI : " + entityInstances);
             logger.info("InputFeed instances from API : " + inputFeedinstances);
-            Assert.assertEquals(instances.size(), inputFeedinstances.size());
+            Assert.assertEquals(entityInstances.size(), inputFeedinstances.size());
             for (String feedInstance : inputFeedinstances) {
-                Assert.assertTrue(instances.contains(feedInstance));
+                Assert.assertTrue(entityInstances.contains(feedInstance));
             }
             //output feed validation
-            instances = map.get(outputFeedName);
-            logger.info("Expected outputFeed instances : " + instances);
-            logger.info("Actual instances : " + outputFeedinstances);
-            Assert.assertEquals(instances.size(), outputFeedinstances.size());
-            for (String feedInstance : outputFeedinstances) {
-                Assert.assertTrue(instances.contains(feedInstance));
-            }
+            entityInstances = map.get(outputFeedName);
+            logger.info("Expected outputFeed instances : " + entityInstances);
+            logger.info("Actual instance : " + outputFeedinstance);
+            Assert.assertEquals(entityInstances.size(), 1);
+            Assert.assertTrue(entityInstances.contains(outputFeedinstance));
             processPage.closeLineage();
             processPage.navigateTo();
         }
@@ -207,19 +210,22 @@ public class LineageGraphTest extends BaseUITestClass {
         String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
+
         /**process instances*/
         LineageHelper graphUtil = new LineageHelper(prism);
         VerticesResult allVertices = graphUtil.getAllVertices();
         List<String> processInstances = new ArrayList<String>();
         for (Vertex vertex : allVertices.getResults()) {
             if (!vertex.getName().equals(processName) && vertex.getName().contains(processName)) {
-                processInstances.add(vertex.getName().split("/")[1]);
+                String instance = vertex.getName().split("/")[1];
+                processInstances.add(instance);
             }
         }
-        logger.info("Expected process instances : " + processInstances);
+        logger.info("Working with process instances : " + processInstances);
         for (String nominalTime : processInstances) {
             /**open lineage for particular process instance*/
-            processPage.openLineage(nominalTime);
+            boolean isLineagePresent = processPage.openLineage(nominalTime);
+            if(!isLineagePresent) continue;
             HashMap<String, List<String>> map = processPage.getAllVertices();
             /**click on each vertex and check the bottom info*/
             for (Map.Entry<String, List<String>> entry : map.entrySet()) {

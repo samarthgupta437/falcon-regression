@@ -54,7 +54,7 @@ public class ProcessPage extends EntityPage<Process> {
     /**
      * @param nominalTime - particular instance of process, defined by it's start time
      */
-    public void openLineage(String nominalTime) throws InterruptedException {
+    public boolean openLineage(String nominalTime) throws InterruptedException {
         waitForElement(String.format(LINE_AGE_BUTTON_XPATH, nominalTime), 5);
         logger.info("Working with instance: " + nominalTime);
         WebElement lineage =
@@ -67,6 +67,7 @@ public class ProcessPage extends EntityPage<Process> {
         } else {
             logger.info("Lineage button not found");
         }
+        return isLineageOpened;
     }
 
     public void closeLineage() {
