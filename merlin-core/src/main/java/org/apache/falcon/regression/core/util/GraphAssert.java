@@ -31,20 +31,21 @@ import org.testng.Assert;
 public class GraphAssert {
     private static Logger logger = Logger.getLogger(GraphAssert.class);
 
-    private static void assertUserVertexAbsent(final VerticesResult verticesResult) {
-        for(Vertex vertex : verticesResult.getResults()) {
-            if(vertex.getType().equals(Vertex.VERTEX_TYPE.USER.getValue())) {
-                Assert.fail("Unexpected vertex for user is present: " + vertex);
-            }
-        }
-    }
-
+    /**
+     * Check that the result has certain minimum number of vertices
+     * @param graphResult the result to be checked
+     * @param minNumOfVertices required number of vertices
+     */
     public static void checkVerticesPresence(final GraphResult graphResult,
                                              final int minNumOfVertices) {
         Assert.assertTrue(graphResult.getTotalSize() >= minNumOfVertices,
             "graphResult should have at least " + minNumOfVertices + " vertex");
     }
 
+    /**
+     * Check that the vertices in the result are sane
+     * @param verticesResult the result to be checked
+     */
     public static void assertVertexSanity(final VerticesResult verticesResult) {
         Assert.assertEquals(verticesResult.getResults().size(), verticesResult.getTotalSize(),
             "Size of vertices don't match");
@@ -62,6 +63,10 @@ public class GraphAssert {
         }
     }
 
+    /**
+     * Check that edges in the result are sane
+     * @param edgesResult result to be checked
+     */
     public static void assertEdgeSanity(final EdgesResult edgesResult) {
         Assert.assertEquals(edgesResult.getResults().size(), edgesResult.getTotalSize(),
             "Size of edges don't match");
@@ -75,6 +80,10 @@ public class GraphAssert {
         }
     }
 
+    /**
+     * Check that user vertex is present
+     * @param verticesResult the result to be checked
+     */
     public static void assertUserVertexPresence(final VerticesResult verticesResult) {
         checkVerticesPresence(verticesResult, 1);
         for(Vertex vertex : verticesResult.getResults()) {
@@ -88,6 +97,11 @@ public class GraphAssert {
             MerlinConstants.CURRENT_USER_NAME));
     }
 
+    /**
+     * Check that a vertex of a certain name is present
+     * @param verticesResult the result to be checked
+     * @param name expected name
+     */
     public static void assertVertexPresence(final VerticesResult verticesResult, final String name) {
         checkVerticesPresence(verticesResult, 1);
         for (Vertex vertex : verticesResult.getResults()) {
@@ -98,6 +112,12 @@ public class GraphAssert {
         Assert.fail(String.format("Vertex of name: %s is not present.", name));
     }
 
+    /**
+     * Check that the result has at least a certain number of vertices of a certain type
+     * @param verticesResult the result to be checked
+     * @param vertex_type vertex type
+     * @param minOccurrence required number of vertices
+     */
     public static void assertVerticesPresenceMinOccur(final VerticesResult verticesResult,
                                                       final Vertex.VERTEX_TYPE vertex_type,
                                                       final int minOccurrence) {
@@ -115,6 +135,12 @@ public class GraphAssert {
             minOccurrence, vertex_type, occurrence));
     }
 
+    /**
+     * Check result to contain at least a certain number of edges of a certain type
+     * @param edgesResult result to be checked
+     * @param edgeLabel edge label
+     * @param minOccurrence required number of edges
+     */
     public static void assertEdgePresenceMinOccur(final EdgesResult edgesResult,
                                                   final Edge.LEBEL_TYPE edgeLabel,
                                                   final int minOccurrence) {

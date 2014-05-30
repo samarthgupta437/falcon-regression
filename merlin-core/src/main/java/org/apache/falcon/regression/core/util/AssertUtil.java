@@ -75,8 +75,8 @@ public class AssertUtil {
     /**
      * Checks that two lists have same size
      *
-     * @param expected expected list
-     * @param actual   actual list
+     * @param elements list of elements
+     * @param expectedSize expected size of the list
      */
     public static void checkForListSize(List<?> elements, int expectedSize) {
         if (elements.size() != expectedSize) {
