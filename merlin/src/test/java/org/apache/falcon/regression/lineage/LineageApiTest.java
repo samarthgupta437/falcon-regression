@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.lineage;
 
+import com.sun.tools.javac.util.Pair;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
@@ -324,6 +325,34 @@ public class LineageApiTest extends BaseTestClass {
         for (FeedMerlin oneFeed : outputFeeds) {
             GraphAssert.assertVertexPresence(feedVertices, oneFeed.getName());
         }
+    }
+
+    @Test
+    public void testVerticesFilterNoOutput() throws Exception {
+        final String nonExistingName = "this-is-a-non-existing-name";
+        final VerticesResult clusterVertices = lineageHelper.getVerticesByName(nonExistingName);
+        GraphAssert.assertVertexSanity(clusterVertices);
+        Assert.assertEquals(clusterVertices.getTotalSize(), 0,
+            "Result should not contain any vertex");
+    }
+
+    @Test
+    public void testVerticesFilterBlankValue() throws Exception {
+        final VerticesResult clusterVertices = lineageHelper.getVerticesByName("");
+        GraphAssert.assertVertexSanity(clusterVertices);
+        Assert.assertEquals(clusterVertices.getTotalSize(), 0,
+            "Result should not contain any vertex");
+    }
+
+    @Test
+    public void testVerticesFilterBlankKey() throws Exception {
+        final VerticesResult clusterVertices =
+            lineageHelper.getVerticesResult(lineageHelper.getUrl(LineageHelper.URL.VERTICES,
+                new Pair<String, String>("key", ""),
+                new Pair<String, String>("value", "somevalue")));
+        GraphAssert.assertVertexSanity(clusterVertices);
+        Assert.assertEquals(clusterVertices.getTotalSize(), 0,
+            "Result should not contain any vertex");
     }
 
     @Test

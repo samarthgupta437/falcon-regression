@@ -146,7 +146,7 @@ public class LineageHelper {
      * @param paramPairs parameters to be passed
      * @return url string
      */
-    private String getUrl(final URL url, final Pair<String, String>... paramPairs) {
+    public String getUrl(final URL url, final Pair<String, String>... paramPairs) {
         return getUrl(url, null, paramPairs);
     }
 
@@ -177,7 +177,7 @@ public class LineageHelper {
      * @throws IOException
      * @throws AuthenticationException
      */
-    private VerticesResult getVerticesResult(String url)
+    public VerticesResult getVerticesResult(String url)
         throws URISyntaxException, IOException, AuthenticationException {
         HttpResponse response = runGetRequest(url);
         String responseString = getResponseString(response);
