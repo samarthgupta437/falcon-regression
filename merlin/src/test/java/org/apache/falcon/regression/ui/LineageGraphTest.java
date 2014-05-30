@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Test(groups = "embedded")
 public class LineageGraphTest extends BaseUITestClass {
 
     private ColoHelper cluster = servers.get(0);
@@ -73,6 +74,10 @@ public class LineageGraphTest extends BaseUITestClass {
     int inputEnd = 4;
     List<String> processInstances;
 
+    /**
+     * Adjusts bundle and schedules it. Provides process with data, waits till some instances got
+     * succeeded.
+     */
     @BeforeClass
     public void setUp() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -144,7 +149,8 @@ public class LineageGraphTest extends BaseUITestClass {
     }
 
     /**
-     * Tests the number of vertices on graph and if they match to expected number of instances.
+     * Tests the number of vertices on graph and if they match to expected number of instances
+     * and their description.
      */
     @Test
     public void testGraphVertices()
@@ -160,7 +166,7 @@ public class LineageGraphTest extends BaseUITestClass {
             /**get expected feed instances*/
             //input feed instances
             List<String> inputFeedinstances = new ArrayList<String>();
-            for(int i = 0; i <= inputEnd; i++){
+            for (int i = 0; i <= inputEnd; i++) {
                 inputFeedinstances.add(TimeUtil.addMinsToTime(nominalTime, i));
             }
             //output feed instance
@@ -172,7 +178,7 @@ public class LineageGraphTest extends BaseUITestClass {
             String outputFeedinstance = DateTimeFormat.forPattern(normalPattern).print(time);
             /**open lineage for particular process instance*/
             boolean isLineagePresent = processPage.openLineage(nominalTime);
-            if(!isLineagePresent) continue;
+            if (!isLineagePresent) continue;
             /**verify if number of vertices and their content is correct*/
             HashMap<String, List<String>> map = processPage.getAllVertices();
             Assert.assertTrue(map.containsKey(processName) && map.containsKey(inputFeedName)
@@ -225,7 +231,7 @@ public class LineageGraphTest extends BaseUITestClass {
         for (String nominalTime : processInstances) {
             /**open lineage for particular process instance*/
             boolean isLineagePresent = processPage.openLineage(nominalTime);
-            if(!isLineagePresent) continue;
+            if (!isLineagePresent) continue;
             HashMap<String, List<String>> map = processPage.getAllVertices();
             /**click on each vertex and check the bottom info*/
             for (Map.Entry<String, List<String>> entry : map.entrySet()) {
