@@ -210,6 +210,21 @@ public class LineageApiTest extends BaseTestClass {
     }
 
     @Test
+    public void testVertexProperties() throws Exception {
+        final VerticesResult userResult =
+            lineageHelper.getVerticesByName(MerlinConstants.CURRENT_USER_NAME);
+        GraphAssert.assertVertexSanity(userResult);
+        final int userVertexId = userResult.getResults().get(0).get_id();
+        final VertexResult userVertex =
+            lineageHelper.getVertexProperties(userVertexId);
+        Assert.assertEquals(userResult.getResults().get(0).getName(),
+            userVertex.getResults().getName(),
+            "Same vertex should have been returned.");
+        Assert.assertEquals(userVertex.getResults().getType(), Vertex.VERTEX_TYPE.USER,
+            "The vertex should match");
+    }
+
+    @Test
     public void testVerticesFilterByName() throws Exception {
         final String clusterName = clusterMerlin.getName();
         final VerticesResult clusterVertices = lineageHelper.getVerticesByName(clusterName);

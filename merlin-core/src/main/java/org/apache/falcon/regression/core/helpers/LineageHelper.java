@@ -158,6 +158,12 @@ public class LineageHelper {
         return getVertexResult(getUrl(URL.VERTICES, getUrlPath(vertexId)));
     }
 
+    public VertexResult getVertexProperties(int vertexId)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        return getVertexResult(getUrl(URL.VERTICES_PROPERTIES, getUrlPath(vertexId)));
+    }
+
     public VerticesResult getVerticesByType(Vertex.VERTEX_TYPE vertexType)
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
