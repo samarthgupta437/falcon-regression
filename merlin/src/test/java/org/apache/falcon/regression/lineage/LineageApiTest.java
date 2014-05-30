@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.lineage;
 
-import com.google.gson.GsonBuilder;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
@@ -42,6 +41,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -61,6 +61,7 @@ public class LineageApiTest extends BaseTestClass {
     private static final Logger logger = Logger.getLogger(LineageApiTest.class);
     private static final String testTag =
         Edge.LEBEL_TYPE.TESTNAME.toString().toLowerCase() + "=LineageApiTest";
+    private static final String VERTEX_NOT_FOUND_REGEX = ".*Vertex.*%d.*not.*found.*\n?";
     LineageHelper lineageHelper;
     final ColoHelper cluster = servers.get(0);
     final String baseTestHDFSDir = baseHDFSDir + "/LineageApiTest";
@@ -203,39 +204,78 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertTrue(
-            responseString.matches(String.format(".*Vertex.*%d.*not.*found.*\n?", invalidVertexId)),
+            responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(), 404,
             "We should get 404 Not Found error");
     }
 
-    @Test
-    public void testVertexProperties() throws Exception {
-        //testing properties of a user vertex
-        final VerticesResult userResult =
-            lineageHelper.getVerticesByName(MerlinConstants.CURRENT_USER_NAME);
-        GraphAssert.assertVertexSanity(userResult);
-        final int userVertexId = userResult.getResults().get(0).get_id();
-        final VertexResult userProperties =
-            lineageHelper.getVertexProperties(userVertexId);
-        Assert.assertEquals(userResult.getResults().get(0).getName(),
-            userProperties.getResults().getName(),
-            "Same vertex should have been returned.");
-        Assert.assertEquals(userProperties.getResults().getType(), Vertex.VERTEX_TYPE.USER,
-            "The vertex should match");
-        Assert.assertNotNull(userProperties.getResults().getTimestamp(),
-            "Timestamp should not be null");
-
-        //testing properties of colo vertices
-        final VerticesResult coloResult = lineageHelper.getVerticesByType(Vertex.VERTEX_TYPE.COLO);
+    private void checkVertexOneProperty(Vertex.VERTEX_TYPE vertexType)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        final VerticesResult coloResult = lineageHelper.getVerticesByType(vertexType);
         GraphAssert.assertVertexSanity(coloResult);
         for (Vertex coloVertex : coloResult.getResults()) {
             final int coloVertexId = coloVertex.get_id();
             final VertexResult coloProperties = lineageHelper.getVertexProperties(coloVertexId);
-            Assert.assertEquals(coloProperties.getResults().getType(), Vertex.VERTEX_TYPE.COLO);
+            Assert.assertNotNull(coloProperties.getResults().getName(),
+                "name should not be null");
+            Assert.assertEquals(coloProperties.getResults().getType(), vertexType);
             Assert.assertNotNull(coloProperties.getResults().getTimestamp(),
-                "Timestamp should not be null");
+                "timestamp should not be null");
         }
+    }
+
+    @Test
+    public void testVertexProperties() throws Exception {
+        //testing properties of a user vertex
+        checkVertexOneProperty(Vertex.VERTEX_TYPE.USER);
+
+        //testing properties of colo vertices
+        checkVertexOneProperty(Vertex.VERTEX_TYPE.COLO);
+
+        //testing properties of group vertices
+        checkVertexOneProperty(Vertex.VERTEX_TYPE.GROUPS);
+
+        //testing properties of group vertices
+        checkVertexOneProperty(Vertex.VERTEX_TYPE.FEED_ENTITY);
+    }
+
+    @Test
+    public void testVertexPropertiesNoId() throws Exception {
+        //testing properties of a user vertex
+        HttpResponse response = lineageHelper.runGetRequest(lineageHelper
+            .getUrl(LineageHelper.URL.VERTICES_PROPERTIES, lineageHelper.getUrlPath("")));
+        String responseString = lineageHelper.getResponseString(response);
+        logger.info("response: " + response);
+        logger.info("responseString: " + responseString);
+        Assert.assertNotEquals(response.getStatusLine().getStatusCode(), 500,
+            "We should not get internal server error");
+    }
+
+    @Test
+    public void testVertexPropertiesInvalidId() throws Exception {
+        final VerticesResult allVerticesResult =
+            lineageHelper.getAllVertices();
+        GraphAssert.assertVertexSanity(allVerticesResult);
+
+        int invalidVertexId = -1;
+        for (Vertex vertex : allVerticesResult.getResults()) {
+            if(invalidVertexId <= vertex.get_id()) {
+                invalidVertexId = vertex.get_id() + 1;
+            }
+        }
+
+        HttpResponse response = lineageHelper.runGetRequest(
+            lineageHelper.getUrl(LineageHelper.URL.VERTICES_PROPERTIES, "" + invalidVertexId));
+        String responseString = lineageHelper.getResponseString(response);
+        logger.info("response: " + response);
+        logger.info("responseString: " + responseString);
+        Assert.assertTrue(
+            responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
+            "Unexpected responseString: " + responseString);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 404,
+            "We should get 404 Not Found error");
     }
 
     @Test
