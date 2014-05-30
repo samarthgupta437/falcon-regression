@@ -48,6 +48,9 @@ public class LineageHelper {
     public static final String RESULTS = "results";
     public static final String TOTAL_SIZE = "totalSize";
 
+    /**
+     * Lineage related REST endpoints
+     */
     public enum URL {
         SERIALIZE("/api/graphs/lineage/serialize"),
         VERTICES("/api/graphs/lineage/vertices"),
@@ -67,14 +70,28 @@ public class LineageHelper {
         }
     }
 
+    /**
+     * Create a LineageHelper to use with a specified hostname
+     * @param hostname hostname
+     */
     public LineageHelper(String hostname) {
         this.hostname = hostname.trim().replaceAll("/$", "");
     }
 
+    /**
+     * Create a LineageHelper to use with a specified prismHelper
+     * @param prismHelper prismHelper
+     */
     public LineageHelper(PrismHelper prismHelper) {
         this(prismHelper.getClusterHelper().getHostname());
     }
 
+    /**
+     * Extract response string from the response object
+     * @param response the response object
+     * @return the response string
+     * @throws IOException
+     */
     public String getResponseString(HttpResponse response) throws IOException {
         BufferedReader reader = new BufferedReader(
             new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
@@ -85,12 +102,27 @@ public class LineageHelper {
         return sb.toString();
     }
 
+    /**
+     * Run a get request on the specified url
+     * @param url url
+     * @return response of the request
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws AuthenticationException
+     */
     public HttpResponse runGetRequest(String url)
         throws URISyntaxException, IOException, AuthenticationException {
         final BaseRequest request = new BaseRequest(url, "get", null);
         return request.run();
     }
 
+    /**
+     * Create a full url for the given lineage endpoint, urlPath and parameter
+     * @param url lineage endpoint
+     * @param urlPath url path to be added to lineage endpoint
+     * @param paramPairs parameters to be passed
+     * @return url string
+     */
     public String getUrl(final URL url, final String urlPath, final Pair<String,
         String>... paramPairs) {
         Assert.assertNotNull(hostname, "Hostname can't be null.");
@@ -108,18 +140,43 @@ public class LineageHelper {
         return hostAndPath;
     }
 
+    /**
+     * Create a full url for the given lineage endpoint and parameter
+     * @param url lineage endpoint
+     * @param paramPairs parameters to be passed
+     * @return url string
+     */
     private String getUrl(final URL url, final Pair<String, String>... paramPairs) {
         return getUrl(url, null, paramPairs);
     }
 
+    /**
+     * Create url path from parts
+     * @param pathParts parts of the path
+     * @return url path
+     */
     public String getUrlPath(String... pathParts) {
         return StringUtils.join(pathParts, "/");
     }
 
+    /**
+     * Create url path from parts
+     * @param oneInt part of the path
+     * @param pathParts parts of the path
+     * @return url path
+     */
     public String getUrlPath(int oneInt, String... pathParts) {
         return oneInt + "/" + getUrlPath(pathParts);
     }
 
+    /**
+     * Get vertices result for the url
+     * @param url url
+     * @return result of the REST request
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws AuthenticationException
+     */
     private VerticesResult getVerticesResult(String url)
         throws URISyntaxException, IOException, AuthenticationException {
         HttpResponse response = runGetRequest(url);
@@ -129,6 +186,14 @@ public class LineageHelper {
             VerticesResult.class);
     }
 
+    /**
+     * Get vertex result for the url
+     * @param url url
+     * @return result of the REST request
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws AuthenticationException
+     */
     private VertexResult getVertexResult(String url)
         throws URISyntaxException, IOException, AuthenticationException {
         HttpResponse response = runGetRequest(url);
@@ -138,6 +203,15 @@ public class LineageHelper {
             VertexResult.class);
     }
 
+    /**
+     * Get all the vertices
+     * @return all the vertices
+     * @throws AuthenticationException
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws JAXBException
+     * @throws JSONException
+     */
     public VerticesResult getAllVertices()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
