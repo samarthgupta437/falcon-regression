@@ -20,7 +20,6 @@ package org.apache.falcon.regression.core.helpers;
 
 import com.google.gson.GsonBuilder;
 import com.sun.tools.javac.util.Pair;
-import junit.framework.Assert;
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
@@ -33,6 +32,7 @@ import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONException;
+import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
@@ -117,6 +117,24 @@ public class LineageHelper {
     }
 
     /**
+     * Successfully run a get request on the specified url
+     * @param url url
+     * @return string response of the request
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws AuthenticationException
+     */
+    public String runGetRequestSuccessfully(String url)
+        throws URISyntaxException, IOException, AuthenticationException {
+        HttpResponse response = runGetRequest(url);
+        String responseString = getResponseString(response);
+        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 200,
+            "The get request  was expected to be successfully");
+        return responseString;
+    }
+
+    /**
      * Create a full url for the given lineage endpoint, urlPath and parameter
      * @param url lineage endpoint
      * @param urlPath url path to be added to lineage endpoint
@@ -179,9 +197,7 @@ public class LineageHelper {
      */
     public VerticesResult getVerticesResult(String url)
         throws URISyntaxException, IOException, AuthenticationException {
-        HttpResponse response = runGetRequest(url);
-        String responseString = getResponseString(response);
-        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        String responseString = runGetRequestSuccessfully(url);
         return new GsonBuilder().create().fromJson(responseString,
             VerticesResult.class);
     }
@@ -196,9 +212,7 @@ public class LineageHelper {
      */
     private VertexResult getVertexResult(String url)
         throws URISyntaxException, IOException, AuthenticationException {
-        HttpResponse response = runGetRequest(url);
-        String responseString = getResponseString(response);
-        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        String responseString = runGetRequestSuccessfully(url);
         return new GsonBuilder().create().fromJson(responseString,
             VertexResult.class);
     }
@@ -259,9 +273,7 @@ public class LineageHelper {
     public EdgesResult getAllEdges()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
-        HttpResponse response = runGetRequest(getUrl(URL.EDGES_ALL));
-        String responseString = getResponseString(response);
-        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        String responseString = runGetRequestSuccessfully(getUrl(URL.EDGES_ALL));
         final EdgesResult edgesResult = new GsonBuilder().create().fromJson(responseString,
             EdgesResult.class);
         return edgesResult;
