@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.lineage;
 
-import com.google.gson.GsonBuilder;
 import com.sun.tools.javac.util.Pair;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
@@ -29,7 +28,6 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.Edge;
-import org.apache.falcon.regression.core.response.lineage.EdgeResult;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
 import org.apache.falcon.regression.core.response.lineage.VertexIdsResult;
@@ -52,6 +50,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -178,16 +177,13 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testVertexNoId() throws Exception {
-        final VerticesResult userResult =
-            lineageHelper.getVerticesByName(MerlinConstants.CURRENT_USER_NAME);
-        GraphAssert.assertVertexSanity(userResult);
-        final int vertexId = userResult.getResults().get(0).get_id();
         HttpResponse response = lineageHelper.runGetRequest(
             lineageHelper.getUrl(LineageHelper.URL.VERTICES, ""));
         String responseString = lineageHelper.getResponseString(response);
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
-        Assert.assertNotEquals(response.getStatusLine().getStatusCode(), 500,
+        Assert.assertNotEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.INTERNAL_SERVER_ERROR,
             "We should not get internal server error");
     }
 
@@ -211,8 +207,8 @@ public class LineageApiTest extends BaseTestClass {
         Assert.assertTrue(
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), 404,
-            "We should get 404 Not Found error");
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
+            "We should get http not found error");
     }
 
     private void checkVertexOneProperty(Vertex.VERTEX_TYPE vertexType)
@@ -279,7 +275,7 @@ public class LineageApiTest extends BaseTestClass {
         Assert.assertTrue(
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), 404,
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
             "We should get 404 Not Found error");
     }
 
@@ -503,7 +499,7 @@ public class LineageApiTest extends BaseTestClass {
         final String responseString = lineageHelper.getResponseString(response);
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), 400,
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.BAD_REQUEST,
             "We should not get internal server error");
     }
 
@@ -543,7 +539,7 @@ public class LineageApiTest extends BaseTestClass {
             lineageHelper.getUrl(LineageHelper.URL.EDGES, lineageHelper.getUrlPath("")));
         logger.info(httpResponse.toString());
         logger.info(lineageHelper.getResponseString(httpResponse));
-        Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 404,
+        Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
             "Expecting not-found error.");
     }
 
@@ -553,7 +549,7 @@ public class LineageApiTest extends BaseTestClass {
             lineageHelper.getUrl(LineageHelper.URL.EDGES, lineageHelper.getUrlPath("invalid-id")));
         logger.info(response.toString());
         logger.info(lineageHelper.getResponseString(response));
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), 404,
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
             "Expecting not-found error.");
     }
 
