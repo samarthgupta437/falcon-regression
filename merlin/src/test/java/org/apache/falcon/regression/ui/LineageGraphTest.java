@@ -258,4 +258,34 @@ public class LineageGraphTest extends BaseUITestClass {
             processPage.navigateTo();
         }
     }
+
+    @Test
+    public void testTitlesAndDescriptions() throws InterruptedException {
+        HashMap<String, String> expectedDescriptions = new HashMap<String, String>();
+        expectedDescriptions.put("lineage-legend-process-inst", "Process instance");
+        expectedDescriptions.put("lineage-legend-process-inst lineage-legend-terminal",
+            "Process instance (terminal)");
+        expectedDescriptions.put("lineage-legend-feed-inst", "Feed instance");
+        expectedDescriptions.put("lineage-legend-feed-inst lineage-legend-terminal",
+            "Feed instance (terminal)");
+        ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
+        processPage.navigateTo();
+        for(String instance : processInstances){
+            boolean isLineageOpened = processPage.openLineage(instance);
+            if(!isLineageOpened) continue;
+            //check the main lineage title
+            Assert.assertEquals(processPage.getLineageTitle(), "Lineage information");
+            //check legends title
+            Assert.assertEquals(processPage.getLegendsTitile(), "Legends");
+            //check that all legends are present and match to expected
+            HashMap<String, String> legends = processPage.getLegends();
+            for (Map.Entry<String, String> entry : legends.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                Assert.assertEquals(expectedDescriptions.get(key), value);
+            }
+            processPage.closeLineage();
+            processPage.navigateTo();
+        }
+    }
 }

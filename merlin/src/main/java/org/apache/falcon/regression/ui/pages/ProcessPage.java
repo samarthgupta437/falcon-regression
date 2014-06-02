@@ -46,10 +46,15 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String CLOSE_LINE_AGE_BUTTON_XPATH =
         "//div[@class='modal-footer']/button" +
             "[contains(., 'Close')]";
+    private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
     private static final String VERTICES_BLOCKS_XPATH = "//*[name() = 'svg']/*[name()" +
         "='g']//*[name() = 'g'][not(@class='lineage-link')]";
     private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
     private static final String LINEAGE_INFO_PANEL = "//div[@id='lineage-info-panel']";
+    private static final String LINEAGE_TITLE = LINEAGE_MODAL +
+        "//div[@class='modal-header']/h4";
+    private static final String LINEAGE_LEGENDS_BLOCK = LINEAGE_MODAL +
+        "//div[@class='modal-body']/div[ul[@class='lineage-legend']]";
 
     /**
      * @param nominalTime - particular instance of process, defined by it's start time
@@ -63,6 +68,7 @@ public class ProcessPage extends EntityPage<Process> {
             logger.info("Opening lineage...");
             lineage.click();
             waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, 3);
+            waitForElement(LINEAGE_TITLE, 1);
             isLineageOpened = true;
         } else {
             logger.info("Lineage button not found");
@@ -120,7 +126,7 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     /**
-     * @return
+     * @return - map of parameters from info panel and their values
      */
     public HashMap<String, String> getPanelInfo() {
         HashMap<String, String> map = null;
@@ -137,5 +143,41 @@ public class ProcessPage extends EntityPage<Process> {
             }
         }
         return map;
+    }
+
+    /**
+     * @return - map of legends as key and their names on UI as values
+     */
+    public HashMap<String, String> getLegends() {
+        HashMap<String, String> map = null;
+        if (isLineageOpened) {
+            map = new HashMap<String, String>();
+            List<WebElement> legends = driver.findElements(By.xpath(LINEAGE_LEGENDS_BLOCK +
+                "/ul/li"));
+            for(WebElement legend : legends){
+                String value = legend.getText();
+                String elementClass = legend.getAttribute("class");
+                map.put(elementClass, value);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * @return - the main title of Lineage UI
+     */
+    public String getLineageTitle(){
+        if (isLineageOpened) {
+            return driver.findElement(By.xpath(LINEAGE_TITLE)).getText();
+        }else return null;
+    }
+
+    /**
+     * @return - the name of legends block
+     */
+    public String getLegendsTitile(){
+        if (isLineageOpened) {
+            return driver.findElement(By.xpath(LINEAGE_LEGENDS_BLOCK + "/h4")).getText();
+        }else return null;
     }
 }
