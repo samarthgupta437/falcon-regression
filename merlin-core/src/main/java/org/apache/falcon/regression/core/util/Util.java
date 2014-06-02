@@ -708,7 +708,7 @@ public class Util {
             helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
             helper.getIdentityFile());
         int statusCode = 0;
-        for (int tries = 40; tries > 0; tries--) {
+        for (int tries = 20; tries > 0; tries--) {
             try {
                 statusCode = Util.sendRequest(helper.getHostname(), "get").getCode();
             } catch (IOException e) {
