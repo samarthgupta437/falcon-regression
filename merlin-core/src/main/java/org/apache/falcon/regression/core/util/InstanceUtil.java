@@ -158,8 +158,12 @@ public class InstanceUtil {
             r.setStatusCode(400);
             return r;
         }
-        r = new GsonBuilder().setPrettyPrinting().create()
-            .fromJson(jsonString, ProcessInstancesResult.class);
+        if (url.contains("/summary/"))
+            r = new GsonBuilder().setPrettyPrinting().create()
+                .fromJson(jsonString, InstancesSummaryResult.class);
+        else
+            r = new GsonBuilder().setPrettyPrinting().create()
+                .fromJson(jsonString, ProcessInstancesResult.class);
 
         logger.info("r.getMessage(): " + r.getMessage());
         logger.info("r.getStatusCode(): " + r.getStatusCode());
