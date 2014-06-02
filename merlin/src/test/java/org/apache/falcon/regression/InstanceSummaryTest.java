@@ -77,6 +77,9 @@ public class InstanceSummaryTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
+        for (FileSystem fs : serverFS) {
+            HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
+        }
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         startTime = TimeUtil.get20roundedTime(TimeUtil
             .getTimeWrtSystemTime
@@ -98,7 +101,6 @@ public class InstanceSummaryTest extends BaseTestClass {
         }
 
         for (FileSystem fs : serverFS) {
-            HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
             HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT, dataFolder);
         }
     }
