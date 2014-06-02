@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.Edge;
+import org.apache.falcon.regression.core.response.lineage.EdgeResult;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
 import org.apache.falcon.regression.core.response.lineage.VertexIdsResult;
@@ -518,6 +519,42 @@ public class LineageApiTest extends BaseTestClass {
             numInputFeeds + numOutputFeeds);
         GraphAssert.assertEdgePresenceMinOccur(edgesResult, Edge.LEBEL_TYPE.OWNED_BY,
             1 + numInputFeeds + numOutputFeeds);
+    }
+
+    @Test
+    public void testEdge() throws Exception {
+        final int clusterVertexId = lineageHelper.getVertex(clusterMerlin.getName()).get_id();
+        final EdgesResult outGoingEdges =
+            lineageHelper.getEdgesByDirection(clusterVertexId, Direction.outGoingEdges);
+        GraphAssert.assertEdgeSanity(outGoingEdges);
+        Assert.assertEquals(outGoingEdges.filterByType(Edge.LEBEL_TYPE.CLUSTER_COLO).size(),
+            1, "There should be an edge from the cluster to colo");
+
+        final String clusterColoEdgeId =
+            outGoingEdges.filterByType(Edge.LEBEL_TYPE.CLUSTER_COLO).get(0).get_id();
+        final Edge clusterColoEdge =
+            lineageHelper.getEdgeById(clusterColoEdgeId).getResults();
+        GraphAssert.assertEdgeSanity(clusterColoEdge);
+    }
+
+    @Test
+    public void testEdgeBlankId() throws Exception {
+        final HttpResponse httpResponse = lineageHelper.runGetRequest(
+            lineageHelper.getUrl(LineageHelper.URL.EDGES, lineageHelper.getUrlPath("")));
+        logger.info(httpResponse.toString());
+        logger.info(lineageHelper.getResponseString(httpResponse));
+        Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), 404,
+            "Expecting not-found error.");
+    }
+
+    @Test
+    public void testEdgeInvalidId() throws Exception {
+        final HttpResponse response = lineageHelper.runGetRequest(
+            lineageHelper.getUrl(LineageHelper.URL.EDGES, lineageHelper.getUrlPath("invalid-id")));
+        logger.info(response.toString());
+        logger.info(lineageHelper.getResponseString(response));
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 404,
+            "Expecting not-found error.");
     }
 
     @Test

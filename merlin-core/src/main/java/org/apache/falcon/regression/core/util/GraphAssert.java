@@ -71,13 +71,21 @@ public class GraphAssert {
         Assert.assertEquals(edgesResult.getResults().size(), edgesResult.getTotalSize(),
             "Size of edges don't match");
         for (Edge edge : edgesResult.getResults()) {
-            Assert.assertNotNull(edge.get_id(), "id of an edge can't be null: " + edge);
-            Assert.assertEquals(edge.get_type(), NODE_TYPE.EDGE,
-                "_type of an edge can't be null: " + edge);
-            Assert.assertNotNull(edge.get_label(), "_label of an edge can't be null: " + edge);
-            Assert.assertNotNull(edge.get_inV(), "_inV of an edge can't be null: " + edge);
-            Assert.assertNotNull(edge.get_outV(), "_outV of an edge can't be null: " + edge);
+            assertEdgeSanity(edge);
         }
+    }
+
+    /**
+     * Check that edge is sane
+     * @param edge edge to be checked
+     */
+    public static void assertEdgeSanity(Edge edge) {
+        Assert.assertNotNull(edge.get_id(), "id of an edge can't be null: " + edge);
+        Assert.assertEquals(edge.get_type(), NODE_TYPE.EDGE,
+            "_type of an edge can't be null: " + edge);
+        Assert.assertNotNull(edge.get_label(), "_label of an edge can't be null: " + edge);
+        Assert.assertTrue(edge.get_inV() > 0, "_inV of an edge can't be null: " + edge);
+        Assert.assertTrue(edge.get_outV() > 0, "_outV of an edge can't be null: " + edge);
     }
 
     /**

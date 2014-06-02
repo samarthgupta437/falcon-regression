@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.sun.tools.javac.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.response.lineage.Direction;
+import org.apache.falcon.regression.core.response.lineage.EdgeResult;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
 import org.apache.falcon.regression.core.response.lineage.VertexIdsResult;
@@ -294,6 +295,10 @@ public class LineageHelper {
         return getResultOfType(url, EdgesResult.class);
     }
 
+    private EdgeResult getEdgeResult(String url) {
+        return getResultOfType(url, EdgeResult.class);
+    }
+
     public EdgesResult getEdgesByDirection(int vertexId, Direction direction) {
         Assert.assertTrue((direction == Direction.bothEdges ||
             direction == Direction.inComingEdges ||
@@ -305,4 +310,7 @@ public class LineageHelper {
         return getEdgesResult(getUrl(URL.EDGES_ALL));
     }
 
+    public EdgeResult getEdgeById(String edgeId) {
+        return getEdgeResult(getUrl(URL.EDGES, getUrlPath(edgeId)));
+    }
 }
