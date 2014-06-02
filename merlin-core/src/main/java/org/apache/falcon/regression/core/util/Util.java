@@ -708,7 +708,7 @@ public class Util {
             helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
             helper.getIdentityFile());
         int statusCode = 0;
-        for (int tries = 20; tries > 0; tries--) {
+        for (int tries = 40; tries > 0; tries--) {
             try {
                 statusCode = Util.sendRequest(helper.getHostname(), "get").getCode();
             } catch (IOException e) {
@@ -792,6 +792,7 @@ public class Util {
         String line;
         while (true) {
             while ((line=r.readLine())!=null) {
+                logger.debug(line);
                 data.add(line);
             }
             if (channel.isClosed()) {
@@ -1122,7 +1123,6 @@ public class Util {
         postList.add("/instance/suspend");
         postList.add("/instance/resume");
         postList.add("/instance/rerun");
-        postList.add("/instance/summary");
         for (String item : postList) {
             if (url.toLowerCase().contains(item)) {
                 return "post";
