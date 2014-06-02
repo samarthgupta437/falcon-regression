@@ -27,16 +27,15 @@ import org.apache.falcon.regression.core.response.lineage.Vertex;
 import org.apache.falcon.regression.core.response.lineage.VertexIdsResult;
 import org.apache.falcon.regression.core.response.lineage.VertexResult;
 import org.apache.falcon.regression.core.response.lineage.VerticesResult;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.GraphAssert;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONException;
 import org.testng.Assert;
 
-import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -45,20 +44,6 @@ import java.net.URISyntaxException;
 public class LineageHelper {
     private static Logger logger = Logger.getLogger(LineageHelper.class);
     private final String hostname;
-
-
-    public static final String RESULTS = "results";
-    public static final String TOTAL_SIZE = "totalSize";
-
-    public Vertex getVertex(String vertexName)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
-        final VerticesResult clusterResult = getVerticesByName(vertexName);
-        GraphAssert.assertVertexSanity(clusterResult);
-        Assert.assertEquals(clusterResult.getTotalSize(), 1,
-            "Expected one node for vertex name:" + vertexName);
-        return clusterResult.getResults().get(0);
-    }
 
     /**
      * Lineage related REST endpoints
@@ -200,100 +185,82 @@ public class LineageHelper {
     }
 
     /**
+     * Get result of the supplied type for the given url
+     * @param url url
+     * @return result of the REST request
+     */
+    public <T> T getResultOfType(String url, Class<T> clazz) {
+        String responseString = null;
+        try {
+            responseString = runGetRequestSuccessfully(url);
+        } catch (URISyntaxException e) {
+            AssertUtil.fail(e);
+        } catch (IOException e) {
+            AssertUtil.fail(e);
+        } catch (AuthenticationException e) {
+            AssertUtil.fail(e);
+        }
+        return new GsonBuilder().create().fromJson(responseString, clazz);
+    }
+
+    /**
      * Get vertices result for the url
      * @param url url
      * @return result of the REST request
-     * @throws URISyntaxException
-     * @throws IOException
-     * @throws AuthenticationException
      */
-    public VerticesResult getVerticesResult(String url)
-        throws URISyntaxException, IOException, AuthenticationException {
-        String responseString = runGetRequestSuccessfully(url);
-        return new GsonBuilder().create().fromJson(responseString,
-            VerticesResult.class);
+    public VerticesResult getVerticesResult(String url) {
+        return getResultOfType(url, VerticesResult.class);
     }
 
     /**
      * Get vertex result for the url
      * @param url url
      * @return result of the REST request
-     * @throws URISyntaxException
-     * @throws IOException
-     * @throws AuthenticationException
      */
-    private VertexResult getVertexResult(String url)
-        throws URISyntaxException, IOException, AuthenticationException {
-        String responseString = runGetRequestSuccessfully(url);
-        return new GsonBuilder().create().fromJson(responseString,
-            VertexResult.class);
+    private VertexResult getVertexResult(String url) {
+        return getResultOfType(url, VertexResult.class);
     }
 
     /**
      * Get vertex id result for the url
      * @param url url
      * @return result of the REST request
-     * @throws URISyntaxException
-     * @throws IOException
-     * @throws AuthenticationException
      */
-    private VertexIdsResult getVertexIdsResult(String url)
-        throws URISyntaxException, IOException, AuthenticationException {
-        String responseString = runGetRequestSuccessfully(url);
-        return new GsonBuilder().create().fromJson(responseString,
-            VertexIdsResult.class);
+    private VertexIdsResult getVertexIdsResult(String url) {
+        return getResultOfType(url, VertexIdsResult.class);
     }
 
     /**
      * Get all the vertices
      * @return all the vertices
-     * @throws AuthenticationException
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws JAXBException
-     * @throws JSONException
      */
-    public VerticesResult getAllVertices()
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VerticesResult getAllVertices() {
         return getVerticesResult(getUrl(URL.VERTICES_ALL));
     }
 
-    public VerticesResult getVertices(Vertex.FilterKey key, String value)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VerticesResult getVertices(Vertex.FilterKey key, String value) {
         return getVerticesResult(getUrl(URL.VERTICES,
             new Pair<String, String>("key", key.toString()),
             new Pair<String, String>("value", value)));
     }
 
-    public VertexResult getVertexById(int vertexId)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VertexResult getVertexById(int vertexId) {
         return getVertexResult(getUrl(URL.VERTICES, getUrlPath(vertexId)));
     }
 
-    public VertexResult getVertexProperties(int vertexId)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VertexResult getVertexProperties(int vertexId) {
         return getVertexResult(getUrl(URL.VERTICES_PROPERTIES, getUrlPath(vertexId)));
     }
 
-    public VerticesResult getVerticesByType(Vertex.VERTEX_TYPE vertexType)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VerticesResult getVerticesByType(Vertex.VERTEX_TYPE vertexType) {
         return getVertices(Vertex.FilterKey.type, vertexType.getValue());
     }
 
-    public VerticesResult getVerticesByName(String name)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VerticesResult getVerticesByName(String name) {
         return getVertices(Vertex.FilterKey.name, name);
     }
 
-    public VerticesResult getVerticesByDirection(int vertexId, Direction direction)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VerticesResult getVerticesByDirection(int vertexId, Direction direction) {
         Assert.assertTrue((direction == Direction.bothCount ||
                 direction == Direction.inCount || direction == Direction.outCount ||
                 direction == Direction.bothVertices ||
@@ -302,9 +269,7 @@ public class LineageHelper {
         return getVerticesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
-    public VertexIdsResult getVertexIdsByDirection(int vertexId, Direction direction)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public VertexIdsResult getVertexIdsByDirection(int vertexId, Direction direction) {
         Assert.assertTrue((direction == Direction.bothVerticesIds ||
                 direction == Direction.incomingVerticesIds ||
                 direction == Direction.outgoingVerticesIds),
@@ -312,33 +277,31 @@ public class LineageHelper {
         return getVertexIdsResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
+    public Vertex getVertex(String vertexName) {
+        final VerticesResult clusterResult = getVerticesByName(vertexName);
+        GraphAssert.assertVertexSanity(clusterResult);
+        Assert.assertEquals(clusterResult.getTotalSize(), 1,
+            "Expected one node for vertex name:" + vertexName);
+        return clusterResult.getResults().get(0);
+    }
+
     /**
      * Get edges result for the url
      * @param url url
      * @return result of the REST request
-     * @throws URISyntaxException
-     * @throws IOException
-     * @throws AuthenticationException
      */
-    private EdgesResult getEdgesResult(String url)
-        throws URISyntaxException, IOException, AuthenticationException {
-        String responseString = runGetRequestSuccessfully(url);
-        return new GsonBuilder().create().fromJson(responseString,
-            EdgesResult.class);
+    private EdgesResult getEdgesResult(String url) {
+        return getResultOfType(url, EdgesResult.class);
     }
 
-    public EdgesResult getEdgesByDirection(int vertexId, Direction direction)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public EdgesResult getEdgesByDirection(int vertexId, Direction direction) {
         Assert.assertTrue((direction == Direction.bothEdges ||
             direction == Direction.inComingEdges ||
             direction == Direction.outGoingEdges), "Vertices requested.");
         return getEdgesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
-    public EdgesResult getAllEdges()
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    public EdgesResult getAllEdges() {
         return getEdgesResult(getUrl(URL.EDGES_ALL));
     }
 

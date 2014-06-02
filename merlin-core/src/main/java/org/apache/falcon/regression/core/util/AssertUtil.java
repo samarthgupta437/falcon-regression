@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
@@ -34,6 +35,7 @@ import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class AssertUtil {
@@ -330,5 +332,14 @@ public class AssertUtil {
         logger.info(secondPath + " : secondSummary = " + secondSummary.toString(false));
         Assert.assertEquals(firstSummary.getLength(), secondSummary.getLength(),
             "Contents at the two locations don't have same size.");
+    }
+
+    /**
+     * Fail the test because of the supplied exception.
+     * @param e
+     */
+    public static void fail(Exception e) {
+        logger.info("Got exception: " + ExceptionUtils.getStackTrace(e));
+        Assert.fail("Failing because of exception.");
     }
 }
