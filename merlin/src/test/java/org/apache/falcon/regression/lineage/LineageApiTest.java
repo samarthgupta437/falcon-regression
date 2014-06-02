@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.lineage;
 
+import com.google.gson.GsonBuilder;
 import com.sun.tools.javac.util.Pair;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
@@ -30,6 +31,7 @@ import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.Edge;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VertexIdsResult;
 import org.apache.falcon.regression.core.response.lineage.VertexResult;
 import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
@@ -60,8 +62,9 @@ import java.util.Random;
 public class LineageApiTest extends BaseTestClass {
     private static final String datePattern = "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(LineageApiTest.class);
+    private static final String testName = "LineageApiTest";
     private static final String testTag =
-        Edge.LEBEL_TYPE.TESTNAME.toString().toLowerCase() + "=LineageApiTest";
+        Edge.LEBEL_TYPE.TESTNAME.toString().toLowerCase() + "=" + testName;
     private static final String VERTEX_NOT_FOUND_REGEX = ".*Vertex.*%d.*not.*found.*\n?";
     LineageHelper lineageHelper;
     final ColoHelper cluster = servers.get(0);
@@ -239,7 +242,7 @@ public class LineageApiTest extends BaseTestClass {
         checkVertexOneProperty(Vertex.VERTEX_TYPE.GROUPS);
 
         //testing properties of group vertices
-        checkVertexOneProperty(Vertex.VERTEX_TYPE.FEED_ENTITY);
+        //checkVertexOneProperty(Vertex.VERTEX_TYPE.FEED_ENTITY);
     }
 
     @Test
@@ -353,6 +356,154 @@ public class LineageApiTest extends BaseTestClass {
         GraphAssert.assertVertexSanity(clusterVertices);
         Assert.assertEquals(clusterVertices.getTotalSize(), 0,
             "Result should not contain any vertex");
+    }
+
+    @Test
+    public void testVertexDirectionFetchEdges() throws Exception {
+        final int clusterVertexId = lineageHelper.getVertex(clusterMerlin.getName()).get_id();
+
+        final EdgesResult bothEdges =
+            lineageHelper.getEdgesByDirection(clusterVertexId, Direction.bothEdges);
+        GraphAssert.assertEdgeSanity(bothEdges);
+        Assert.assertEquals(bothEdges.filterByType(Edge.LEBEL_TYPE.STORED_IN).size(),
+            inputFeeds.length + outputFeeds.length,
+            "There should be edge between the cluster and inputFeeds, outputFeeds");
+        Assert.assertEquals(bothEdges.filterByType(Edge.LEBEL_TYPE.CLUSTER_COLO).size(),
+            1, "There should be an edge from the cluster to colo");
+        Assert.assertEquals(bothEdges.getTotalSize(), inputFeeds.length + outputFeeds.length + 2,
+            "There should be edge from the cluster to inputFeeds & outputFeeds," +
+                " one between cluster and colo, one between cluster and classification");
+
+        final EdgesResult inComingEdges =
+            lineageHelper.getEdgesByDirection(clusterVertexId, Direction.inComingEdges);
+        GraphAssert.assertEdgeSanity(inComingEdges);
+        Assert.assertEquals(inComingEdges.getTotalSize(), inputFeeds.length + outputFeeds.length,
+            "There should be edge from the cluster to inputFeeds & outputFeeds");
+        Assert.assertEquals(inComingEdges.filterByType(Edge.LEBEL_TYPE.STORED_IN).size(),
+            inputFeeds.length + outputFeeds.length,
+            "There should be edge from the cluster to inputFeeds & outputFeeds");
+
+
+        final EdgesResult outGoingEdges =
+            lineageHelper.getEdgesByDirection(clusterVertexId, Direction.outGoingEdges);
+        GraphAssert.assertEdgeSanity(outGoingEdges);
+        Assert.assertEquals(outGoingEdges.filterByType(Edge.LEBEL_TYPE.CLUSTER_COLO).size(),
+            1, "There should be an edge from the cluster to colo");
+        Assert.assertEquals(outGoingEdges.filterByType(Edge.LEBEL_TYPE.TESTNAME).size(),
+            1, "There should be an edge from the cluster to classification");
+        Assert.assertEquals(outGoingEdges.getTotalSize(), 2,
+            "There should be an edge from the cluster to colo");
+    }
+
+    @Test
+    public void testVertexCountsFetchVertices() throws Exception {
+        final int clusterVertexId = lineageHelper.getVertex(clusterMerlin.getName()).get_id();
+
+        final VerticesResult bothVertices =
+            lineageHelper.getVerticesByDirection(clusterVertexId, Direction.bothVertices);
+        GraphAssert.assertVertexSanity(bothVertices);
+        Assert.assertEquals(bothVertices.filterByType(Vertex.VERTEX_TYPE.FEED_ENTITY).size(),
+            inputFeeds.length + outputFeeds.length,
+            "There should be edge from the cluster to inputFeeds & outputFeeds");
+        Assert.assertEquals(bothVertices.filterByType(Vertex.VERTEX_TYPE.COLO).size(), 1,
+            "The should be one edge between cluster and colo");
+        Assert.assertEquals(bothVertices.getTotalSize(),
+            inputFeeds.length + outputFeeds.length + 2,
+            "There should be edge from the cluster to inputFeeds & outputFeeds," +
+                " one between cluster and colo, one between cluster and classification");
+
+        final VerticesResult inComingVertices =
+            lineageHelper.getVerticesByDirection(clusterVertexId, Direction.inComingVertices);
+        GraphAssert.assertVertexSanity(inComingVertices);
+        Assert.assertEquals(inComingVertices.filterByType(Vertex.VERTEX_TYPE.FEED_ENTITY).size(),
+            inputFeeds.length + outputFeeds.length,
+            "There should be edge from the cluster to inputFeeds & outputFeeds");
+        Assert.assertEquals(inComingVertices.getTotalSize(),
+            inputFeeds.length + outputFeeds.length,
+            "There should be edge from the cluster to inputFeeds & outputFeeds and one " +
+                "between cluster and colo");
+
+        final VerticesResult outgoingVertices =
+            lineageHelper.getVerticesByDirection(clusterVertexId, Direction.outgoingVertices);
+        GraphAssert.assertVertexSanity(outgoingVertices);
+        Assert.assertEquals(outgoingVertices.filterByType(Vertex.VERTEX_TYPE.COLO).size(), 1,
+            "The should be one edge between cluster and colo");
+        Assert.assertEquals(outgoingVertices.filterByName(testName).size(),
+            1, "There should be an edge from the cluster to classification");
+        Assert.assertEquals(outgoingVertices.getTotalSize(), 2,
+            "There should be an edge from the cluster to colo");
+    }
+
+    @Test
+    public void testVertexDirectionFetchCounts() throws Exception {
+        final int clusterVertexId = lineageHelper.getVertex(clusterMerlin.getName()).get_id();
+
+        final VerticesResult bothCount =
+            lineageHelper.getVerticesByDirection(clusterVertexId, Direction.bothCount);
+        Assert.assertEquals(bothCount.getTotalSize(),
+            inputFeeds.length + outputFeeds.length + 2,
+            "There should be edge from the cluster to inputFeeds & outputFeeds," +
+                " one between cluster and colo, one between cluster and classification");
+
+        final VerticesResult inCount =
+            lineageHelper.getVerticesByDirection(clusterVertexId, Direction.inCount);
+        Assert.assertEquals(inCount.getTotalSize(),
+            inputFeeds.length + outputFeeds.length,
+            "There should be edge from the cluster to inputFeeds & outputFeeds and one " +
+                "between cluster and colo");
+
+        final VerticesResult outCount =
+            lineageHelper.getVerticesByDirection(clusterVertexId, Direction.outCount);
+        Assert.assertEquals(outCount.getTotalSize(), 2,
+            "There should be an edge from the cluster to colo");
+    }
+
+    @Test
+    public void testVertexDirectionFetchVertexIds() throws Exception {
+        final int clusterVertexId = lineageHelper.getVertex(clusterMerlin.getName()).get_id();
+
+        final VertexIdsResult bothVerticesIds =
+            lineageHelper.getVertexIdsByDirection(clusterVertexId, Direction.bothVerticesIds);
+        for (Integer vertexId : bothVerticesIds.getResults()) {
+            Assert.assertTrue(vertexId > 0, "Vertex id should be valid.");
+        }
+        Assert.assertEquals(bothVerticesIds.getTotalSize(),
+            inputFeeds.length + outputFeeds.length + 2,
+            "There should be edge from the cluster to inputFeeds & outputFeeds," +
+                " one between cluster and colo, one between cluster and classification");
+
+        final VertexIdsResult incomingVerticesIds =
+            lineageHelper.getVertexIdsByDirection(clusterVertexId, Direction.incomingVerticesIds);
+        for (Integer vertexId : incomingVerticesIds.getResults()) {
+            Assert.assertTrue(vertexId > 0, "Vertex id should be valid.");
+        }
+        Assert.assertEquals(incomingVerticesIds.getTotalSize(),
+            inputFeeds.length + outputFeeds.length,
+            "There should be edge from the cluster to inputFeeds & outputFeeds and one " +
+                "between cluster and colo");
+
+        final VertexIdsResult outgoingVerticesIds =
+            lineageHelper.getVertexIdsByDirection(clusterVertexId, Direction.outgoingVerticesIds);
+        for (Integer vertexId : outgoingVerticesIds.getResults()) {
+            Assert.assertTrue(vertexId > 0, "Vertex id should be valid.");
+        }
+        Assert.assertEquals(outgoingVerticesIds.getTotalSize(), 2,
+            "There should be an edge from the cluster to colo and one from cluster to " +
+                "classification");
+    }
+
+    @Test
+    public void testVertexBadDirection() throws Exception {
+        final int clusterVertexId = lineageHelper.getVertex(clusterMerlin.getName()).get_id();
+
+        HttpResponse response = lineageHelper
+            .runGetRequest(lineageHelper.getUrl(LineageHelper.URL.VERTICES,
+                lineageHelper.getUrlPath(clusterVertexId, "badDirection")));
+        final String responseString = lineageHelper.getResponseString(response);
+        logger.info("response: " + response);
+        logger.info("responseString: " + responseString);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(), 400,
+            "We should not get internal server error");
     }
 
     @Test

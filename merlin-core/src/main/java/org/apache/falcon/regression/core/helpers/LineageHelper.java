@@ -24,8 +24,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.EdgesResult;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VertexIdsResult;
 import org.apache.falcon.regression.core.response.lineage.VertexResult;
 import org.apache.falcon.regression.core.response.lineage.VerticesResult;
+import org.apache.falcon.regression.core.util.GraphAssert;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -47,6 +49,16 @@ public class LineageHelper {
 
     public static final String RESULTS = "results";
     public static final String TOTAL_SIZE = "totalSize";
+
+    public Vertex getVertex(String vertexName)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        final VerticesResult clusterResult = getVerticesByName(vertexName);
+        GraphAssert.assertVertexSanity(clusterResult);
+        Assert.assertEquals(clusterResult.getTotalSize(), 1,
+            "Expected one node for vertex name:" + vertexName);
+        return clusterResult.getResults().get(0);
+    }
 
     /**
      * Lineage related REST endpoints
@@ -218,6 +230,21 @@ public class LineageHelper {
     }
 
     /**
+     * Get vertex id result for the url
+     * @param url url
+     * @return result of the REST request
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws AuthenticationException
+     */
+    private VertexIdsResult getVertexIdsResult(String url)
+        throws URISyntaxException, IOException, AuthenticationException {
+        String responseString = runGetRequestSuccessfully(url);
+        return new GsonBuilder().create().fromJson(responseString,
+            VertexIdsResult.class);
+    }
+
+    /**
      * Get all the vertices
      * @return all the vertices
      * @throws AuthenticationException
@@ -267,16 +294,52 @@ public class LineageHelper {
     public VerticesResult getVerticesByDirection(int vertexId, Direction direction)
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
+        Assert.assertTrue((direction == Direction.bothCount ||
+                direction == Direction.inCount || direction == Direction.outCount ||
+                direction == Direction.bothVertices ||
+                direction == Direction.inComingVertices || direction == Direction.outgoingVertices),
+            "Vertices requested.");
         return getVerticesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
+    }
+
+    public VertexIdsResult getVertexIdsByDirection(int vertexId, Direction direction)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        Assert.assertTrue((direction == Direction.bothVerticesIds ||
+                direction == Direction.incomingVerticesIds ||
+                direction == Direction.outgoingVerticesIds),
+            "Vertex Ids requested.");
+        return getVertexIdsResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
+    }
+
+    /**
+     * Get edges result for the url
+     * @param url url
+     * @return result of the REST request
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws AuthenticationException
+     */
+    private EdgesResult getEdgesResult(String url)
+        throws URISyntaxException, IOException, AuthenticationException {
+        String responseString = runGetRequestSuccessfully(url);
+        return new GsonBuilder().create().fromJson(responseString,
+            EdgesResult.class);
+    }
+
+    public EdgesResult getEdgesByDirection(int vertexId, Direction direction)
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        JSONException {
+        Assert.assertTrue((direction == Direction.bothEdges ||
+            direction == Direction.inComingEdges ||
+            direction == Direction.outGoingEdges), "Vertices requested.");
+        return getEdgesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
     public EdgesResult getAllEdges()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
         JSONException {
-        String responseString = runGetRequestSuccessfully(getUrl(URL.EDGES_ALL));
-        final EdgesResult edgesResult = new GsonBuilder().create().fromJson(responseString,
-            EdgesResult.class);
-        return edgesResult;
+        return getEdgesResult(getUrl(URL.EDGES_ALL));
     }
 
 }
