@@ -30,6 +30,8 @@ import org.openqa.selenium.interactions.Actions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
 public class ProcessPage extends EntityPage<Process> {
     private Logger logger = Logger.getLogger(ProcessPage.class);
@@ -49,6 +51,8 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
     private static final String VERTICES_BLOCKS_XPATH = "//*[name() = 'svg']/*[name()" +
         "='g']//*[name() = 'g'][not(@class='lineage-link')]";
+    private static final String EDGE_BLOCK_XPATH = "//*[name() = 'svg']//*[name()" +
+        "='g'][@class='lineage-link']";
     private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
     private static final String LINEAGE_INFO_PANEL = "//div[@id='lineage-info-panel']";
     private static final String LINEAGE_TITLE = LINEAGE_MODAL +
@@ -81,6 +85,7 @@ public class ProcessPage extends EntityPage<Process> {
             WebElement close = driver.findElement(By.xpath(CLOSE_LINE_AGE_BUTTON_XPATH));
             close.click();
             isLineageOpened = false;
+            this.navigateTo();
         }
     }
 
@@ -154,7 +159,7 @@ public class ProcessPage extends EntityPage<Process> {
             map = new HashMap<String, String>();
             List<WebElement> legends = driver.findElements(By.xpath(LINEAGE_LEGENDS_BLOCK +
                 "/ul/li"));
-            for(WebElement legend : legends){
+            for (WebElement legend : legends) {
                 String value = legend.getText();
                 String elementClass = legend.getAttribute("class");
                 map.put(elementClass, value);
@@ -166,18 +171,69 @@ public class ProcessPage extends EntityPage<Process> {
     /**
      * @return - the main title of Lineage UI
      */
-    public String getLineageTitle(){
+    public String getLineageTitle() {
         if (isLineageOpened) {
             return driver.findElement(By.xpath(LINEAGE_TITLE)).getText();
-        }else return null;
+        } else return null;
     }
 
     /**
      * @return - the name of legends block
      */
-    public String getLegendsTitile(){
+    public String getLegendsTitile() {
         if (isLineageOpened) {
             return driver.findElement(By.xpath(LINEAGE_LEGENDS_BLOCK + "/h4")).getText();
-        }else return null;
+        } else return null;
     }
+
+    public int getEdgesNumber() {
+        if (isLineageOpened) {
+            List<WebElement> edgeBlocks = driver.findElements(By.xpath(EDGE_BLOCK_XPATH));
+            return edgeBlocks.size();
+        } else {
+            return 0;
+        }
+    }
+
+    public int getCircleRadius() {
+        WebElement circle = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH))
+            .get(0);
+        return Integer.parseInt(circle.getAttribute("r"));
+    }
+
+    public void getStartEndOfEdge() {
+
+    }
+
+    public HashMap<String, int[]> getEdgesEndpoints(HashMap<String, String> startEndInstances) {
+        HashMap<String, int[]> map = null;
+        if(isLineageOpened) {
+            map = new HashMap<String, int[]>();
+            for(Map.Entry<String, String> entry : startEndInstances.entrySet()) {
+                String startVertex = entry.getKey();
+                String endVertex = entry.getValue();
+                map.put(startVertex, getVertexCoordinates(startVertex));
+                map.put(endVertex, getVertexCoordinates(endVertex));
+            }
+        }
+        return map;
+    }
+
+    private int[] getVertexCoordinates(String vertex) {
+        int[] coordinates = new int[2];
+        /** get circle of start vertex */
+        String particularVertexBlock = VERTICES_BLOCKS_XPATH + String.format("[contains(" +
+            "., '%s')]", vertex);
+        WebElement block = driver.findElement(By.xpath(particularVertexBlock));
+        String attribute = block.getAttribute("transform");
+        attribute = attribute.replaceAll("[a-zA-Z]", "");
+        String [] numbers = attribute.replaceAll("[()]", "").split(",");
+        for(int i = 0; i < 2; i++){
+            coordinates[i] = Integer.parseInt(numbers[i]);
+        }
+        return coordinates;
+    }
+
+
+
 }

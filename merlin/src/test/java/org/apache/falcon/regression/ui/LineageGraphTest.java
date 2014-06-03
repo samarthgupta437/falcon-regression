@@ -71,6 +71,8 @@ public class LineageGraphTest extends BaseUITestClass {
     private FileSystem clusterFS = serverFS.get(0);
     private OozieClient clusterOC = serverOC.get(0);
     private String processName = null;
+    private String inputFeedName = null;
+    private String outputFeedName = null;
     int inputEnd = 4;
     List<String> processInstances;
 
@@ -123,6 +125,8 @@ public class LineageGraphTest extends BaseUITestClass {
         bundles[0].submitBundle(prism);
 
         processName = bundles[0].getProcessName();
+        inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
+        outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
@@ -142,7 +146,7 @@ public class LineageGraphTest extends BaseUITestClass {
         openBrowser();
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void tearDown() throws IOException {
         closeBrowser();
         removeBundles();
@@ -157,8 +161,7 @@ public class LineageGraphTest extends BaseUITestClass {
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
         OozieClientException, InterruptedException, NoSuchMethodException, IllegalAccessException,
         InvocationTargetException, ParseException, JSONException {
-        String inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
-        String outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
+
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
         logger.info("Working with process instances : " + processInstances);
@@ -218,7 +221,7 @@ public class LineageGraphTest extends BaseUITestClass {
         processPage.navigateTo();
 
         /**process instances*/
-        LineageHelper graphUtil = new LineageHelper(prism);
+        /*LineageHelper graphUtil = new LineageHelper(prism);
         VerticesResult allVertices = graphUtil.getAllVertices();
         List<String> processInstances = new ArrayList<String>();
         for (Vertex vertex : allVertices.getResults()) {
@@ -226,7 +229,7 @@ public class LineageGraphTest extends BaseUITestClass {
                 String instance = vertex.getName().split("/")[1];
                 processInstances.add(instance);
             }
-        }
+        }*/
         logger.info("Working with process instances : " + processInstances);
         for (String nominalTime : processInstances) {
             /**open lineage for particular process instance*/
@@ -270,9 +273,9 @@ public class LineageGraphTest extends BaseUITestClass {
             "Feed instance (terminal)");
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
-        for(String instance : processInstances){
-            boolean isLineageOpened = processPage.openLineage(instance);
-            if(!isLineageOpened) continue;
+        for (String nominalTime : processInstances) {
+            boolean isLineageOpened = processPage.openLineage(nominalTime);
+            if (!isLineageOpened) continue;
             //check the main lineage title
             Assert.assertEquals(processPage.getLineageTitle(), "Lineage information");
             //check legends title
@@ -286,6 +289,37 @@ public class LineageGraphTest extends BaseUITestClass {
             }
             processPage.closeLineage();
             processPage.navigateTo();
+        }
+    }
+
+    @Test
+    public void testEdges() throws InterruptedException {
+        ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
+        processPage.navigateTo();
+        for (String nominalTime : processInstances) {
+            boolean isLineageOpened = processPage.openLineage(nominalTime);
+            if (!isLineageOpened) continue;
+            String processInstance = String.format("%s/%s", processName, nominalTime);
+            /**get expected edges between input feed instances and process instance*/
+            HashMap<String, String> edges = new HashMap<String, String>();
+            for (int i = 0; i <= inputEnd; i++) {
+                String inputFeedInstance = String.format("%s/%s", inputFeedName,
+                    TimeUtil.addMinsToTime(nominalTime, i));
+                edges.put(inputFeedInstance, processInstance);
+            }
+            /**get expected edge between output feed instance and process instance*/
+            /* hourly feed starts once at an hour so we are going to convert current process
+             * instance time to use only hourly value */
+            String normalPattern = "yyyy'-'MM'-'dd'T'HH':'mm'Z'";
+            String WOMinutesPattern = "yyyy'-'MM'-'dd'T'HH'";
+            DateTime time = DateTimeFormat.forPattern(normalPattern).parseDateTime(nominalTime);
+            String hourlyTime = DateTimeFormat.forPattern(WOMinutesPattern).print(time);
+            time = DateTimeFormat.forPattern(WOMinutesPattern).parseDateTime(hourlyTime);
+            String outputFeedinstance = String.format("%s/%s", outputFeedName,
+                DateTimeFormat.forPattern(normalPattern).print(time));
+            edges.put(outputFeedinstance, processInstance);
+            Assert.assertEquals(processPage.getEdgesNumber(), edges.size());
+            processPage.closeLineage();
         }
     }
 }
