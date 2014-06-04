@@ -27,11 +27,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
 
 public class ProcessPage extends EntityPage<Process> {
     private Logger logger = Logger.getLogger(ProcessPage.class);
@@ -46,13 +45,14 @@ public class ProcessPage extends EntityPage<Process> {
         "//div[@id='panel-instance']//table/tbody/tr/td[contains(.., " +
             "'%s')]/a[contains(., 'Lineage')]";
     private static final String CLOSE_LINE_AGE_BUTTON_XPATH =
-        "//div[@class='modal-footer']/button" +
-            "[contains(., 'Close')]";
+        "//div[@class='modal-footer']/button[contains(., 'Close')]";
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
-    private static final String VERTICES_BLOCKS_XPATH = "//*[name() = 'svg']/*[name()" +
-        "='g']//*[name() = 'g'][not(@class='lineage-link')]";
-    private static final String EDGE_BLOCK_XPATH = "//*[name() = 'svg']//*[name()" +
-        "='g'][@class='lineage-link']";
+    private static final String SVG_XPATH = "//*[name() = 'svg']";
+    private static final String G_XPATH = "//*[name()='g']";
+    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH + G_XPATH +
+        G_XPATH + "[not(@class='lineage-link')]";
+    private static final String EDGE_XPATH = SVG_XPATH + G_XPATH + "[@class='lineage-link']" +
+        "//*[name()='path']";
     private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
     private static final String LINEAGE_INFO_PANEL = "//div[@id='lineage-info-panel']";
     private static final String LINEAGE_TITLE = LINEAGE_MODAL +
@@ -186,13 +186,33 @@ public class ProcessPage extends EntityPage<Process> {
         } else return null;
     }
 
-    public int getEdgesNumber() {
+    public List<Point[]> getEdgesFromGraph() {
+        List<Point[]> pathsEndpoints = null;
         if (isLineageOpened) {
-            List<WebElement> edgeBlocks = driver.findElements(By.xpath(EDGE_BLOCK_XPATH));
-            return edgeBlocks.size();
-        } else {
-            return 0;
+            pathsEndpoints = new ArrayList<Point[]>();
+            List<WebElement> paths = driver.findElements(By.xpath(EDGE_XPATH));
+            for (WebElement path : paths) {
+                String d = path.getAttribute("d");
+                d = d.replaceAll("[MLC]", ",");
+                String[] coordinates = d.split(",");
+                int x = 0, y, i = 0;
+                while (i < coordinates.length) {
+                    if (!coordinates[i].isEmpty()) {
+                        x = (int) Double.parseDouble(coordinates[i]);
+                        break;
+                    } else {
+                        i++;
+                    }
+                }
+                y = (int) Double.parseDouble(coordinates[i + 1]);
+                Point startPoint = new Point(x, y);
+                x = (int) Math.round(Double.parseDouble(coordinates[coordinates.length - 2]));
+                y = (int) Math.round(Double.parseDouble(coordinates[coordinates.length - 1]));
+                Point endPoint = new Point(x, y);
+                pathsEndpoints.add(new Point[]{startPoint, endPoint});
+            }
         }
+        return pathsEndpoints;
     }
 
     public int getCircleRadius() {
@@ -201,39 +221,47 @@ public class ProcessPage extends EntityPage<Process> {
         return Integer.parseInt(circle.getAttribute("r"));
     }
 
-    public void getStartEndOfEdge() {
-
-    }
-
-    public HashMap<String, int[]> getEdgesEndpoints(HashMap<String, String> startEndInstances) {
-        HashMap<String, int[]> map = null;
-        if(isLineageOpened) {
-            map = new HashMap<String, int[]>();
-            for(Map.Entry<String, String> entry : startEndInstances.entrySet()) {
-                String startVertex = entry.getKey();
-                String endVertex = entry.getValue();
-                map.put(startVertex, getVertexCoordinates(startVertex));
-                map.put(endVertex, getVertexCoordinates(endVertex));
+    public HashMap<String, Point> getVerticesEndpoints(List<Edge> edges) {
+        HashMap<String, Point> map = null;
+        if (isLineageOpened) {
+            map = new HashMap<String, Point>();
+            for (Edge edge : edges) {
+                String startVertex = edge.getStartVertex();
+                String endVertex = edge.getEndVertex();
+                map.put(startVertex, getVertexEndpoint(startVertex));
+                map.put(endVertex, getVertexEndpoint(endVertex));
             }
         }
         return map;
     }
 
-    private int[] getVertexCoordinates(String vertex) {
-        int[] coordinates = new int[2];
+    private Point getVertexEndpoint(String vertex) {
         /** get circle of start vertex */
         String particularVertexBlock = VERTICES_BLOCKS_XPATH + String.format("[contains(" +
             "., '%s')]", vertex);
         WebElement block = driver.findElement(By.xpath(particularVertexBlock));
         String attribute = block.getAttribute("transform");
         attribute = attribute.replaceAll("[a-zA-Z]", "");
-        String [] numbers = attribute.replaceAll("[()]", "").split(",");
-        for(int i = 0; i < 2; i++){
-            coordinates[i] = Integer.parseInt(numbers[i]);
-        }
-        return coordinates;
+        String[] numbers = attribute.replaceAll("[()]", "").split(",");
+        return new Point(Integer.parseInt(numbers[0]), Integer.parseInt(numbers[1]));
     }
 
+    public static class Edge {
 
+        String startVertex;
+        String endVertex;
 
+        public Edge(String startVertex, String endVertex) {
+            this.startVertex = startVertex;
+            this.endVertex = endVertex;
+        }
+
+        public String getStartVertex() {
+            return startVertex;
+        }
+
+        public String getEndVertex() {
+            return endVertex;
+        }
+    }
 }
