@@ -47,6 +47,11 @@ public class EntitiesPage extends Page {
         notFoundMsg = String.format("No entities on %sS page", type);
     }
 
+    /**
+     * Returns status of defined entity
+     * @param entityName name of entity
+     * @return status of defined entity
+     */
     public EntityStatus getEntityStatus(String entityName) {
         navigateTo();
         while (true) {
@@ -76,6 +81,10 @@ public class EntitiesPage extends Page {
         }
     }
 
+    /**
+     * Returns page number
+     * @return page number
+     */
     public int getPageNumber() {
         String number = driver.findElement(By.xpath(PAGE_NUMBER)).getText();
         return Integer.parseInt(number);
@@ -92,6 +101,9 @@ public class EntitiesPage extends Page {
         return entities;
     }
 
+    /**
+     * Status of entity that can be shown on Falcon UI
+     */
     public enum EntityStatus {
         UNKNOWN, SUBMITTED, RUNNING, SUSPENDED
     }
