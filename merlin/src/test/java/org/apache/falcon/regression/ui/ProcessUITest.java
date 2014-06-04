@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+@Test(groups = "embedded")
 public class ProcessUITest extends BaseUITestClass {
 
     private ColoHelper cluster = servers.get(0);
@@ -180,6 +181,10 @@ public class ProcessUITest extends BaseUITestClass {
         removeBundles();
     }
 
+    /**
+     * Test checks that UI show expected statuses of submitted Process (SUBMITTED and RUNNING)
+     * @throws Exception
+     */
     @Test
     public void testProcessStatus() throws Exception {
 
@@ -198,6 +203,10 @@ public class ProcessUITest extends BaseUITestClass {
 
     }
 
+    /**
+     * Test checks instances icons to be relevant to statuses of oozie actions
+     * @throws Exception
+     */
     @Test
     public void testInstances() throws Exception {
 
@@ -236,6 +245,10 @@ public class ProcessUITest extends BaseUITestClass {
         }
     }
 
+    /**
+     * Test checks that Lineage links are available only for SUCCEEDED instances
+     * @throws Exception
+     */
     @Test
     public void testLineageLink() throws Exception {
 
