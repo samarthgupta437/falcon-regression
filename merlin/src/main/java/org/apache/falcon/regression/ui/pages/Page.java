@@ -40,16 +40,28 @@ public abstract class Page {
         this.driver = driver;
         URL = helper.getClusterHelper().getHostname();
     }
-    
+
+    /**
+     * Go to page in browser
+     */
     public void navigateTo() {
         driver.get(URL);
         waitForElement(expectedElement, DEFAULT_TIMEOUT, notFoundMsg);
     }
 
+    /**
+     * Refresh page
+     */
     public void refresh() {
         driver.navigate().refresh();
     }
 
+    /**
+     * Wait for some WebElement defined by xpath. Throws TimeoutException if element is not visible after defined time.
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for element
+     * @param errMessage message for TimeoutException
+     */
     public void waitForElement(final String xpath, final long timeoutSeconds, String errMessage) {
 
         try {
