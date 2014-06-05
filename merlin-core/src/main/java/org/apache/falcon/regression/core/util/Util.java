@@ -792,6 +792,7 @@ public class Util {
         String line;
         while (true) {
             while ((line=r.readLine())!=null) {
+                logger.debug(line);
                 data.add(line);
             }
             if (channel.isClosed()) {
@@ -1122,7 +1123,6 @@ public class Util {
         postList.add("/instance/suspend");
         postList.add("/instance/resume");
         postList.add("/instance/rerun");
-        postList.add("/instance/summary");
         for (String item : postList) {
             if (url.toLowerCase().contains(item)) {
                 return "post";
