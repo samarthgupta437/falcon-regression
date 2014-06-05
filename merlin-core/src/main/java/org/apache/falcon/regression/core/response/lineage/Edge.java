@@ -33,6 +33,9 @@ public class Edge extends GraphEntity {
         @SerializedName("collocated")CLUSTER_COLO,
         @SerializedName("owned-by")OWNED_BY,
         @SerializedName("grouped-as")GROUPS,
+        //custom labels for test tags
+        @SerializedName("test")TEST,
+        @SerializedName("testname")TESTNAME,
     }
 
     String _id;

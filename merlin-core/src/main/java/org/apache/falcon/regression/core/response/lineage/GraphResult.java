@@ -27,5 +27,5 @@ public abstract class GraphResult {
         return totalSize;
     }
 
-    public abstract List<? extends GraphEntity> getResults();
+    public abstract List<?> getResults();
 }
