@@ -1007,6 +1007,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
+        Thread.sleep(30000);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
@@ -1590,6 +1591,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             .update(oldData, prism.getProcessHelper().toString(updatedProcess));
     }
 
+    /**
+    this method compares process xml definition from 2 falcon servers / prism and expects them to
+     be identical. If the definitions are identical then the definition from @param coloHelper1
+     is @return are response.
+     **/
     private String dualComparison(PrismHelper coloHelper1 , PrismHelper coloHelper2,
                                   String processData) throws Exception {
         String colo1Response = getResponse(coloHelper1, processData, true);
@@ -1599,6 +1605,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         return getResponse(coloHelper1, processData, true);
     }
 
+    /**
+     this method compares process xml definition from 2 falcon servers / prism and expects them to
+     be different.
+     **/
     private void dualComparisonFailure(PrismHelper coloHelper1 , PrismHelper coloHelper2,
                                        String processData) throws Exception {
         Assert.assertFalse(XmlUtil.isIdentical(getResponse(coloHelper1, processData, true),
