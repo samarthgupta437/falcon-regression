@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.ui;
 
-import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
@@ -37,11 +36,11 @@ import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.lineage.LineageApiTest;
 import org.apache.falcon.regression.testHelper.BaseUITestClass;
 import org.apache.falcon.regression.ui.pages.EntitiesPage;
 import org.apache.falcon.regression.ui.pages.ProcessPage;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
@@ -51,11 +50,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -138,7 +134,7 @@ public class ProcessUITest extends BaseUITestClass {
         final FeedMerlin outputMerlin = new FeedMerlin(BundleUtil.getOutputFeedFromBundle(bundles[0]));
 
 
-        inputFeeds = generateFeeds(numInputFeeds, inputMerlin,
+        inputFeeds = LineageApiTest.generateFeeds(numInputFeeds, inputMerlin,
                 Generator.getNameGenerator("infeed", inputMerlin.getName()),
                 Generator.getHadoopPathGenerator(feedInputPath, datePattern));
         int j = 0;
@@ -146,7 +142,7 @@ public class ProcessUITest extends BaseUITestClass {
             bundles[0].addInputFeedToBundle("inputFeed" + j, feed.toString(), j++);
         }
 
-        outputFeeds = generateFeeds(numOutputFeeds, outputMerlin,
+        outputFeeds = LineageApiTest.generateFeeds(numOutputFeeds, outputMerlin,
                 Generator.getNameGenerator("outfeed", outputMerlin.getName()),
                 Generator.getHadoopPathGenerator(feedOutputPath, datePattern));
         j = 0;
@@ -158,22 +154,6 @@ public class ProcessUITest extends BaseUITestClass {
 
     }
 
-    public static FeedMerlin[] generateFeeds(final int numInputFeeds,
-                                             final FeedMerlin originalFeedMerlin,
-                                             final Generator nameGenerator,
-                                             final Generator pathGenerator)
-            throws JAXBException, NoSuchMethodException, InvocationTargetException,
-            IllegalAccessException, IOException, URISyntaxException, AuthenticationException {
-        FeedMerlin[] inputFeeds = new FeedMerlin[numInputFeeds];
-        //submit all input feeds
-        for(int count = 0; count < numInputFeeds; ++count) {
-            final FeedMerlin feed = new FeedMerlin(originalFeedMerlin.toString());
-            feed.setName(nameGenerator.generate());
-            feed.setLocation(LocationType.DATA, pathGenerator.generate());
-            inputFeeds[count] = feed;
-        }
-        return inputFeeds;
-    }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) throws IOException {
