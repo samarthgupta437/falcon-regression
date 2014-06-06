@@ -25,9 +25,9 @@ public enum Direction {
     outgoingVertices("out"),
     inComingVertices("in"),
     bothVertices("both"),
-    outgoingVerticesCount("outCount"),
-    incomingVerticesCount("inCount"),
-    bothVerticesCount("bothCount"),
+    outCount("outCount"),
+    inCount("inCount"),
+    bothCount("bothCount"),
     outgoingVerticesIds("outIds"),
     incomingVerticesIds("inIds"),
     bothVerticesIds("bothIds");
