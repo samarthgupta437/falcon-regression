@@ -70,10 +70,8 @@ public class LineageApiTest extends BaseTestClass {
     final ColoHelper cluster = servers.get(0);
     final String baseTestHDFSDir = baseHDFSDir + "/LineageApiTest";
     final String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    final String feedInputPath =
-        baseTestHDFSDir + "/input";
-    final String feedOutputPath =
-        baseTestHDFSDir + "/output";
+    final String feedInputPath = baseTestHDFSDir + "/input";
+    final String feedOutputPath = baseTestHDFSDir + "/output";
     // use 5 <= x < 10 input feeds
     final int numInputFeeds = 5 + new Random().nextInt(5);
     // use 5 <= x < 10 output feeds
@@ -150,6 +148,10 @@ public class LineageApiTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Get all vertices from falcon and check that they are sane
+     * @throws Exception
+     */
     @Test
     public void testAllVertices() throws Exception {
         final VerticesResult verticesResult = lineageHelper.getAllVertices();
@@ -163,6 +165,10 @@ public class LineageApiTest extends BaseTestClass {
             Vertex.VERTEX_TYPE.FEED_ENTITY, numInputFeeds + numOutputFeeds);
     }
 
+    /**
+     * Get a vertex by id and check results
+     * @throws Exception
+     */
     @Test
     public void testVertexId() throws Exception {
         final VerticesResult userResult =
@@ -175,6 +181,10 @@ public class LineageApiTest extends BaseTestClass {
             "Same vertex should have been returned.");
     }
 
+    /**
+     * Negative test - get a vertex without specifying id, we should not get internal server error
+     * @throws Exception
+     */
     @Test
     public void testVertexNoId() throws Exception {
         HttpResponse response = lineageHelper.runGetRequest(
@@ -183,10 +193,14 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertNotEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.INTERNAL_SERVER_ERROR,
+            Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
             "We should not get internal server error");
     }
 
+    /**
+     * Negative test - get a vertex specifying an invalid id, we should not get http non-found error
+     * @throws Exception
+     */
     @Test
     public void testVertexInvalidId() throws Exception {
         final VerticesResult allVerticesResult =
@@ -207,13 +221,16 @@ public class LineageApiTest extends BaseTestClass {
         Assert.assertTrue(
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
+        Assert.assertEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.NOT_FOUND.getStatusCode(),
             "We should get http not found error");
     }
 
-    private void checkVertexOneProperty(Vertex.VERTEX_TYPE vertexType)
-        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        JSONException {
+    /**
+     * Get properties of one type of vertex and check those properties
+     * @param vertexType type of the vertex that we want to check
+     */
+    private void checkVertexOneProperty(Vertex.VERTEX_TYPE vertexType) {
         final VerticesResult coloResult = lineageHelper.getVerticesByType(vertexType);
         GraphAssert.assertVertexSanity(coloResult);
         for (Vertex coloVertex : coloResult.getResults()) {
@@ -227,6 +244,10 @@ public class LineageApiTest extends BaseTestClass {
         }
     }
 
+    /**
+     * Test vertex properties for different types of vertices
+     * @throws Exception
+     */
     @Test
     public void testVertexProperties() throws Exception {
         //testing properties of a user vertex
@@ -242,6 +263,10 @@ public class LineageApiTest extends BaseTestClass {
         //checkVertexOneProperty(Vertex.VERTEX_TYPE.FEED_ENTITY);
     }
 
+    /**
+     * Test vertex properties supplying a blank id, expecting http not found error
+     * @throws Exception
+     */
     @Test
     public void testVertexPropertiesNoId() throws Exception {
         //testing properties of a user vertex
@@ -250,10 +275,14 @@ public class LineageApiTest extends BaseTestClass {
         String responseString = lineageHelper.getResponseString(response);
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
-        Assert.assertNotEquals(response.getStatusLine().getStatusCode(), 500,
-            "We should not get internal server error");
+        Assert.assertEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.NOT_FOUND.getStatusCode(), "We should get http not found error");
     }
 
+    /**
+     * Test vertex properties supplying an invalid id, expecting http not found error
+     * @throws Exception
+     */
     @Test
     public void testVertexPropertiesInvalidId() throws Exception {
         final VerticesResult allVerticesResult =
@@ -275,10 +304,15 @@ public class LineageApiTest extends BaseTestClass {
         Assert.assertTrue(
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
-            "We should get 404 Not Found error");
+        Assert.assertEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.NOT_FOUND.getStatusCode(),
+            "We should get http not found error");
     }
 
+    /**
+     * Test filtering vertices by name
+     * @throws Exception
+     */
     @Test
     public void testVerticesFilterByName() throws Exception {
         final String clusterName = clusterMerlin.getName();
@@ -306,6 +340,10 @@ public class LineageApiTest extends BaseTestClass {
 
     }
 
+    /**
+     * Test filtering vertices by type
+     * @throws Exception
+     */
     @Test
     public void testVerticesFilterByType() throws Exception {
         final VerticesResult clusterVertices =
@@ -327,6 +365,10 @@ public class LineageApiTest extends BaseTestClass {
         }
     }
 
+    /**
+     * Test filtering vertices when no output is produced
+     * @throws Exception
+     */
     @Test
     public void testVerticesFilterNoOutput() throws Exception {
         final String nonExistingName = "this-is-a-non-existing-name";
@@ -499,7 +541,8 @@ public class LineageApiTest extends BaseTestClass {
         final String responseString = lineageHelper.getResponseString(response);
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.BAD_REQUEST,
+        Assert.assertEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.BAD_REQUEST.getStatusCode(),
             "We should not get internal server error");
     }
 
@@ -539,7 +582,8 @@ public class LineageApiTest extends BaseTestClass {
             lineageHelper.getUrl(LineageHelper.URL.EDGES, lineageHelper.getUrlPath("")));
         logger.info(httpResponse.toString());
         logger.info(lineageHelper.getResponseString(httpResponse));
-        Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
+        Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(),
+            Response.Status.NOT_FOUND.getStatusCode(),
             "Expecting not-found error.");
     }
 
@@ -549,7 +593,8 @@ public class LineageApiTest extends BaseTestClass {
             lineageHelper.getUrl(LineageHelper.URL.EDGES, lineageHelper.getUrlPath("invalid-id")));
         logger.info(response.toString());
         logger.info(lineageHelper.getResponseString(response));
-        Assert.assertEquals(response.getStatusLine().getStatusCode(), Response.Status.NOT_FOUND,
+        Assert.assertEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.NOT_FOUND.getStatusCode(),
             "Expecting not-found error.");
     }
 
