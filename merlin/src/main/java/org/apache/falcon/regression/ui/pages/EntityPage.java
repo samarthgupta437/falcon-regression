@@ -44,14 +44,30 @@ public class EntityPage<T> extends Page {
         notFoundMsg = String.format(" %s '%s' not found!", type, entityName);
     }
 
+    /**
+     * Returns page of defined CLUSTER entity
+     * @param entityName name of defined entity
+     * @return page of defined CLUSTER entity
+     */
     public static EntityPage<Cluster> getClusterPage(WebDriver driver, PrismHelper helper, String entityName) {
         return new EntityPage<Cluster>(driver, helper, ENTITY_TYPE.CLUSTER, Cluster.class, entityName);
     }
 
+    /**
+     * Returns page of defined FEED entity
+     * @param entityName name of defined entity
+     * @return page of defined FEED entity
+     */
     public static EntityPage<Feed> getFeedPage(WebDriver driver, PrismHelper helper, String entityName) {
         return new EntityPage<Feed>(driver, helper, ENTITY_TYPE.FEED, Feed.class, entityName);
     }
 
+    /**
+     * Returns entity object
+     * @return entity object
+     * @throws JAXBException
+     * @throws IOException
+     */
     @SuppressWarnings("unchecked")
     public T getEntity() throws JAXBException, IOException {
         String entity = driver.findElement(By.id("entity-def-textarea")).getText();

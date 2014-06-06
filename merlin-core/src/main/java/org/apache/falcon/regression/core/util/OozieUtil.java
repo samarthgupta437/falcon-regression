@@ -40,6 +40,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 public class OozieUtil {
@@ -323,13 +325,23 @@ public class OozieUtil {
                                                      String bundleId,
                                                      ENTITY_TYPE type)
         throws OozieClientException {
+        Map<Date, CoordinatorAction.Status> actions = getActionsNominalTimeAndStatus(prismHelper, bundleId, type);
         List<String> nominalTime = new ArrayList<String>();
-        List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
-            bundleId, type).getActions();
-        for (CoordinatorAction action : actions) {
-            nominalTime.add(action.getNominalTime().toString());
+        for (Date date : actions.keySet()) {
+            nominalTime.add(date.toString());
         }
         return nominalTime;
+    }
+
+    public static Map<Date, CoordinatorAction.Status> getActionsNominalTimeAndStatus(PrismHelper prismHelper, String bundleId,
+                                                                       ENTITY_TYPE type) throws OozieClientException {
+        Map<Date, CoordinatorAction.Status> result = new TreeMap<Date, CoordinatorAction.Status>();
+        List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
+                bundleId, type).getActions();
+        for (CoordinatorAction action : actions) {
+            result.put(action.getNominalTime(), action.getStatus());
+        }
+        return result;
     }
 
     public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
