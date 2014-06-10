@@ -99,17 +99,7 @@ public class LineageGraphTest extends BaseUITestClass {
         bundles[0].setProcessConcurrency(5);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath);
-        Process process = InstanceUtil.getProcessElement(bundles[0]);
-        Inputs inputs = new Inputs();
-        Input input = new Input();
-        input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(bundles[0])));
-        input.setStart("now(0,0)");
-        input.setEnd(String.format("now(0,%d)", inputEnd));
-        input.setName("inputData");
-        inputs.getInputs().add(input);
-        process.setInputs(inputs);
-
-        bundles[0].setProcessData(InstanceUtil.processToString(process));
+        bundles[0].setProcessInput("now(0,0)", String.format("now(0,%d)", inputEnd));
 
         /**provide necessary data for first 3 instances to run*/
         logger.info("Creating necessary data...");
