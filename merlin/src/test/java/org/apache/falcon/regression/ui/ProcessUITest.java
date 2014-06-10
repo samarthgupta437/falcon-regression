@@ -45,10 +45,10 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -70,6 +70,7 @@ public class ProcessUITest extends BaseUITestClass {
     final String feedOutputPath = baseTestDir + "/output";
     private FileSystem clusterFS = serverFS.get(0);
     private OozieClient clusterOC = serverOC.get(0);
+    private SoftAssert softAssert = new SoftAssert();
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -163,96 +164,61 @@ public class ProcessUITest extends BaseUITestClass {
 
     /**
      * Test checks that UI show expected statuses of submitted Process (SUBMITTED and RUNNING)
+     * then checks instances icons to be relevant to statuses of oozie actions
+     * and checks that Lineage links are available only for SUCCEEDED instances
      * @throws Exception
      */
     @Test
-    public void testProcessStatus() throws Exception {
+    public void testProcessUI() throws Exception {
 
+        //check Process statuses via UI
         EntitiesPage page = new EntitiesPage(DRIVER, cluster, ENTITY_TYPE.PROCESS);
         page.navigateTo();
 
-        Assert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
+        softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
                 EntitiesPage.EntityStatus.SUBMITTED, "Process status should be SUBMITTED");
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, 5, ENTITY_TYPE.PROCESS);
 
-        Assert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
+        softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
                 EntitiesPage.EntityStatus.RUNNING, "Process status should be RUNNING");
 
-    }
-
-    /**
-     * Test checks instances icons to be relevant to statuses of oozie actions
-     * @throws Exception
-     */
-    @Test
-    public void testInstances() throws Exception {
-
-        prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
-
-        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
-
-        ProcessPage page = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
-        page.navigateTo();
+        ProcessPage processPage = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
+        processPage.navigateTo();
 
         String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
         Map<Date, CoordinatorAction.Status> actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID,
                 ENTITY_TYPE.PROCESS);
-
-        checkActions(actions, page);
+        checkActions(actions, processPage);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
                 .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 
-        page.refresh();
-
+        processPage.refresh();
         actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, ENTITY_TYPE.PROCESS);
+        checkActions(actions, processPage);
 
-        checkActions(actions, page);
-
+        softAssert.assertAll();
     }
 
     private void checkActions(Map<Date, CoordinatorAction.Status> actions, ProcessPage page) {
         for(Date date : actions.keySet()) {
             String oozieDate = TimeUtil.dateToOozieDate(date);
             String status = page.getInstanceStatus(oozieDate);
-            Assert.assertNotNull(status, oozieDate + " instance not present on UI");
-            Assert.assertEquals(status, actions.get(date).toString(), "Status of instance '"
+            //checks instances icons to be relevant to statuses of oozie actions
+            softAssert.assertNotNull(status, oozieDate + " instance is not present on UI");
+            softAssert.assertEquals(status, actions.get(date).toString(), "Status of instance '"
                     + oozieDate + "' is not the same via oozie and via UI");
-        }
-    }
 
-    /**
-     * Test checks that Lineage links are available only for SUCCEEDED instances
-     * @throws Exception
-     */
-    @Test
-    public void testLineageLink() throws Exception {
-
-        prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
-
-        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
-
-        String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
-        Map<Date, CoordinatorAction.Status> actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID,
-                ENTITY_TYPE.PROCESS);
-
-        ProcessPage page = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
-        page.navigateTo();
-
-        for(Date date : actions.keySet()) {
-            String oozieDate = TimeUtil.dateToOozieDate(date);
+            //check that Lineage links are available only for SUCCEEDED instances
             boolean isPresent = page.isLineageLinkPresent(oozieDate);
             if(actions.get(date) == CoordinatorAction.Status.SUCCEEDED) {
-                Assert.assertTrue(isPresent, "Lineage button should be present for instance: " + oozieDate);
+                softAssert.assertTrue(isPresent, "Lineage button should be present for instance: " + oozieDate);
             } else {
-                Assert.assertFalse(isPresent, "Lineage button should not be present for instance: " + oozieDate);
+                softAssert.assertFalse(isPresent, "Lineage button should not be present for instance: " + oozieDate);
             }
         }
-
     }
 }
