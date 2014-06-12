@@ -206,8 +206,7 @@ public class LineageGraphTest extends BaseUITestClass {
             logger.info("Actual instance : " + outputFeedinstance);
             Assert.assertEquals(entityInstances.size(), 1);
             Assert.assertTrue(entityInstances.contains(outputFeedinstance));
-            processPage.closeLineage();
-            processPage.navigateTo();
+            processPage.refresh();
         }
     }
 
@@ -248,8 +247,7 @@ public class LineageGraphTest extends BaseUITestClass {
                         ".name"), "Entity should be owned by current system user.");
                 }
             }
-            processPage.closeLineage();
-            processPage.navigateTo();
+            processPage.refresh();
         }
     }
 
@@ -281,8 +279,7 @@ public class LineageGraphTest extends BaseUITestClass {
                 String value = entry.getValue();
                 Assert.assertEquals(expectedDescriptions.get(key), value);
             }
-            processPage.closeLineage();
-            processPage.navigateTo();
+            processPage.refresh();
         }
     }
 
@@ -344,7 +341,7 @@ public class LineageGraphTest extends BaseUITestClass {
                 Assert.assertTrue(isEdgePresent, String.format("Edge %s-->%s isn't present on " +
                     "lineage or painted incorrectly.", expStartVertex, expEndVertex));
             }
-            processPage.closeLineage();
+            processPage.refresh();
         }
     }
 
