@@ -21,7 +21,6 @@ package org.apache.falcon.regression.core.util;
 import junit.framework.Assert;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -197,21 +196,21 @@ public class TimeUtil {
         else
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
 
-        DateTimeFormatter fmt = getOozieDateTimeFormatter();
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         DateTimeZone tz = DateTimeZone.getDefault();
         return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(), false));
     }
 
     public static String addMinsToTime(String time, int minutes) {
 
-        DateTimeFormatter fmt = getOozieDateTimeFormatter();
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         DateTime jodaTime = fmt.parseDateTime(time);
         jodaTime = jodaTime.plusMinutes(minutes);
         return fmt.print(jodaTime);
     }
 
     public static DateTime oozieDateToDate(String time) {
-        DateTimeFormatter fmt = getOozieDateTimeFormatter();
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         fmt = fmt.withZoneUTC();
         return fmt.parseDateTime(time);
     }
@@ -220,12 +219,8 @@ public class TimeUtil {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
         InstanceUtil.logger.info("SystemTime: " + jodaTime);
-        DateTimeFormatter fmt = getOozieDateTimeFormatter();
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         return fmt.print(jodaTime);
-    }
-
-    public static DateTimeFormatter getOozieDateTimeFormatter() {
-        return DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
     }
 
     public static void sleepTill(String startTimeOfLateCoord) {

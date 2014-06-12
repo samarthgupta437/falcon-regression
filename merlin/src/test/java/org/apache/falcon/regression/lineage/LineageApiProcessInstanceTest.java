@@ -195,7 +195,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
                 TimeUtil.getMinuteDatesOnEitherSide(
                     TimeUtil.oozieDateToDate(processInstanceTime).plusMinutes(-20),
                     TimeUtil.oozieDateToDate(processInstanceTime), 5,
-                    TimeUtil.getOozieDateTimeFormatter());
+                    OozieUtil.getOozieDateTimeFormatter());
             // checking input feed instances
             for(Vertex inFeedInst : piIncoming.filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE)) {
                 final String inFeedInstName = inFeedInst.getName();

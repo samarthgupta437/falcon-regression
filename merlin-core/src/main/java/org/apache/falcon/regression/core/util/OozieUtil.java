@@ -32,6 +32,8 @@ import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
@@ -439,5 +441,9 @@ public class OozieUtil {
 
         return TimeUtil.dateToOozieDate(coord.getStartTime()
         );
+    }
+
+    public static DateTimeFormatter getOozieDateTimeFormatter() {
+        return DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
     }
 }
