@@ -61,7 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Test(groups = "embedded")
+@Test(groups = "lineage-ui")
 public class LineageGraphTest extends BaseUITestClass {
 
     private ColoHelper cluster = servers.get(0);
