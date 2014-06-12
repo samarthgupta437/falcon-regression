@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-@Test(groups = "embedded")
+@Test(groups = "lineage-ui")
 public class ProcessUITest extends BaseUITestClass {
 
     private ColoHelper cluster = servers.get(0);
