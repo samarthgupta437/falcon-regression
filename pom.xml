@@ -701,7 +701,7 @@
                             <headerLocation>falcon/checkstyle-java-header.txt</headerLocation>
                             <failOnViolation>true</failOnViolation>
                             <skip>${skipCheck}</skip>
-                            <excludes>**/generated/**/*</excludes>
+                            <excludes>**/entity/v0/**/*</excludes>
                         </configuration>
                     </execution>
                 </executions>
