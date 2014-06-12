@@ -90,7 +90,6 @@ public class ProcessPage extends EntityPage<Process> {
             WebElement close = driver.findElement(By.xpath(CLOSE_LINE_AGE_BUTTON_XPATH));
             close.click();
             isLineageOpened = false;
-            this.navigateTo();
         }
     }
 
@@ -118,6 +117,21 @@ public class ProcessPage extends EntityPage<Process> {
             }
         }
         return map;
+    }
+
+    /**
+     * @return list of all vertices names
+     */
+    public List<String> getAllVerticesNames() {
+        List<String> list = new ArrayList<String>();
+        if (isLineageOpened) {
+            waitForElement(VERTICES_BLOCKS_XPATH, DEFAULT_TIMEOUT, "Close Lineage button not found");
+            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));            ;
+            for (WebElement block : blocks) {
+                list.add(block.getText());
+            }
+        }
+        return list;
     }
 
     /**

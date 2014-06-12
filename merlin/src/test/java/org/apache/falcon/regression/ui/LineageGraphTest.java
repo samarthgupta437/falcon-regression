@@ -348,6 +348,27 @@ public class LineageGraphTest extends BaseUITestClass {
         }
     }
 
+    /**
+     * Test which opens and closes Lineage info and checks content of it
+     */
+    @Test
+    public void testLineageOpenClose() throws InterruptedException {
+        ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
+        processPage.navigateTo();
+
+        List<String> previous = new ArrayList<String>();
+        for (String nominalTime : processInstances) {
+            if (!processPage.isLineageLinkPresent(nominalTime)) continue;
+            processPage.openLineage(nominalTime);
+            List<String> vertices = processPage.getAllVerticesNames();
+            Assert.assertNotEquals(previous, vertices, "Graph of " + nominalTime + " instance is "
+                + "equal to previous");
+            previous = vertices;
+            processPage.closeLineage();
+        }
+    }
+
+
 
     /**
      * Evaluates if endpoint is in permissible region near the vertex
