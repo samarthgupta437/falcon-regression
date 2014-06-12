@@ -33,11 +33,13 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ProcessPage extends EntityPage<Process> {
-    
+
     private Logger logger = Logger.getLogger(ProcessPage.class);
     private final static String INSTANCES_PANEL = "//div[@id='panel-instance']//span";
-    private final static String INSTANCE_STATUS_TEMPLATE = "//div[@id='panel-instance']//span[contains(..,'%s')]";
-    private final static String LINEAGE_LINK_TEMPLATE = "//a[@class='lineage-href' and @data-instance-name='%s']";
+    private final static String INSTANCE_STATUS_TEMPLATE =
+        "//div[@id='panel-instance']//span[contains(..,'%s')]";
+    private final static String LINEAGE_LINK_TEMPLATE =
+        "//a[@class='lineage-href' and @data-instance-name='%s']";
 
     public ProcessPage(WebDriver driver, PrismHelper helper, String entityName) {
         super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
@@ -69,14 +71,15 @@ public class ProcessPage extends EntityPage<Process> {
      */
     public boolean openLineage(String nominalTime) throws InterruptedException {
         waitForElement(String.format(LINE_AGE_BUTTON_XPATH, nominalTime), DEFAULT_TIMEOUT,
-                "Lineage button didn't appear");
+            "Lineage button didn't appear");
         logger.info("Working with instance: " + nominalTime);
         WebElement lineage =
             driver.findElement(By.xpath(String.format(LINE_AGE_BUTTON_XPATH, nominalTime)));
         if (lineage != null) {
             logger.info("Opening lineage...");
             lineage.click();
-            waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, DEFAULT_TIMEOUT, "Circles not found");
+            waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, DEFAULT_TIMEOUT,
+                "Circles not found");
             waitForElement(LINEAGE_TITLE, DEFAULT_TIMEOUT, "Lineage title not found");
             isLineageOpened = true;
         } else {
@@ -105,7 +108,8 @@ public class ProcessPage extends EntityPage<Process> {
     public HashMap<String, List<String>> getAllVertices() {
         HashMap<String, List<String>> map = null;
         if (isLineageOpened) {
-            waitForElement(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT, "Close Lineage button not found");
+            waitForElement(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
+                "Close Lineage button not found");
             List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
@@ -131,8 +135,9 @@ public class ProcessPage extends EntityPage<Process> {
     public List<String> getAllVerticesNames() {
         List<String> list = new ArrayList<String>();
         if (isLineageOpened) {
-            waitForElement(VERTICES_BLOCKS_XPATH, DEFAULT_TIMEOUT, "Close Lineage button not found");
-            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));            ;
+            waitForElement(VERTICES_BLOCKS_XPATH, DEFAULT_TIMEOUT,
+                "Close Lineage button not found");
+            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
             for (WebElement block : blocks) {
                 list.add(block.getText());
             }
@@ -163,7 +168,7 @@ public class ProcessPage extends EntityPage<Process> {
         if (isLineageOpened) {
             //check if vertex was clicked
             waitForElement(LINEAGE_INFO_PANEL + "//div[@class='col-md-3']", DEFAULT_TIMEOUT,
-                    "Lineage info panel not found");
+                "Lineage info panel not found");
             List<WebElement> infoBlocks =
                 driver.findElements(By.xpath(LINEAGE_INFO_PANEL + "//div[@class='col-md-3']"));
             map = new HashMap<String, String>();
@@ -290,9 +295,11 @@ public class ProcessPage extends EntityPage<Process> {
             return endVertex;
         }
     }
+
     public String getInstanceStatus(String instanceDate) {
         waitForInstancesPanel();
-        List<WebElement> status = driver.findElements(By.xpath(String.format(INSTANCE_STATUS_TEMPLATE, instanceDate)));
+        List<WebElement> status =
+            driver.findElements(By.xpath(String.format(INSTANCE_STATUS_TEMPLATE, instanceDate)));
         if (status.isEmpty()) {
             return null;
         } else {
@@ -302,7 +309,8 @@ public class ProcessPage extends EntityPage<Process> {
 
     public boolean isLineageLinkPresent(String instanceDate) {
         waitForInstancesPanel();
-        List<WebElement> lineage = driver.findElements(By.xpath(String.format(LINEAGE_LINK_TEMPLATE, instanceDate)));
+        List<WebElement> lineage =
+            driver.findElements(By.xpath(String.format(LINEAGE_LINK_TEMPLATE, instanceDate)));
         return !lineage.isEmpty();
     }
 
