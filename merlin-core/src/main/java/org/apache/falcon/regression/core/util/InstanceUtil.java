@@ -21,6 +21,11 @@ package org.apache.falcon.regression.core.util;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.falcon.entity.v0.feed.Cluster;
+import org.apache.falcon.entity.v0.feed.Location;
+import org.apache.falcon.entity.v0.feed.Locations;
+import org.apache.falcon.entity.v0.feed.Validity;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.CatalogTable;
 import org.apache.falcon.entity.v0.process.Process;
@@ -702,87 +707,87 @@ public class InstanceUtil {
     /**
      * Sets one more cluster to feed.
      *
-     * @param feed      - feed which is to be modified
-     * @param v1        - cluster validity
-     * @param r1        - set retention on that cluster
-     * @param n1        - cluster name
-     * @param t1        - cluster type
+     * @param feed feed which is to be modified
+     * @param feedValidity validity of the feed on the cluster
+     * @param feedRetention set retention of the feed on the cluster
+     * @param clusterName cluster name, if null would erase all the cluster details from the feed
+     * @param clusterType cluster type
      * @param partition - partition where data is available for feed
      * @param locations - location where data is picked
-     * @return - string representation of modified string
+     * @return - string representation of the modified feed
      * @throws JAXBException
      */
-    public static String setFeedCluster(String feed,
-                                        org.apache.falcon.entity.v0.feed.Validity
-                                            v1,
-                                        Retention r1, String n1, ClusterType t1, String partition,
+    public static String setFeedCluster(String feed, Validity feedValidity, Retention feedRetention,
+                                        String clusterName,
+                                        ClusterType clusterType, String partition,
                                         String... locations) throws JAXBException {
-        return setFeedClusterWithTable(feed, v1, r1, n1, t1, partition, null, locations);
+        return setFeedClusterWithTable(feed, feedValidity, feedRetention, clusterName, clusterType,
+            partition, null, locations);
     }
 
-    public static CatalogTable getCatalogTable(String tableUri) {
+    public static String setFeedClusterWithTable(String feed, Validity feedValidity,
+                                                 Retention feedRetention, String clusterName,
+                                                 ClusterType clusterType, String partition,
+                                                 String tableUri, String... locations)
+        throws JAXBException {
+        Feed f = getFeedElement(feed);
+        if (clusterName == null) {
+            f.getClusters().getClusters().clear();
+        } else {
+            Cluster feedCluster = createFeedCluster(feedValidity, feedRetention, clusterName,
+                clusterType, partition, tableUri, locations);
+            f.getClusters().getClusters().add(feedCluster);
+        }
+        return feedElementToString(f);
+    }
+
+    private static CatalogTable getCatalogTable(String tableUri) {
         CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         return catalogTable;
     }
 
-    public static String setFeedClusterWithTable(String feed,
-                                                 org.apache.falcon.entity.v0.feed
-                                                     .Validity
-                                                     v1,
-                                                 Retention r1, String n1, ClusterType t1,
-                                                 String partition, String tableUri,
-                                                 String... locations) throws JAXBException {
+    private static Cluster createFeedCluster(
+        Validity feedValidity, Retention feedRetention, String clusterName, ClusterType clusterType,
+        String partition, String tableUri, String[] locations) {
 
-        org.apache.falcon.entity.v0.feed.Cluster c1 =
-            new org.apache.falcon.entity.v0.feed.Cluster();
-        c1.setName(n1);
-        c1.setRetention(r1);
-        if (t1 != null)
-            c1.setType(t1);
-        c1.setValidity(v1);
+        Cluster cluster = new Cluster();
+        cluster.setName(clusterName);
+        cluster.setRetention(feedRetention);
+        if (clusterType != null)
+            cluster.setType(clusterType);
+        cluster.setValidity(feedValidity);
         if (partition != null)
-            c1.setPartition(partition);
+            cluster.setPartition(partition);
 
         // if table uri is not empty or null then set it.
         if (StringUtils.isNotEmpty(tableUri)) {
-            c1.setTable(getCatalogTable(tableUri));
+            cluster.setTable(getCatalogTable(tableUri));
         }
 
 
-        org.apache.falcon.entity.v0.feed.Locations ls =
-            new org.apache.falcon.entity.v0.feed.Locations();
-        if (null != locations && locations.length > 0) {
+        Locations feedLocations = new Locations();
+        if (ArrayUtils.isNotEmpty(locations)) {
             for (int i = 0; i < locations.length; i++) {
-                org.apache.falcon.entity.v0.feed.Location l =
-                    new org.apache.falcon.entity.v0.feed.Location();
-                l.setPath(locations[i]);
+                Location oneLocation = new Location();
+                oneLocation.setPath(locations[i]);
                 if (i == 0)
-                    l.setType(LocationType.DATA);
+                    oneLocation.setType(LocationType.DATA);
                 else if (i == 1)
-                    l.setType(LocationType.STATS);
+                    oneLocation.setType(LocationType.STATS);
                 else if (i == 2)
-                    l.setType(LocationType.META);
+                    oneLocation.setType(LocationType.META);
                 else if (i == 3)
-                    l.setType(LocationType.TMP);
+                    oneLocation.setType(LocationType.TMP);
                 else
-                    Assert.assertTrue(false, "correct value of locations were not passed");
+                    Assert.fail("unexpected value of locations: " + locations);
 
-                ls.getLocations().add(l);
+                feedLocations.getLocations().add(oneLocation);
             }
 
-            c1.setLocations(ls);
+            cluster.setLocations(feedLocations);
         }
-        Feed f = getFeedElement(feed);
-
-        int numberOfInitialClusters = f.getClusters().getClusters().size();
-        if (n1 == null)
-            for (int i = 0; i < numberOfInitialClusters; i++)
-                f.getClusters().getClusters().set(i, null);
-        else {
-            f.getClusters().getClusters().add(c1);
-        }
-        return feedElementToString(f);
+        return cluster;
     }
 
     /**
