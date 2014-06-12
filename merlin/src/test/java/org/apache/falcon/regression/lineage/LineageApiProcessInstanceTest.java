@@ -31,6 +31,7 @@ import org.apache.falcon.regression.core.util.GraphAssert;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -123,6 +124,10 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Test navigation from the process vertex to its instances vertices
+     * @throws Exception
+     */
     @Test
     public void processToProcessInstanceNodes() throws Exception {
         final VerticesResult processResult = lineageHelper.getVerticesByName(processName);
@@ -142,6 +147,10 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
                 "or falcon rest api");
     }
 
+    /**
+     * Test navigation from the process instance vertex to its input and output feed instances
+     * @throws Exception
+     */
     @Test
     public void processInstanceToFeedInstanceNodes() throws Exception {
         final VerticesResult processResult = lineageHelper.getVerticesByName(processName);
@@ -150,9 +159,12 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         final VerticesResult processIncoming =
             lineageHelper.getVerticesByDirection(processVertex.get_id(), Direction.inComingVertices);
         GraphAssert.assertVertexSanity(processIncoming);
+        // fetching process instance vertex
         final List<Vertex> piVertices =
             processIncoming.filterByType(Vertex.VERTEX_TYPE.PROCESS_INSTANCE);
-        logger.info("process instances = " + piVertices);
+        logger.info("process instance vertex = " + piVertices);
+
+        // fetching process instances info
         ProcessInstancesResult piResult = prism.getProcessHelper()
             .getProcessInstanceStatus(processName, "?start=" + processStartDate +
                 "&end=" + endDate);
@@ -184,6 +196,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
                     TimeUtil.oozieDateToDate(processInstanceTime).plusMinutes(-20),
                     TimeUtil.oozieDateToDate(processInstanceTime), 5,
                     TimeUtil.getOozieDateTimeFormatter());
+            // checking input feed instances
             for(Vertex inFeedInst : piIncoming.filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE)) {
                 final String inFeedInstName = inFeedInst.getName();
                 Assert.assertTrue(inFeedInstName.startsWith(inputFeedName),
@@ -201,6 +214,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
             GraphAssert.assertVertexSanity(piOutgoing);
             Assert.assertEquals(piOutgoing.filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE).size(),
                 1, "Expected only one output feed instance.");
+            // checking output feed instances
             final Vertex outFeedInst = piOutgoing.filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE).get(0);
             final String outFeedInstName = outFeedInst.getName();
             Assert.assertTrue(outFeedInstName.startsWith(outputFeedName),
