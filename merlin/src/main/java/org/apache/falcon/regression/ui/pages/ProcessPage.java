@@ -93,6 +93,12 @@ public class ProcessPage extends EntityPage<Process> {
         }
     }
 
+    @Override
+    public void refresh() {
+        super.refresh();
+        isLineageOpened = false;
+    }
+
     /**
      * @return map with instances names and their nominal start time
      */
