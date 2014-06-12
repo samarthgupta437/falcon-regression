@@ -65,7 +65,7 @@ public class ProcessPage extends EntityPage<Process> {
         "//div[@class='modal-body']/div[ul[@class='lineage-legend']]";
 
     /**
-     * @param nominalTime - particular instance of process, defined by it's start time
+     * @param nominalTime particular instance of process, defined by it's start time
      */
     public boolean openLineage(String nominalTime) throws InterruptedException {
         waitForElement(String.format(LINE_AGE_BUTTON_XPATH, nominalTime), DEFAULT_TIMEOUT,
@@ -156,7 +156,7 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     /**
-     * @return - map of parameters from info panel and their values
+     * @return map of parameters from info panel and their values
      */
     public HashMap<String, String> getPanelInfo() {
         HashMap<String, String> map = null;
@@ -177,7 +177,7 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     /**
-     * @return - map of legends as key and their names on UI as values
+     * @return map of legends as key and their names on UI as values
      */
     public HashMap<String, String> getLegends() {
         HashMap<String, String> map = null;
@@ -195,7 +195,7 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     /**
-     * @return - the main title of Lineage UI
+     * @return the main title of Lineage UI
      */
     public String getLineageTitle() {
         if (isLineageOpened) {
@@ -204,7 +204,7 @@ public class ProcessPage extends EntityPage<Process> {
     }
 
     /**
-     * @return - the name of legends block
+     * @return the name of legends block
      */
     public String getLegendsTitile() {
         if (isLineageOpened) {
