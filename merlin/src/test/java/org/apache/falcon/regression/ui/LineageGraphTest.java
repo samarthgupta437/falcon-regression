@@ -19,15 +19,13 @@
 package org.apache.falcon.regression.ui;
 
 import org.apache.falcon.entity.v0.Frequency;
-import org.apache.falcon.entity.v0.process.Input;
-import org.apache.falcon.entity.v0.process.Inputs;
-import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
+import org.apache.falcon.regression.core.response.lineage.Direction;
+import org.apache.falcon.regression.core.response.lineage.Edge;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
-import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -44,7 +42,6 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.codehaus.jettison.json.JSONException;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -76,7 +73,8 @@ public class LineageGraphTest extends BaseUITestClass {
     private String inputFeedName = null;
     private String outputFeedName = null;
     int inputEnd = 4;
-    List<String> processInstances;
+    private List<Vertex> piVertices;
+    LineageHelper lineageHelper = new LineageHelper(prism);
 
     /**
      * Adjusts bundle and schedules it. Provides process with data, waits till some instances got
@@ -99,7 +97,7 @@ public class LineageGraphTest extends BaseUITestClass {
         bundles[0].setProcessConcurrency(5);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath);
-        bundles[0].setProcessInput("now(0,0)", String.format("now(0,%d)", inputEnd));
+        bundles[0].setProcessInput("now(0,0)", String.format("now(0,%d)", inputEnd - 1));
 
         /**provide necessary data for first 3 instances to run*/
         logger.info("Creating necessary data...");
@@ -123,18 +121,10 @@ public class LineageGraphTest extends BaseUITestClass {
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
             CoordinatorAction.Status.SUCCEEDED, 8, ENTITY_TYPE.PROCESS);
-
-        /**process instances*/
-        LineageHelper graphUtil = new LineageHelper(prism);
-        VerticesResult allVertices = graphUtil.getAllVertices();
-        processInstances = new ArrayList<String>();
-        for (Vertex vertex : allVertices.getResults()) {
-            if (!vertex.getName().equals(processName) && vertex.getName().contains(processName)) {
-                String instance = vertex.getName().split("/")[1];
-                processInstances.add(instance);
-            }
-        }
-
+        /**get process instances*/
+        Vertex processVertex = lineageHelper.getVerticesByName(processName).getResults().get(0);
+        piVertices = lineageHelper.getVerticesByDirection(processVertex.get_id(),
+            Direction.inComingVertices).filterByType(Vertex.VERTEX_TYPE.PROCESS_INSTANCE);
         openBrowser();
     }
 
@@ -156,21 +146,15 @@ public class LineageGraphTest extends BaseUITestClass {
 
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
-        logger.info("Working with process instances : " + processInstances);
-        for (String nominalTime : processInstances) {
+        for (Vertex piVertex : piVertices) {
+            String nominalTime = piVertex.getNominalTime();
             /**get expected feed instances*/
             /* input feed instances */
-            List<String> inputFeedinstances = new ArrayList<String>();
-            for (int i = 0; i <= inputEnd; i++) {
-                inputFeedinstances.add(TimeUtil.addMinsToTime(nominalTime, i));
-            }
+            List<Vertex> inpInstancesAPI = lineageHelper.getVerticesByDirection(piVertex.get_id(),
+                Direction.inComingVertices).getResults();
             /* output feed instance */
-            String normalPattern = "yyyy'-'MM'-'dd'T'HH':'mm'Z'";
-            String WOMinutesPattern = "yyyy'-'MM'-'dd'T'HH'";
-            DateTime time = DateTimeFormat.forPattern(normalPattern).parseDateTime(nominalTime);
-            String hourlyTime = DateTimeFormat.forPattern(WOMinutesPattern).print(time);
-            time = DateTimeFormat.forPattern(WOMinutesPattern).parseDateTime(hourlyTime);
-            String outputFeedinstance = DateTimeFormat.forPattern(normalPattern).print(time);
+            List<Vertex> outInstancesAPI = lineageHelper.getVerticesByDirection(piVertex.get_id(),
+                Direction.outgoingVertices).filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE);
             /**open lineage for particular process instance*/
             boolean isLineagePresent = processPage.openLineage(nominalTime);
             if (!isLineagePresent) continue;
@@ -179,23 +163,25 @@ public class LineageGraphTest extends BaseUITestClass {
             Assert.assertTrue(map.containsKey(processName) && map.containsKey(inputFeedName)
                 && map.containsKey(outputFeedName));
             /* process validation */
-            List<String> entityInstances = map.get(processName);
-            Assert.assertEquals(entityInstances.size(), 1);
-            Assert.assertEquals(entityInstances.get(0), nominalTime);
+            List<String> processInstancesUI = map.get(processName);
+            Assert.assertEquals(processInstancesUI.size(), 1);
+            Assert.assertEquals(processInstancesUI.get(0), nominalTime);
             /* input feed validations */
-            entityInstances = map.get(inputFeedName);
-            logger.info("InputFeed instances on lineage UI : " + entityInstances);
-            logger.info("InputFeed instances from API : " + inputFeedinstances);
-            Assert.assertEquals(entityInstances.size(), inputFeedinstances.size());
-            for (String feedInstance : inputFeedinstances) {
-                Assert.assertTrue(entityInstances.contains(feedInstance));
+            List<String> inpInstancesUI = map.get(inputFeedName);
+            logger.info("InputFeed instances on lineage UI : " + inpInstancesUI);
+            logger.info("InputFeed instances from API : " + inpInstancesAPI);
+            Assert.assertEquals(inpInstancesUI.size(), inpInstancesAPI.size());
+            for (Vertex inpInstanceAPI : inpInstancesAPI) {
+                Assert.assertTrue(inpInstancesUI.contains(inpInstanceAPI.getNominalTime()));
             }
             /* output feed validation */
-            entityInstances = map.get(outputFeedName);
-            logger.info("Expected outputFeed instances : " + entityInstances);
-            logger.info("Actual instance : " + outputFeedinstance);
-            Assert.assertEquals(entityInstances.size(), 1);
-            Assert.assertTrue(entityInstances.contains(outputFeedinstance));
+            List<String> outInstancesUI = map.get(outputFeedName);
+            logger.info("Expected outputFeed instances : " + outInstancesUI);
+            logger.info("Actual instance : " + outInstancesAPI);
+            Assert.assertEquals(outInstancesUI.size(), outInstancesAPI.size());
+            for (Vertex outInstanceAPI : outInstancesAPI) {
+                Assert.assertTrue(outInstancesUI.contains(outInstanceAPI.getNominalTime()));
+            }
             processPage.refresh();
         }
     }
@@ -210,8 +196,8 @@ public class LineageGraphTest extends BaseUITestClass {
         String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
-        logger.info("Working with process instances : " + processInstances);
-        for (String nominalTime : processInstances) {
+        for (Vertex piVertex : piVertices) {
+            String nominalTime = piVertex.getNominalTime();
             /**open lineage for particular process instance*/
             boolean isLineagePresent = processPage.openLineage(nominalTime);
             if (!isLineagePresent) continue;
@@ -255,7 +241,8 @@ public class LineageGraphTest extends BaseUITestClass {
             "Feed instance (terminal)");
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
-        for (String nominalTime : processInstances) {
+        for (Vertex piVertex : piVertices) {
+            String nominalTime = piVertex.getNominalTime();
             boolean isLineageOpened = processPage.openLineage(nominalTime);
             if (!isLineageOpened) continue;
             /* check the main lineage title */
@@ -281,55 +268,45 @@ public class LineageGraphTest extends BaseUITestClass {
     public void testEdges() throws InterruptedException {
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
-        for (String nominalTime : processInstances) {
+        for (Vertex piVertex : piVertices) {
+            String nominalTime = piVertex.getNominalTime();
             boolean isLineageOpened = processPage.openLineage(nominalTime);
             if (!isLineageOpened) continue;
-            String processInstance = String.format("%s/%s", processName, nominalTime);
-            /**get expected edges between input feed instances and process instance*/
-            List<ProcessPage.Edge> expectedEdges = new ArrayList<ProcessPage.Edge>();
-            for (int i = 0; i <= inputEnd; i++) {
-                String inputFeedInstance = String.format("%s/%s", inputFeedName,
-                    TimeUtil.addMinsToTime(nominalTime, i));
-                expectedEdges.add(new ProcessPage.Edge(inputFeedInstance, processInstance));
-            }
-            /**get expected edge between output feed instance and process instance*/
-            /* hourly feed starts once at an hour so we are going to convert current process
-             * instance time to use only hourly value */
-            String normalPattern = "yyyy'-'MM'-'dd'T'HH':'mm'Z'";
-            String WOMinutesPattern = "yyyy'-'MM'-'dd'T'HH'";
-            DateTime time = DateTimeFormat.forPattern(normalPattern).parseDateTime(nominalTime);
-            String hourlyTime = DateTimeFormat.forPattern(WOMinutesPattern).print(time);
-            time = DateTimeFormat.forPattern(WOMinutesPattern).parseDateTime(hourlyTime);
-            String outputFeedinstance = String.format("%s/%s", outputFeedName,
-                DateTimeFormat.forPattern(normalPattern).print(time));
-            expectedEdges.add(new ProcessPage.Edge(processInstance, outputFeedinstance));
 
+            /**get expected edges */
+            List<Edge> expectedEdgesAPI = new ArrayList<Edge>();
+            List<Edge> incEdges = lineageHelper.getEdgesByDirection(piVertex.get_id(),
+                Direction.inComingEdges).getResults();
+            List<Edge> outcEdges = lineageHelper.getEdgesByDirection(piVertex.get_id(),
+                Direction.outGoingEdges).filterByType(Edge.LEBEL_TYPE.OUTPUT);
+            assert expectedEdgesAPI.addAll(incEdges);
+            assert expectedEdgesAPI.addAll(outcEdges);
             /** Check the number of edges and their location*/
             List<Point[]> edgesOnUI = processPage.getEdgesFromGraph();
-                /*check the number of edges on UI*/
-            Assert.assertEquals(edgesOnUI.size(), expectedEdges.size());
-            /**check that all edges on UI match to expected by their endpoints*/
-            HashMap<String, Point> verticesEndpoints = processPage.getVerticesEndpoints
-                (expectedEdges);
-            Point expStartpoint, expEndpoint, actStartpoint, actEndpoint;
-            int vertexRaduis = processPage.getCircleRadius();
-            for (ProcessPage.Edge expectedEdge : expectedEdges) {
-                String expStartVertex = expectedEdge.getStartVertex();
-                String expEndVertex = expectedEdge.getEndVertex();
-                expStartpoint = verticesEndpoints.get(expStartVertex);
-                expEndpoint = verticesEndpoints.get(expEndVertex);
-                boolean isEdgePresent = false;
-                /**look through all paths and check if there is an appropriate edge present*/
-                for (Point[] actualEndpoints : processPage.getEdgesFromGraph()) {
-                    actStartpoint = actualEndpoints[0];
-                    actEndpoint = actualEndpoints[1];
-                    isEdgePresent = isPointNearTheVertex(expStartpoint, vertexRaduis,
-                        actStartpoint, 4) && isPointNearTheVertex(expEndpoint, vertexRaduis,
-                        actEndpoint, 4);
+            /**check the number of edges on UI*/
+            Assert.assertEquals(edgesOnUI.size(), expectedEdgesAPI.size());
+            /**check if all appropriate edges match each other*/
+            List<Point[]> edgesFromGraph = processPage.getEdgesFromGraph();
+            boolean isEdgePresent = false;
+            int vertexRadius = processPage.getCircleRadius();
+            for (Edge expEdgeAPI : expectedEdgesAPI) {
+                Vertex startVertexAPI = lineageHelper.getVertexById(expEdgeAPI.get_outV())
+                    .getResults();
+                Point startPointAPI = processPage.getVertexEndpoint(startVertexAPI.getName());
+                Vertex endVertexAPI = lineageHelper.getVertexById(expEdgeAPI.get_inV())
+                    .getResults();
+                Point endPointAPI = processPage.getVertexEndpoint(endVertexAPI.getName());
+                for (Point[] actualEndpoints : edgesFromGraph) {
+                    Point startPointUI = actualEndpoints[0];
+                    Point endPointUI = actualEndpoints[1];
+                    isEdgePresent =
+                        isPointNearTheVertex(startPointAPI, vertexRadius, startPointUI, 5)
+                            && isPointNearTheVertex(endPointAPI, vertexRadius, endPointUI, 5);
                     if (isEdgePresent) break;
                 }
-                Assert.assertTrue(isEdgePresent, String.format("Edge %s-->%s isn't present on " +
-                    "lineage or painted incorrectly.", expStartVertex, expEndVertex));
+                Assert.assertTrue(
+                    isEdgePresent, String.format("Edge %s-->%s isn't present on lineage or " +
+                    "painted incorrectly.", startVertexAPI.getName(), endVertexAPI.getName()));
             }
             processPage.refresh();
         }
@@ -344,7 +321,8 @@ public class LineageGraphTest extends BaseUITestClass {
         processPage.navigateTo();
 
         List<String> previous = new ArrayList<String>();
-        for (String nominalTime : processInstances) {
+        for (Vertex piVertex : piVertices) {
+            String nominalTime = piVertex.getNominalTime();
             if (!processPage.isLineageLinkPresent(nominalTime)) continue;
             processPage.openLineage(nominalTime);
             List<String> vertices = processPage.getAllVerticesNames();
@@ -354,8 +332,6 @@ public class LineageGraphTest extends BaseUITestClass {
             processPage.closeLineage();
         }
     }
-
-
 
     /**
      * Evaluates if endpoint is in permissible region near the vertex

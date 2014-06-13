@@ -252,21 +252,7 @@ public class ProcessPage extends EntityPage<Process> {
         return Integer.parseInt(circle.getAttribute("r"));
     }
 
-    public HashMap<String, Point> getVerticesEndpoints(List<Edge> edges) {
-        HashMap<String, Point> map = null;
-        if (isLineageOpened) {
-            map = new HashMap<String, Point>();
-            for (Edge edge : edges) {
-                String startVertex = edge.getStartVertex();
-                String endVertex = edge.getEndVertex();
-                map.put(startVertex, getVertexEndpoint(startVertex));
-                map.put(endVertex, getVertexEndpoint(endVertex));
-            }
-        }
-        return map;
-    }
-
-    private Point getVertexEndpoint(String vertex) {
+    public Point getVertexEndpoint(String vertex) {
         /** get circle of start vertex */
         String particularVertexBlock = VERTICES_BLOCKS_XPATH + String.format("[contains(" +
             "., '%s')]", vertex);
@@ -275,25 +261,6 @@ public class ProcessPage extends EntityPage<Process> {
         attribute = attribute.replaceAll("[a-zA-Z]", "");
         String[] numbers = attribute.replaceAll("[()]", "").split(",");
         return new Point(Integer.parseInt(numbers[0]), Integer.parseInt(numbers[1]));
-    }
-
-    public static class Edge {
-
-        String startVertex;
-        String endVertex;
-
-        public Edge(String startVertex, String endVertex) {
-            this.startVertex = startVertex;
-            this.endVertex = endVertex;
-        }
-
-        public String getStartVertex() {
-            return startVertex;
-        }
-
-        public String getEndVertex() {
-            return endVertex;
-        }
     }
 
     public String getInstanceStatus(String instanceDate) {
