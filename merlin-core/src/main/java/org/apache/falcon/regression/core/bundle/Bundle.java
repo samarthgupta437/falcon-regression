@@ -519,6 +519,27 @@ public class Bundle {
         return scheduleResult.getMessage();
     }
 
+    /**
+     * Sets the only process input
+     * @param startEl - its start in terms of EL expression
+     * @param endEl - its end in terms of EL expression
+     * @return - modified process
+     *
+     * @throws JAXBException
+     */
+    public void setProcessInput(String startEl, String endEl) throws JAXBException {
+        Process process = InstanceUtil.getProcessElement(this);
+        Inputs inputs = new Inputs();
+        Input input = new Input();
+        input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(this)));
+        input.setStart(startEl);
+        input.setEnd(endEl);
+        input.setName("inputData");
+        inputs.getInputs().add(input);
+        process.setInputs(inputs);
+        this.setProcessData(InstanceUtil.processToString(process));
+    }
+
     public void setInvalidData() throws JAXBException {
 
         JAXBContext jc = JAXBContext.newInstance(Feed.class);

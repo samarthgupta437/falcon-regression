@@ -83,6 +83,10 @@ public class Vertex extends GraphEntity {
         return name;
     }
 
+    public String getNominalTime() {
+        return name.split("/")[1];
+    }
+
     @Override
     public String toString() {
         return "Vertex{" +
