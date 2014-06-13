@@ -153,8 +153,7 @@ public class LineageGraphTest extends BaseUITestClass {
             List<Vertex> outInstancesAPI = lineageHelper.getVerticesByDirection(piVertex.get_id(),
                 Direction.outgoingVertices).filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE);
             /**open lineage for particular process instance*/
-            boolean isLineagePresent = processPage.openLineage(nominalTime);
-            if (!isLineagePresent) continue;
+            processPage.openLineage(nominalTime);
             /**verify if number of vertices and their content is correct*/
             HashMap<String, List<String>> map = processPage.getAllVertices();
             Assert.assertTrue(map.containsKey(processName) && map.containsKey(inputFeedName)
@@ -196,8 +195,7 @@ public class LineageGraphTest extends BaseUITestClass {
         for (Vertex piVertex : piVertices) {
             String nominalTime = piVertex.getNominalTime();
             /**open lineage for particular process instance*/
-            boolean isLineagePresent = processPage.openLineage(nominalTime);
-            if (!isLineagePresent) continue;
+            processPage.openLineage(nominalTime);
             HashMap<String, List<String>> map = processPage.getAllVertices();
             /**click on each vertex and check the bottom info*/
             for (Map.Entry<String, List<String>> entry : map.entrySet()) {
@@ -240,8 +238,7 @@ public class LineageGraphTest extends BaseUITestClass {
         processPage.navigateTo();
         for (Vertex piVertex : piVertices) {
             String nominalTime = piVertex.getNominalTime();
-            boolean isLineageOpened = processPage.openLineage(nominalTime);
-            if (!isLineageOpened) continue;
+            processPage.openLineage(nominalTime);
             /* check the main lineage title */
             Assert.assertEquals(processPage.getLineageTitle(), "Lineage information");
             /* check legends title */
@@ -267,9 +264,7 @@ public class LineageGraphTest extends BaseUITestClass {
         processPage.navigateTo();
         for (Vertex piVertex : piVertices) {
             String nominalTime = piVertex.getNominalTime();
-            boolean isLineageOpened = processPage.openLineage(nominalTime);
-            if (!isLineageOpened) continue;
-
+            processPage.openLineage(nominalTime);
             /**get expected edges */
             List<Edge> expectedEdgesAPI = new ArrayList<Edge>();
             List<Edge> incEdges = lineageHelper.getEdgesByDirection(piVertex.get_id(),
@@ -316,11 +311,9 @@ public class LineageGraphTest extends BaseUITestClass {
     public void testLineageOpenClose() {
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
-
         List<String> previous = new ArrayList<String>();
         for (Vertex piVertex : piVertices) {
             String nominalTime = piVertex.getNominalTime();
-            if (!processPage.isLineageLinkPresent(nominalTime)) continue;
             processPage.openLineage(nominalTime);
             List<String> vertices = processPage.getAllVerticesNames();
             Assert.assertNotEquals(previous, vertices, "Graph of " + nominalTime + " instance is "

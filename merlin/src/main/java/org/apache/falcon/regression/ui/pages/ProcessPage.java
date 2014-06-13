@@ -69,23 +69,18 @@ public class ProcessPage extends EntityPage<Process> {
     /**
      * @param nominalTime particular instance of process, defined by it's start time
      */
-    public boolean openLineage(String nominalTime) {
+    public void openLineage(String nominalTime) {
         waitForElement(String.format(LINE_AGE_BUTTON_XPATH, nominalTime), DEFAULT_TIMEOUT,
             "Lineage button didn't appear");
         logger.info("Working with instance: " + nominalTime);
         WebElement lineage =
             driver.findElement(By.xpath(String.format(LINE_AGE_BUTTON_XPATH, nominalTime)));
-        if (lineage != null) {
-            logger.info("Opening lineage...");
-            lineage.click();
-            waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, DEFAULT_TIMEOUT,
-                "Circles not found");
-            waitForElement(LINEAGE_TITLE, DEFAULT_TIMEOUT, "Lineage title not found");
-            isLineageOpened = true;
-        } else {
-            logger.info("Lineage button not found");
-        }
-        return isLineageOpened;
+        logger.info("Opening lineage...");
+        lineage.click();
+        waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, DEFAULT_TIMEOUT,
+            "Circles not found");
+        waitForElement(LINEAGE_TITLE, DEFAULT_TIMEOUT, "Lineage title not found");
+        isLineageOpened = true;
     }
 
     public void closeLineage() {
