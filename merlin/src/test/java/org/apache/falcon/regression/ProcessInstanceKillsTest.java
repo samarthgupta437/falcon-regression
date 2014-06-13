@@ -334,9 +334,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(1);
         bundles[0].submitAndScheduleBundle(prism);
         for (int i = 0; i < 30; i++) {
-            if (InstanceUtil
-                .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0)
-                .equals(CoordinatorAction.Status.SUCCEEDED))
+            if (CoordinatorAction.Status.SUCCEEDED == InstanceUtil.getInstanceStatus(cluster,
+                Util.readEntityName(bundles[0].getProcessData()), 0, 0))
                 break;
             Thread.sleep(30000);
         }

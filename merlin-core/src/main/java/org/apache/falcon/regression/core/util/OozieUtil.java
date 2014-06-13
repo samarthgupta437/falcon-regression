@@ -62,9 +62,7 @@ public class OozieUtil {
 
     public static List<String> getBundleIds(OozieClient client, String filter, int start, int len)
         throws OozieClientException {
-        logger.info("Connecting to oozie: " + client.getOozieUrl());
-        List<BundleJob> bundles = getBundles(client, filter, start, len);
-        return getBundleIds(bundles);
+        return getBundleIds(getBundles(client, filter, start, len));
     }
 
     public static List<String> getBundleIds(List<BundleJob> bundles) {
@@ -78,8 +76,7 @@ public class OozieUtil {
 
     public static List<Job.Status> getBundleStatuses(OozieClient client, String filter, int start,
                                                      int len) throws OozieClientException {
-        List<BundleJob> bundles = getBundles(client, filter, start, len);
-        return getBundleStatuses(bundles);
+        return getBundleStatuses(getBundles(client, filter, start, len));
     }
 
     public static List<Job.Status> getBundleStatuses(List<BundleJob> bundles) {
@@ -170,11 +167,15 @@ public class OozieUtil {
     }
 
     public static void waitForCoordinatorJobCreation(OozieClient oozieClient, String bundleID)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         for (int i = 0;
              i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
-            Thread.sleep(2000);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                //ignore
+            }
         }
         Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
             "Coordinator job should have got created by now.");
@@ -270,8 +271,9 @@ public class OozieUtil {
 
     public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
         throws OozieClientException {
-        List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+        waitForCoordinatorJobCreation(oozieClient, bundleID);
+        List<String> jobIds = new ArrayList<String>();
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
             oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
