@@ -206,8 +206,7 @@ public class LineageGraphTest extends BaseUITestClass {
             logger.info("Actual instance : " + outputFeedinstance);
             Assert.assertEquals(entityInstances.size(), 1);
             Assert.assertTrue(entityInstances.contains(outputFeedinstance));
-            processPage.closeLineage();
-            processPage.navigateTo();
+            processPage.refresh();
         }
     }
 
@@ -248,8 +247,7 @@ public class LineageGraphTest extends BaseUITestClass {
                         ".name"), "Entity should be owned by current system user.");
                 }
             }
-            processPage.closeLineage();
-            processPage.navigateTo();
+            processPage.refresh();
         }
     }
 
@@ -281,8 +279,7 @@ public class LineageGraphTest extends BaseUITestClass {
                 String value = entry.getValue();
                 Assert.assertEquals(expectedDescriptions.get(key), value);
             }
-            processPage.closeLineage();
-            processPage.navigateTo();
+            processPage.refresh();
         }
     }
 
@@ -344,9 +341,30 @@ public class LineageGraphTest extends BaseUITestClass {
                 Assert.assertTrue(isEdgePresent, String.format("Edge %s-->%s isn't present on " +
                     "lineage or painted incorrectly.", expStartVertex, expEndVertex));
             }
+            processPage.refresh();
+        }
+    }
+
+    /**
+     * Test which opens and closes Lineage info and checks content of it
+     */
+    @Test
+    public void testLineageOpenClose() throws InterruptedException {
+        ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
+        processPage.navigateTo();
+
+        List<String> previous = new ArrayList<String>();
+        for (String nominalTime : processInstances) {
+            if (!processPage.isLineageLinkPresent(nominalTime)) continue;
+            processPage.openLineage(nominalTime);
+            List<String> vertices = processPage.getAllVerticesNames();
+            Assert.assertNotEquals(previous, vertices, "Graph of " + nominalTime + " instance is "
+                + "equal to previous");
+            previous = vertices;
             processPage.closeLineage();
         }
     }
+
 
 
     /**
