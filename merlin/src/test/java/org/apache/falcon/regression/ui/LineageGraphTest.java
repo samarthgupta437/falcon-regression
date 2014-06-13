@@ -141,7 +141,7 @@ public class LineageGraphTest extends BaseUITestClass {
     @Test
     public void testGraphVertices()
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
-        OozieClientException, InterruptedException, NoSuchMethodException, IllegalAccessException,
+        OozieClientException, NoSuchMethodException, IllegalAccessException,
         InvocationTargetException, ParseException, JSONException {
 
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
@@ -191,7 +191,7 @@ public class LineageGraphTest extends BaseUITestClass {
      */
     @Test
     public void testVerticesInfo()
-        throws InterruptedException, JAXBException, URISyntaxException, AuthenticationException,
+        throws JAXBException, URISyntaxException, AuthenticationException,
         JSONException, IOException {
         String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
@@ -231,7 +231,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * Tests available titles and descriptions of different lineage sections.
      */
     @Test
-    public void testTitlesAndDescriptions() throws InterruptedException {
+    public void testTitlesAndDescriptions() {
         HashMap<String, String> expectedDescriptions = new HashMap<String, String>();
         expectedDescriptions.put("lineage-legend-process-inst", "Process instance");
         expectedDescriptions.put("lineage-legend-process-inst lineage-legend-terminal",
@@ -265,7 +265,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * endpoints of edges which were retrieved from lineage graph.
      */
     @Test
-    public void testEdges() throws InterruptedException {
+    public void testEdges() {
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
         for (Vertex piVertex : piVertices) {
@@ -316,7 +316,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * Test which opens and closes Lineage info and checks content of it
      */
     @Test
-    public void testLineageOpenClose() throws InterruptedException {
+    public void testLineageOpenClose() {
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
 
