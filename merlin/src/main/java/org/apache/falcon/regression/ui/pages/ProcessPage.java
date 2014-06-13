@@ -69,7 +69,7 @@ public class ProcessPage extends EntityPage<Process> {
     /**
      * @param nominalTime particular instance of process, defined by it's start time
      */
-    public boolean openLineage(String nominalTime) throws InterruptedException {
+    public boolean openLineage(String nominalTime) {
         waitForElement(String.format(LINE_AGE_BUTTON_XPATH, nominalTime), DEFAULT_TIMEOUT,
             "Lineage button didn't appear");
         logger.info("Working with instance: " + nominalTime);
@@ -148,7 +148,7 @@ public class ProcessPage extends EntityPage<Process> {
     /**
      * Vertex is defined by it's entity name and particular time of it's creation
      */
-    public void clickOnVertex(String entityName, String nominalTime) throws InterruptedException {
+    public void clickOnVertex(String entityName, String nominalTime) {
         if (isLineageOpened) {
             String particularBlock =
                 String.format("[contains(., '%s/%s')]", entityName, nominalTime);
@@ -156,7 +156,11 @@ public class ProcessPage extends EntityPage<Process> {
                 particularBlock + CIRCLE_XPATH));
             Actions builder = new Actions(driver);
             builder.click(circle).build().perform();
-            Thread.sleep(500);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                logger.info("Sleep was interrupted");
+            }
         }
     }
 

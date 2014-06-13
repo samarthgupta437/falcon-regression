@@ -50,9 +50,7 @@ import org.testng.annotations.Test;
 import javax.xml.bind.JAXBException;
 import java.awt.Point;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +79,9 @@ public class LineageGraphTest extends BaseUITestClass {
      * succeeded.
      */
     @BeforeClass
-    public void setUp() throws Exception {
+    public void setUp()
+        throws IOException, JAXBException, URISyntaxException, AuthenticationException,
+        OozieClientException, InterruptedException {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -139,10 +139,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * and their description.
      */
     @Test
-    public void testGraphVertices()
-        throws URISyntaxException, IOException, AuthenticationException, JAXBException,
-        OozieClientException, InterruptedException, NoSuchMethodException, IllegalAccessException,
-        InvocationTargetException, ParseException, JSONException {
+    public void testGraphVertices() {
 
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
@@ -191,7 +188,7 @@ public class LineageGraphTest extends BaseUITestClass {
      */
     @Test
     public void testVerticesInfo()
-        throws InterruptedException, JAXBException, URISyntaxException, AuthenticationException,
+        throws JAXBException, URISyntaxException, AuthenticationException,
         JSONException, IOException {
         String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
@@ -231,7 +228,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * Tests available titles and descriptions of different lineage sections.
      */
     @Test
-    public void testTitlesAndDescriptions() throws InterruptedException {
+    public void testTitlesAndDescriptions() {
         HashMap<String, String> expectedDescriptions = new HashMap<String, String>();
         expectedDescriptions.put("lineage-legend-process-inst", "Process instance");
         expectedDescriptions.put("lineage-legend-process-inst lineage-legend-terminal",
@@ -265,7 +262,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * endpoints of edges which were retrieved from lineage graph.
      */
     @Test
-    public void testEdges() throws InterruptedException {
+    public void testEdges() {
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
         for (Vertex piVertex : piVertices) {
@@ -316,7 +313,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * Test which opens and closes Lineage info and checks content of it
      */
     @Test
-    public void testLineageOpenClose() throws InterruptedException {
+    public void testLineageOpenClose() {
         ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
         processPage.navigateTo();
 
@@ -336,9 +333,9 @@ public class LineageGraphTest extends BaseUITestClass {
     /**
      * Evaluates if endpoint is in permissible region near the vertex
      *
-     * @param center    - coordinates of vertex center
-     * @param radius    - radius of vertex
-     * @param deviation - permissible deviation
+     * @param center    coordinates of vertex center
+     * @param radius    radius of vertex
+     * @param deviation permissible deviation
      */
     private boolean isPointNearTheVertex(Point center, int radius, Point point, int deviation) {
         double distance = Math.sqrt(
