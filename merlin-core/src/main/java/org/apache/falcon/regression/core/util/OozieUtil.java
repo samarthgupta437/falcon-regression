@@ -62,9 +62,7 @@ public class OozieUtil {
 
     public static List<String> getBundleIds(OozieClient client, String filter, int start, int len)
         throws OozieClientException {
-        logger.info("Connecting to oozie: " + client.getOozieUrl());
-        List<BundleJob> bundles = getBundles(client, filter, start, len);
-        return getBundleIds(bundles);
+        return getBundleIds(getBundles(client, filter, start, len));
     }
 
     public static List<String> getBundleIds(List<BundleJob> bundles) {
@@ -78,8 +76,7 @@ public class OozieUtil {
 
     public static List<Job.Status> getBundleStatuses(OozieClient client, String filter, int start,
                                                      int len) throws OozieClientException {
-        List<BundleJob> bundles = getBundles(client, filter, start, len);
-        return getBundleStatuses(bundles);
+        return getBundleStatuses(getBundles(client, filter, start, len));
     }
 
     public static List<Job.Status> getBundleStatuses(List<BundleJob> bundles) {
