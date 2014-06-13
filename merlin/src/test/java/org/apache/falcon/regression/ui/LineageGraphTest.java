@@ -120,7 +120,7 @@ public class LineageGraphTest extends BaseUITestClass {
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 8, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
         /**get process instances*/
         Vertex processVertex = lineageHelper.getVerticesByName(processName).getResults().get(0);
         piVertices = lineageHelper.getVerticesByDirection(processVertex.get_id(),
