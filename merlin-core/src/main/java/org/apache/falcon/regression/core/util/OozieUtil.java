@@ -170,11 +170,15 @@ public class OozieUtil {
     }
 
     public static void waitForCoordinatorJobCreation(OozieClient oozieClient, String bundleID)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         for (int i = 0;
              i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
-            Thread.sleep(2000);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                //ignore
+            }
         }
         Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
             "Coordinator job should have got created by now.");
@@ -270,8 +274,9 @@ public class OozieUtil {
 
     public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
         throws OozieClientException {
-        List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+        waitForCoordinatorJobCreation(oozieClient, bundleID);
+        List<String> jobIds = new ArrayList<String>();
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
             oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
