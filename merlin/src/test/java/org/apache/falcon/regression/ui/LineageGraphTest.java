@@ -50,9 +50,7 @@ import org.testng.annotations.Test;
 import javax.xml.bind.JAXBException;
 import java.awt.Point;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -81,7 +79,9 @@ public class LineageGraphTest extends BaseUITestClass {
      * succeeded.
      */
     @BeforeClass
-    public void setUp() throws Exception {
+    public void setUp()
+        throws IOException, JAXBException, URISyntaxException, AuthenticationException,
+        OozieClientException, InterruptedException {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -139,10 +139,7 @@ public class LineageGraphTest extends BaseUITestClass {
      * and their description.
      */
     @Test
-    public void testGraphVertices()
-        throws URISyntaxException, IOException, AuthenticationException, JAXBException,
-        OozieClientException, NoSuchMethodException, IllegalAccessException,
-        InvocationTargetException, ParseException, JSONException {
+    public void testGraphVertices() {
 
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();

@@ -41,17 +41,22 @@ import org.apache.falcon.regression.testHelper.BaseUITestClass;
 import org.apache.falcon.regression.ui.pages.EntitiesPage;
 import org.apache.falcon.regression.ui.pages.ProcessPage;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 
+import javax.xml.bind.JAXBException;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -73,7 +78,9 @@ public class ProcessUITest extends BaseUITestClass {
     private SoftAssert softAssert = new SoftAssert();
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp()
+        throws IOException, JAXBException, NoSuchMethodException, IllegalAccessException,
+        InvocationTargetException, URISyntaxException, AuthenticationException {
         CleanupUtil.cleanAllEntities(prism);
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         openBrowser();
@@ -166,10 +173,11 @@ public class ProcessUITest extends BaseUITestClass {
      * Test checks that UI show expected statuses of submitted Process (SUBMITTED and RUNNING)
      * then checks instances icons to be relevant to statuses of oozie actions
      * and checks that Lineage links are available only for SUCCEEDED instances
-     * @throws Exception
      */
     @Test
-    public void testProcessUI() throws Exception {
+    public void testProcessUI()
+        throws URISyntaxException, IOException, AuthenticationException, JAXBException,
+        OozieClientException, InterruptedException {
 
         //check Process statuses via UI
         EntitiesPage page = new EntitiesPage(DRIVER, cluster, ENTITY_TYPE.PROCESS);
