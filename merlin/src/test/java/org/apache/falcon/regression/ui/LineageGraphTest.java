@@ -333,9 +333,9 @@ public class LineageGraphTest extends BaseUITestClass {
     /**
      * Evaluates if endpoint is in permissible region near the vertex
      *
-     * @param center    - coordinates of vertex center
-     * @param radius    - radius of vertex
-     * @param deviation - permissible deviation
+     * @param center    coordinates of vertex center
+     * @param radius    radius of vertex
+     * @param deviation permissible deviation
      */
     private boolean isPointNearTheVertex(Point center, int radius, Point point, int deviation) {
         double distance = Math.sqrt(
