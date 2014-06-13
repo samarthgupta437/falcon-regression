@@ -453,6 +453,7 @@ public class InstanceUtil {
         throws OozieClientException {
 
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
+        OozieUtil.waitForCoordinatorJobCreation(oozieClient, bundleId);
         BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
         List<CoordinatorJob> coords = bundleInfo.getCoordinators();
         int min = 100000;
