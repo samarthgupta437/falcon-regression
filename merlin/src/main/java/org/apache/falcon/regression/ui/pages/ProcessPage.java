@@ -26,6 +26,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+import org.testng.Assert;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -109,6 +110,7 @@ public class ProcessPage extends EntityPage<Process> {
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
                 String text = block.getText();
+                Assert.assertTrue(text.contains("/"), "Expecting text to contain /: " + text);
                 String[] separate = text.split("/");
                 String name = separate[0];
                 String nominalTime = separate[1];
