@@ -283,4 +283,15 @@ public class ProcessPage extends EntityPage<Process> {
     private void waitForInstancesPanel() {
         waitForElement(INSTANCES_PANEL, DEFAULT_TIMEOUT, "Instances panel didn't appear");
     }
+
+    public boolean isTerminal(String vertexName) {
+        String particularBlock =
+            String.format("[contains(., '%s')]", vertexName);
+        waitForElement(VERTICES_BLOCKS_XPATH + particularBlock + CIRCLE_XPATH, DEFAULT_TIMEOUT,
+            "Vertex not found");
+        WebElement vertex = driver.findElement(By.xpath(VERTICES_BLOCKS_XPATH +
+            particularBlock + CIRCLE_XPATH));
+        String vertexClass = vertex.getAttribute("class");
+        return vertexClass.contains("lineage-node-terminal");
+    }
 }

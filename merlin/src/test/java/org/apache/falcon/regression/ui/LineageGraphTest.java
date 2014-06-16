@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.helpers.LineageHelper;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.Edge;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
+import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -250,6 +251,43 @@ public class LineageGraphTest extends BaseUITestClass {
                 String value = entry.getValue();
                 Assert.assertEquals(expectedDescriptions.get(key), value);
             }
+            processPage.refresh();
+        }
+    }
+
+    /**
+     * Tests whether vertices are terminals or not.
+     */
+    @Test
+    public void testTerminals() {
+        ProcessPage processPage = new ProcessPage(DRIVER, prism, processName);
+        processPage.navigateTo();
+        lineageHelper = new LineageHelper(prism);
+        VerticesResult processResult = lineageHelper.getVerticesByName(processName);
+        Vertex processVertex = processResult.getResults().get(0);
+        List<Vertex> piVertices =
+            lineageHelper.getVerticesByDirection(processVertex.get_id(),
+                Direction.inComingVertices).filterByType(Vertex.VERTEX_TYPE.PROCESS_INSTANCE);
+        for (Vertex piVertex : piVertices) {
+            String nominalTime = piVertex.getNominalTime();
+            processPage.openLineage(nominalTime);
+            List<Vertex> inVertices = lineageHelper.getVerticesByDirection(piVertex.get_id(),
+                Direction.inComingVertices).getResults();
+            List<Vertex> outVertices = lineageHelper.getVerticesByDirection(piVertex.get_id(),
+                Direction.outgoingVertices).filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE);
+            for (Vertex inVertex : inVertices) {
+                Assert.assertTrue(processPage.isTerminal(inVertex.getName()),
+                    String.format("Input feed instance vertex %s should be terminal",
+                        inVertex.getName()));
+            }
+            for (Vertex outVertex : outVertices) {
+                Assert.assertTrue(processPage.isTerminal(outVertex.getName()),
+                    String.format("Output feed instance vertex %s should be terminal",
+                        outVertex.getName()));
+            }
+            Assert.assertFalse(processPage.isTerminal(piVertex.getName()),
+                String.format("Process instance vertex %s should be non-terminal",
+                    piVertex.getName()));
             processPage.refresh();
         }
     }
