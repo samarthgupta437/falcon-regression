@@ -216,6 +216,10 @@ public class ProcessPage extends EntityPage<Process> {
         } else return null;
     }
 
+    /**
+     * @return list of edges present on UI. Each edge presented as two 2d points - beginning and
+     * the end of the edge.
+     */
     public List<Point[]> getEdgesFromGraph() {
         List<Point[]> pathsEndpoints = null;
         if (isLineageOpened) {
@@ -245,12 +249,20 @@ public class ProcessPage extends EntityPage<Process> {
         return pathsEndpoints;
     }
 
+    /**
+     * @return common value for radius of every vertex (circle) on the graph
+     */
     public int getCircleRadius() {
         WebElement circle = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH))
             .get(0);
         return Integer.parseInt(circle.getAttribute("r"));
     }
 
+    /**
+     * Finds vertex on the graph by its name and evaluates its coordinates as 2d point
+     * @param vertex the name of vertex which point is needed
+     * @return Point(x,y) object
+     */
     public Point getVertexEndpoint(String vertex) {
         /** get circle of start vertex */
         String particularVertexBlock = VERTICES_BLOCKS_XPATH + String.format("[contains(" +
@@ -284,6 +296,11 @@ public class ProcessPage extends EntityPage<Process> {
         waitForElement(INSTANCES_PANEL, DEFAULT_TIMEOUT, "Instances panel didn't appear");
     }
 
+    /**
+     * Checks whether vertex is terminal or not
+     * @param vertexName name of vertex
+     * @return whether it is terminal or not
+     */
     public boolean isTerminal(String vertexName) {
         String particularBlock =
             String.format("[contains(., '%s')]", vertexName);
