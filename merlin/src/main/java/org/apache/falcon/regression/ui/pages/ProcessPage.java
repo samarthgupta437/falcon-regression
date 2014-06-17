@@ -85,6 +85,8 @@ public class ProcessPage extends EntityPage<Process> {
 
     public void closeLineage() {
         if (isLineageOpened) {
+            waitForDisplayed(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
+                "Close button isn't displayed");
             WebElement close = driver.findElement(By.xpath(CLOSE_LINE_AGE_BUTTON_XPATH));
             close.click();
             isLineageOpened = false;
@@ -130,8 +132,10 @@ public class ProcessPage extends EntityPage<Process> {
     public List<String> getAllVerticesNames() {
         List<String> list = new ArrayList<String>();
         if (isLineageOpened) {
-            waitForElement(VERTICES_BLOCKS_XPATH, DEFAULT_TIMEOUT,
+            waitForElement(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
                 "Close Lineage button not found");
+            waitForElement(VERTICES_BLOCKS_XPATH, DEFAULT_TIMEOUT,
+                "Vertices not found");
             List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
             for (WebElement block : blocks) {
                 list.add(block.getText());
