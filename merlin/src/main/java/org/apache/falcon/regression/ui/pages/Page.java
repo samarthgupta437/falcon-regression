@@ -19,9 +19,11 @@
 package org.apache.falcon.regression.ui.pages;
 
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -35,6 +37,8 @@ public abstract class Page {
 
     protected String expectedElement;
     protected String notFoundMsg;
+
+    private Logger logger = Logger.getLogger(Page.class);
 
     Page(WebDriver driver, PrismHelper helper) {
         this.driver = driver;
@@ -71,6 +75,20 @@ public abstract class Page {
             ex.initCause(e);
             throw ex;
         }
+    }
+
+    public void waitForDisplayed(String xpath, long timeoutSeconds, String errMessage) {
+        waitForElement(xpath, timeoutSeconds, errMessage);
+        WebElement element = driver.findElement(By.xpath(xpath));
+        for (int i = 0; i < timeoutSeconds * 10; i++) {
+            if (element.isDisplayed()) return;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                logger.info("Sleep was interrupted");
+            }
+        }
+        throw new TimeoutException(errMessage);
     }
 
     public static class Condition implements ExpectedCondition<Boolean> {
