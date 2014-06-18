@@ -146,16 +146,16 @@ public class LineageGraphTest extends BaseUITestClass {
         processPage.navigateTo();
         for (Vertex piVertex : piVertices) {
             String nominalTime = piVertex.getNominalTime();
-            /**get expected feed instances*/
+            /* get expected feed instances */
             /* input feed instances */
             List<Vertex> inpInstancesAPI = lineageHelper.getVerticesByDirection(piVertex.get_id(),
                 Direction.inComingVertices).getResults();
             /* output feed instance */
             List<Vertex> outInstancesAPI = lineageHelper.getVerticesByDirection(piVertex.get_id(),
                 Direction.outgoingVertices).filterByType(Vertex.VERTEX_TYPE.FEED_INSTANCE);
-            /**open lineage for particular process instance*/
+            /* open lineage for particular process instance */
             processPage.openLineage(nominalTime);
-            /**verify if number of vertices and their content is correct*/
+            /* verify if number of vertices and their content is correct */
             HashMap<String, List<String>> map = processPage.getAllVertices();
             Assert.assertTrue(map.containsKey(processName) && map.containsKey(inputFeedName)
                 && map.containsKey(outputFeedName));

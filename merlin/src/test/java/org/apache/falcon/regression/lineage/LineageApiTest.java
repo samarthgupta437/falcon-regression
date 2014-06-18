@@ -65,6 +65,7 @@ public class LineageApiTest extends BaseTestClass {
     private static final String testTag =
         Edge.LEBEL_TYPE.TESTNAME.toString().toLowerCase() + "=" + testName;
     private static final String VERTEX_NOT_FOUND_REGEX = ".*Vertex.*%d.*not.*found.*\n?";
+    private static final String inValidArgumentStr = "Invalid argument";
     LineageHelper lineageHelper;
     final ColoHelper cluster = servers.get(0);
     final String baseTestHDFSDir = baseHDFSDir + "/LineageApiTest";
@@ -379,21 +380,32 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testVerticesFilterBlankValue() throws Exception {
-        final VerticesResult clusterVertices = lineageHelper.getVerticesByName("");
-        GraphAssert.assertVertexSanity(clusterVertices);
-        Assert.assertEquals(clusterVertices.getTotalSize(), 0,
-            "Result should not contain any vertex");
+        HttpResponse response = lineageHelper
+            .runGetRequest(lineageHelper.getUrl(LineageHelper.URL.VERTICES,
+                new Pair<String, String>("key", Vertex.FilterKey.name.toString()),
+                new Pair<String, String>("value", "")));
+        String responseString = lineageHelper.getResponseString(response);
+        logger.info(responseString);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.BAD_REQUEST.getStatusCode(),
+            "The get request was a bad request");
+        Assert.assertTrue(responseString.contains(inValidArgumentStr),
+            "Result should contain string Invalid argument");
     }
 
     @Test
     public void testVerticesFilterBlankKey() throws Exception {
-        final VerticesResult clusterVertices =
-            lineageHelper.getVerticesResult(lineageHelper.getUrl(LineageHelper.URL.VERTICES,
+        HttpResponse response = lineageHelper.runGetRequest(
+            lineageHelper.getUrl(LineageHelper.URL.VERTICES,
                 new Pair<String, String>("key", ""),
                 new Pair<String, String>("value", "somevalue")));
-        GraphAssert.assertVertexSanity(clusterVertices);
-        Assert.assertEquals(clusterVertices.getTotalSize(), 0,
-            "Result should not contain any vertex");
+        String responseString = lineageHelper.getResponseString(response);
+        logger.info(responseString);
+        Assert.assertEquals(response.getStatusLine().getStatusCode(),
+            Response.Status.BAD_REQUEST.getStatusCode(),
+            "The get request was a bad request");
+        Assert.assertTrue(responseString.contains(inValidArgumentStr),
+            "Result should contain string Invalid argument");
     }
 
     @Test
