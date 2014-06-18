@@ -134,23 +134,6 @@ public class Util {
         return properties.getProperty(filename);
     }
 
-    public static String fileToString(File file) throws IOException {
-
-        StringBuilder fileData = new StringBuilder(1000);
-        char[] buf = new char[1024];
-        BufferedReader reader = new BufferedReader(
-            new FileReader(file));
-
-        int numRead;
-        while ((numRead = reader.read(buf)) != -1) {
-            String readData = String.valueOf(buf, 0, numRead);
-            fileData.append(readData);
-            buf = new char[1024];
-        }
-        reader.close();
-        return fileData.toString();
-    }
-
     public static String getProcessName(String data) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
