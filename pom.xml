@@ -114,6 +114,7 @@
     </properties>
 
     <modules>
+        <module>checkstyle</module>
         <module>merlin-core</module>
         <module>merlin</module>
     </modules>
@@ -680,6 +681,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.falcon</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>checkstyle-check</id>
@@ -690,8 +698,11 @@
                         <configuration>
                             <consoleOutput>true</consoleOutput>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            <configLocation>falcon/checkstyle.xml</configLocation>
+                            <headerLocation>falcon/checkstyle-java-header.txt</headerLocation>
                             <failOnViolation>true</failOnViolation>
                             <skip>${skipCheck}</skip>
+                            <excludes>**/entity/v0/**/*</excludes>
                         </configuration>
                     </execution>
                 </executions>
