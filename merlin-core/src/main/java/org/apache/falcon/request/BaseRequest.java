@@ -75,6 +75,13 @@ public class BaseRequest {
     }
 
     public HttpResponse run() throws URISyntaxException, IOException, AuthenticationException {
+        URIBuilder uriBuilder = new URIBuilder(this.url);
+
+        /*falcon now reads a user.name parameter in the request.
+        by default we will add it to every request.*/
+        uriBuilder.addParameter(PseudoAuthenticator.USER_NAME, this.user);
+        uri = uriBuilder.build();
+        this.url=uri.toString();
         // process the get
         if (this.method.equalsIgnoreCase("get")) {
             return execute(new HttpGet(this.url));
@@ -100,13 +107,6 @@ public class BaseRequest {
 
     private HttpResponse execute(HttpRequest request)
         throws IOException, AuthenticationException, URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(this.url);
-
-        /*falcon now reads a user.name parameter in the request.
-        by default we will add it to every request.*/
-        uriBuilder.addParameter(PseudoAuthenticator.USER_NAME, this.user);
-        uri = uriBuilder.build();
-
         // add headers to the request
         if (null != headers && headers.size() > 0) {
             for (Header header : headers) {
