@@ -781,7 +781,7 @@ public class InstanceUtil {
                 else if (i == 3)
                     oneLocation.setType(LocationType.TMP);
                 else
-                    Assert.fail("unexpected value of locations: " + locations);
+                    Assert.fail("unexpected value of locations: " + Arrays.toString(locations));
 
                 feedLocations.getLocations().add(oneLocation);
             }
