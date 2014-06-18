@@ -79,14 +79,12 @@ public class ProcessPage extends EntityPage<Process> {
         lineage.click();
         waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, DEFAULT_TIMEOUT,
             "Circles not found");
-        waitForElement(LINEAGE_TITLE, DEFAULT_TIMEOUT, "Lineage title not found");
+        waitForDisplayed(LINEAGE_TITLE, DEFAULT_TIMEOUT, "Lineage title not found");
         isLineageOpened = true;
     }
 
     public void closeLineage() {
         if (isLineageOpened) {
-            waitForDisplayed(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
-                "Close button isn't displayed");
             WebElement close = driver.findElement(By.xpath(CLOSE_LINE_AGE_BUTTON_XPATH));
             close.click();
             isLineageOpened = false;
