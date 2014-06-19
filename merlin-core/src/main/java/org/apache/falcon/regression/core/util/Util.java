@@ -21,6 +21,8 @@ package org.apache.falcon.regression.core.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -1166,7 +1168,9 @@ public class Util {
             return null;
         }
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        return gson.toJson(jsonString);
+        JsonElement json = new JsonParser().parse(jsonString);
+
+        return gson.toJson(json);
     }
 
     public static String prettyPrintXmlOrJson(final String str) {
