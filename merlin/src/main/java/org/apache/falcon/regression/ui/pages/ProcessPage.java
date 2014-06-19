@@ -52,7 +52,7 @@ public class ProcessPage extends EntityPage<Process> {
         "//div[@id='panel-instance']//table/tbody/tr/td[contains(.., " +
             "'%s')]/a[contains(., 'Lineage')]";
     private static final String CLOSE_LINE_AGE_BUTTON_XPATH =
-        "//div[@class='modal-footer']/button[contains(., 'Close')]";
+        "//body[@class='modal-open']//button[contains(., 'Close')]";
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
     private static final String SVG_XPATH = "//*[name() = 'svg']";
     private static final String G_XPATH = "//*[name()='g']";
