@@ -43,13 +43,13 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.codehaus.jettison.json.JSONException;
 import org.joda.time.DateTime;
+import org.openqa.selenium.Point;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import javax.xml.bind.JAXBException;
-import java.awt.Point;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
