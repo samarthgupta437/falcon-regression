@@ -67,16 +67,25 @@ public abstract class Page {
      * @param errMessage message for TimeoutException
      */
     public void waitForElement(final String xpath, final long timeoutSeconds, String errMessage) {
-
-        try {
-            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath));
-        } catch (TimeoutException e) {
-            TimeoutException ex = new TimeoutException(errMessage);
-            ex.initCause(e);
-            throw ex;
-        }
+        waitForElementAction(xpath, timeoutSeconds, errMessage, true);
     }
 
+    /**
+     * Wait until WebElement disappears.
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for disappearing
+     * @param errMessage message for TimeoutException
+     */
+    public void waitForDisappear(final String xpath, final long timeoutSeconds, String errMessage) {
+        waitForElementAction(xpath, timeoutSeconds, errMessage, false);
+    }
+
+    /**
+     * Wait until WebElement became visible
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for visibility
+     * @param errMessage message for TimeoutException
+     */
     public void waitForDisplayed(String xpath, long timeoutSeconds, String errMessage) {
         waitForElement(xpath, timeoutSeconds, errMessage);
         WebElement element = driver.findElement(By.xpath(xpath));
@@ -91,17 +100,30 @@ public abstract class Page {
         throw new TimeoutException(errMessage);
     }
 
+    private void waitForElementAction(String xpath, long timeoutSeconds, String errMessage,
+                                     boolean expected) {
+        try {
+            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath, expected));
+        } catch (TimeoutException e) {
+            TimeoutException ex = new TimeoutException(errMessage);
+            ex.initCause(e);
+            throw ex;
+        }
+    }
+
     public static class Condition implements ExpectedCondition<Boolean> {
 
+        private final boolean isPresent;
         private String xpath;
 
-        public Condition(String xpath) {
+        public Condition(String xpath, boolean isPresent) {
             this.xpath = xpath;
+            this.isPresent = isPresent;
         }
 
         @Override
         public Boolean apply(WebDriver webDriver) {
-            return !webDriver.findElements(By.xpath(xpath)).isEmpty();
+            return (!webDriver.findElements(By.xpath(xpath)).isEmpty() == isPresent);
         }
     }
 }
