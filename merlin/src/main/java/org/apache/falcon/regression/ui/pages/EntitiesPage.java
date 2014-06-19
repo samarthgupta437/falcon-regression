@@ -74,7 +74,7 @@ public class EntitiesPage extends Page {
 
     private boolean nextPagePresent() {
         try {
-            new WebDriverWait(driver, DEFAULT_TIMEOUT).until(new Condition(ACTIVE_NXT_BTN));
+            new WebDriverWait(driver, DEFAULT_TIMEOUT).until(new Condition(ACTIVE_NXT_BTN, true));
             return true;
         } catch (TimeoutException e) {
             return false;

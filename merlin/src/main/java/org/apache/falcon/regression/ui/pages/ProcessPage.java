@@ -89,6 +89,8 @@ public class ProcessPage extends EntityPage<Process> {
             WebElement close = driver.findElement(By.xpath(CLOSE_LINE_AGE_BUTTON_XPATH));
             close.click();
             isLineageOpened = false;
+            waitForDisappear(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
+                "Lineage didn't disappear");
         }
     }
 

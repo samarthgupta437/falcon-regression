@@ -69,7 +69,18 @@ public abstract class Page {
     public void waitForElement(final String xpath, final long timeoutSeconds, String errMessage) {
 
         try {
-            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath));
+            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath, true));
+        } catch (TimeoutException e) {
+            TimeoutException ex = new TimeoutException(errMessage);
+            ex.initCause(e);
+            throw ex;
+        }
+    }
+
+    public void waitForDisappear(final String xpath, final long timeoutSeconds, String errMessage) {
+
+        try {
+            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath, false));
         } catch (TimeoutException e) {
             TimeoutException ex = new TimeoutException(errMessage);
             ex.initCause(e);
@@ -93,15 +104,17 @@ public abstract class Page {
 
     public static class Condition implements ExpectedCondition<Boolean> {
 
+        private final boolean isPresent;
         private String xpath;
 
-        public Condition(String xpath) {
+        public Condition(String xpath, boolean isPresent) {
             this.xpath = xpath;
+            this.isPresent = isPresent;
         }
 
         @Override
         public Boolean apply(WebDriver webDriver) {
-            return !webDriver.findElements(By.xpath(xpath)).isEmpty();
+            return (!webDriver.findElements(By.xpath(xpath)).isEmpty() == isPresent);
         }
     }
 }
