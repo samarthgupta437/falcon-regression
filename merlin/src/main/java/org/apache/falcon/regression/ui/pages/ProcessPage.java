@@ -104,8 +104,8 @@ public class ProcessPage extends EntityPage<Process> {
     public HashMap<String, List<String>> getAllVertices() {
         HashMap<String, List<String>> map = null;
         if (isLineageOpened) {
-            waitForElement(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
-                "Close Lineage button not found");
+            waitForElement(VERTICES_BLOCKS_XPATH + "[contains(.,'/')]", DEFAULT_TIMEOUT,
+                "Vertices blocks with names not found");
             List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
