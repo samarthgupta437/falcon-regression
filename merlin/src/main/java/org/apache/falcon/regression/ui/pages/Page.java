@@ -67,25 +67,11 @@ public abstract class Page {
      * @param errMessage message for TimeoutException
      */
     public void waitForElement(final String xpath, final long timeoutSeconds, String errMessage) {
-
-        try {
-            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath, true));
-        } catch (TimeoutException e) {
-            TimeoutException ex = new TimeoutException(errMessage);
-            ex.initCause(e);
-            throw ex;
-        }
+        waitForElementAction(xpath, timeoutSeconds, errMessage, true);
     }
 
     public void waitForDisappear(final String xpath, final long timeoutSeconds, String errMessage) {
-
-        try {
-            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath, false));
-        } catch (TimeoutException e) {
-            TimeoutException ex = new TimeoutException(errMessage);
-            ex.initCause(e);
-            throw ex;
-        }
+        waitForElementAction(xpath, timeoutSeconds, errMessage, false);
     }
 
     public void waitForDisplayed(String xpath, long timeoutSeconds, String errMessage) {
@@ -100,6 +86,17 @@ public abstract class Page {
             }
         }
         throw new TimeoutException(errMessage);
+    }
+
+    private void waitForElementAction(String xpath, long timeoutSeconds, String errMessage,
+                                     boolean expected) {
+        try {
+            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath, expected));
+        } catch (TimeoutException e) {
+            TimeoutException ex = new TimeoutException(errMessage);
+            ex.initCause(e);
+            throw ex;
+        }
     }
 
     public static class Condition implements ExpectedCondition<Boolean> {
