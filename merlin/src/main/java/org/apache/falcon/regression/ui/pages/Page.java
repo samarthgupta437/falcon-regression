@@ -70,10 +70,22 @@ public abstract class Page {
         waitForElementAction(xpath, timeoutSeconds, errMessage, true);
     }
 
+    /**
+     * Wait until WebElement disappears.
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for disappearing
+     * @param errMessage message for TimeoutException
+     */
     public void waitForDisappear(final String xpath, final long timeoutSeconds, String errMessage) {
         waitForElementAction(xpath, timeoutSeconds, errMessage, false);
     }
 
+    /**
+     * Wait until WebElement became visible
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for visibility
+     * @param errMessage message for TimeoutException
+     */
     public void waitForDisplayed(String xpath, long timeoutSeconds, String errMessage) {
         waitForElement(xpath, timeoutSeconds, errMessage);
         WebElement element = driver.findElement(By.xpath(xpath));
