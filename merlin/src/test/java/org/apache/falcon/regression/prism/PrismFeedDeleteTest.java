@@ -409,8 +409,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
         Util.shutDownService(cluster1.getFeedHelper());
 
-        ServiceResponse response = prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed);
-        AssertUtil.assertSucceeded(response);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().delete(Util.URLS.DELETE_URL, feed));
     }
 
 
