@@ -15,30 +15,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.falcon.regression.core.response.lineage;
-
-public enum Direction {
-    outGoingEdges("outE"),
-    inComingEdges("inE"),
-    bothEdges("bothE"),
-    outgoingVertices("out"),
-    inComingVertices("in"),
-    bothVertices("both"),
-    outCount("outCount"),
-    inCount("inCount"),
-    bothCount("bothCount"),
-    outgoingVerticesIds("outIds"),
-    incomingVerticesIds("inIds"),
-    bothVerticesIds("bothIds");
-
-    private final String value;
-
-    Direction(String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return value;
-    }
-}
