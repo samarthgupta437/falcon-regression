@@ -43,7 +43,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-@Test(groups = {"distributed", "embedded"})
+@Test(groups = "embedded")
 public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);

@@ -48,7 +48,7 @@ import java.lang.reflect.Method;
 /**
  * Feed instance status tests.
  */
-@Test(groups = {"distributed", "embedded"})
+@Test(groups = "embedded")
 public class FeedInstanceStatusTest extends BaseTestClass {
 
     private String baseTestDir = baseHDFSDir + "/FeedInstanceStatusTest";
