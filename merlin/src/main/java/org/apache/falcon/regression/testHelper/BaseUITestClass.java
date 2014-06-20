@@ -34,6 +34,11 @@ public class BaseUITestClass extends BaseTestClass{
     protected void openBrowser() {
 
         FirefoxProfile profile = new FirefoxProfile();
+
+        String host = prism.getClusterHelper().getHostname()
+            .replaceFirst("https*://", "").split(":")[0];
+        profile.setPreference("network.negotiate-auth.trusted-uris", host);
+        profile.setPreference("network.negotiate-auth.delegation-uris", host);
         DRIVER = new FirefoxDriver(profile);
         DesiredCapabilities capability = DesiredCapabilities.firefox();
         capability.setCapability(FirefoxDriver.PROFILE, profile);
