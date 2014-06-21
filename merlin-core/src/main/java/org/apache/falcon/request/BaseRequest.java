@@ -114,8 +114,6 @@ public class BaseRequest {
                 request.addHeader(header);
             }
         }
-        request.addHeader("Remote-User", "test");
-
         /*get the token and add it to the header.
         works in secure and un secure mode.*/
         AuthenticatedURL.Token token;
