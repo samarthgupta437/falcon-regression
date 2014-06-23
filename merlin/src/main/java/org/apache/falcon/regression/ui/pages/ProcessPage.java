@@ -111,8 +111,7 @@ public class ProcessPage extends EntityPage<Process> {
             List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
-                String text = block.getText();
-                Assert.assertTrue(text.contains("/"), "Expecting text to contain /: " + text);
+                String text = getTextContaining(block, "/");
                 String[] separate = text.split("/");
                 String name = separate[0];
                 String nominalTime = separate[1];
@@ -126,6 +125,21 @@ public class ProcessPage extends EntityPage<Process> {
             }
         }
         return map;
+    }
+
+    private String getTextContaining(WebElement element, String expected) {
+        String text = "";
+        for (int i = 0; i < 100; i++) {
+             text = element.getText();
+            if (text.contains(expected)) return text;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                logger.info("Sleep was interrupted");
+            }
+        }
+        Assert.fail(String.format("Expecting '%s' to contain '%s'", text, expected));
+        return null;
     }
 
     /**
