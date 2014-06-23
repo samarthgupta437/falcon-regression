@@ -113,7 +113,6 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         String bundleId = InstanceUtil
             .getLatestBundleID(cluster, Util.readEntityName(bundles[0].getDataSets().get(0)),
                 ENTITY_TYPE.FEED);
-        ;
 
         //try to submit and schedule the same process again
         ServiceResponse response = prism.getFeedHelper()
