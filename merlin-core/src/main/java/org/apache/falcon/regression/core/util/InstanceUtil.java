@@ -22,10 +22,12 @@ import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.falcon.entity.v0.feed.ACL;
 import org.apache.falcon.entity.v0.feed.Cluster;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.Locations;
 import org.apache.falcon.entity.v0.feed.Validity;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.CatalogTable;
 import org.apache.falcon.entity.v0.process.Process;
@@ -1325,6 +1327,23 @@ public class InstanceUtil {
 
         }
 
+    }
+
+    public static String setFeedACL(String feed, String... ownerGroup)
+        throws InvocationTargetException, NoSuchMethodException, IllegalAccessException,
+        JAXBException {
+        FeedMerlin feedObject = new FeedMerlin(feed);
+        ACL acl = feedObject.getACL();
+        String owner = Util.readPropertiesFile("Merlin.properties", "prism.username");
+        String group = "default";
+        if(ownerGroup.length > 1)
+            owner = ownerGroup[0];
+        if(ownerGroup.length == 2)
+            group = ownerGroup[1];
+        acl.setOwner(owner);
+        acl.setGroup(group);
+        feedObject.setACL(acl);
+        return feedObject.toString();
     }
 }
 

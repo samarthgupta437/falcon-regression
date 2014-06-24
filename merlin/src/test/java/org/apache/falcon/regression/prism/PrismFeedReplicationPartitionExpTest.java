@@ -204,6 +204,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
@@ -252,6 +253,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
             XmlUtil.createRtention("days(100000)", ActionType.DELETE), null,
@@ -349,6 +351,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
@@ -441,6 +444,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
+
         feed = InstanceUtil.setFeedFilePath(feed, testBaseDir3 + dateTemplate);
 
         feed = InstanceUtil.setFeedCluster(feed,
@@ -547,6 +552,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
+
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
@@ -602,6 +609,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
+
         feed = InstanceUtil.setFeedFilePath(feed,
             testBaseDir1 + dateTemplate);
         feed = InstanceUtil.setFeedCluster(feed,
@@ -710,6 +719,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         String startTimeUA2 = "2012-10-01T12:00Z";
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
+
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
@@ -793,6 +804,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         String startTimeUA2 = "2012-10-01T12:10Z";
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
+
         feed = InstanceUtil.setFeedFilePath(feed, testBaseDir1 + dateTemplate);
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
@@ -889,6 +902,8 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         String startTimeUA2 = "2012-10-01T12:10Z";
 
         String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedACL(feed);
+
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
