@@ -84,7 +84,6 @@ public class InstanceUtil {
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
     private static String aclOwner = getAclOwner();
-
     private static String aclGroup = getAclGroup();
     public static APIResult sendRequestProcessInstance(String
                                                            url, String user)
@@ -1354,7 +1353,7 @@ public class InstanceUtil {
 
     public static String getAclGroup() {
         if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.userGroup")))
-            return Util.readPropertiesFile("Merlin.properties", "ACL.userGroup");
+            return Util.readPropertiesFile("Merlin.properties", "ACL.GROUP");
         else
             return "default";
     }
