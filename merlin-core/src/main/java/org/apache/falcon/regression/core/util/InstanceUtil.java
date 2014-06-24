@@ -46,6 +46,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.request.BaseRequest;
+import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -1349,7 +1350,7 @@ public class InstanceUtil {
         if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.OWNER")))
             return Util.readPropertiesFile("Merlin.properties", "ACL.OWNER");
         else
-            return Util.readPropertiesFile("Merlin.properties", "prism.username");
+            return RequestKeys.CURRENT_USER;
     }
 
     public static String getAclGroup() {

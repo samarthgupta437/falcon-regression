@@ -455,7 +455,8 @@ public class Bundle {
 
 
     public ServiceResponse submitBundle(PrismHelper prismHelper)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException
+         {
 
         //make sure bundle is unique
         generateUniqueBundle();
@@ -981,8 +982,18 @@ public class Bundle {
     }
 
     public void submitFeeds(PrismHelper prismHelper)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException
+         {
         for (String feed : this.dataSets) {
+            try {
+                feed = InstanceUtil.setFeedACL(feed);
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            } catch (NoSuchMethodException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
             AssertUtil.assertSucceeded(
                 prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
         }
