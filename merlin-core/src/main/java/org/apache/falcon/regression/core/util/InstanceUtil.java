@@ -1336,7 +1336,7 @@ public class InstanceUtil {
         ACL acl = feedObject.getACL();
         String owner = Util.readPropertiesFile("Merlin.properties", "prism.username");
         String group = "default";
-        if(ownerGroup.length > 1)
+        if(ownerGroup.length > 0)
             owner = ownerGroup[0];
         if(ownerGroup.length == 2)
             group = ownerGroup[1];
