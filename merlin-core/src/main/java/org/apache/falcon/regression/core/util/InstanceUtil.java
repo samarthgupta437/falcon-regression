@@ -1334,10 +1334,11 @@ public class InstanceUtil {
         JAXBException {
         FeedMerlin feedObject = new FeedMerlin(feed);
         ACL acl = feedObject.getACL();
-        if(ownerGroup.length > 0)
+        if(ownerGroup.length > 0) {
             aclOwner = ownerGroup[0];
-        if(ownerGroup.length == 2)
-            aclGroup = ownerGroup[1];
+            if (ownerGroup.length == 2)
+                aclGroup = ownerGroup[1];
+        }
         acl.setOwner(aclOwner);
         acl.setGroup(aclGroup);
         feedObject.setACL(acl);
