@@ -1330,10 +1330,14 @@ public class InstanceUtil {
 
     }
 
-    public static String setFeedACL(String feed, String... ownerGroup)
-        throws InvocationTargetException, NoSuchMethodException, IllegalAccessException,
-        JAXBException {
-        FeedMerlin feedObject = new FeedMerlin(feed);
+    public static String setFeedACL(String feed, String... ownerGroup) {
+        FeedMerlin feedObject = null;
+        try {
+            feedObject = new FeedMerlin(feed);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
         ACL acl = feedObject.getACL();
         if(ownerGroup.length > 0) {
             aclOwner = ownerGroup[0];

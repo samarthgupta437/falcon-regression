@@ -19,10 +19,11 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.Feed;
-import org.apache.falcon.entity.v0.process.*;
+import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.entity.v0.process.Output;
 import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -34,7 +35,6 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,21 +97,7 @@ public class BundleUtil {
                     } else if (data.contains("uri:ivory:feed:0.1") ||
                         data.contains("uri:falcon:feed:0.1")) {
                         Util.logger.info("data been added to feed");
-                        try {
-                            data = InstanceUtil.setFeedACL(data);
-                        } catch (InvocationTargetException e) {
-                            e.printStackTrace();
-                            Assert.fail("Unable to set ACL");
-                        } catch (NoSuchMethodException e) {
-                            e.printStackTrace();
-                            Assert.fail("Unable to set ACL");
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                            Assert.fail("Unable to set ACL");
-                        } catch (JAXBException e) {
-                            e.printStackTrace();
-                            Assert.fail("Unable to set ACL");
-                        }
+                        data = InstanceUtil.setFeedACL(data);
                         dataSets.add(data);
                     }
                 }
