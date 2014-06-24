@@ -295,7 +295,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             testFile2);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.FEED);
         Assert.assertEquals(
             InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
                 "REPLICATION"), 1);
@@ -382,7 +382,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         AssertUtil.assertSucceeded(r);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.FEED);
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
@@ -481,10 +481,10 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Thread.sleep(15000);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.FEED);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 3,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
 
@@ -646,9 +646,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         Thread.sleep(15000);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.FEED);
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
 
