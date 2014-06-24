@@ -1353,7 +1353,7 @@ public class InstanceUtil {
     }
 
     public static String getAclGroup() {
-        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.userGroup")))
+        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.GROUP")))
             return Util.readPropertiesFile("Merlin.properties", "ACL.GROUP");
         else
             return "default";
