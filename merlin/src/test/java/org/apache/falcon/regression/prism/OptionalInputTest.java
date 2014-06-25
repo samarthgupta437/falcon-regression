@@ -70,12 +70,14 @@ public class OptionalInputTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Test case: set 1 optional and 1 compulsory input. Provide data only for second one. Check
+     * that process runs without waiting for optional input and finally succeeds.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_1optional_1compulsary() throws Exception {
-
-        //process with 2 input , scheduled on single cluster
-        // in input set true / false for both the input
-        //create data after process has been scheduled, so that initially instance goes into waiting
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
@@ -103,11 +105,15 @@ public class OptionalInputTest extends BaseTestClass {
                 2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
+    /**
+     * Test case: set 1 optional and 2 compulsory inputs. Check that if data hasn't been provided
+     * process is pending. Then provide data for compulsory inputs and check that process runs
+     * and finally succeeds without waiting for optional input data.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_1optional_2compulsary() throws Exception {
-        //process with 3 input , scheduled on single cluster
-        // in input set true / false for both the input
-        //create data after process has been scheduled, so that initially instance goes into waiting
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
@@ -123,7 +129,6 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
         Thread.sleep(20000);
-
 
         logger.info("instanceShouldStillBeInWaitingState");
         InstanceUtil
@@ -146,12 +151,15 @@ public class OptionalInputTest extends BaseTestClass {
                 2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
+    /**
+     * Test case: set 2 optional and 1 compulsory inputs. Run process. Check that process
+     * is pending because of lack of data. Provide it with data only for compulsory input. Check
+     * that process runs and finally succeeds without waiting for optional input.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_2optional_1compulsary() throws Exception {
-
-        //process with 2 input , scheduled on single cluster
-        // in input set true / false for both the input
-        //create data after process has been scheduled, so that initially instance goes into waiting
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
@@ -183,17 +191,17 @@ public class OptionalInputTest extends BaseTestClass {
                 2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
-
+    /**
+     * Test case: set process to have 1 optional and 1 compulsory input. Provide empty
+     * directories for optional input and normal data for compulsory one. Check that process
+     * doesn't wait for optional input, runs and finally succeeds.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_optionalInputWithEmptyDir() throws Exception {
-
-        //process with 2 input , scheduled on single cluster
-        // in input set true / false for both the input
-        //create data after process has been scheduled, so that initially instance goes into waiting
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(10);
-
-
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
@@ -225,18 +233,20 @@ public class OptionalInputTest extends BaseTestClass {
                 2, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
     }
 
+    /**
+     * Test case: set process with both optional inputs. Run it. Check that process have got
+     * killed.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_allInputOptional() throws Exception {
-        //process with 2 input , scheduled on single cluster
-        // in input set true / false for both the input
-        //create data after process has been scheduled, so that initially instance goes into waiting
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
 
         bundles[0].setProcessData(
             bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData"));
-
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(bundles[0].getDataSets().get(i));
@@ -250,26 +260,24 @@ public class OptionalInputTest extends BaseTestClass {
 
         Thread.sleep(20000);
 
-        //instanceUtil.createDataWithinDatesAndPrefix(server1, instanceUtil.oozieDateToDate
-        // ("2010-01-01T22:00Z")
-        // , instanceUtil.oozieDateToDate("2010-01-02T04:00Z"), "/samarthData/input/input1/",
-        // 1);
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.KILLED, 20, ENTITY_TYPE.PROCESS);
     }
 
-
+    /**
+     * Test case: set process with 1 optional and 1 compulsory input. Run it providing necessary
+     * data. Check that process succeeds. Then update optional input to be compulsory. Check that
+     * after process was updated it waits for data of updated input. Provide process with
+     * necessary data and check that it succeeds finally.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_updateProcessMakeOptionalCompulsury() throws Exception {
-        //initially 2 input and both are compulsury
-        //process with 2 input , scheduled on single cluster
-        // in input set true / false for both the input
-        //create data after process has been scheduled, so that initially instance goes into waiting
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
-
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
@@ -329,17 +337,18 @@ public class OptionalInputTest extends BaseTestClass {
                 2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
-
+    /**
+     * Test case: set process to have 1 optional and 1 compulsory input. Run it providing with
+     * necessary data. Check that process succeeds without waiting for optional input. Then
+     * update process to have 2 optional inputs instead of both optional and compulsory. Check
+     * that process have got killed.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_updateProcessMakeCompulsuryOptional() throws Exception {
-
-        //initially 2 input and both are compulsury
-        //process with 2 input , scheduled on single cluster
-        // in input set true / false for both the input
-        //create data after process has been scheduled, so that initially instance goes into waiting
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
-
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
 
@@ -379,7 +388,6 @@ public class OptionalInputTest extends BaseTestClass {
             .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
 
         logger.info("modified process:" + bundles[0].getProcessData());
-
 
         prism.getProcessHelper().update(bundles[0].getProcessData(), bundles[0].getProcessData());
 
