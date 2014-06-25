@@ -241,7 +241,7 @@ public class OozieUtil {
     public static boolean verifyOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType, Job.Status expectedStatus)
         throws OozieClientException, InterruptedException {
-        for (int seconds = 0; seconds < 20; seconds++) {
+        for (int seconds = 0; seconds < 100; seconds+=5) {
             Job.Status status = getOozieJobStatus(client, processName, entityType);
             logger.info("Current status: " + status);
             if (status == expectedStatus) {
