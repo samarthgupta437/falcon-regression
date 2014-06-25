@@ -16,68 +16,62 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.helpers;
 
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.util.InstanceUtil;
-import org.apache.falcon.regression.core.util.Util;
+import org.apache.log4j.Logger;
 
 
 public class PrismHelper {
 
-  protected IEntityManagerHelper clusterHelper;
-  protected IEntityManagerHelper processHelper;
-  protected IEntityManagerHelper feedHelper;
-  protected InstanceUtil instanceUtil;
+    private static Logger logger = Logger.getLogger(PrismHelper.class);
+    protected IEntityManagerHelper clusterHelper;
+    protected IEntityManagerHelper processHelper;
+    protected IEntityManagerHelper feedHelper;
 
-  protected Util util;
-
-  public IEntityManagerHelper getClusterHelper() {
-    return clusterHelper;
-  }
-
-  public IEntityManagerHelper getFeedHelper() {
-    return feedHelper;
-  }
-
-  public IEntityManagerHelper getProcessHelper() {
-    return processHelper;
-  }
-
-  protected String envFileName;
-
-  public String getPrefix() {
-    return prefix;
-  }
-
-  protected String prefix;
-
-  public String getEnvFileName() {
-    return envFileName;
-  }
-
-  public PrismHelper(String envFileName, String prefix) {
-    try {
-      this.envFileName = envFileName;
-      this.prefix = prefix;
-      clusterHelper =
-        EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
-          prefix);
-      processHelper =
-        EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
-      feedHelper = EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
-      instanceUtil = new InstanceUtil(this.clusterHelper.getOozieClient());
-
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
+    public IEntityManagerHelper getClusterHelper() {
+        return clusterHelper;
     }
 
-  }
+    public IEntityManagerHelper getFeedHelper() {
+        return feedHelper;
+    }
+
+    public IEntityManagerHelper getProcessHelper() {
+        return processHelper;
+    }
+
+    protected String envFileName;
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    protected String prefix;
+
+    public String getEnvFileName() {
+        return envFileName;
+    }
+
+    public PrismHelper(String envFileName, String prefix) {
+        try {
+            this.envFileName = envFileName;
+            this.prefix = prefix;
+            clusterHelper =
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
+                    prefix);
+            processHelper =
+                EntityHelperFactory
+                    .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
+            feedHelper =
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
+
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+
+    }
 
 }

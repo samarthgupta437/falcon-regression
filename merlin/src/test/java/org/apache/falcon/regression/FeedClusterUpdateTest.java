@@ -19,13 +19,16 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.entity.v0.feed.ActionType;
+import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -63,7 +66,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -85,23 +88,23 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
 
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
         }
-        Util.submitAllClusters(bundles[0], bundles[1], bundles[2]);
+        BundleUtil.submitAllClusters(bundles[0], bundles[1], bundles[2]);
         feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
-                XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
-                ClusterType.SOURCE, null);
-        startTime = InstanceUtil.getTimeWrtSystemTime(-50);
+            XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
+            ClusterType.SOURCE, null);
+        startTime = TimeUtil.getTimeWrtSystemTime(-50);
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
@@ -109,585 +112,587 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     public void addSourceCluster() throws Exception {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                InstanceUtil.addMinsToTime(startTime, 65)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                null);
+                TimeUtil.addMinsToTime(startTime, 65)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            null);
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
 
         logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION" +
-                        ""), 1);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit), "RETENTION" +
+                    ""), 1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
-        Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "RETENTION"), 0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "RETENTION"), 0);
 
         //prepare updated Feed
         feedUpdated = InstanceUtil.setFeedCluster(
-                feed, XmlUtil.createValidity(startTime,
-                InstanceUtil.addMinsToTime(startTime, 65)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                "US/${cluster.colo}");
+            feed, XmlUtil.createValidity(startTime,
+                TimeUtil.addMinsToTime(startTime, 65)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}");
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 2);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 1);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 2);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 2);
     }
 
     @Test(enabled = false, groups = {"multiCluster"})
     public void addTargetCluster() throws Exception {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        null);
-        feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}");
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                null);
+        feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
         logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "RETENTION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "RETENTION"), 0);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
-        Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                0);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            0);
 
         //prepare updated Feed
         feedUpdated = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        "US/${cluster.colo}");
-        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}");
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
         logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 2);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 2);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
     }
 
     @Test(enabled = false, groups = {"multiCluster"})
     public void add2SourceCluster() throws Exception {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        null);
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                null);
 
         logger.info("Feed: " + feedOriginalSubmit);
 
-        ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
+        ServiceResponse response =
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                1);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                0);
-        Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                0);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            0);
 
         //prepare updated Feed
         feedUpdated = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        "US/${cluster.colo}");
-        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}");
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
         logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 2);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
     }
 
     @Test(enabled = false, groups = {"multiCluster"})
     public void add2TargetCluster() throws Exception {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        null);
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                null);
 
         logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
 
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "RETENTION"), 1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                0);
-        Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                0);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            0);
 
         //prepare updated Feed
         feedUpdated = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                InstanceUtil.addMinsToTime(startTime, 65)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                null);
+                TimeUtil.addMinsToTime(startTime, 65)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
         logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 1);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
     }
 
     @Test(enabled = false, groups = {"multiCluster"})
     public void add1Source1TargetCluster() throws Exception {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        null);
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                null);
 
         logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
         response = cluster2.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                1);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-                0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
-        Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "RETENTION"), 0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "RETENTION"), 0);
 
         //prepare updated Feed
         feedUpdated = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        "US/${cluster.colo}");
-        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                "US/${cluster.colo}");
         feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}");
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
         logger.info("Updated Feed: " + feedUpdated);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 2);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 2);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
     }
 
     @Test(enabled = false, groups = {"multiCluster"})
     public void deleteSourceCluster() throws Exception {
         //add one source and one target , schedule only on source
         feedOriginalSubmit = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        "US/${cluster.colo}");
-        feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                "US/${cluster.colo}");
         feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-                        InstanceUtil.addMinsToTime(startTime, 110)),
-                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
-                "UK/${cluster.colo}");
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+        feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
         logger.info("Feed: " + feedOriginalSubmit);
 
         ServiceResponse response =
-                prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
         Thread.sleep(10000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //schedule on source
 
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feedOriginalSubmit);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit), "RETENTION" +
-                        ""), 1);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit), "RETENTION" +
+                    ""), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "REPLICATION"), 2);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                        Util.readDatasetName(feedOriginalSubmit),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "RETENTION"), 1);
 
         //prepare updated Feed
         feedUpdated = InstanceUtil
-                .setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                        InstanceUtil.addMinsToTime(startTime, 65)),
-                        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                        Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                        null);
-        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-                XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-                        InstanceUtil.addMinsToTime(startTime, 85)),
+            .setFeedCluster(feed, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                null);
+        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
 
         response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
         Thread.sleep(20000);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
-        response = cluster3.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feedUpdated);
-        Util.assertFailed(response);
+        response =
+            cluster3.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feedUpdated);
+        AssertUtil.assertFailed(response);
 
         prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 2);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "REPLICATION"), 0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-                        "RETENTION"), 0);
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 0);
     }
 
-  @Test(enabled = true, groups = {"multiCluster"})
-  public void deleteTargetCluster() throws Exception {
+    @Test(enabled = true, groups = {"multiCluster"})
+    public void deleteTargetCluster() throws Exception {
 
         /*
         this test creates a multiCluster feed. Cluster1 is the target cluster
@@ -709,128 +714,129 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         coord on cluster1 and cluster2
          */
 
-    //add two source and one target
+        //add two source and one target
 
-    feedOriginalSubmit = InstanceUtil.setFeedCluster(feed,
-      XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-      XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-      ClusterType.SOURCE, null);
+        feedOriginalSubmit = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
+            ClusterType.SOURCE, null);
 
-    feedOriginalSubmit = InstanceUtil
-      .setFeedCluster(feedOriginalSubmit, XmlUtil.createValidity(startTime,
-        InstanceUtil.addMinsToTime(startTime, 65)),
-        XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-        Util.readClusterName(bundles[1].getClusters().get(0)),
-      ClusterType.SOURCE,
-        "US/${cluster.colo}");
-    feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-      XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 20),
-        InstanceUtil.addMinsToTime(startTime, 85)),
-      XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-      Util.readClusterName(bundles[0].getClusters().get(0)),
-      ClusterType.TARGET, null);
-    feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
-      XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-        InstanceUtil.addMinsToTime(startTime, 110)),
-      XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-      Util.readClusterName(bundles[2].getClusters().get(0)),
-      ClusterType.SOURCE,
-      "UK/${cluster.colo}");
+        feedOriginalSubmit = InstanceUtil
+            .setFeedCluster(feedOriginalSubmit, XmlUtil.createValidity(startTime,
+                    TimeUtil.addMinsToTime(startTime, 65)),
+                XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+                Util.readClusterName(bundles[1].getClusters().get(0)),
+                ClusterType.SOURCE,
+                "US/${cluster.colo}");
+        feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
+                TimeUtil.addMinsToTime(startTime, 85)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)),
+            ClusterType.TARGET, null);
+        feedOriginalSubmit = InstanceUtil.setFeedCluster(feedOriginalSubmit,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)),
+            ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
-    logger.info("Feed: " + feedOriginalSubmit);
+        logger.info("Feed: " + feedOriginalSubmit);
 
-    ServiceResponse response =
-      prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
-    Thread.sleep(10000);
-    Util.assertSucceeded(response);
+        ServiceResponse response =
+            prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOriginalSubmit);
+        Thread.sleep(10000);
+        AssertUtil.assertSucceeded(response);
 
-    //schedule on source
-    response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL,
-      feedOriginalSubmit);
-    Thread.sleep(20000);
-    Util.assertSucceeded(response);
+        //schedule on source
+        response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL,
+            feedOriginalSubmit);
+        Thread.sleep(20000);
+        AssertUtil.assertSucceeded(response);
 
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-        Util.readDatasetName(feedOriginalSubmit),
-        "REPLICATION"), 0);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-      1);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-        Util.readDatasetName(feedOriginalSubmit),
-        "REPLICATION"), 0);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-      1);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-        Util.readDatasetName(feedOriginalSubmit),
-        "REPLICATION"), 2);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-        Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
-      1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
+        Assert.assertEquals(InstanceUtil
+                .checkIfFeedCoordExist(cluster2.getFeedHelper(),
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 0);
+        Assert.assertEquals(InstanceUtil
+                .checkIfFeedCoordExist(cluster3.getFeedHelper(),
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                Util.readDatasetName(feedOriginalSubmit),
+                "REPLICATION"), 2);
+        Assert.assertEquals(InstanceUtil
+                .checkIfFeedCoordExist(cluster1.getFeedHelper(),
+                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+            1);
 
-    //prepare updated Feed
+        //prepare updated Feed
 
-    feedUpdated = InstanceUtil.setFeedCluster(feed,
-      XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
-      XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
-      ClusterType.SOURCE, null);
+        feedUpdated = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
+            ClusterType.SOURCE, null);
 
-    feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
-      XmlUtil.createValidity(InstanceUtil.addMinsToTime(startTime, 40),
-        InstanceUtil.addMinsToTime(startTime, 110)),
-      XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-      Util.readClusterName(bundles[2].getClusters().get(0)),
-    ClusterType.SOURCE,
-      "UK/${cluster.colo}");
+        feedUpdated = InstanceUtil.setFeedCluster(feedUpdated,
+            XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
+                TimeUtil.addMinsToTime(startTime, 110)),
+            XmlUtil.createRtention("hours(10)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)),
+            ClusterType.SOURCE,
+            "UK/${cluster.colo}");
 
-    logger.info("Feed: " + feedUpdated);
+        logger.info("Feed: " + feedUpdated);
 
-    response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
-    Thread.sleep(20000);
-    Util.assertSucceeded(response);
+        response = prism.getFeedHelper().update(feedUpdated, feedUpdated);
+        Thread.sleep(20000);
+        AssertUtil.assertSucceeded(response);
 
 
-    //verify xmls definitions
-    response = cluster1.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feedUpdated);
-    Util.assertFailed(response);
-    response = cluster2.getFeedHelper().getEntityDefinition(URLS
-      .GET_ENTITY_DEFINITION, feedUpdated);
-    Util.assertFailed(response);
-    response = cluster3.getFeedHelper().getEntityDefinition(URLS
-      .GET_ENTITY_DEFINITION, feedUpdated);
-    Assert.assertTrue(XmlUtil.isIdentical(feedUpdated,
-      response.getMessage()));
-    response = prism.getFeedHelper().getEntityDefinition(URLS
-      .GET_ENTITY_DEFINITION, feedUpdated);
-    Assert.assertTrue(XmlUtil.isIdentical(feedUpdated,
-      response.getMessage()));
+        //verify xmls definitions
+        response =
+            cluster1.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feedUpdated);
+        AssertUtil.assertFailed(response);
+        response = cluster2.getFeedHelper().getEntityDefinition(URLS
+            .GET_ENTITY_DEFINITION, feedUpdated);
+        AssertUtil.assertFailed(response);
+        response = cluster3.getFeedHelper().getEntityDefinition(URLS
+            .GET_ENTITY_DEFINITION, feedUpdated);
+        Assert.assertTrue(XmlUtil.isIdentical(feedUpdated,
+            response.getMessage()));
+        response = prism.getFeedHelper().getEntityDefinition(URLS
+            .GET_ENTITY_DEFINITION, feedUpdated);
+        Assert.assertTrue(XmlUtil.isIdentical(feedUpdated,
+            response.getMessage()));
 
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-        "REPLICATION"), 0);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
-        "RETENTION"), 1);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-        "REPLICATION"), 0);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
-        "RETENTION"), 2);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-        "REPLICATION"), 2);
-    Assert.assertEquals(InstanceUtil
-      .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
-        "RETENTION"), 1);
-  }
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 0);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 2);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "REPLICATION"), 2);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+                "RETENTION"), 1);
+    }
 
     /*
     @Test(enabled = false)

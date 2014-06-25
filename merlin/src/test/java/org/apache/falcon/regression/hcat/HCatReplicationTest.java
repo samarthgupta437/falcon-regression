@@ -21,15 +21,17 @@ package org.apache.falcon.regression.hcat;
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.generated.cluster.Interfacetype;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.entity.v0.cluster.Interfacetype;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.ActionType;
+import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -55,7 +57,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +86,7 @@ public class HCatReplicationTest extends BaseTestClass {
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
     int defaultTimeout = OSUtil.IS_WINDOWS ? 10 : 5;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void beforeClass() throws IOException {
         clusterHC = cluster.getClusterHelper().getHCatClient();
         cluster2HC = cluster2.getClusterHelper().getHCatClient();
@@ -95,23 +96,23 @@ public class HCatReplicationTest extends BaseTestClass {
         HadoopUtil.createDir(baseTestHDFSDir, clusterFS, cluster2FS, cluster3FS);
     }
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
-        Bundle bundle = Util.readHCatBundle();
+        Bundle bundle = BundleUtil.readHCatBundle();
         bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
         bundles[0].generateUniqueBundle();
         bundles[0].setClusterInterface(Interfacetype.REGISTRY,
-                cluster.getClusterHelper().getHCatEndpoint());
+            cluster.getClusterHelper().getHCatEndpoint());
 
         bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
         bundles[1].generateUniqueBundle();
         bundles[1].setClusterInterface(Interfacetype.REGISTRY, cluster2.getClusterHelper()
-                .getHCatEndpoint());
+            .getHCatEndpoint());
 
         bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
         bundles[2].generateUniqueBundle();
         bundles[2].setClusterInterface(Interfacetype.REGISTRY, cluster3.getClusterHelper()
-                .getHCatEndpoint());
+            .getHCatEndpoint());
 
     }
 
@@ -141,15 +142,15 @@ public class HCatReplicationTest extends BaseTestClass {
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
         final String tableUriPartitionFragment = StringUtils
-                .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+            .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String datePattern =
-                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+            StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
         List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
 
         final ArrayList<String> dataset =
-                createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+            createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
@@ -161,21 +162,12 @@ public class HCatReplicationTest extends BaseTestClass {
 
         // create table on cluster 1 and add data to it.
         partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-                partitionColumn + " partition"));
+            partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
         // create table on target cluster.
         createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
-
-        // change permission of the destination table. Hive is running with hive.metastore
-        // .execute.setugi = true and we have not yet determined how we can send that value
-        // through falcon. One workaround is to make sure oozie is running with this config set
-        // in hive.xml in action-conf dir. For now this change has been put in the tests until we
-        // determine the ideal solution.
-        Path path = new Path(testHdfsDir);
-        FsPermission dirPerm = new FsPermission("777");
-        cluster2FS.setPermission(path, dirPerm);
 
         Bundle.submitCluster(bundles[0], bundles[1]);
 
@@ -186,34 +178,34 @@ public class HCatReplicationTest extends BaseTestClass {
         String feed = bundles[0].getDataSets().get(0);
         // set the cluster 2 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
-                XmlUtil.createValidity(startDate, endDate),
-                XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
-                tableUri, null);
+            XmlUtil.createValidity(startDate, endDate),
+            XmlUtil.createRtention("months(9000)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            tableUri);
 
         AssertUtil.assertSucceeded(
-                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
-                        feed)
+            prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
+                feed)
         );
         Thread.sleep(15000);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
-                        "REPLICATION"), 1);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+                "REPLICATION"), 1);
 
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on source cluster: " + cluster1ReplicatedData);
         List<Path> cluster2ReplicatedData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on target cluster: " + cluster2ReplicatedData);
-        AssertUtil.checkForPathsSizes(cluster1ReplicatedData, cluster2ReplicatedData);
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
 
     }
 
@@ -237,15 +229,15 @@ public class HCatReplicationTest extends BaseTestClass {
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
         final String tableUriPartitionFragment = StringUtils
-                .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
+            .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String datePattern =
-                StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
+            StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
         List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
 
         final ArrayList<String> dataset =
-                createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+            createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
@@ -257,23 +249,13 @@ public class HCatReplicationTest extends BaseTestClass {
 
         // create table on cluster 1 and add data to it.
         partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-                partitionColumn + " partition"));
+            partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
         // create table on target cluster.
         createTable(cluster2HC, dbName, tblName, cols, partitionCols, testHdfsDir);
         createTable(cluster3HC, dbName, tblName, cols, partitionCols, testHdfsDir);
-
-        // change permission of the destination table. Hive is running with hive.metastore
-        // .execute.setugi = true and we have not yet determined how we can send that value
-        // through falcon. One workaround is to make sure oozie is running with this config set
-        // in hive.xml in action-conf dir. For now this change has been put in the tests until we
-        // determine the ideal solution.
-        Path path = new Path(testHdfsDir);
-        FsPermission dirPerm = new FsPermission("777");
-        cluster2FS.setPermission(path, dirPerm);
-        cluster3FS.setPermission(path, dirPerm);
 
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
@@ -284,54 +266,54 @@ public class HCatReplicationTest extends BaseTestClass {
         String feed = bundles[0].getDataSets().get(0);
         // set the cluster 2 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
-                XmlUtil.createValidity(startDate, endDate),
-                XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
-                tableUri, null);
+            XmlUtil.createValidity(startDate, endDate),
+            XmlUtil.createRtention("months(9000)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            tableUri);
         // set the cluster 3 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
-                XmlUtil.createValidity(startDate, endDate),
-                XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
-                tableUri, null);
+            XmlUtil.createValidity(startDate, endDate),
+            XmlUtil.createRtention("months(9000)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
+            tableUri);
 
         AssertUtil.assertSucceeded(
-                prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
-                        feed)
+            prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
+                feed)
         );
         Thread.sleep(15000);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
-                        "REPLICATION"), 1);
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+                "REPLICATION"), 1);
 
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-                .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
-                        "REPLICATION"), 1);
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+                "REPLICATION"), 1);
 
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 2,
-                CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
 
         //check if data was replicated correctly
         List<Path> srcData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on source cluster: " + srcData);
         List<Path> cluster2TargetData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on target cluster: " + cluster2TargetData);
-        AssertUtil.checkForPathsSizes(srcData, cluster2TargetData);
+        AssertUtil.checkForListSizes(srcData, cluster2TargetData);
         List<Path> cluster3TargetData = HadoopUtil
-                .getAllFilesRecursivelyHDFS(cluster3, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster3, new Path(testHdfsDir), "_SUCCESS");
         logger.info("Data on target cluster: " + cluster3TargetData);
-        AssertUtil.checkForPathsSizes(srcData, cluster3TargetData);
+        AssertUtil.checkForListSizes(srcData, cluster3TargetData);
     }
 
     //TODO: More tests need to be added such as
@@ -341,9 +323,9 @@ public class HCatReplicationTest extends BaseTestClass {
     private void addPartitionsToTable(List<String> partitions, List<String> partitionLocations,
                                       String partitionCol,
                                       String dbName, String tableName, HCatClient hc) throws
-    HCatException {
+        HCatException {
         Assert.assertEquals(partitions.size(), partitionLocations.size(),
-                "Number of locations is not same as number of partitions.");
+            "Number of locations is not same as number of partitions.");
         final List<HCatAddPartitionDesc> partitionDesc = new ArrayList<HCatAddPartitionDesc>();
         for (int i = 0; i < partitions.size(); ++i) {
             final String partition = partitions.get(i);
@@ -351,8 +333,8 @@ public class HCatReplicationTest extends BaseTestClass {
             onePartition.put(partitionCol, partition);
             final String partitionLoc = partitionLocations.get(i);
             partitionDesc
-                    .add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition)
-                            .build());
+                .add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition)
+                    .build());
         }
         hc.addPartitions(partitionDesc);
     }
@@ -370,12 +352,12 @@ public class HCatReplicationTest extends BaseTestClass {
     }
 
     public static List<String> getDatesList(String startDate, String endDate, String datePattern,
-                                            int skipMinutes) throws ParseException {
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+                                            int skipMinutes) {
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
         DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);
         logger.info("generating data between " + formatter.print(startDateJoda) + " and " +
-                formatter.print(endDateJoda));
+            formatter.print(endDateJoda));
         List<String> dates = new ArrayList<String>();
         dates.add(formatter.print(startDateJoda));
         while (!startDateJoda.isAfter(endDateJoda)) {
@@ -390,16 +372,16 @@ public class HCatReplicationTest extends BaseTestClass {
                                     String hdfsDir) throws HCatException {
         hcatClient.dropTable(dbName, tblName, true);
         hcatClient.createTable(HCatCreateTableDesc
-                .create(dbName, tblName, cols)
-                .partCols(partitionCols)
-                .ifNotExists(true)
-                .isTableExternal(true)
-                .location(hdfsDir)
-                .build());
+            .create(dbName, tblName, cols)
+            .partCols(partitionCols)
+            .ifNotExists(true)
+            .isTableExternal(true)
+            .location(hdfsDir)
+            .build());
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 }

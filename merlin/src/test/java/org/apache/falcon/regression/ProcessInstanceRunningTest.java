@@ -19,14 +19,16 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -35,8 +37,12 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.joda.time.DateTime;
 import org.testng.Assert;
-import org.testng.AssertJUnit;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +55,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
     String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath = baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String feedOutputPath =
+        baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(ProcessInstanceRunningTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -57,7 +64,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster);
 
@@ -67,10 +74,11 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
@@ -86,14 +94,14 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(feedInputPath);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
@@ -111,8 +119,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
@@ -128,8 +136,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
     }
 
@@ -143,18 +151,18 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
     @Test(groups = {"singleCluster"})
     public void getNonExistenceProcessInstance() throws Exception {
         ProcessInstancesResult r =
-                prism.getProcessHelper()
-                        .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
-        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
-            AssertJUnit.assertTrue(false);
+            prism.getProcessHelper()
+                .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
+            "Unexpected status code");
     }
 
 
@@ -164,10 +172,10 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
-        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
-            AssertJUnit.assertTrue(false);
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
+            "Unexpected status code");
     }
 
 
@@ -178,18 +186,18 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         Job.Status status = null;
         for (int i = 0; i < 45; i++) {
             status = InstanceUtil.getDefaultCoordinatorStatus(cluster,
-                    Util.getProcessName(bundles[0].getProcessData()), 0);
+                Util.getProcessName(bundles[0].getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED || status == Job.Status.KILLED)
                 break;
             Thread.sleep(45000);
         }
         Assert.assertNotNull(status);
         Assert.assertEquals(status, Job.Status.SUCCEEDED,
-                "The job did not succeeded even in long time");
+            "The job did not succeeded even in long time");
 
         ProcessInstancesResult result = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING,
-                        Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(result);
     }
 
@@ -197,7 +205,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         logger.info("in @AfterClass");
-        Bundle b = Util.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundles()[0][0];
         b = new Bundle(b, cluster);
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();

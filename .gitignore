@@ -46,3 +46,8 @@ bin/
 
 #prop files
 merlin/src/main/resources/Merlin.properties
+
+#emacs
+*~
+[#]*[#]
+.\#*

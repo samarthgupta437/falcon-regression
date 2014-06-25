@@ -18,7 +18,7 @@
 
 package org.apache.falcon.request;
 
-import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.security.FalconAuthorizationToken;
 import org.apache.hadoop.security.authentication.client.AuthenticatedURL;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -55,15 +55,12 @@ public class BaseRequest {
     private URI uri;
     private HttpHost target;
 
-    public BaseRequest(String url, String method) throws URISyntaxException {
-        this(url, method, RequestKeys.CURRENT_USER, null);
-    }
-
     public BaseRequest(String url, String method, String user) throws URISyntaxException {
         this(url, method, user, null);
     }
 
-    public BaseRequest(String url, String method, String user, String data) throws URISyntaxException {
+    public BaseRequest(String url, String method, String user, String data)
+        throws URISyntaxException {
         this.method = method;
         this.url = url;
         this.requestData = null;
@@ -79,8 +76,15 @@ public class BaseRequest {
     }
 
     public HttpResponse run() throws URISyntaxException, IOException, AuthenticationException {
+        URIBuilder uriBuilder = new URIBuilder(this.url);
+
+        /*falcon now reads a user.name parameter in the request.
+        by default we will add it to every request.*/
+        uriBuilder.addParameter(PseudoAuthenticator.USER_NAME, this.user);
+        uri = uriBuilder.build();
+        this.url=uri.toString();
         // process the get
-        if(this.method.equalsIgnoreCase("get")) {
+        if (this.method.equalsIgnoreCase("get")) {
             return execute(new HttpGet(this.url));
         } else if (this.method.equalsIgnoreCase("delete")) {
             return execute(new HttpDelete(this.url));
@@ -89,67 +93,63 @@ public class BaseRequest {
         HttpEntityEnclosingRequest request = null;
         if (this.method.equalsIgnoreCase("post")) {
             request = new HttpPost(new URI(this.url));
-        }else if (this.method.equalsIgnoreCase("put")) {
+        } else if (this.method.equalsIgnoreCase("put")) {
             request = new HttpPut(new URI(this.url));
         }
-
         if (this.requestData != null) {
-            request.setEntity(new StringEntity(requestData));
+            if (request != null) {
+                request.setEntity(new StringEntity(requestData));
+            }
         }
-
         return execute(request);
     }
 
     private static final Logger LOGGER = Logger.getLogger(BaseRequest.class);
 
     private HttpResponse execute(HttpRequest request)
-    throws IOException, AuthenticationException, URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(this.url);
-
-        // falcon now reads a user.name parameter in the request.
-        // by default we will add it to every request.
-        uriBuilder.addParameter(PseudoAuthenticator.USER_NAME, this.user);
-        uri = uriBuilder.build();
-
+        throws IOException, AuthenticationException, URISyntaxException {
         // add headers to the request
         if (null != headers && headers.size() > 0) {
-            for (Header header: headers) {
+            for (Header header : headers) {
                 request.addHeader(header);
             }
         }
-        request.addHeader("Remote-User","test");
-        // get the token and add it to the header.
-        // works in secure and un secure mode.
-        AuthenticatedURL.Token token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-                uri.getHost(), uri.getPort());
-        request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+        /*get the token and add it to the header.
+        works in secure and un secure mode.*/
+        AuthenticatedURL.Token token;
+        if(IEntityManagerHelper.AUTHENTICATE) {
+            token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
+                    uri.getHost(), uri.getPort());
+            request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+        }
         DefaultHttpClient client = new DefaultHttpClient();
-        LOGGER.info("Request Url: " + request.getRequestLine().getUri().toString());
+        LOGGER.info("Request Url: " + request.getRequestLine().getUri());
         LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
 
         for (Header header : request.getAllHeaders()) {
             LOGGER.info(String.format("Request Header: Name=%s Value=%s", header.getName(),
-                    header.getValue()));
+                header.getValue()));
         }
-
         HttpResponse response = client.execute(target, request);
-        // incase the cookie is expired and we get a negotiate error back, generate the token again
-        // and send the request
+
+        /*incase the cookie is expired and we get a negotiate error back, generate the token again
+        and send the request*/
         if ((response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED)) {
             Header[] wwwAuthHeaders = response.getHeaders(RequestKeys.WWW_AUTHENTICATE);
             if (wwwAuthHeaders != null && wwwAuthHeaders.length != 0 &&
-                    wwwAuthHeaders[0].getValue().trim().startsWith(RequestKeys.NEGOTIATE)) {
-                token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
-                        uri.getHost(), uri.getPort(), true);
-
-                request.removeHeaders(RequestKeys.COOKIE);
-                request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
-                LOGGER.info("Request Url: " + request.getRequestLine().getUri().toString());
+                wwwAuthHeaders[0].getValue().trim().startsWith(RequestKeys.NEGOTIATE)) {
+            	if(IEntityManagerHelper.AUTHENTICATE) {
+            		token = FalconAuthorizationToken.getToken(user, uri.getScheme(),
+                            uri.getHost(), uri.getPort(), true);
+                    request.removeHeaders(RequestKeys.COOKIE);
+                    request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
+            	}
+                LOGGER.info("Request Url: " + request.getRequestLine().getUri());
                 LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
                 for (Header header : request.getAllHeaders()) {
                     LOGGER.info(
-                            String.format("Request Header: Name=%s Value=%s", header.getName(),
-                                    header.getValue())
+                        String.format("Request Header: Name=%s Value=%s", header.getName(),
+                            header.getValue())
                     );
                 }
                 response = client.execute(target, request);
@@ -158,7 +158,7 @@ public class BaseRequest {
         LOGGER.info("Response Status: " + response.getStatusLine());
         for (Header header : response.getAllHeaders()) {
             LOGGER.info(String.format("Response Header: Name=%s Value=%s", header.getName(),
-                    header.getValue()));
+                header.getValue()));
         }
         return response;
     }

@@ -23,8 +23,8 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
-import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
@@ -55,71 +55,99 @@ public class FeedScheduleTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         Bundle.submitCluster(bundles[0]);
-        feed = Util.getInputFeedFromBundle(bundles[0]);
+        feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
+    /**
+     * Tries to schedule already scheduled feed. Request should be considered as correct.
+     * Feed status shouldn't change.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void scheduleAlreadyScheduledFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+
         //now try re-scheduling again
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(response);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
-
+    /**
+     * Schedule correct feed. Feed should got running.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void scheduleValidFeed() throws Exception {
         //submit feed
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         //now schedule the thing
         response = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
     }
 
-
+    /**
+     * Tries to schedule already scheduled and suspended feed. Suspended status shouldn't change.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void scheduleSuspendedFeed() throws Exception {
-        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
         //now suspend
-        Util.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         //now schedule this!
-        Util.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
+    /**
+     * Schedules and deletes feed. Tries to schedule it. Request should fail.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void scheduleKilledFeed() throws Exception {
-        Util.assertSucceeded(prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
 
         //now suspend
-        Util.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, feed));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().delete(URLS.DELETE_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
         //now schedule this!
-        Util.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
+        AssertUtil.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
     }
 
+    /**
+     * Tries to schedule feed which wasn't submitted. Request should fail.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void scheduleNonExistentFeed() throws Exception {
-        Util.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
+        AssertUtil.assertFailed(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
     }
 }

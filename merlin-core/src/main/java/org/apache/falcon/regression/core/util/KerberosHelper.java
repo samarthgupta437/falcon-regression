@@ -27,15 +27,13 @@ public class KerberosHelper {
     private static Logger logger = Logger.getLogger(KerberosHelper.class);
 
     public static void loginFromKeytab(String user) {
-        if(!MerlinConstants.IS_SECURE) {
+        if (!MerlinConstants.IS_SECURE) {
             logger.info("Kerberos is disabled, hence no user switching.");
             return;
         }
-
-        if(user == null) {
+        if (user == null) {
             user = MerlinConstants.CURRENT_USER_NAME;
         }
-
         final String keytab = MerlinConstants.getKeytabForUser(user);
         final String command = String.format("kinit -kt %s %s", keytab, user);
         final int exitVal = Util.executeCommandGetExitCode(command);

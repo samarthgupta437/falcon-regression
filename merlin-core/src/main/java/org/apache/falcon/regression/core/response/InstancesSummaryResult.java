@@ -69,7 +69,7 @@ public class InstancesSummaryResult extends APIResult {
 
         @XmlElement
         public String cluster;
-        @XmlElementWrapper(name="map")
+        @XmlElementWrapper(name = "map")
         public Map<String, Long> summaryMap;
 
         public InstanceSummary() {
@@ -91,7 +91,7 @@ public class InstancesSummaryResult extends APIResult {
         @Override
         public String toString() {
             return "cluster: " + (this.cluster == null ? "" : this.cluster)
-                    + "summaryMap: " + summaryMap.toString();
+                + "summaryMap: " + summaryMap.toString();
         }
     }
 

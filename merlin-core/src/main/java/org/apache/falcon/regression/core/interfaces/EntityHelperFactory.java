@@ -29,25 +29,8 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 
 public class EntityHelperFactory {
 
-    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type) {
-        if (type.equals(ENTITY_TYPE.DATA)) {
-            return new DataEntityHelperImpl();
-        }
-
-        if (type.equals(ENTITY_TYPE.CLUSTER)) {
-            return new ClusterEntityHelperImpl();
-        }
-
-        if (type.equals(ENTITY_TYPE.PROCESS)) {
-            return new ProcessEntityHelperImpl();
-        }
-
-        return null;
-    }
-
     public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName,
-                                                       String prefix)
-     {
+                                                       String prefix) {
         if (type.equals(ENTITY_TYPE.DATA)) {
             return new DataEntityHelperImpl(envFileName, prefix);
         }

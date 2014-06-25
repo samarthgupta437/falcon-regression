@@ -23,14 +23,13 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
-import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -56,72 +55,102 @@ public class FeedSuspendTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         //submit the cluster
-        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
+        ServiceResponse response =
+            prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
+        AssertUtil.assertSucceeded(response);
 
-        feed = Util.getInputFeedFromBundle(bundles[0]);
+        feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
+    /**
+     * Schedule feed, suspend it. Check that web response reflects success and feed status is
+     * "suspended".
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendScheduledFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Util.assertSucceeded(response);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
+    /**
+     * Try to suspend running feed twice. Response should reflect success,
+     * feed status should be suspended.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendAlreadySuspendedFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Util.assertSucceeded(response);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
 
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
     }
 
+    /**
+     * Remove feed. Attempt to suspend it should fail.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendDeletedFeed() throws Exception {
-        ServiceResponse response = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Util.assertSucceeded(response);
+        ServiceResponse response =
+            prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        Util.assertFailed(response);
+        AssertUtil.assertFailed(response);
     }
 
+    /**
+     * Attempt to suspend non existent feed should fail.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendNonExistentFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().suspend(URLS.SCHEDULE_URL, feed);
-        Util.assertFailed(response);
+        AssertUtil.assertFailed(response);
     }
 
+    /**
+     * Attempt to suspend non scheduled feed should fail.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void suspendSubmittedFeed() throws Exception {
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        Util.assertFailed(response);
+        AssertUtil.assertFailed(response);
     }
 }

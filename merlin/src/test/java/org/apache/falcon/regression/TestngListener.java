@@ -18,12 +18,20 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.testHelper.BaseUITestClass;
 import org.apache.log4j.Logger;
 import org.apache.log4j.NDC;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class TestngListener implements ITestListener {
@@ -32,17 +40,20 @@ public class TestngListener implements ITestListener {
     @Override
     public void onTestStart(ITestResult result) {
         logLine();
-        logger.info(String.format("Testing going to start for: %s.%s %s", result.getTestClass().getName(),
+        logger.info(
+            String.format("Testing going to start for: %s.%s %s", result.getTestClass().getName(),
                 result.getName(), Arrays.toString(result.getParameters())));
         NDC.push(result.getName());
     }
 
     private void logLine() {
-        logger.info("-----------------------------------------------------------------------------------------------");
+        logger.info(
+            "-----------------------------------------------------------------------------------------------");
     }
 
     private void logEndOfTest(ITestResult result, String outcome) {
-        logger.info(String.format("Testing going to end for: %s.%s(%s) %s", result.getTestClass().getName(),
+        logger.info(
+            String.format("Testing going to end for: %s.%s(%s) %s", result.getTestClass().getName(),
                 result.getName(), Arrays.toString(result.getParameters()), outcome));
         NDC.pop();
         logLine();
@@ -56,6 +67,20 @@ public class TestngListener implements ITestListener {
     @Override
     public void onTestFailure(ITestResult result) {
         logEndOfTest(result, "FAILED");
+        if (BaseUITestClass.getDRIVER() != null) {
+            byte[] scrFile = ((TakesScreenshot)BaseUITestClass.getDRIVER()).getScreenshotAs
+                    (OutputType.BYTES);
+            try {
+                String filename = OSUtil.getPath("target", "surefire-reports", "screenshots", String.format("%s.%s.png",
+                        result.getTestClass().getRealClass().getSimpleName(), result.getName()));
+                FileUtils.writeByteArrayToFile(new File(filename), scrFile);
+            } catch (IOException e) {
+                logger.info("Saving screenshot FAILED: " + e.getCause());
+            }
+        }
+
+        logger.info(ExceptionUtils.getStackTrace(result.getThrowable()));
+        logLine();
     }
 
     @Override

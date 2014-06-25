@@ -19,15 +19,15 @@
 package org.apache.falcon.regression.core.enumsAndConstants;
 
 public enum FEED_TYPE {
-   MINUTELY("minutely"), HOURLY("hourly"), DAILY("daily"), MONTHLY("monthly"), YEARLY("yearly");
+    MINUTELY("minutely"), HOURLY("hourly"), DAILY("daily"), MONTHLY("monthly"), YEARLY("yearly");
 
-   private String value;
+    private String value;
 
-   private FEED_TYPE(String value){
-       this.value = value;
-   }
+    private FEED_TYPE(String value) {
+        this.value = value;
+    }
 
-   public String getValue(){
-       return value;
-   }
+    public String getValue() {
+        return value;
+    }
 }

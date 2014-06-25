@@ -29,7 +29,7 @@ import java.util.Set;
 @XmlRootElement
 public class ProcessInstancesResult extends APIResult {
     public static enum WorkflowStatus {
-        WAITING, LATE_RUNNING, RUNNING, SUSPENDED, KILLED, FAILED, SUCCEEDED;
+        WAITING, LATE_RUNNING, RUNNING, SUSPENDED, KILLED, FAILED, SUCCEEDED
     }
 
     @XmlRootElement(name = "pinstance")
@@ -76,8 +76,8 @@ public class ProcessInstancesResult extends APIResult {
         @Override
         public String toString() {
             return "{instance:" + this.instance + ", status:" + this.status
-                    + (this.logFile == null ? "" : ", log:" + this.logFile)
-                    + "}";
+                + (this.logFile == null ? "" : ", log:" + this.logFile)
+                + "}";
         }
     }
 
@@ -98,7 +98,7 @@ public class ProcessInstancesResult extends APIResult {
             int index = 0;
             for (String instance : sortedInstances) {
                 instances[index++] = new ProcessInstance(instance,
-                        WorkflowStatus.valueOf(instMap.get(instance)));
+                    WorkflowStatus.valueOf(instMap.get(instance)));
             }
         }
     }
@@ -163,8 +163,8 @@ public class ProcessInstancesResult extends APIResult {
         @Override
         public String toString() {
             return "{action:" + this.action + ", status:" + this.status
-                    + (this.logFile == null ? "" : ", log:" + this.logFile)
-                    + "}";
+                + (this.logFile == null ? "" : ", log:" + this.logFile)
+                + "}";
         }
     }
 

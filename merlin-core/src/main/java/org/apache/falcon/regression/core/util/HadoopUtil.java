@@ -26,8 +26,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -43,7 +45,7 @@ public class HadoopUtil {
 
     @SuppressWarnings("deprecation")
     public static List<Path> getAllFilesRecursivelyHDFS(
-            ColoHelper colcoHelper, Path location) throws IOException {
+        ColoHelper colcoHelper, Path location) throws IOException {
 
         List<Path> returnList = new ArrayList<Path>();
 
@@ -53,7 +55,7 @@ public class HadoopUtil {
 
         if (location.toString().contains("*"))
             location = new Path(
-                    location.toString().substring(0, location.toString().indexOf("*") - 1));
+                location.toString().substring(0, location.toString().indexOf("*") - 1));
 
         FileStatus[] stats = fs.listStatus(location);
 
@@ -72,7 +74,7 @@ public class HadoopUtil {
     }
 
     public static List<String> getAllFilesHDFS(String hadoopURL, String location)
-    throws IOException {
+        throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", hadoopURL);
         final FileSystem fs = FileSystem.get(conf);
@@ -99,7 +101,7 @@ public class HadoopUtil {
     }
 
     public static List<Path> getAllDirsRecursivelyHDFS(
-            ColoHelper colcoHelper, Path location, int depth) throws IOException {
+        ColoHelper colcoHelper, Path location, int depth) throws IOException {
 
         Configuration conf = HadoopUtil.getHadoopConfiguration(colcoHelper);
         final FileSystem fs = FileSystem.get(conf);
@@ -109,7 +111,7 @@ public class HadoopUtil {
 
     @SuppressWarnings("deprecation")
     private static List<Path> getAllDirsRecursivelyHDFS(
-            FileSystem fs, Path location, int depth) throws IOException {
+        FileSystem fs, Path location, int depth) throws IOException {
 
         List<Path> returnList = new ArrayList<Path>();
 
@@ -130,7 +132,7 @@ public class HadoopUtil {
 
     @SuppressWarnings("deprecation")
     public static List<Path> getAllFilesRecursivelyHDFS(
-            ColoHelper coloHelper, Path location, String... ignoreFolders) throws IOException {
+        ColoHelper coloHelper, Path location, String... ignoreFolders) throws IOException {
 
         List<Path> returnList = new ArrayList<Path>();
 
@@ -138,7 +140,15 @@ public class HadoopUtil {
 
         final FileSystem fs = FileSystem.get(conf);
 
-        FileStatus[] stats = fs.listStatus(location);
+        FileStatus[] stats ;
+        try {
+
+            stats = fs.listStatus(location);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return new ArrayList<Path>();
+        }
 
         //Util.print("getAllFilesRecursivelyHDFS: "+location);
 
@@ -160,52 +170,13 @@ public class HadoopUtil {
                 // directory name
 
                 returnList.addAll(getAllFilesRecursivelyHDFS(coloHelper, stat.getPath(),
-                        ignoreFolders));
+                    ignoreFolders));
             }
         }
 
         return returnList;
 
     }
-
-    @SuppressWarnings("deprecation")
-    public static List<Path> getAllFilesRecursivelyHDFS(
-            Configuration conf, Path location, String... ignoreFolders) throws IOException {
-
-        List<Path> returnList = new ArrayList<Path>();
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        FileStatus[] stats = fs.listStatus(location);
-
-        //	Util.print("getAllFilesRecursivelyHDFS: "+location);
-
-        if (stats == null)
-            return returnList;
-        for (FileStatus stat : stats) {
-
-            //	Util.print("checking in DIR: "+stat.getPath());
-
-            if (!stat.isDir()) {
-                if (!checkIfIsIgnored(stat.getPath().toUri().toString(), ignoreFolders)) {
-                    //	Util.print("adding File: " +stat.getPath().toUri().getPath()); // gives
-                    // file name
-
-                    returnList.add(stat.getPath());
-                }
-            } else {
-                //Util.print("recursing for DIR: " +stat.getPath().toUri().getPath()); // gives
-                // directory name
-
-                returnList.addAll(getAllFilesRecursivelyHDFS(new Configuration(), stat.getPath(),
-                        ignoreFolders));
-            }
-        }
-
-        return returnList;
-
-    }
-
 
     private static boolean checkIfIsIgnored(String folder,
                                             String[] ignoreFolders) {
@@ -221,7 +192,7 @@ public class HadoopUtil {
     }
 
     public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion)
-    throws IOException {
+        throws IOException {
         Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
 
         final FileSystem fs = FileSystem.get(conf);
@@ -232,42 +203,31 @@ public class HadoopUtil {
 
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
                                         final String fileLocation)
-    throws IOException, InterruptedException {
+        throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://"
-                + coloHelper.getProcessHelper().getHadoopURL());
+            + coloHelper.getProcessHelper().getHadoopURL());
 
         final FileSystem fs = FileSystem.get(conf);
         copyDataToFolder(fs, folder.toString(), fileLocation);
     }
 
     public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
-                                         final String srcFileLocation)
-    throws IOException, InterruptedException {
-        logger.info(String.format("Copying local dir %s to hdfs location %s", srcFileLocation, dstHdfsDir));
+                                        final String srcFileLocation)
+        throws IOException {
+        logger.info(String.format("Copying local dir %s to hdfs location %s on %s",
+            srcFileLocation,
+            dstHdfsDir, fs.getConf().get("fs.default.name")));
         fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
     }
 
     public static void uploadDir(final FileSystem fs, final String dstHdfsDir,
                                  final String localLocation)
-    throws IOException, InterruptedException {
-        logger.info(String.format("Uploading local dir %s to hdfs location %s", localLocation, dstHdfsDir));
+        throws IOException {
+        logger.info(String.format("Uploading local dir %s to hdfs location %s", localLocation,
+            dstHdfsDir));
         HadoopUtil.deleteDirIfExists(dstHdfsDir, fs);
         HadoopUtil.copyDataToFolder(fs, dstHdfsDir, localLocation);
-    }
-
-    @Deprecated
-    public static List<String> getHDFSSubFoldersName(ColoHelper prismHelper,
-                                                     String baseDir) throws IOException {
-
-        List<String> returnList = new ArrayList<String>();
-
-        logger.info("getHDFSSubFoldersName: " + baseDir);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
-        return getHDFSSubFoldersName(fs, baseDir);
     }
 
     @SuppressWarnings("deprecation")
@@ -292,7 +252,7 @@ public class HadoopUtil {
 
     public static boolean isFilePresentHDFS(ColoHelper prismHelper,
                                             String hdfsPath, String fileToCheckFor)
-    throws IOException {
+        throws IOException {
 
         logger.info("getting file from folder: " + hdfsPath);
         Configuration conf = new Configuration();
@@ -313,7 +273,7 @@ public class HadoopUtil {
 
     @SuppressWarnings("deprecation")
     private static List<String> getAllFileNamesFromHDFS(
-            FileSystem fs, String hdfsPath) throws IOException {
+        FileSystem fs, String hdfsPath) throws IOException {
 
         List<String> returnList = new ArrayList<String>();
 
@@ -331,30 +291,6 @@ public class HadoopUtil {
         return returnList;
     }
 
-    public static ArrayList<String> createTestDataInHDFS(FileSystem fs, List<String> dataDates, String prefix, String... copyFrom)throws Exception{
-        Util.HDFSCleanup(fs, prefix);
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-        for (int i = 0; i < dataDates.size(); i++){
-            dataDates.set(i, prefix + dataDates.get(i));
-        }
-
-        for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
-        }
-
-        HadoopUtil.flattenDataInFolders(fs, dataFolder, copyFrom);
-        return dataFolder;
-    }
-
-    @Deprecated
-    public static boolean isDirPresent(ColoHelper prismHelper, String path) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-        final FileSystem fs = FileSystem.get(conf);
-        return isDirPresent(fs, path);
-    }
-
     public static boolean isDirPresent(FileSystem fs, String path) throws IOException {
 
         boolean isPresent = fs.exists(new Path(path));
@@ -366,20 +302,12 @@ public class HadoopUtil {
 
     }
 
-    @Deprecated
-    public static void createDir(ColoHelper prismHelper, String path) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-        final FileSystem fs = FileSystem.get(conf);
-        createDir(path, fs);
-    }
-
     public static void createDir(String path, FileSystem... fileSystems) throws IOException {
 
         for (FileSystem fs : fileSystems) {
             deleteDirIfExists(path, fs);
             logger.info("creating hdfs dir: " + path + " on " + fs
-              .getConf().get("fs.default.name"));
+                .getConf().get("fs.default.name"));
             fs.mkdirs(new Path(path));
         }
     }
@@ -387,11 +315,13 @@ public class HadoopUtil {
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
         if (fs.exists(path)) {
-          logger.info(String.format("Deleting HDFS path: %s on %s", path, fs.getConf().get("fs.default.name")));
+            logger.info(String.format("Deleting HDFS path: %s on %s", path,
+                fs.getConf().get("fs.default.name")));
             fs.delete(path, true);
         } else {
             logger.info(String.format(
-                    "Not deleting non-existing HDFS path: %s on %s", path, fs.getConf().get("fs.default.name")));
+                "Not deleting non-existing HDFS path: %s on %s", path,
+                fs.getConf().get("fs.default.name")));
         }
     }
 
@@ -415,38 +345,36 @@ public class HadoopUtil {
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  List<String> remoteLocations) throws IOException {
         File[] files = new File(inputPath).listFiles();
+        List<Path> filePaths = new ArrayList<Path>();
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
-                for (String remoteLocation : remoteLocations) {
-                  logger.info("copying to: " + remoteLocation + " " +
-                    "on:" +
-                    " " + fs
-                    .getConf().get("fs.default.name")+" file: "+file.getName());
-
-                    if (!fs.exists(new Path(remoteLocation)))
-                        fs.mkdirs(new Path(remoteLocation));
-
-                    fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                            new Path(remoteLocation));
-                }
+                final Path filePath = new Path(file.getAbsolutePath());
+                filePaths.add(filePath);
             }
+        }
+        for (String remoteLocation : remoteLocations) {
+            logger.info(String.format("copying to: %s files: %s",
+                fs.getUri() + remoteLocation, Arrays.toString(files)));
+            if (!fs.exists(new Path(remoteLocation)))
+                fs.mkdirs(new Path(remoteLocation));
+
+            fs.copyFromLocalFile(false, true, filePaths.toArray(new Path[filePaths.size()]),
+                new Path(remoteLocation));
         }
     }
 
-    public static void flattenDataInFolders(FileSystem fs,
-                                            List<String> remoteLocations, String... inputPath)throws Exception{
+    public static ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
+                                                          FileSystem fileSystem,
+                                                          String baseHDFSLocation)
+        throws IOException {
+        deleteDirIfExists(baseHDFSLocation, fileSystem);
+        ArrayList<String> dataFolder = new ArrayList<String>();
 
-        if(inputPath.length == 0){
-            for (String remoteLocation : remoteLocations) {
-                logger.info("generating empty folder: " + remoteLocation);
+        for (String dataDate : dataDates)
+            dataFolder.add(baseHDFSLocation + "/" + dataDate);
 
-                if (!fs.exists(new Path(remoteLocation)))
-                    fs.mkdirs(new Path(remoteLocation));
-            }
-        }
-        else{
-            flattenAndPutDataInFolder(fs, inputPath[0], remoteLocations);
-        }
+        flattenAndPutDataInFolder(fileSystem, localData, dataFolder);
+        return dataFolder;
     }
 }

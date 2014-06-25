@@ -22,12 +22,12 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
-import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
-import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -52,63 +52,79 @@ public class FeedSubmitTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
 
         //submit the cluster
-        ServiceResponse response =prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
-        Assert.assertEquals(Util.parseResponse(response).getStatusCode(), 200);
-        Assert.assertNotNull(Util.parseResponse(response).getMessage());
-
-        feed = Util.getInputFeedFromBundle(bundles[0]);
+        ServiceResponse response =
+            prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
+        AssertUtil.assertSucceeded(response);
+        feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
     }
-    
+
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
+    /**
+     * Submit correctly adjusted feed. Response should reflect success.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeed() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
     }
 
+    /**
+     * Submit and remove feed. Try to submit it again. Response should reflect success.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeedPostDeletion() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
-        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        AssertUtil.assertSucceeded(response);
     }
 
+    /**
+     * Submit feed. Get its definition. Try to submit it again. Should succeed.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeedPostGet() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getEntityDefinition(URLS.GET_ENTITY_DEFINITION, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
     }
 
+    /**
+     * Try to submit correctly adjusted feed twice. Should succeed.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void submitValidFeedTwice() throws Exception {
-
         ServiceResponse response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Util.assertSucceeded(response);
+        AssertUtil.assertSucceeded(response);
     }
 }

@@ -20,12 +20,14 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
+import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -53,7 +55,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedOutputPath = baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputTimedOutPath =
-            baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+        baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
@@ -66,7 +68,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         logger.info("in @BeforeClass");
 
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle b = Util.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundles()[0][0];
 
         b = new Bundle(b, cluster);
 
@@ -77,10 +79,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -97,7 +100,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(feedInputPath);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -105,12 +108,17 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown(Method method) throws Exception {
+    public void tearDown(Method method) {
         logger.info("tearDown " + method.getName());
         removeBundles();
     }
 
-
+    /**
+     * Schedule process. Kill some instances. Rerun some of that killed. Check that
+     * instances were rerun correctly and other are still killed.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_someKilled02() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -119,20 +127,25 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(5);
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstancesAreCreated(cluster,bundles[0].getProcessData(),0,10);
+        InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:16Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:16Z");
         InstanceUtil.validateResponse(r, 4, 0, 0, 0, 4);
         List<String> wfIDs =
-                InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                        ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
+                ()));
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 6, 5, 1, 0);
     }
 
+    /**
+     * Schedule process. Kill all instances. Rerun them. Check that they were rerun.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_multipleKilled() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
@@ -146,21 +159,26 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         List<String> wfIDs =
-                InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                        ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
+                ()));
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil
-                .areWorkflowsRunning(clusterOC, wfIDs, 3, 3, 0,
-                        0);
+            .areWorkflowsRunning(clusterOC, wfIDs, 3, 3, 0,
+                0);
     }
 
-
+    /**
+     * Schedule process. Kill some instances. Rerun them. Check that there are no killed
+     * instances left.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_someKilled01() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
@@ -171,22 +189,26 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         List<String> wfIDs =
-                InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                        ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
+                ()));
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         Thread.sleep(5000);
         InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 6, 6, 0, 0);
     }
 
-
+    /**
+     * Schedule process. Kill single instance. Rerun it. Check it was rerun.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceRerun_deleted() throws Exception {
+    public void testProcessInstanceRerun_singleKilled() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -195,19 +217,25 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
         prism.getProcessHelper()
-                .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         String wfID = InstanceUtil.getWorkflows(cluster,
-                Util.getProcessName(bundles[0].getProcessData()),
-                Status.KILLED)
-                .get(0);
+            Util.getProcessName(bundles[0].getProcessData()),
+            Status.KILLED)
+            .get(0);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(clusterOC,
-                wfID));
+            wfID));
     }
 
+    /**
+     * Schedule process. Wait till it got succeeded. Rerun first succeeded instance. Check if it
+     * is running.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_singleSucceeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
@@ -216,21 +244,26 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
-        InstanceUtil.waitTillInstancesAreCreated(cluster,bundles[0].getProcessData(),0,10);
-        String wfID  = InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0]
+        InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
+        String wfID = InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0]
                 .getProcessData()),
-                Status.RUNNING,Status.SUCCEEDED)
-                .get(0);
-        InstanceUtil.waitTillInstanceReachState(clusterOC,Util.readEntityName(bundles[0]
-                .getProcessData()),0,CoordinatorAction
-                .Status.SUCCEEDED,10, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, Status.SUCCEEDED)
+            .get(0);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
+            .getProcessData()), 0, CoordinatorAction
+            .Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z");
         Assert.assertTrue(InstanceUtil.isWorkflowRunning(clusterOC, wfID));
     }
 
-
+    /**
+     * Schedule process. Suspend its instances. Try to rerun them. Check that instances weren't
+     * rerun and are still suspended.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_singleSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:06Z");
@@ -241,18 +274,22 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
+            .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
         Thread.sleep(15000);
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
         Assert.assertEquals(InstanceUtil
                 .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0, 1),
-                CoordinatorAction.Status.SUSPENDED);
+            CoordinatorAction.Status.SUSPENDED);
     }
 
-
+    /**
+     * Schedule process. Wait till its instances succeed. Rerun them all. Check they are running.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_multipleSucceeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
@@ -262,21 +299,27 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
-        InstanceUtil.waitTillInstanceReachState(clusterOC,Util.readEntityName(bundles[0]
-                .getProcessData()),2, CoordinatorAction.Status.SUCCEEDED,10,ENTITY_TYPE.PROCESS);
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
+            .getProcessData()), 2, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
         List<String> wfIDs =
-                InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                        ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
+                ()));
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil
-                .areWorkflowsRunning(clusterOC, wfIDs,
-                        3,
-                        3, 0,
-                        0);
+            .areWorkflowsRunning(clusterOC, wfIDs,
+                3,
+                3, 0,
+                0);
     }
 
+    /**
+     * Schedule process with invalid input feed data path. Wait till process got timed-out. Rerun
+     * it's instances. Check that they were rerun and are waiting (wait for input data).
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void testProcessInstanceRerun_timedOut() throws Exception {
         bundles[0].setInputFeedDataPath(feedInputTimedOutPath);
@@ -290,23 +333,23 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         CoordinatorAction.Status s = null;
         while (!CoordinatorAction.Status.TIMEDOUT.equals(s)) {
             s = InstanceUtil
-                    .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
+                .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
             Thread.sleep(15000);
         }
         prism.getProcessHelper()
-                .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
-                        "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
+            .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
+                "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         s = InstanceUtil
-                .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
+            .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
         Assert.assertTrue(CoordinatorAction.Status.WAITING.equals(s),
-                "instance should have been in WAITING state");
+            "instance should have been in WAITING state");
     }
 
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         logger.info("in @AfterClass");
-        Bundle b = Util.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundles()[0][0];
         b = new Bundle(b, cluster);
 
         b.setInputFeedDataPath(feedInputPath);

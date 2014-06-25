@@ -19,12 +19,14 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.process.Property;
+import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
@@ -56,15 +58,15 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     private String baseTestDir = baseHDFSDir + "/ProcessPartitionExpVariableTest";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
-    
+
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -78,13 +80,13 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
     @Test(enabled = true)
     public void ProcessPartitionExpVariableTest_OptionalCompulsaryPartition() throws Exception {
-        String startTime = InstanceUtil.getTimeWrtSystemTime(-4);
-        String endTime = InstanceUtil.getTimeWrtSystemTime(30);
+        String startTime = TimeUtil.getTimeWrtSystemTime(-4);
+        String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
         bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, baseTestDir, 1, startTime,
-                endTime);
+            endTime);
         bundles[0].setProcessData(bundles[0]
-                .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
+            .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
         Property p = new Property();
         p.setName("var1");
         p.setValue("hardCoded");
@@ -92,7 +94,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         bundles[0].setProcessData(bundles[0].addProcessProperty(bundles[0].getProcessData(), p));
 
         bundles[0].setProcessData(bundles[0]
-                .setProcessInputPartition(bundles[0].getProcessData(), "${var1}", "${fileTime}"));
+            .setProcessInputPartition(bundles[0].getProcessData(), "${var1}", "${fileTime}"));
 
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
@@ -101,23 +103,23 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         logger.info(bundles[0].getProcessData());
 
         createDataWithinDatesAndPrefix(cluster,
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(startTime, -25)),
-                InstanceUtil.oozieDateToDate(InstanceUtil.addMinsToTime(endTime, 25)),
-                baseTestDir + "/input1/", 1);
+            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
+            baseTestDir + "/input1/", 1);
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
         TimeUnit.SECONDS.sleep(20);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC,
-                Util.getProcessName(bundles[0].getProcessData()), 2,
-                CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            Util.getProcessName(bundles[0].getProcessData()), 2,
+            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
     private static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
-                                                      DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException, InterruptedException {
+                                                       DateTime endDateJoda, String prefix,
+                                                       int interval) throws IOException {
         List<String> dataDates =
-                generateDateAndOneDayAfter(startDateJoda, endDateJoda, interval);
+            generateDateAndOneDayAfter(startDateJoda, endDateJoda, interval);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -126,17 +128,18 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
-        InstanceUtil.putDataInFolders(colo, dataFolder,"");
+        InstanceUtil.putDataInFolders(colo, dataFolder, "");
 
     }
 
-    private static List<String> generateDateAndOneDayAfter(DateTime startDate, DateTime endDate, int minuteSkip) {
+    private static List<String> generateDateAndOneDayAfter(DateTime startDate, DateTime endDate,
+                                                           int minuteSkip) {
         //we want to generate patterns of the form .../2014/03/06/21/57/2014-Mar-07
         //note there are two dates and the second date is one day after the first one
         final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm/");
         final DateTimeFormatter formatter2 = DateTimeFormat.forPattern("yyyy-MMM-dd");
         logger.info("generating data between " + formatter.print(startDate) + " and " +
-                formatter.print(endDate));
+            formatter.print(endDate));
 
         List<String> dates = new ArrayList<String>();
 

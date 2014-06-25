@@ -68,7 +68,7 @@ public class ServiceResponse {
 
     public ServiceResponse(HttpResponse response) throws IOException {
         BufferedReader reader =
-                new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+            new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
         String line;
         StringBuilder string_response = new StringBuilder();
@@ -81,8 +81,9 @@ public class ServiceResponse {
         this.response = response;
 
         logger.info("The web service response is:\n" +
-                Util.prettyPrintXmlOrJson(message));
+            Util.prettyPrintXmlOrJson(message));
     }
+
     public ServiceResponse() {
     }
 }

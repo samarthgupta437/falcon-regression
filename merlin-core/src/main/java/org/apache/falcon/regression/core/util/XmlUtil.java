@@ -18,26 +18,25 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.Retention;
-import org.apache.falcon.regression.core.generated.feed.Validity;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.ActionType;
+import org.apache.falcon.entity.v0.feed.Retention;
+import org.apache.falcon.entity.v0.feed.Validity;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 public class XmlUtil {
 
-  static Logger logger = Logger.getLogger(XmlUtil.class);
+    static Logger logger = Logger.getLogger(XmlUtil.class);
 
-  public static Validity createValidity(String start, String end) throws ParseException {
+    public static Validity createValidity(String start, String end) {
         Validity v = new Validity();
-        v.setStart(InstanceUtil.oozieDateToDate(start).toDate());
-        v.setEnd(InstanceUtil.oozieDateToDate(end).toDate());
+        v.setStart(TimeUtil.oozieDateToDate(start).toDate());
+        v.setEnd(TimeUtil.oozieDateToDate(end).toDate());
         return v;
     }
 
@@ -48,26 +47,24 @@ public class XmlUtil {
         return r;
     }
 
-
-    public static org.apache.falcon.regression.core.generated.process.Validity
+    public static org.apache.falcon.entity.v0.process.Validity
     createProcessValidity(
-            String startTime, String endTime) throws ParseException {
-
-        org.apache.falcon.regression.core.generated.process.Validity v =
-                new org.apache.falcon.regression.core.generated.process.Validity();
+        String startTime, String endTime) {
+        org.apache.falcon.entity.v0.process.Validity v =
+            new org.apache.falcon.entity.v0.process.Validity();
         logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
-                + InstanceUtil.oozieDateToDate(endTime).toDate());
-        v.setEnd(InstanceUtil.oozieDateToDate(endTime).toDate());
-        v.setStart(InstanceUtil.oozieDateToDate(startTime).toDate());
+            + TimeUtil.oozieDateToDate(endTime).toDate());
+        v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
+        v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
         return v;
-
     }
 
-  public static boolean isIdentical(String expected, String actual) throws IOException, SAXException {
-    XMLUnit.setIgnoreWhitespace(true);
-    XMLUnit.setIgnoreAttributeOrder(true);
-    Diff diff = XMLUnit.compareXML(expected, actual);
-    logger.info(diff);
-    return diff.identical();
-  }
+    public static boolean isIdentical(String expected, String actual)
+        throws IOException, SAXException {
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreAttributeOrder(true);
+        Diff diff = XMLUnit.compareXML(expected, actual);
+        logger.info(diff);
+        return diff.identical();
+    }
 }

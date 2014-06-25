@@ -20,20 +20,22 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.generated.process.EngineType;
-import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.process.Properties;
-import org.apache.falcon.regression.core.generated.process.Property;
+import org.apache.falcon.entity.v0.Frequency.TimeUnit;
+import org.apache.falcon.entity.v0.process.EngineType;
+import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.entity.v0.process.Properties;
+import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -43,8 +45,11 @@ import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.testng.Assert;
-import org.testng.AssertJUnit;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -72,7 +77,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         //copy pig script
         HadoopUtil.uploadDir(clusterFS, pigScriptDir, OSUtil.RESOURCES + "pig");
 
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster);
 
@@ -83,10 +88,11 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
-        DateTime startDateJoda = new DateTime(InstanceUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(InstanceUtil.oozieDateToDate(endDate));
+        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
+        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
 
-        List<String> dataDates = Util.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+        List<String> dataDates =
+            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
@@ -101,13 +107,16 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = Util.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setInputFeedDataPath(pigTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-        bundles[0].setOutputFeedLocationData(pigTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setOutputFeedLocationData(
+            pigTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessWorkflow(pigScriptLocation);
-        bundles[0].setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "INPUT"));
-        bundles[0].setProcessData(bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
+        bundles[0]
+            .setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "INPUT"));
+        bundles[0].setProcessData(
+            bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
     }
 
     @AfterMethod(alwaysRun = true)
@@ -127,7 +136,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -137,12 +146,13 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ServiceResponse status =
-                prism.getProcessHelper().getStatus(URLS.STATUS_URL, bundles[0].getProcessData());
+            prism.getProcessHelper().getStatus(URLS.STATUS_URL, bundles[0].getProcessData());
         Assert.assertTrue(status.getMessage().contains("SUSPENDED"), "Process not suspended.");
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
@@ -158,7 +168,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -167,9 +177,10 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(10000);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
-                Job.Status.SUSPENDED);
+            Job.Status.SUSPENDED);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
     }
 
@@ -184,7 +195,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -192,7 +203,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
@@ -203,7 +215,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -212,8 +224,10 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundles[0].getProcessData()));
-        AssertJUnit.assertTrue(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND);
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
+        Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
+            "Unexpected status code");
     }
 
     @Test(groups = {"singleCluster"})
@@ -226,7 +240,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         final Property property = new Property();
         property.setName("queueName");
         property.setValue("default");
-        properties.addProperty(property);
+        properties.getProperties().add(property);
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
@@ -234,7 +248,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_RUNNING, Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
 
         Job.Status status = null;
@@ -244,7 +259,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
             counter = 200;
         }
         for (int i = 0; i < counter; i++) {
-            status = InstanceUtil.getDefaultCoordinatorStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0);
+            status = InstanceUtil.getDefaultCoordinatorStatus(cluster,
+                Util.getProcessName(bundles[0].getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED) {
                 break;
             }
@@ -252,11 +268,12 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         }
 
         Assert.assertEquals(status, Job.Status.SUCCEEDED,
-                "The job did not succeeded even in long time");
+            "The job did not succeeded even in long time");
 
         Thread.sleep(5000);
         r = prism.getProcessHelper()
-                .getRunningInstance(URLS.INSTANCE_STATUS, Util.readEntityName(bundles[0].getProcessData()));
+            .getRunningInstance(URLS.INSTANCE_STATUS,
+                Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
     }
 

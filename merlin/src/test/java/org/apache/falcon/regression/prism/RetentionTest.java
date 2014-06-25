@@ -20,14 +20,16 @@ package org.apache.falcon.regression.prism;
 
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.dependencies.Frequency;
-import org.apache.falcon.regression.core.generated.feed.Feed;
-import org.apache.falcon.regression.core.generated.feed.Location;
-import org.apache.falcon.regression.core.generated.feed.LocationType;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.Feed;
+import org.apache.falcon.entity.v0.feed.Location;
+import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
@@ -81,7 +83,7 @@ public class RetentionTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws IOException, JAXBException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.getBundleData("RetentionBundles")[0];
+        Bundle bundle = BundleUtil.getBundleData("RetentionBundles")[0];
         bundles[0] = new Bundle(bundle, cluster);
         bundles[0].setInputFeedDataPath(testHDFSDir);
         bundles[0].generateUniqueBundle();
@@ -89,8 +91,9 @@ public class RetentionTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        prism.getFeedHelper().delete(URLS.DELETE_URL, Util.getInputFeedFromBundle(bundles[0]));
-        verifyFeedDeletion(Util.getInputFeedFromBundle(bundles[0]));
+        prism.getFeedHelper()
+            .delete(URLS.DELETE_URL, BundleUtil.getInputFeedFromBundle(bundles[0]));
+        verifyFeedDeletion(BundleUtil.getInputFeedFromBundle(bundles[0]));
         removeBundles();
     }
 
@@ -103,22 +106,22 @@ public class RetentionTest extends BaseTestClass {
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(String period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
-        String inputFeed = setFeedPathValue(Util.getInputFeedFromBundle(bundles[0]),
-                getFeedPathValue(dataType));
+        String inputFeed = setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]),
+            getFeedPathValue(dataType));
         inputFeed = insertRetentionValueInFeed(inputFeed, unit + "(" + period + ")");
 
         bundles[0].submitClusters(prism);
 
         final ServiceResponse response = prism.getFeedHelper()
-                .submitEntity(URLS.SUBMIT_URL, inputFeed);
+            .submitEntity(URLS.SUBMIT_URL, inputFeed);
         if (Integer.parseInt(period) > 0) {
-            Util.assertSucceeded(response);
+            AssertUtil.assertSucceeded(response);
 
             replenishData(dataType, gaps, withData);
 
             commonDataRetentionWorkflow(inputFeed, Integer.parseInt(period), unit);
         } else {
-            Util.assertFailed(response);
+            AssertUtil.assertFailed(response);
         }
     }
 
@@ -127,7 +130,7 @@ public class RetentionTest extends BaseTestClass {
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
         //set the value
-        for (Location location : feedObject.getLocations().getLocation()) {
+        for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType().equals(LocationType.DATA)) {
                 location.setPath(pathValue);
             }
@@ -149,7 +152,7 @@ public class RetentionTest extends BaseTestClass {
 
         if (dataType.equalsIgnoreCase("daily")) {
             replenishData(
-                    convertDatesToFolders(getDailyDatesOnEitherSide(36, skip), skip), withData);
+                convertDatesToFolders(getDailyDatesOnEitherSide(36, skip), skip), withData);
         } else if (dataType.equalsIgnoreCase("yearly")) {
             replenishData(getYearlyDatesOnEitherSide(10, skip), withData);
         } else if (dataType.equalsIgnoreCase("monthly")) {
@@ -157,7 +160,7 @@ public class RetentionTest extends BaseTestClass {
         }
     }
 
-    private String getFeedPathValue(String dataType) throws Exception {
+    private String getFeedPathValue(String dataType) {
         if (dataType.equalsIgnoreCase("monthly")) {
             return testHDFSDir + "${YEAR}/${MONTH}";
         }
@@ -172,26 +175,26 @@ public class RetentionTest extends BaseTestClass {
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
                                              String interval)
-    throws JAXBException, OozieClientException, IOException, URISyntaxException,
-    InterruptedException, AuthenticationException {
+        throws JAXBException, OozieClientException, IOException, URISyntaxException,
+        InterruptedException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
-                Util.getHadoopDataFromDir(cluster, inputFeed,
-                        testHDFSDir);
+            Util.getHadoopDataFromDir(cluster, inputFeed,
+                testHDFSDir);
 
         cluster.getFeedHelper()
-                .schedule(URLS.SCHEDULE_URL, inputFeed);
+            .schedule(URLS.SCHEDULE_URL, inputFeed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
         final String inputDataSetName = Util.readDatasetName(inputFeed);
         logger.info(inputDataSetName);
         Consumer consumer =
-                new Consumer("FALCON." + inputDataSetName,
-                        cluster.getClusterHelper().getActiveMQ());
+            new Consumer("FALCON." + inputDataSetName,
+                cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = Util.getBundles(clusterOC,
-                inputDataSetName, ENTITY_TYPE.FEED).get(0);
+        String bundleId = OozieUtil.getBundles(clusterOC,
+            inputDataSetName, ENTITY_TYPE.FEED).get(0);
 
         List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
         logger.info("workflows: " + workflows);
@@ -206,18 +209,18 @@ public class RetentionTest extends BaseTestClass {
             }
             logger.info("*************************************");
         }
-        if(consumer.getMessageData().isEmpty()){
+        if (consumer.getMessageData().isEmpty()) {
             logger.info("Message data was empty!");
         }
         //now look for cluster data
         List<String> finalData =
-                Util.getHadoopDataFromDir(cluster, inputFeed,
-                        testHDFSDir);
+            Util.getHadoopDataFromDir(cluster, inputFeed,
+                testHDFSDir);
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput =
-                filterDataOnRetention(inputFeed, time, interval,
-                        currentTime, initialData);
+            filterDataOnRetention(inputFeed, time, interval,
+                currentTime, initialData);
 
         logger.info("initial data in system was:");
         for (String line : initialData) {
@@ -235,18 +238,18 @@ public class RetentionTest extends BaseTestClass {
         }
 
         validateDataFromFeedQueue(
-                inputDataSetName,
-                consumer.getMessageData(), expectedOutput, initialData);
+            inputDataSetName,
+            consumer.getMessageData(), expectedOutput, initialData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
-                "sizes of outputs are different! please check");
+            "sizes of outputs are different! please check");
 
         Assert.assertTrue(Arrays.deepEquals(finalData.toArray(new String[finalData.size()]),
-                expectedOutput.toArray(new String[expectedOutput.size()])));
+            expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
     private void replenishData(List<String> folderList, boolean uploadData)
-    throws IOException, InterruptedException {
+        throws IOException {
         //purge data first
         HadoopUtil.deleteDirIfExists(testHDFSDir, clusterFS);
 
@@ -256,23 +259,24 @@ public class RetentionTest extends BaseTestClass {
             final String pathString = testHDFSDir + folder;
             logger.info(pathString);
             clusterFS.mkdirs(new Path(pathString));
-            if(uploadData) {
-                clusterFS.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"), new Path(pathString));
+            if (uploadData) {
+                clusterFS.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"),
+                    new Path(pathString));
             }
         }
     }
 
     private void validateDataFromFeedQueue(String feedName,
-                                                  List<HashMap<String, String>> queueData,
-                                                  List<String> expectedOutput,
-                                                  List<String> input) throws OozieClientException {
+                                           List<HashMap<String, String>> queueData,
+                                           List<String> expectedOutput,
+                                           List<String> input) throws OozieClientException {
 
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
-        List<String> jobIds = Util.getCoordinatorJobs(cluster,
-                Util.getBundles(clusterOC,
-                        feedName, ENTITY_TYPE.FEED).get(0)
+        List<String> jobIds = OozieUtil.getCoordinatorJobs(cluster,
+            OozieUtil.getBundles(clusterOC,
+                feedName, ENTITY_TYPE.FEED).get(0)
         );
 
         //create queuedata folderList:
@@ -289,35 +293,35 @@ public class RetentionTest extends BaseTestClass {
                 //verify other data also
                 Assert.assertEquals(data.get("topicName"), "FALCON." + feedName);
                 Assert.assertEquals(data.get("brokerImplClass"),
-                        "org.apache.activemq.ActiveMQConnectionFactory");
+                    "org.apache.activemq.ActiveMQConnectionFactory");
                 Assert.assertEquals(data.get("status"), "SUCCEEDED");
                 Assert.assertEquals(data.get("brokerUrl"),
-                        cluster.getFeedHelper().getActiveMQ());
+                    cluster.getFeedHelper().getActiveMQ());
 
             }
         }
 
         //now make sure queueData and input lists are same
         Assert.assertEquals(deletedFolders.size(), input.size(),
-                "Output size is different than expected!");
+            "Output size is different than expected!");
         Assert.assertTrue(Arrays.deepEquals(input.toArray(new String[input.size()]),
-                        deletedFolders.toArray(new String[deletedFolders.size()])),
-                "It appears that the data that is received from queue and the data deleted are " +
-                        "not same!");
+                deletedFolders.toArray(new String[deletedFolders.size()])),
+            "It appears that the data that is received from queue and the data deleted are " +
+                "not same!");
     }
 
     private static String insertRetentionValueInFeed(String feed, String retentionValue)
-    throws JAXBException {
+        throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
         //insert retentionclause
-        feedObject.getClusters().getCluster().get(0).getRetention()
-                .setLimit(new Frequency(retentionValue));
+        feedObject.getClusters().getClusters().get(0).getRetention()
+            .setLimit(new Frequency(retentionValue));
 
-        for (org.apache.falcon.regression.core.generated.feed.Cluster cluster : feedObject
-                .getClusters().getCluster()) {
+        for (org.apache.falcon.entity.v0.feed.Cluster cluster : feedObject
+            .getClusters().getClusters()) {
             cluster.getRetention().setLimit(new Frequency(retentionValue));
         }
 
@@ -330,12 +334,12 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void verifyFeedDeletion(String feed)
-    throws JAXBException, IOException {
+        throws JAXBException, IOException {
         String directory = "/projects/ivory/staging/" + cluster.getFeedHelper().getServiceUser()
-                + "/workflows/feed/" + Util.readDatasetName(feed);
+            + "/workflows/feed/" + Util.readDatasetName(feed);
         //make sure feed bundle is not there
         Assert.assertFalse(clusterFS.isDirectory(new Path(directory)),
-                "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
+            "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
     }
 
     private static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {
@@ -421,8 +425,8 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private List<String> filterDataOnRetention(String feed, int time, String interval,
-                                                     DateTime endDate,
-                                                     List<String> inputData) throws JAXBException {
+                                               DateTime endDate,
+                                               List<String> inputData) throws JAXBException {
         String locationType = "";
         String appender = "";
 
@@ -433,7 +437,7 @@ public class RetentionTest extends BaseTestClass {
         JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
-        for (Location location : feedObject.getLocations().getLocation()) {
+        for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType().equals(LocationType.DATA)) {
                 locationType = location.getPath();
             }
@@ -447,10 +451,10 @@ public class RetentionTest extends BaseTestClass {
         if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}")) {
             appender = "/01/00/01";
         } else if (locationType
-                .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}")) {
+            .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}")) {
             appender = "/01"; //because we already take care of that!
         } else if (locationType
-                .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
+            .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
             appender = "/01";
         } else if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}")) {
             appender = "/01/01/00/01";
@@ -465,14 +469,14 @@ public class RetentionTest extends BaseTestClass {
 
         if (interval.equalsIgnoreCase("minutes")) {
             startLimit =
-                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
+                formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
         } else if (interval.equalsIgnoreCase("hours")) {
             startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
         } else if (interval.equalsIgnoreCase("days")) {
             startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
         } else if (interval.equalsIgnoreCase("months")) {
             startLimit =
-                    formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
+                formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
 
         }
 
@@ -495,13 +499,14 @@ public class RetentionTest extends BaseTestClass {
     final static int[] gaps = new int[]{2, 4, 5, 1};
 
     @DataProvider(name = "betterDP")
-    public Object[][] getTestData(Method m) throws Exception {
-        String[] periods = new String[]{"0", "10080", "60", "8", "24"}; // a negative value like -4 should be covered in validation scenarios.
+    public Object[][] getTestData(Method m) {
+        String[] periods = new String[]{"0", "10080", "60", "8",
+            "24"}; // a negative value like -4 should be covered in validation scenarios.
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
         String[] dataTypes = new String[]{"daily", "yearly", "monthly"};
         Object[][] testData = new Object[periods.length * units.length *
-                gaps.length * dataTypes.length][5];
+            gaps.length * dataTypes.length][5];
 
         int i = 0;
 

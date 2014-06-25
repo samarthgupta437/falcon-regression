@@ -64,29 +64,33 @@
             <dependencies>
                 <dependency>
                     <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-common</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-client</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.glassfish</groupId>
-                            <artifactId>javax.servlet</artifactId>
-                        </exclusion>
-                    </exclusions>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.hive.hcatalog</groupId>
+                    <artifactId>hive-webhcat-java-client</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-hdfs</artifactId>
-                    <classifier>tests</classifier>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hive.hcatalog</groupId>
-                    <artifactId>hive-webhcat-java-client</artifactId>
                 </dependency>
             </dependencies>
         </profile>
         <profile>
             <id>hadoop-cdh4</id>
             <dependencies>
+                <dependency>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                    <version>1.8</version>
+                </dependency>
                 <dependency>
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-client</artifactId>
@@ -119,14 +123,18 @@
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-metastore</artifactId>
-        </dependency>
         <!-- Added so that at run time log4j is avaialble to capture the logs -->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-firefox-driver</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-support</artifactId>
         </dependency>
     </dependencies>
 </project>

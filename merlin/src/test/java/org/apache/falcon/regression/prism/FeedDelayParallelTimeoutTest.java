@@ -19,9 +19,10 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.feed.ActionType;
-import org.apache.falcon.regression.core.generated.feed.ClusterType;
+import org.apache.falcon.entity.v0.feed.ActionType;
+import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -39,23 +40,23 @@ import java.lang.reflect.Method;
 @Test(groups = "distributed")
 public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
-    ColoHelper cluster1 = servers.get(0);;
-    ColoHelper cluster2 = servers.get(1);;
+    ColoHelper cluster1 = servers.get(0);
+    ColoHelper cluster2 = servers.get(1);
 
     String baseTestDir = baseHDFSDir + "/FeedDelayParallelTimeoutTest";
     String feedInputPath = baseTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
-    String feedOutputPath = baseTestDir + "Target/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
     private static final Logger logger = Logger.getLogger(FeedDelayParallelTimeoutTest.class);
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
+
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = Util.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundle, cluster1);
         bundles[1] = new Bundle(bundle, cluster2);
 
@@ -66,7 +67,7 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() throws Exception {
+    public void tearDown() {
         removeBundles();
     }
 
@@ -76,15 +77,15 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
 
         Bundle.submitCluster(bundles[0], bundles[1]);
         String feedOutput01 = bundles[0].getDataSets().get(0);
-        org.apache.falcon.regression.core.generated.dependencies.Frequency delay =
-                new org.apache.falcon.regression.core.generated.dependencies.Frequency(
-                        "hours(5)");
+        org.apache.falcon.entity.v0.Frequency delay =
+            new org.apache.falcon.entity.v0.Frequency(
+                "hours(5)");
 
         feedOutput01 = InstanceUtil
-                .setFeedCluster(feedOutput01,
-                        XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
-                        XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
-                        ClusterType.SOURCE, null);
+            .setFeedCluster(feedOutput01,
+                XmlUtil.createValidity("2010-10-01T12:00Z", "2099-01-01T00:00Z"),
+                XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
+                ClusterType.SOURCE, null);
 
         // uncomment below 2 line when falcon in sync with ivory
 
@@ -113,8 +114,8 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
         feedOutput01 = Util.setFeedProperty(feedOutput01, "timeout", "minutes(35)");
         feedOutput01 = Util.setFeedProperty(feedOutput01, "parallel", "3");
 
-        System.out.println(feedOutput01);
+        logger.info(feedOutput01);
         prism.getFeedHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedOutput01);
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedOutput01);
     }
 }

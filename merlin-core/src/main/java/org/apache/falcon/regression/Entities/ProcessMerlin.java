@@ -20,11 +20,12 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.generated.process.Input;
-import org.apache.falcon.regression.core.generated.process.Process;
-import org.apache.falcon.regression.core.generated.process.Properties;
-import org.apache.falcon.regression.core.generated.process.Property;
+import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.entity.v0.process.Properties;
+import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hive.hcatalog.api.HCatClient;
@@ -39,101 +40,74 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProcessMerlin extends org.apache.falcon.regression.core.generated
-  .process.Process {
-
-
-  public ProcessMerlin(String processData) throws JAXBException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-    Process element = InstanceUtil.getProcessElement(processData);
-    Field[] fields = Process.class.getDeclaredFields();
-    for (Field fld : fields) {
-      PropertyUtils.setProperty(this, fld.getName(),
-        PropertyUtils.getProperty(element, fld.getName()));
+public class ProcessMerlin extends Process {
+    public ProcessMerlin(String processData)
+        throws JAXBException, IllegalAccessException, NoSuchMethodException,
+        InvocationTargetException {
+        Process element = InstanceUtil.getProcessElement(processData);
+        Field[] fields = Process.class.getDeclaredFields();
+        for (Field fld : fields) {
+            PropertyUtils.setProperty(this, fld.getName(),
+                PropertyUtils.getProperty(element, fld.getName()));
+        }
     }
-  }
 
-  public final void setProperty(String name, String value) {
-    Property p = new Property();
-    p.setName(name);
-    p.setValue(value);
-
-    if (null == getProperties() || null == getProperties()
-      .getProperty() || getProperties().getProperty().size()
-      <= 0) {
-      Properties props = new Properties();
-      props.addProperty(p);
-      setProperties(props);
-      return;
-    } else {
-      getProperties().getProperty().add(p);
+    public final void setProperty(String name, String value) {
+        Property p = new Property();
+        p.setName(name);
+        p.setValue(value);
+        if (null == getProperties() || null == getProperties()
+            .getProperties() || getProperties().getProperties().size()
+            <= 0) {
+            Properties props = new Properties();
+            props.getProperties().add(p);
+            setProperties(props);
+        } else {
+            getProperties().getProperties().add(p);
+        }
     }
-  }
 
-  @Override
-  public String toString() {
-
-    try {
-      return InstanceUtil.processToString(this);
-    } catch (JAXBException e) {
-      e.printStackTrace();
+    @Override
+    public String toString() {
+        try {
+            return InstanceUtil.processToString(this);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
-    return null;
-  }
 
-  public void generateData(FileSystem fs, Bundle b, String... copyFrom)throws Exception{
+    public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) throws Exception {
+        Date start = getClusters().getClusters().get(0).getValidity().getStart();
+        Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        String startDate = formatter.format(start);
+        Date end = getClusters().getClusters().get(0).getValidity().getEnd();
+        String endDate = formatter.format(end);
 
-      Bundle b1 = new Bundle(b);
-      b1 = setFeedsToGenerateData(fs,b1);
-      Map<String, FeedMerlin> inpFeeds = getInputFeeds(b1);
-      for(FeedMerlin feedElement : inpFeeds.values()){
-          feedElement.generateData(fs, copyFrom);
-      }
-  }
+        Map<String, FeedMerlin> inpFeeds = getInputFeeds(b);
+        for (FeedMerlin feedElement : inpFeeds.values()) {
+            feedElement.getClusters().getClusters().get(0).getValidity()
+                .setStart(TimeUtil.oozieDateToDate(startDate).toDate());
+            feedElement.getClusters().getClusters().get(0).getValidity()
+                .setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
+            InstanceUtil.writeFeedElement(b, feedElement, feedElement.getName());
+        }
+        return b;
+    }
 
-  public void generateData(FileSystem fs, Bundle b, HCatClient client, String... copyFrom)throws Exception{
-
-      Bundle b1 = new Bundle(b);
-      b1 = setFeedsToGenerateData(fs,b1);
-      Map<String, FeedMerlin> inpFeeds = getInputFeeds(b1);
-      for(FeedMerlin feedElement : inpFeeds.values()){
-          feedElement.generateData(client,fs, copyFrom);
-      }
-  }
-
-  public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b)throws Exception{
-
-      Date start = getClusters().getCluster().get(0).getValidity().getStart();
-      Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
-      String startDate = formatter.format(start);
-      Date end = getClusters().getCluster().get(0).getValidity().getEnd();
-      String endDate = formatter.format(end);
-
-      Map<String, FeedMerlin> inpFeeds = getInputFeeds(b);
-
-      for(FeedMerlin feedElement : inpFeeds.values()){
-          feedElement.getClusters().getCluster().get(0).getValidity()
-                  .setStart(InstanceUtil.oozieDateToDate(startDate).toDate());
-          feedElement.getClusters().getCluster().get(0).getValidity()
-                  .setEnd(InstanceUtil.oozieDateToDate(endDate).toDate());
-          InstanceUtil.writeFeedElement(b, feedElement, feedElement.getName());
-      }
-      return b;
-  }
-
-  public Map<String,FeedMerlin> getInputFeeds(Bundle b)throws Exception{
-
-      Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
-      for (Input input : getInputs().getInput()) {
-          for (String feed : b.getDataSets()) {
-             if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
-                  FeedMerlin feedO = new FeedMerlin(feed);
-                  inpFeeds.put(Util.readDatasetName(feed), feedO);
-                  break;
-             }
-          }
-      }
-      return inpFeeds;
-  }
+    public Map<String, FeedMerlin> getInputFeeds(Bundle b) throws Exception {
+        Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
+        for (Input input : getInputs().getInputs()) {
+            for (String feed : b.getDataSets()) {
+                if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
+                    FeedMerlin feedO = new FeedMerlin(feed);
+                    inpFeeds.put(Util.readDatasetName(feed), feedO);
+                    break;
+                }
+            }
+        }
+        return inpFeeds;
+    }
 
 }
 
