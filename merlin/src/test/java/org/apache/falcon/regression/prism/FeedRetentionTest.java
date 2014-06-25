@@ -210,7 +210,7 @@ public class FeedRetentionTest extends BaseTestClass {
             XmlUtil.createProcessValidity(TimeUtil.getTimeWrtSystemTime(-2),
                 TimeUtil.getTimeWrtSystemTime(5)));
 
-        logger.info("process: " + process);
+        logger.info("process: " + Util.prettyPrintXml(process));
 
         AssertUtil.assertSucceeded(
             prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process));

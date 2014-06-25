@@ -309,7 +309,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -381,7 +381,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -435,7 +435,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -504,7 +504,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 4 running instances

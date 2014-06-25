@@ -144,7 +144,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             .setProcessFrequency(bundles[1].getProcessData(),
                 new Frequency("" + 5, TimeUnit.minutes));
 
-        logger.info("updated process: " + updatedProcess);
+        logger.info("updated process: " + Util.prettyPrintXml(updatedProcess));
 
         //now to update
         while (Util
@@ -203,7 +203,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
-        logger.info("updated process: " + bundles[1].getProcessData());
+        logger.info("updated process: " + Util.prettyPrintXml(bundles[1].getProcessData()));
         while (Util.parseResponse(
             prism.getProcessHelper()
                 .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
@@ -355,13 +355,13 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
             ENTITY_TYPE.PROCESS);
-        logger.info("original process: " + bundles[1].getProcessData());
+        logger.info("original process: " + Util.prettyPrintXml(bundles[1].getProcessData()));
 
         String updatedProcess = InstanceUtil
             .setProcessFrequency(bundles[1].getProcessData(),
                 new Frequency("" + 7, TimeUnit.minutes));
 
-        logger.info("updated process: " + updatedProcess);
+        logger.info("updated process: " + Util.prettyPrintXml(updatedProcess));
 
         //now to update
 
@@ -692,7 +692,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             bundles[1].submitBundle(prism);
             //now to schedule in 1 colo and let it remain in another
 
-            logger.info("process to be scheduled: " + bundles[1].getProcessData());
+            logger.info("process to be scheduled: "
+                + Util.prettyPrintXml(bundles[1].getProcessData()));
 
             AssertUtil.assertSucceeded(
                 cluster3.getProcessHelper()
@@ -970,7 +971,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].addProcessInput(newFeedName, "inputData2");
         inputFeed = Util.setFeedName(inputFeed, newFeedName);
 
-        logger.info(inputFeed);
+        logger.info("inputFeed: " + Util.prettyPrintXml(inputFeed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, inputFeed));
 
@@ -1299,13 +1300,13 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         List<String> oldNominalTimes =
             OozieUtil.getActionsNominalTime(cluster3, oldBundleId, ENTITY_TYPE.PROCESS);
 
-        logger.info("original process: " + bundles[1].getProcessData());
+        logger.info("original process: " + Util.prettyPrintXml(bundles[1].getProcessData()));
 
         String updatedProcess = InstanceUtil
             .setProcessFrequency(bundles[1].getProcessData(),
                 new Frequency("" + 5, TimeUnit.minutes));
 
-        logger.info("updated process: " + updatedProcess);
+        logger.info("updated process: " + Util.prettyPrintXml(updatedProcess));
 
         //now to update
         ServiceResponse response =
@@ -1352,7 +1353,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
             ENTITY_TYPE.PROCESS);
 
-        logger.info("original process: " + bundles[1].getProcessData());
+        logger.info("original process: " + Util.prettyPrintXml(bundles[1].getProcessData()));
 
         String updatedProcess = InstanceUtil
             .setProcessFrequency(bundles[1].getProcessData(),
@@ -1361,7 +1362,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             .setProcessValidity(updatedProcess, TimeUtil.getTimeWrtSystemTime(10),
                 endTime);
 
-        logger.info("updated process: " + updatedProcess);
+        logger.info("updated process: " + Util.prettyPrintXml(updatedProcess));
 
         //now to update
         ServiceResponse response =

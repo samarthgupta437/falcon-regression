@@ -893,7 +893,7 @@ public class Bundle {
     }
 
     public void setRetry(Retry retry) throws JAXBException {
-        logger.info("old process: " + processData);
+        logger.info("old process: " + Util.prettyPrintXml(processData));
         Process processObject = getProcessObject();
         processObject.setRetry(retry);
         java.io.StringWriter sw = new StringWriter();
@@ -901,7 +901,7 @@ public class Bundle {
         marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
         marshaller.marshal(processObject, sw);
         processData = sw.toString();
-        logger.info("updated process: " + processData);
+        logger.info("updated process: " + Util.prettyPrintXml(processData));
     }
 
     public void setInputFeedAvailabilityFlag(String flag) throws JAXBException {

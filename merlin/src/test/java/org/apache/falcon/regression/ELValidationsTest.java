@@ -146,7 +146,7 @@ public class ELValidationsTest extends BaseTestClass {
             bundle.setInvalidData();
             bundle.setDatasetInstances(startInstance, endInstance);
             String submitResponse = bundle.submitAndScheduleBundle(prismHelper);
-            logger.info("processData in try is: " + bundle.getProcessData());
+            logger.info("processData in try is: " + Util.prettyPrintXml(bundle.getProcessData()));
             Thread.sleep(45000);
             if (isMatch)
                 getAndMatchDependencies(server, bundle);

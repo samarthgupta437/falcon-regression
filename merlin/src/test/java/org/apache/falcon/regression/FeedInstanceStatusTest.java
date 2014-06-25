@@ -87,7 +87,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(feedInputPath);
 
         bundles[0].setCLusterColo("ua1");
-        logger.info("cluster bundle1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundle1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
 
         ServiceResponse r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
@@ -95,14 +95,14 @@ public class FeedInstanceStatusTest extends BaseTestClass {
 
 
         bundles[1].setCLusterColo("ua2");
-        logger.info("cluster bundle2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundle2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
 
         bundles[2].setCLusterColo("ua3");
-        logger.info("cluster bundle3: " + bundles[2].getClusters().get(0));
+        logger.info("cluster bundle3: " + Util.prettyPrintXml(bundles[2].getClusters().get(0)));
         r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[2].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -134,7 +134,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             "UK/${cluster.colo}");
 
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         //status before submit
         prism.getFeedHelper()

@@ -102,7 +102,8 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
 
         bundles[0].setCLusterWorkingPath(bundles[0].getClusters().get(0), randomHDFSPath);
-        logger.info("modified cluster Data: " + bundles[0].getClusters().get(0));
+        logger.info("modified cluster Data: "
+            + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
@@ -332,7 +333,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Util.shutDownService(cluster1.getFeedHelper());
 
         bundles[1].setCLusterColo(cluster2.getClusterHelper().getColoName());
-        logger.info("cluster b2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster b2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         ServiceResponse r =
             prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
@@ -350,7 +351,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Util.restartService(cluster1.getFeedHelper());
 
         bundles[0].setCLusterColo(cluster1.getClusterHelper().getColoName());
-        logger.info("cluster b1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster b1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 

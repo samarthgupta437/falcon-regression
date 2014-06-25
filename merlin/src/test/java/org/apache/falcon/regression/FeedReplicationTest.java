@@ -128,7 +128,7 @@ public class FeedReplicationTest extends BaseTestClass {
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        logger.info("Feed : " + feed);
+        logger.info("Feed : " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed));
@@ -207,7 +207,7 @@ public class FeedReplicationTest extends BaseTestClass {
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        logger.info("Feed : " + feed);
+        logger.info("Feed : " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed));
@@ -299,7 +299,7 @@ public class FeedReplicationTest extends BaseTestClass {
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        logger.info("Feed : " + feed);
+        logger.info("Feed : " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed));

@@ -84,9 +84,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         //set cluster colos
         bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColoName());
-        logger.info("cluster b1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster b1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColoName());
-        logger.info("cluster b2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster b2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
@@ -184,9 +184,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
-        logger.info("feed01: " + feed01);
-        logger.info("feed02: " + feed02);
-        logger.info("outputFeed: " + outputFeed);
+        logger.info("feed01: " + Util.prettyPrintXml(feed01));
+        logger.info("feed02: " + Util.prettyPrintXml(feed02));
+        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
 
         ServiceResponse r = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
@@ -225,7 +225,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
 
         //submit and schedule process
-        logger.info("process: " + process);
+        logger.info("process: " + Util.prettyPrintXml(process));
 
         prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);

@@ -85,7 +85,7 @@ public class FeedStatusTest extends BaseTestClass {
     public void getStatusForScheduledFeed() throws Exception {
         ServiceResponse response =
             prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        logger.info(feed);
+        logger.info("Feed: " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
