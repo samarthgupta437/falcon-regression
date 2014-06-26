@@ -107,7 +107,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             uploadDirToClusters(wfPath, OSUtil.RESOURCES_OOZIE);
         }
         Util.restartService(cluster3.getClusterHelper());
-
     }
 
     @AfterMethod(alwaysRun = true)
@@ -118,11 +117,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
     public void updateProcessFrequencyInEachColoWithOneProcessRunning_Monthly()
         throws Exception {
-        final String START_TIME = TimeUtil.getTimeWrtSystemTime(-20);
+        final String startTime = TimeUtil.getTimeWrtSystemTime(-20);
         String endTime = TimeUtil.getTimeWrtSystemTime(4000 * 60);
         bundles[1].setProcessPeriodicity(1, TimeUnit.months);
         bundles[1].setOutputFeedPeriodicity(1, TimeUnit.months);
-        bundles[1].setProcessValidity(START_TIME, endTime);
+        bundles[1].setProcessValidity(startTime, endTime);
 
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
@@ -151,10 +150,9 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             .parseResponse(prism.getProcessHelper()
                 .update((bundles[1].getProcessData()), updatedProcess))
             .getStatus() != APIResult.Status.SUCCEEDED) {
-            logger.info("update didnt SUCCEED in last attempt");
+            logger.info("update didn't SUCCEED in last attempt");
             Thread.sleep(10000);
         }
-
         String prismString = getResponse(prism, bundles[1].getProcessData(), true);
         Assert.assertEquals(Util.getProcessObject(prismString).getFrequency(),
             Util.getProcessObject(updatedProcess).getFrequency());
@@ -168,7 +166,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1, 10);
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
             bundles[1].getProcessData(), true, true);
-
     }
 
     @Test(groups = {"multiCluster"}, timeOut = 1200000)
@@ -208,7 +205,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             prism.getProcessHelper()
                 .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
             .getStatus() != APIResult.Status.SUCCEEDED) {
-            logger.info("update didnt SUCCEED in last attempt");
+            logger.info("update didn't SUCCEED in last attempt");
             Thread.sleep(10000);
         }
 
@@ -300,7 +297,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 prism.getProcessHelper()
                     .update(bundles[1].getProcessData(), bundles[1].getProcessData()))
                 .getStatus() != APIResult.Status.SUCCEEDED) {
-                logger.info("WARNING: update did not scceed, retyring ");
+                logger.info("WARNING: update did not succeed, retrying ");
                 Thread.sleep(20000);
             }
             prismString = getResponse(prism, bundles[1].getProcessData(), true);
@@ -1593,11 +1590,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     /**
-    this method compares process xml definition from 2 falcon servers / prism and expects them to
-     be identical. If the definitions are identical then the definition from @param coloHelper1
-     is @return are response.
-     **/
-    private String dualComparison(PrismHelper coloHelper1 , PrismHelper coloHelper2,
+     * this method compares process xml definition from 2 falcon servers / prism and expects them to
+     * be identical. If the definitions are identical then the definition from @param coloHelper1
+     * is @return are response.
+     */
+    private String dualComparison(PrismHelper coloHelper1, PrismHelper coloHelper2,
                                   String processData) throws Exception {
         String colo1Response = getResponse(coloHelper1, processData, true);
         String colo2Response = getResponse(coloHelper2, processData, true);
@@ -1607,14 +1604,15 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     }
 
     /**
-     this method compares process xml definition from 2 falcon servers / prism and expects them to
-     be different.
-     **/
-    private void dualComparisonFailure(PrismHelper coloHelper1 , PrismHelper coloHelper2,
+     * this method compares process xml definition from 2 falcon servers / prism and expects them to
+     * be different.
+     */
+    private void dualComparisonFailure(PrismHelper coloHelper1, PrismHelper coloHelper2,
                                        String processData) throws Exception {
         Assert.assertFalse(XmlUtil.isIdentical(getResponse(coloHelper1, processData, true),
-            getResponse(coloHelper2, processData, true)), "Process definition should not have been " +
-            "identical");
+            getResponse(coloHelper2, processData, true)),
+            "Process definition should not have been " +
+                "identical");
     }
 
     private String getResponse(PrismHelper prism, String processData, boolean bool)
@@ -1631,7 +1629,6 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         return result;
 
     }
-
 
 
     private void waitForProcessToReachACertainState(ColoHelper coloHelper, Bundle bundle,
@@ -1733,7 +1730,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int wait = 0;
         while (!OozieUtil.isBundleOver(coloHelper, bundleId)) {
             //keep waiting
-            logger.info("bundle not over .. waiting, bundleId: " + bundleId + " on oozie:  "+
+            logger.info("bundle not over .. waiting, bundleId: " + bundleId + " on oozie:  " +
                 coloHelper.getClusterHelper().getOozieClient().getOozieUrl());
             Thread.sleep(60000);
             wait++;
