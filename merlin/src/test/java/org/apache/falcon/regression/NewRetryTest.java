@@ -93,7 +93,7 @@ public class NewRetryTest extends BaseTestClass {
 
         String feed =
             Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
+        feed = Util.insertLateFeedValue(feed, new Frequency("minutes(8)"));
         bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
 
@@ -107,20 +107,19 @@ public class NewRetryTest extends BaseTestClass {
     }
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
-    public void testRetryInProcessZeroAttemptUpdate(String retryType, int delay, String delayUnits,
-                                                    int retryAttempts) throws Exception {
+    public void testRetryInProcessZeroAttemptUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -140,7 +139,7 @@ public class NewRetryTest extends BaseTestClass {
 
 
             int defaultRetries = bundles[0].getProcessObject().getRetry().getAttempts();
-            Retry retry = bundles[0].getProcessObject().getRetry();
+            
             retry.setAttempts((0));
 
             bundles[0].setRetry(retry);
@@ -155,25 +154,24 @@ public class NewRetryTest extends BaseTestClass {
 
             //now to validate all failed instances to check if they were retried or not.
             validateRetry(clusterOC, bundleId, defaultRetries);
-            checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+            checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
-    public void testRetryInProcessLowerAttemptUpdate(String retryType, int delay, String delayUnits,
-                                                     int retryAttempts) throws Exception {
+    public void testRetryInProcessLowerAttemptUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -192,14 +190,14 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1),
                 "Failure Retry validation failed");
 
-            Retry retry = bundles[0].getProcessObject().getRetry();
-            retry.setAttempts((retryAttempts - 2));
+            
+            retry.setAttempts((retry.getAttempts() - 2));
 
             bundles[0].setRetry(retry);
 
             logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
 
-            if ((retryAttempts - 2) > 0) {
+            if ((retry.getAttempts() - 2) > 0) {
                 Assert.assertTrue(prism.getProcessHelper()
                     .update((bundles[0].getProcessData()), bundles[0].getProcessData())
                     .getMessage().contains("updated successfully"),
@@ -210,9 +208,9 @@ public class NewRetryTest extends BaseTestClass {
                 Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
                 //now to validate all failed instances to check if they were retried or not.
-                validateRetry(clusterOC, bundleId, retryAttempts - 2);
+                validateRetry(clusterOC, bundleId, retry.getAttempts() - 2);
                 if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                    checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                    checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
                 }
             }
         }
@@ -220,20 +218,18 @@ public class NewRetryTest extends BaseTestClass {
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInProcessLowerManageableAttemptUpdate(String retryType, int delay,
-                                                               String delayUnits, int retryAttempts)
-        throws Exception {
+    public void testRetryInProcessLowerManageableAttemptUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -252,8 +248,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1),
                 "Failure Retry validation failed");
 
-            Retry retry = bundles[0].getProcessObject().getRetry();
-            retry.setAttempts((retryAttempts - 1));
+            retry.setAttempts((retry.getAttempts() - 1));
 
             bundles[0].setRetry(retry);
 
@@ -268,28 +263,26 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertEquals(bundleId, newBundleId, "its creating a new bundle!!!");
 
             //now to validate all failed instances to check if they were retried or not.
-            validateRetry(clusterOC, bundleId, retryAttempts - 1);
+            validateRetry(clusterOC, bundleId, retry.getAttempts() - 1);
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInProcessLowerBoundaryAttemptUpdate(String retryType, int delay,
-                                                             String delayUnits, int retryAttempts)
-        throws Exception {
+    public void testRetryInProcessLowerBoundaryAttemptUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -309,7 +302,7 @@ public class NewRetryTest extends BaseTestClass {
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 2),
                 "Failure Retry validation failed");
 
-            Retry retry = bundles[0].getProcessObject().getRetry();
+            
             retry.setAttempts((2));
 
             bundles[0].setRetry(retry);
@@ -328,25 +321,24 @@ public class NewRetryTest extends BaseTestClass {
             //now to validate all failed instances to check if they were retried or not.
             validateRetry(clusterOC, bundleId, 2);
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInProcessUpdate(String retryType, int delay, String delayUnits,
-                                         int retryAttempts) throws Exception {
+    public void testRetryInProcessUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -360,7 +352,6 @@ public class NewRetryTest extends BaseTestClass {
 
             waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
-            Retry retry = bundles[0].getProcessObject().getRetry();
             retry.setAttempts((4));
 
             bundles[0].setRetry(retry);
@@ -378,25 +369,24 @@ public class NewRetryTest extends BaseTestClass {
             //now to validate all failed instances to check if they were retried or not.
             validateRetry(clusterOC, bundleId, 4);
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInProcessHigherDelayUpdate(String retryType, int delay, String delayUnits,
-                                                    int retryAttempts) throws Exception {
+    public void testRetryInProcessHigherDelayUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -410,7 +400,6 @@ public class NewRetryTest extends BaseTestClass {
 
             waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
-            Retry retry = bundles[0].getProcessObject().getRetry();
             retry.setDelay(new Frequency("minutes(" + (retry.getDelay().getFrequency() + 1) + ")"));
 
             bundles[0].setRetry(retry);
@@ -429,28 +418,27 @@ public class NewRetryTest extends BaseTestClass {
             validateRetry(clusterOC, bundleId,
                 bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInProcessLowerDelayUpdate(String retryType, int delay, String delayUnits,
-                                                   int retryAttempts) throws Exception {
+    public void testRetryInProcessLowerDelayUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(
                 prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -464,7 +452,6 @@ public class NewRetryTest extends BaseTestClass {
 
             waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
-            Retry retry = bundles[0].getProcessObject().getRetry();
             retry.setDelay(new Frequency(
                 "minutes(" + (Integer.parseInt(retry.getDelay().getFrequency()) - 1) + ")"));
 
@@ -486,27 +473,26 @@ public class NewRetryTest extends BaseTestClass {
             validateRetry(clusterOC, bundleId,
                 bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInProcessZeroDelayUpdate(String retryType, int delay, String delayUnits,
-                                                  int retryAttempts) throws Exception {
+    public void testRetryInProcessZeroDelayUpdate(Retry retry) throws Exception {
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -520,7 +506,6 @@ public class NewRetryTest extends BaseTestClass {
 
             waitTillCertainPercentageOfProcessHasStarted(clusterOC, bundleId, 25);
 
-            Retry retry = bundles[0].getProcessObject().getRetry();
             retry.setDelay(new Frequency("minutes(0)"));
 
             bundles[0].setRetry(retry);
@@ -539,17 +524,16 @@ public class NewRetryTest extends BaseTestClass {
             validateRetry(clusterOC, bundleId,
                 bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInSimpleFailureCase(String retryType, int delay, String delayUnits,
-                                             int retryAttempts) throws Exception {
+    public void testRetryInSimpleFailureCase(Retry retry) throws Exception {
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -560,7 +544,7 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -576,20 +560,18 @@ public class NewRetryTest extends BaseTestClass {
             validateRetry(clusterOC, bundleId,
                 bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testUserRetryWhileAutomaticRetriesHappen(String retryType, int delay,
-                                                         String delayUnits,
-                                                         int retryAttempts) throws Exception {
+    public void testUserRetryWhileAutomaticRetriesHappen(Retry retry) throws Exception {
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/hh:mm");
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -601,7 +583,7 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -633,19 +615,17 @@ public class NewRetryTest extends BaseTestClass {
             validateRetry(clusterOC, bundleId,
                 bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testUserRetryAfterAutomaticRetriesHappen(String retryType, int delay,
-                                                         String delayUnits,
-                                                         int retryAttempts) throws Exception {
+    public void testUserRetryAfterAutomaticRetriesHappen(Retry retry) throws Exception {
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/hh:mm");
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -657,7 +637,7 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -689,22 +669,20 @@ public class NewRetryTest extends BaseTestClass {
                 bundles[0].getProcessObject().getRetry().getAttempts() + 1);
 
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInSuspendedAndResumeCaseWithLateData(String retryType, int delay,
-                                                              String delayUnits, int retryAttempts)
-        throws Exception {
+    public void testRetryInSuspendedAndResumeCaseWithLateData(Retry retry) throws Exception {
 
         String feed =
             Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "10", "minutes");
+        feed = Util.insertLateFeedValue(feed, new Frequency("minutes(10)"));
         bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -714,7 +692,7 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -784,27 +762,24 @@ public class NewRetryTest extends BaseTestClass {
             validateRetry(clusterOC, bundleId,
                 bundles[0].getProcessObject().getRetry().getAttempts());
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInLateDataCase(String retryType, int delay,
-                                        String delayUnits, int retryAttempts) throws Exception {
+    public void testRetryInLateDataCase(Retry retry) throws Exception {
 
         String feed =
             Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
 
-        feed = Util.insertLateFeedValue(feed, getDelay(delay, retryAttempts, retryType).toString(),
-            delayUnits);
+        feed = Util.insertLateFeedValue(feed, getFrequency(retry));
 
         bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
-
+        bundles[0].setRetry(retry);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -814,7 +789,7 @@ public class NewRetryTest extends BaseTestClass {
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
 
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -867,24 +842,22 @@ public class NewRetryTest extends BaseTestClass {
                 bundles[0].getProcessObject().getRetry().getAttempts());
 
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
 
 
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
-    public void testRetryInDeleteAfterPartialRetryCase(String retryType, int delay,
-                                                       String delayUnits,
-                                                       int retryAttempts) throws Exception {
+    public void testRetryInDeleteAfterPartialRetryCase(Retry retry) throws Exception {
 
         String feed =
             Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "1", "minutes");
+        feed = Util.insertLateFeedValue(feed, new Frequency("minutes(1)"));
         bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
 
-        bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
+        bundles[0].setRetry(retry);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -894,7 +867,7 @@ public class NewRetryTest extends BaseTestClass {
         //submit and schedule process
         ServiceResponse response =
             prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
-        if (retryAttempts <= 0 || delay <= 0) {
+        if (retry.getAttempts() <= 0 || retry.getDelay().getFrequencyAsInt() <= 0) {
             AssertUtil.assertFailed(response);
         } else {
             AssertUtil.assertSucceeded(response);
@@ -912,12 +885,13 @@ public class NewRetryTest extends BaseTestClass {
             AssertUtil.assertSucceeded(
                 prism.getProcessHelper().delete(URLS.DELETE_URL, (bundles[0].getProcessData())));
 
-            if (retryType.equals("exp-backoff")) {
-                TimeUnit.MINUTES.sleep(delay * ((retryAttempts -
-                    (bundles[0].getProcessObject().getRetry().getAttempts()) / 2) ^ 2));
+            if (retry.getPolicy() == PolicyType.EXP_BACKOFF) {
+                TimeUnit.MINUTES.sleep(retry.getDelay().getFrequencyAsInt() * ((retry.getAttempts()
+                    - (bundles[0].getProcessObject().getRetry().getAttempts()) / 2) ^ 2));
             } else {
                 TimeUnit.MINUTES
-                    .sleep(delay * ((bundles[0].getProcessObject().getRetry().getAttempts()) -
+                    .sleep(retry.getDelay().getFrequencyAsInt() *
+                        ((bundles[0].getProcessObject().getRetry().getAttempts()) -
                         (bundles[0].getProcessObject().getRetry().getAttempts()) / 2));
             }
 
@@ -926,7 +900,7 @@ public class NewRetryTest extends BaseTestClass {
                 (bundles[0].getProcessObject().getRetry().getAttempts()) / 2);
 
             if (bundles[0].getProcessObject().getRetry().getAttempts() > 0) {
-                checkIfRetriesWereTriggeredCorrectly(cluster, retryType, delay, bundleId);
+                checkIfRetriesWereTriggeredCorrectly(cluster, retry, bundleId);
             }
         }
     }
@@ -1027,7 +1001,7 @@ public class NewRetryTest extends BaseTestClass {
         Integer[] retryAttempts = new Integer[]{2, 0, 3};//0,-1,2
 
         Object[][] testData = new Object[retryTypes.length * delays.length * delayUnits.length *
-            retryAttempts.length][4];
+            retryAttempts.length][1];
 
         int i = 0;
 
@@ -1035,10 +1009,7 @@ public class NewRetryTest extends BaseTestClass {
             for (int delay : delays) {
                 for (String delayUnit : delayUnits) {
                     for (int retry : retryAttempts) {
-                        testData[i][0] = retryType;
-                        testData[i][1] = delay;
-                        testData[i][2] = delayUnit;
-                        testData[i][3] = retry;
+                        testData[i][0] = getRetry(delay, delayUnit, retryType, retry);
                         i++;
                     }
                 }
@@ -1119,8 +1090,8 @@ public class NewRetryTest extends BaseTestClass {
         return dateList.toArray(new DateTime[dateList.size()]);
     }
 
-    private void checkIfRetriesWereTriggeredCorrectly(ColoHelper coloHelper, String retryType,
-                                                      int delay, String bundleId) throws Exception {
+    private void checkIfRetriesWereTriggeredCorrectly(ColoHelper coloHelper, Retry retry, 
+                                                      String bundleId) throws Exception {
         //it is presumed that this delay here will be expressed in minutes. Hourly/daily is
         // unfeasible to check :)
 
@@ -1132,7 +1103,7 @@ public class NewRetryTest extends BaseTestClass {
         for (CoordinatorAction action : coordinator.getActions()) {
             CoordinatorAction coordAction = oozieClient.getCoordActionInfo(action.getExternalId());
             if (!coordAction.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
-                int expectedDelay = delay;
+                int expectedDelay = retry.getDelay().getFrequencyAsInt();
                 //first get data from logs:
                 List<String> instanceRetryTimes =
                     Util.getInstanceRetryTimes(coloHelper, action.getExternalId());
@@ -1149,10 +1120,10 @@ public class NewRetryTest extends BaseTestClass {
                     logger.info(line);
                 }
 
-                logger.info("checking timelines for retry type " + retryType + " for delay " +
-                    expectedDelay + " for workflow id: " + action.getExternalId());
+                logger.info("checking timelines for retry type " + retry.getPolicy().value() + 
+                    " for delay " + expectedDelay + " for workflow id: " +action.getExternalId());
 
-                if (retryType.equalsIgnoreCase("periodic")) {
+                if (retry.getPolicy() == PolicyType.PERIODIC) {
                     //in this case the delay unit will always be a constant time diff
                     for (int i = 0; i < instanceFinishTimes.size() - 1; i++) {
                         DateTime temp = formatter.parseDateTime(instanceFinishTimes.get(i));
@@ -1188,19 +1159,23 @@ public class NewRetryTest extends BaseTestClass {
         return retry;
     }
 
-    private Integer getDelay(int delay, int attempts, String attemptType) {
+    private Frequency getFrequency(Retry retry) {
+        int delay = retry.getDelay().getFrequencyAsInt();
         if (delay == 0) {
             delay = 1;
         }
+        int attempts = retry.getAttempts();
         if (attempts == 0) {
             attempts = 1;
         }
 
-        if (attemptType.equals("exp-backoff")) {
-            return (Math.abs(delay)) * (2 ^ (Math.abs(attempts)));
+        if (retry.getPolicy() == PolicyType.EXP_BACKOFF) {
+            delay = (Math.abs(delay)) * (2 ^ (Math.abs(attempts)));
         } else {
-            return Math.abs(delay * attempts);
+            delay = Math.abs(delay * attempts);
         }
+
+        return new Frequency(retry.getDelay().getTimeUnit() + "(" + delay + ")");
 
     }
 

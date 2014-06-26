@@ -430,26 +430,13 @@ public class Util {
         return null;
     }
 
-    public static String insertLateFeedValue(String feed, String delay, String delayUnit)
+    public static String insertLateFeedValue(String feed, Frequency frequency)
         throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
-
-        String delayTime = "";
-
-        if (delayUnit.equalsIgnoreCase("hours")) {
-            delayTime = "hours(" + delay + ")";
-        } else if (delayUnit.equalsIgnoreCase("minutes")) {
-            delayTime = "minutes(" + delay + ")";
-        } else if (delayUnit.equalsIgnoreCase("days")) {
-            delayTime = "days(" + delay + ")";
-        } else if (delayUnit.equalsIgnoreCase("months")) {
-            delayTime = "months(" + delay + ")";
-        }
-
-        feedObject.getLateArrival().setCutOff(new Frequency(delayTime));
+        feedObject.getLateArrival().setCutOff(frequency);
 
         Marshaller m = context.createMarshaller();
         StringWriter sw = new StringWriter();
