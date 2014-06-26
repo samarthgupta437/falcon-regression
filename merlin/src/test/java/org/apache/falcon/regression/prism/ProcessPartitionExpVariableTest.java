@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 
 @Test(groups = "embedded")
@@ -108,7 +107,6 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
             baseTestDir + "/input1/", 1);
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
-        TimeUnit.SECONDS.sleep(20);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC,
             Util.getProcessName(bundles[0].getProcessData()), 2,
@@ -129,7 +127,6 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         for (String dataDate : dataDates) dataFolder.add(dataDate);
 
         InstanceUtil.putDataInFolders(colo, dataFolder, "");
-
     }
 
     private static List<String> generateDateAndOneDayAfter(DateTime startDate, DateTime endDate,
@@ -142,8 +139,6 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
             formatter.print(endDate));
 
         List<String> dates = new ArrayList<String>();
-
-
         while (!startDate.isAfter(endDate)) {
             final DateTime nextDate = startDate.plusMinutes(minuteSkip);
             dates.add(formatter.print(nextDate) + formatter2.print(nextDate.plusDays(1)));
@@ -152,7 +147,6 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
             }
             startDate = nextDate;
         }
-
         return dates;
     }
 

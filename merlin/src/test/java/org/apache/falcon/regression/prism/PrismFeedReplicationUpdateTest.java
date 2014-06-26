@@ -21,7 +21,9 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -34,6 +36,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
+import org.apache.oozie.client.Job;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -104,7 +107,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 5, 80, prefix, postFix);
 
-
         // use the colo string here so that the test works in embedded and distributed mode.
         postFix = "/UK/" + cluster3Colo;
         prefix = bundles[0].getFeedDataPathPrefix();
@@ -113,9 +115,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-30);
 
-
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                TimeUtil.addMinsToTime(startTime, 85)),
+            TimeUtil.addMinsToTime(startTime, 85)),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
             Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "US/${cluster.colo}");
@@ -136,10 +137,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
-
         prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-        Thread.sleep(30000);
+        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
 
         //change feed location path
         feed = InstanceUtil.setFeedFilePath(feed, alternativeInputPath);
@@ -147,8 +146,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         logger.info("updated feed: " + Util.prettyPrintXml(feed));
 
         //update feed
-        prism.getFeedHelper().update(feed, feed);
-        Thread.sleep(30000);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed, feed));
 
         Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
             Util.readDatasetName(feed),
@@ -258,7 +256,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
-
         //submit and schedule feeds
         logger.info("feed01: " + Util.prettyPrintXml(feed01));
         logger.info("feed02: " + Util.prettyPrintXml(feed02));
@@ -267,7 +264,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, outputFeed);
-
 
         //create a process with 2 clusters
 
@@ -298,26 +294,10 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
         logger.info("Wait till process goes into running ");
 
-        for (int i = 0; i < 30; i++) {
-            Status status1 =
-                InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
-            Status status2 = InstanceUtil.getInstanceStatus(cluster3,
-                Util.getProcessName(process), 0, 0);
-            // if the status is failed or killed lets fail
-            // this will stop unnecessary looping
-            if ((status1 != null && status2 != null) && (status1 == Status.FAILED || status2 ==
-                Status.FAILED || status1 == Status.KILLED
-                || status2 == Status.KILLED)) {
-                Assert.fail(String.format("status1 = %s, status2 = %s", status1, status2));
-            }
-
-            if (status1 != null && status2 != null &&
-                (status1 == Status.RUNNING || status1 == Status.SUCCEEDED)
-                && (status2 == Status.RUNNING || status2 == Status.SUCCEEDED)) {
-                break;
-            }
-            Thread.sleep(20000);
-        }
+        InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
+            Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+        InstanceUtil.waitTillInstanceReachState(serverOC.get(2), Util.getProcessName(process), 1,
+            Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
         logger.info("updated feed: " + Util.prettyPrintXml(feed01));

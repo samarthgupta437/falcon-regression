@@ -141,7 +141,6 @@ public class FeedRetentionTest extends BaseTestClass {
         //submit the new output feed
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOutput01));
-        TimeUnit.SECONDS.sleep(10);
 
         String feedOutput02 = bundles[0].getFeed("FETL-ImpressionRC");
         feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
@@ -172,7 +171,6 @@ public class FeedRetentionTest extends BaseTestClass {
         //submit the new output feed
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feedOutput02));
-        TimeUnit.SECONDS.sleep(10);
 
         String feedInput = bundles[0].getFeed("FETL2-RRLog");
         feedInput = InstanceUtil
@@ -195,7 +193,6 @@ public class FeedRetentionTest extends BaseTestClass {
 
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedInput));
-        TimeUnit.SECONDS.sleep(10);
 
         String process = bundles[0].getProcessData();
         process = InstanceUtil.setProcessCluster(process, null,
