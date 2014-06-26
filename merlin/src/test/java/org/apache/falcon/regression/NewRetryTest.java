@@ -1152,7 +1152,13 @@ public class NewRetryTest extends BaseTestClass {
 
     private Retry getRetry(int delay, String delayUnits, String retryType,
                            int retryAttempts) {
-        Retry retry = new Retry();
+        Retry retry = new Retry() {
+            @Override
+            public String toString(){
+                return String.format("Frequency: %s; Attempts: %s; PolicyType: %s",
+                    this.getDelay(), this.getAttempts(), this.getPolicy());
+            }
+        };
         retry.setAttempts(retryAttempts);
         retry.setDelay(new Frequency(delayUnits + "(" + delay + ")"));
         retry.setPolicy(PolicyType.fromValue(retryType));
