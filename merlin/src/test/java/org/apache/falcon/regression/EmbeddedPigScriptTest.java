@@ -143,6 +143,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+            Job.Status.RUNNING);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
         ServiceResponse status =
@@ -150,6 +152,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         Assert.assertTrue(status.getMessage().contains("SUSPENDED"), "Process not suspended.");
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
         Thread.sleep(15000);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+            Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
@@ -201,7 +205,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         InstanceUtil.writeProcessElement(bundles[0], processElement);
 
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(5000);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+            Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
@@ -222,7 +227,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-        Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
@@ -246,31 +250,20 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         InstanceUtil.writeProcessElement(bundles[0], processElement);
 
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(5000);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+            Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
 
-        Job.Status status = null;
-        int counter = 100;
+        int counter = 50;
         // increase the wait for windows
         if (OSUtil.IS_WINDOWS) {
-            counter = 200;
+            counter = 100;
         }
-        for (int i = 0; i < counter; i++) {
-            status = InstanceUtil.getDefaultCoordinatorStatus(cluster,
-                Util.getProcessName(bundles[0].getProcessData()), 0);
-            if (status == Job.Status.SUCCEEDED) {
-                break;
-            }
-            Thread.sleep(30000);
-        }
-
-        Assert.assertEquals(status, Job.Status.SUCCEEDED,
-            "The job did not succeeded even in long time");
-
-        Thread.sleep(5000);
+        InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
+            .getProcessData()), Job.Status.SUCCEEDED, counter);
         r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_STATUS,
                 Util.readEntityName(bundles[0].getProcessData()));
