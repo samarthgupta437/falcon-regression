@@ -84,7 +84,7 @@ public class HCatReplicationTest extends BaseTestClass {
 
     final String dbName = "default";
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
-    int defaultTimeout = OSUtil.IS_WINDOWS ? 10 : 5;
+    int defaultTimeout = OSUtil.IS_WINDOWS ? 10 : 8;
 
     @BeforeClass(alwaysRun = true)
     public void beforeClass() throws IOException {

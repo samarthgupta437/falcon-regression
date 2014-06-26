@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.ui.pages;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -56,7 +57,7 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
     private static final String SVG_XPATH = "//*[name() = 'svg']";
     private static final String G_XPATH = "//*[name()='g']";
-    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH + G_XPATH +
+    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH +
         G_XPATH + "[not(@class='lineage-link')]";
     private static final String EDGE_XPATH = SVG_XPATH + G_XPATH + "[@class='lineage-link']" +
         "//*[name()='path']";
@@ -111,7 +112,12 @@ public class ProcessPage extends EntityPage<Process> {
             List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
-                String text = getTextContaining(block, "/");
+                String text = block.getText();
+                //needed for firefox
+                if(StringUtils.isEmpty(text)) {
+                    text = block.getAttribute("textContent");
+                }
+                Assert.assertTrue(text.contains("/"), "Expecting text to contain /: " + text);
                 String[] separate = text.split("/");
                 String name = separate[0];
                 String nominalTime = separate[1];
@@ -125,21 +131,6 @@ public class ProcessPage extends EntityPage<Process> {
             }
         }
         return map;
-    }
-
-    private String getTextContaining(WebElement element, String expected) {
-        String text = "";
-        for (int i = 0; i < 100; i++) {
-             text = element.getText();
-            if (text.contains(expected)) return text;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                logger.info("Sleep was interrupted");
-            }
-        }
-        Assert.fail(String.format("Expecting '%s' to contain '%s'", text, expected));
-        return null;
     }
 
     /**
