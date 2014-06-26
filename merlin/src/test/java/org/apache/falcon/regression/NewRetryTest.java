@@ -69,10 +69,11 @@ public class NewRetryTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseHDFSDir + "/NewRetryTest/aggregator";
 
     DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-    final static private String lateDir = "/lateDataTest/testFolders/";
+    final private String baseTestDir = baseHDFSDir + "/NewRetryTest";
+    final private String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    final private String lateDir = baseTestDir + "/lateDataTest/testFolders/";
     final private String latePath = lateDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private DateTime startDate;
     private DateTime endDate;
