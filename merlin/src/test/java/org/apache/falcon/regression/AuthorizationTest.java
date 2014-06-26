@@ -659,7 +659,7 @@ public class AuthorizationTest extends BaseTestClass {
             .getLatestBundleID(cluster, Util.readEntityName(process), ENTITY_TYPE.PROCESS);
 
         String oldProcessUser =
-            getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+            BundleUtil.getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
 
         //get old feed details
         String oldFeedBundleId = InstanceUtil
@@ -681,25 +681,40 @@ public class AuthorizationTest extends BaseTestClass {
         //new process bundle should be created by U2
         OozieUtil.verifyNewBundleCreation(cluster, oldProcessBundleId, null, process, true, false);
         String newProcessUser =
-            getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+            BundleUtil.getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
         Assert.assertEquals(oldProcessUser, newProcessUser, "User should be the same");
     }
 
-    private String getBundleUser(ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType)
-        throws OozieClientException {
-        String newProcessBundleId = InstanceUtil.getLatestBundleID(coloHelper, entityName,
-            entityType);
-        BundleJob newProcessBundlejob =
-            coloHelper.getClusterHelper().getOozieClient().getBundleJobInfo
-                (newProcessBundleId);
-        CoordinatorJob coordinatorJob = null;
-        for (CoordinatorJob coord : newProcessBundlejob.getCoordinators()) {
-            if (coord.getAppName().contains("DEFAULT")) {
-                coordinatorJob = coord;
-            }
-        }
-        Assert.assertNotNull(coordinatorJob);
-        return coordinatorJob.getUser();
+    //disabled since, falcon does not have authorization https://issues.apache
+    // .org/jira/browse/FALCON-388
+    @Test(enabled = false)
+    public void U1ScheduleFeedU2ScheduleDependantProcessU2UpdateFeed() throws Exception {
+        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String process = bundles[0].getProcessData();
+        //submit both feeds
+        bundles[0].submitClusters(prism);
+        bundles[0].submitFeeds(prism);
+        //schedule input feed by U1
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(
+                Util.URLS.SCHEDULE_URL, feed));
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+
+        //by U2 schedule process dependent on scheduled feed by U1
+        KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
+        ServiceResponse serviceResponse = prism.getProcessHelper().submitAndSchedule(Util
+                .URLS.SUBMIT_AND_SCHEDULE_URL, process, MerlinConstants.USER2_NAME);
+        AssertUtil.assertSucceeded(serviceResponse);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, process, Job.Status.RUNNING);
+
+        //update feed definition
+        String newFeed = Util.setFeedPathValue(feed,
+                baseHDFSDir + "/randomPath/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
+
+        //update feed by U2
+        serviceResponse = prism.getFeedHelper().update(feed, newFeed,
+                TimeUtil.getTimeWrtSystemTime(0), MerlinConstants.USER2_NAME);
+        AssertUtil.assertFailedWithStatus(serviceResponse, HttpStatus.SC_BAD_REQUEST,
+                "Feed scheduled by first user should not be updated by second user");
     }
 
     @AfterMethod(alwaysRun = true)
