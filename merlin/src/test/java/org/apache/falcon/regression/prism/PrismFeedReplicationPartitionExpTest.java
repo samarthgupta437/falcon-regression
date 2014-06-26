@@ -226,7 +226,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -274,7 +274,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
                 Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "${cluster.colo}", testBaseDir1 + dateTemplate);
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -371,7 +371,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null,
             testBaseDir1 + dateTemplate);
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r =
             prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
@@ -466,7 +466,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -571,7 +571,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
         //clean target if old data exists
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         AssertUtil.assertFailed(r, "Submission of feed should have failed.");
@@ -627,7 +627,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}");
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -734,7 +734,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}", testBaseDir1 + dateTemplate);
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -817,7 +817,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}", testBaseDir4 + dateTemplate + "/");
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -911,7 +911,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);

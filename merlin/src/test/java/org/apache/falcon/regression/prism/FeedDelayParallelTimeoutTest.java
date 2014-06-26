@@ -114,7 +114,7 @@ public class FeedDelayParallelTimeoutTest extends BaseTestClass {
         feedOutput01 = Util.setFeedProperty(feedOutput01, "timeout", "minutes(35)");
         feedOutput01 = Util.setFeedProperty(feedOutput01, "parallel", "3");
 
-        logger.info(feedOutput01);
+        logger.info("feedOutput01: " + Util.prettyPrintXml(feedOutput01));
         prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedOutput01);
     }

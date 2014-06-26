@@ -389,7 +389,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            logger.info("cluster to be submitted: " + i + "  " + bundles[0].getClusters().get(i));
+            logger.info("cluster to be submitted: " + i + "  "
+                + Util.prettyPrintXml(bundles[0].getClusters().get(i)));
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(5000);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());

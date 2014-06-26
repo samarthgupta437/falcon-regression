@@ -154,7 +154,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(5);
 
-        logger.info("process: " + bundles[0].getProcessData());
+        logger.info("process: " + Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);

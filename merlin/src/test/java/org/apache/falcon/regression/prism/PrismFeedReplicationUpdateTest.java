@@ -133,7 +133,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "UK/${cluster.colo}");
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
         Thread.sleep(10000);
@@ -144,7 +144,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //change feed location path
         feed = InstanceUtil.setFeedFilePath(feed, alternativeInputPath);
 
-        logger.info("updated feed: " + feed);
+        logger.info("updated feed: " + Util.prettyPrintXml(feed));
 
         //update feed
         prism.getFeedHelper().update(feed, feed);
@@ -174,11 +174,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
         bundles[0].setCLusterColo(cluster1Colo);
-        logger.info("cluster bundles[0]: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundles[0]: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         bundles[1].setCLusterColo(cluster2Colo);
-        logger.info("cluster bundles[1]: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundles[1]: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         bundles[2].setCLusterColo(cluster3Colo);
-        logger.info("cluster bundles[2]: " + bundles[2].getClusters().get(0));
+        logger.info("cluster bundles[2]: " + Util.prettyPrintXml(bundles[2].getClusters().get(0)));
 
         //submit 3 clusters
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
@@ -260,9 +260,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
 
         //submit and schedule feeds
-        logger.info("feed01: " + feed01);
-        logger.info("feed02: " + feed02);
-        logger.info("outputFeed: " + outputFeed);
+        logger.info("feed01: " + Util.prettyPrintXml(feed01));
+        logger.info("feed02: " + Util.prettyPrintXml(feed02));
+        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
@@ -292,7 +292,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readDatasetName(feed02));
 
         //submit and schedule process
-        logger.info("process: " + process);
+        logger.info("process: " + Util.prettyPrintXml(process));
 
         prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
@@ -320,7 +320,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         }
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
-        logger.info("updated feed: " + feed01);
+        logger.info("updated feed: " + Util.prettyPrintXml(feed01));
         prism.getFeedHelper().update(feed01, feed01);
     }
 }

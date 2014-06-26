@@ -98,9 +98,9 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
-            logger.info(bundles[0].getDataSets().get(i));
+            logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
-        logger.info(bundles[0].getProcessData());
+        logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
