@@ -90,6 +90,14 @@ public class NewRetryTest extends BaseTestClass {
         startDate = new DateTime(DateTimeZone.UTC).plusMinutes(1);
         endDate = new DateTime(DateTimeZone.UTC).plusMinutes(2);
         bundles[0].setProcessValidity(startDate, endDate);
+
+        String feed =
+            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
+        feed = Util.insertLateFeedValue(feed, "8", "minutes");
+        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        bundles[0].getDataSets().add(feed);
+
+        bundles[0].submitClusters(prism);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -101,13 +109,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
     public void testRetryInProcessZeroAttemptUpdate(String retryType, int delay, String delayUnits,
                                                     int retryAttempts) throws Exception {
-
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -162,13 +163,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = true)
     public void testRetryInProcessLowerAttemptUpdate(String retryType, int delay, String delayUnits,
                                                      int retryAttempts) throws Exception {
-
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -230,14 +224,6 @@ public class NewRetryTest extends BaseTestClass {
                                                                String delayUnits, int retryAttempts)
         throws Exception {
 
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-
-        bundles[0].submitClusters(prism);
-
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
@@ -293,13 +279,6 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInProcessLowerBoundaryAttemptUpdate(String retryType, int delay,
                                                              String delayUnits, int retryAttempts)
         throws Exception {
-
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -358,13 +337,6 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInProcessUpdate(String retryType, int delay, String delayUnits,
                                          int retryAttempts) throws Exception {
 
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].submitClusters(prism);
-
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
@@ -416,13 +388,6 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInProcessHigherDelayUpdate(String retryType, int delay, String delayUnits,
                                                     int retryAttempts) throws Exception {
 
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].submitClusters(prism);
-
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
@@ -473,13 +438,6 @@ public class NewRetryTest extends BaseTestClass {
     @Test(dataProvider = "DP", groups = {"0.2.2", "retry"}, enabled = false)
     public void testRetryInProcessLowerDelayUpdate(String retryType, int delay, String delayUnits,
                                                    int retryAttempts) throws Exception {
-
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(
@@ -538,13 +496,6 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInProcessZeroDelayUpdate(String retryType, int delay, String delayUnits,
                                                   int retryAttempts) throws Exception {
 
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
-        bundles[0].submitClusters(prism);
-
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
         }
@@ -598,14 +549,7 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInSimpleFailureCase(String retryType, int delay, String delayUnits,
                                              int retryAttempts) throws Exception {
 
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
-
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -645,14 +589,7 @@ public class NewRetryTest extends BaseTestClass {
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/hh:mm");
 
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
-
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -708,14 +645,7 @@ public class NewRetryTest extends BaseTestClass {
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/hh:mm");
 
-        String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
-        feed = Util.insertLateFeedValue(feed, "8", "minutes");
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        bundles[0].getDataSets().add(feed);
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
-
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -775,8 +705,6 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
         bundles[0].getDataSets().add(feed);
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
-
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -877,7 +805,6 @@ public class NewRetryTest extends BaseTestClass {
 
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
 
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
@@ -958,7 +885,6 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].getDataSets().add(feed);
 
         bundles[0].setRetry(getRetry(delay, delayUnits, retryType, retryAttempts));
-        bundles[0].submitClusters(prism);
 
         for (String data : bundles[0].getDataSets()) {
             AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, data));
