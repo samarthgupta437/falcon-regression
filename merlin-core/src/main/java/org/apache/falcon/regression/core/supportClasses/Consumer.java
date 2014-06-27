@@ -91,6 +91,7 @@ public class Consumer extends Thread {
         By default this call is blocking, which means it will wait
         for a message to arrive on the queue.*/
         try {
+            logger.info("Starting to receive messages.");
             while (true) {
                 Message m = consumer.receive();
                 logger.info(m);
@@ -106,6 +107,7 @@ public class Consumer extends Thread {
                 }
             }
         } finally {
+            logger.info("Stopping to receive messages.");
             connection.close();
         }
     }

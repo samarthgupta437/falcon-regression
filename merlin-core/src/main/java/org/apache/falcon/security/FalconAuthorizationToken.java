@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FalconAuthorizationToken {
     private static final String AUTH_URL = "api/options";
@@ -35,9 +35,8 @@ public class FalconAuthorizationToken {
     private static final Logger LOGGER = Logger.getLogger(FalconAuthorizationToken.class);
 
     // Use a hashmap so that we can cache the tokens.
-    private final ThreadLocal<HashMap<String, AuthenticatedURL.Token>> tokens =
-        new ThreadLocal<HashMap<String,
-            AuthenticatedURL.Token>>();
+    private final ConcurrentHashMap<String, AuthenticatedURL.Token> tokens =
+        new ConcurrentHashMap<String, AuthenticatedURL.Token>();
 
     private FalconAuthorizationToken() {
     }
@@ -56,11 +55,8 @@ public class FalconAuthorizationToken {
         String key = getKey(user, protocol, host, port);
 
         // initialize a hash map if its null.
-        if (null == INSTANCE.tokens.get()) {
-            INSTANCE.tokens.set(new HashMap<String, AuthenticatedURL.Token>());
-        }
         LOGGER.info("Authorization Token: " + currentToken.toString());
-        INSTANCE.tokens.get().put(key, currentToken);
+        INSTANCE.tokens.put(key, currentToken);
     }
 
     public static AuthenticatedURL.Token getToken(String user, String protocol, String host,
@@ -70,11 +66,10 @@ public class FalconAuthorizationToken {
 
         /*if the tokens are null or if token is not found then we will go ahead and authenticate
         or if we are asked to overwrite*/
-        if ((null == INSTANCE.tokens.get()) || (!INSTANCE.tokens.get().containsKey(key)) ||
-            overWrite) {
+        if (!INSTANCE.tokens.containsKey(key) || overWrite) {
             authenticate(user, protocol, host, port);
         }
-        return INSTANCE.tokens.get().get(key);
+        return INSTANCE.tokens.get(key);
     }
 
     public static AuthenticatedURL.Token getToken(String user, String protocol, String host,
