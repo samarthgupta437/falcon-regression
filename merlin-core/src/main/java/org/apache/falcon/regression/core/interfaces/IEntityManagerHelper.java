@@ -37,7 +37,6 @@ import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.AuthOozieClient;
-import org.apache.oozie.client.OozieClient;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
@@ -303,7 +302,7 @@ public abstract class IEntityManagerHelper {
     public ServiceResponse submitAndSchedule(String url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("Submitting " + getEntityType() + ": \n" + Util.prettyPrintXml(data));
-        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
+        return Util.sendRequest(createUrl(url, getEntityType()), "post", data, user);
     }
 
     public ServiceResponse submitAndSchedule(URLS url, String data)
