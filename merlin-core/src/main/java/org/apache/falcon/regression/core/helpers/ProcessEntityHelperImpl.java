@@ -77,12 +77,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
             "get", user);
     }
 
-    public ServiceResponse schedule(String url, String data, String user)
-        throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), readEntityName(data) + colo),
-            "post", user);
-    }
-
     public ServiceResponse submitAndSchedule(String url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("Submitting process: " + Util.prettyPrintXml(data));

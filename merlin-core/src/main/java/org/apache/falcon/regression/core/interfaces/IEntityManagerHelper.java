@@ -288,8 +288,11 @@ public abstract class IEntityManagerHelper {
         return schedule(url, data, null);
     }
 
-    public abstract ServiceResponse schedule(String url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse schedule(String url, String data, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
+            "post", user);
+    }
 
     public ServiceResponse submitAndSchedule(String url, String data)
         throws IOException, URISyntaxException, AuthenticationException {
