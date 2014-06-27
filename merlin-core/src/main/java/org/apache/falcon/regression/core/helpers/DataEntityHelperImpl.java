@@ -122,11 +122,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
             Util.URLS.UPDATE.getValue() + "/" + getEntityType(), user);
     }
 
-    public ServiceResponse update(String oldEntity, String newEntity)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return update(oldEntity, newEntity, null);
-    }
-
     @Override
     public String toString(Object object) throws JAXBException {
         Feed processObject = (Feed) object;
