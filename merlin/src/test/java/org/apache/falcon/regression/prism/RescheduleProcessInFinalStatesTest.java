@@ -118,7 +118,6 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     public void rescheduleSucceeded() throws Exception {
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
-        Thread.sleep(20000);
 
         //delete the process
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
@@ -133,17 +132,14 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         r = prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(20000);
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
-
     }
 
     @Test(enabled = false)
     public void rescheduleFailed() throws Exception {
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
-        Thread.sleep(20000);
 
         //delete the process
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
@@ -158,24 +154,18 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         r = prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(20000);
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 
     @Test(enabled = false)
     public void rescheduleDWE() throws Exception {
-        Thread.sleep(20000);
-
         prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z");
-
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.DONEWITHERROR,
                 20);
-
-        Thread.sleep(20000);
 
         //delete the process
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
@@ -190,23 +180,15 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         r = prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(20000);
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
-
     }
 
     @Test(enabled = false)
     public void rescheduleKilled() throws Exception {
-        Thread.sleep(15000);
-
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-
-
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.KILLED, 20);
-
-        Thread.sleep(20000);
 
         //check ... get definition should return process not found
         ServiceResponse r = prism.getProcessHelper()
@@ -218,7 +200,6 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         r = prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(20000);
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }

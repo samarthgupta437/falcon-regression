@@ -325,7 +325,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), feedName, "REPLICATION"), 1);
 
-        //replication should not start
+        //replication should not start even after time
         Thread.sleep(60000);
         ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
             "?start=" + startTime + "&end=" + endTime);

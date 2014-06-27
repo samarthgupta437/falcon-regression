@@ -92,8 +92,6 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
-        Thread.sleep(20000);
-
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate("2010-01-02T00:00Z"),
             TimeUtil.oozieDateToDate("2010-01-02T01:15Z"), inputPath + "/input1/",
@@ -127,8 +125,6 @@ public class OptionalInputTest extends BaseTestClass {
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
-
-        Thread.sleep(20000);
 
         logger.info("instanceShouldStillBeInWaitingState");
         InstanceUtil
@@ -174,7 +170,6 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
-        Thread.sleep(20000);
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
@@ -226,7 +221,6 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(prism);
 
-        Thread.sleep(20000);
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
@@ -257,8 +251,6 @@ public class OptionalInputTest extends BaseTestClass {
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
-
-        Thread.sleep(20000);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -291,7 +283,6 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
 
-        Thread.sleep(20000);
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
@@ -317,8 +308,6 @@ public class OptionalInputTest extends BaseTestClass {
 
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
         //from now on ... it should wait of input0 also
-
-        Thread.sleep(60000);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -362,7 +351,6 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
 
-        Thread.sleep(20000);
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
@@ -393,8 +381,6 @@ public class OptionalInputTest extends BaseTestClass {
 
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
         //from now on ... it should wait of input0 also
-
-        Thread.sleep(30000);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,

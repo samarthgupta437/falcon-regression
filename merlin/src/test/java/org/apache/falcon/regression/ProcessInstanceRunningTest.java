@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -114,9 +115,11 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
-        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
+            bundles[0].getProcessData()));
         Thread.sleep(15000);
-        prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().resume(URLS.RESUME_URL,
+            bundles[0].getProcessData()));
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
@@ -133,7 +136,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
-        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
+            bundles[0].getProcessData()));
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
@@ -149,7 +153,6 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
@@ -170,7 +173,6 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void getKilledProcessInstance() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-        Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
@@ -183,18 +185,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void getSucceededProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
         bundles[0].submitAndScheduleBundle(prism);
-        Job.Status status = null;
-        for (int i = 0; i < 45; i++) {
-            status = InstanceUtil.getDefaultCoordinatorStatus(cluster,
-                Util.getProcessName(bundles[0].getProcessData()), 0);
-            if (status == Job.Status.SUCCEEDED || status == Job.Status.KILLED)
-                break;
-            Thread.sleep(45000);
-        }
-        Assert.assertNotNull(status);
-        Assert.assertEquals(status, Job.Status.SUCCEEDED,
-            "The job did not succeeded even in long time");
-
+        InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
+            .getProcessData()), Job.Status.SUCCEEDED, 20);
         ProcessInstancesResult result = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
