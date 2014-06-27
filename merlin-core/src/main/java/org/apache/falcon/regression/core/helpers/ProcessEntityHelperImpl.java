@@ -61,33 +61,28 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     public ServiceResponse delete(String url, String data, String user)
         throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        url += "/process/" + readEntityName(data) + colo;
-        return Util.sendRequest(url, "delete", user);
+        return Util.sendRequest(url + "/process/" + readEntityName(data) + colo, "delete", user);
     }
 
     public ServiceResponse getEntityDefinition(String url, String data, String user)
         throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        url += "/process/" + readEntityName(data);
-        return Util.sendRequest(url, "get", user);
+        return Util.sendRequest(url + "/process/" + readEntityName(data), "get", user);
     }
 
     public ServiceResponse getStatus(String url, String data, String user)
         throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        url += "/process/" + readEntityName(data) + colo;
-        return Util.sendRequest(url, "get", user);
+        return Util.sendRequest(url + "/process/" + readEntityName(data) + colo, "get", user);
     }
 
     public ServiceResponse schedule(String url, String data, String user)
         throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        url += "/process/" + readEntityName(data) + colo;
-        return Util.sendRequest(url, "post", user);
+        return Util.sendRequest(url + "/process/" + readEntityName(data) + colo, "post", user);
     }
 
     public ServiceResponse submitAndSchedule(String url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("Submitting process: " + Util.prettyPrintXml(data));
-        url += "/process";
-        return Util.sendRequest(url, "post", data, user);
+        return Util.sendRequest(url + "/process", "post", data, user);
     }
 
     public ServiceResponse listEntities(Util.URLS url, String user)
@@ -100,8 +95,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     public ServiceResponse submitEntity(String url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("Submitting process: " + Util.prettyPrintXml(data));
-        url += "/process";
-        return Util.sendRequest(url, "post", data, user);
+        return Util.sendRequest(url + "/process", "post", data, user);
     }
 
     public ServiceResponse suspend(String url, String data, String user)
