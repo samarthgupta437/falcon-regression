@@ -91,13 +91,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-    public ServiceResponse listEntities(Util.URLS url, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        logger.info("fetching cluster list");
-        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo),
-            "get", null, user);
-    }
-
     public ServiceResponse submitEntity(String url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");

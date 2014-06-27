@@ -243,6 +243,8 @@ public abstract class IEntityManagerHelper {
             ".principal", "none");
     }
 
+    public abstract String getEntityType();
+
     protected String createUrl(String... parts) {
         return StringUtils.join("/", parts);
     }
@@ -252,8 +254,12 @@ public abstract class IEntityManagerHelper {
         return listEntities(url, null);
     }
 
-    public abstract ServiceResponse listEntities(URLS url, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse listEntities(Util.URLS url, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        logger.info("fetching " + getEntityType() +" list");
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo),
+            "get", null, user);
+    }
 
     public ServiceResponse submitEntity(String url, String data)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -294,8 +300,6 @@ public abstract class IEntityManagerHelper {
 
     public abstract ServiceResponse submitAndSchedule(URLS url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException;
-
-    public abstract String getEntityType();
 
     private String getUrlPrefixPart(URLS url) {
         return this.hostname + url.getValue() + "/" + getEntityType() + "/";
