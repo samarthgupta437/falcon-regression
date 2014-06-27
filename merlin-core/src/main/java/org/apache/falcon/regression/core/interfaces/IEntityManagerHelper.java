@@ -512,11 +512,12 @@ public abstract class IEntityManagerHelper {
         return Util.sendRequest(url + colo, "post", newEntity, user);
     }
 
-    public abstract ServiceResponse update(String oldEntity,
-                                           String newEntity,
-                                           String updateTime,
-                                           String user)
-        throws IOException, JAXBException, URISyntaxException, AuthenticationException;
+    public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
+                                  String user)
+        throws IOException, JAXBException, URISyntaxException, AuthenticationException {
+        return updateRequestHelper(oldEntity, newEntity, updateTime,
+            Util.URLS.UPDATE.getValue() + "/" + getEntityType(), user);
+    }
 
     public ServiceResponse updateRequestHelper(String oldEntity,
                                                String newEntity,

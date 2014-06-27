@@ -107,14 +107,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
-                                  String user)
-        throws IOException, JAXBException, URISyntaxException, AuthenticationException {
-        return updateRequestHelper(oldEntity, newEntity, updateTime,
-            Util.URLS.UPDATE.getValue() + "/" + getEntityType(), user);
-    }
-
-    @Override
     public String toString(Object object) throws JAXBException {
         Feed processObject = (Feed) object;
         JAXBContext context = JAXBContext.newInstance(Feed.class);

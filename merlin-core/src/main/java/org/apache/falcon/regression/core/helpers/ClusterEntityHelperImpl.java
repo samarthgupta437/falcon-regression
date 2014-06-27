@@ -124,11 +124,9 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse update(String oldEntity,
-                                  String newEntity,
-                                  String updateTime, String user)
-        throws IOException, JAXBException {
-        return null;
+    public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
+                                  String user) throws IOException, JAXBException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

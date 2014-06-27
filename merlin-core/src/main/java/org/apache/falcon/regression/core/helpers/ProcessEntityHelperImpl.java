@@ -116,14 +116,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
-                                  String user)
-        throws IOException, JAXBException, URISyntaxException, AuthenticationException {
-        return updateRequestHelper(oldEntity, newEntity,
-            updateTime, URLS.PROCESS_UPDATE.getValue(), user);
-    }
-
-    @Override
     public String toString(Object object) throws JAXBException {
         Process processObject = (Process) object;
         JAXBContext context = JAXBContext.newInstance(Process.class);
