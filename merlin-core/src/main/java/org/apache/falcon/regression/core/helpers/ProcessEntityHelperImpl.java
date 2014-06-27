@@ -151,12 +151,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse schedule(URLS scheduleUrl, String processData, String user)
-        throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
-    }
-
-    @Override
     public ServiceResponse delete(URLS deleteUrl, String data, String user)
         throws IOException, URISyntaxException, JAXBException, AuthenticationException {
         return delete(this.hostname + deleteUrl.getValue(), data, user);

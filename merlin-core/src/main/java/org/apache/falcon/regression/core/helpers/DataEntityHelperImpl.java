@@ -68,12 +68,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
-    }
-
-    @Override
     public ServiceResponse delete(Util.URLS deleteUrl, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return delete(this.hostname + deleteUrl.getValue(), data, user);

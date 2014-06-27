@@ -415,8 +415,10 @@ public abstract class IEntityManagerHelper {
         return schedule(scheduleUrl, processData, null);
     }
 
-    public abstract ServiceResponse schedule(URLS scheduleUrl, String processData, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
+    }
 
     public ServiceResponse delete(URLS deleteUrl, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {

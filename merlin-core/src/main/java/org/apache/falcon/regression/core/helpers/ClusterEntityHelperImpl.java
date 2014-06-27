@@ -92,12 +92,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse schedule(URLS scheduleUrl, String processData, String user) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public ServiceResponse delete(URLS deleteUrl, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         // TODO Auto-generated method stub
