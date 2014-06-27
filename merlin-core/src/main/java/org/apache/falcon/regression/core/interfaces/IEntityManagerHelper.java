@@ -362,8 +362,10 @@ public abstract class IEntityManagerHelper {
         return resume(url, data, null);
     }
 
-    public abstract ServiceResponse resume(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse resume(URLS url, String data, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return resume(this.hostname + url.getValue(), data, user);
+    }
 
     public ServiceResponse getStatus(String url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {

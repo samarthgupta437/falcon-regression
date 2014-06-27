@@ -123,12 +123,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse resume(Util.URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return resume(this.hostname + url.getValue(), data, user);
-    }
-
-    @Override
     public ProcessInstancesResult getRunningInstance(
         Util.URLS processRunningInstance, String name, String user)
         throws IOException, URISyntaxException, AuthenticationException {
