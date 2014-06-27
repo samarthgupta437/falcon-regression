@@ -505,11 +505,11 @@ public abstract class IEntityManagerHelper {
         return update(oldEntity, newEntity, null);
     }
 
-    public ServiceResponse update(String oldEntity,
-                                  String newEntity,
-                                  String updateTime)
-        throws IOException, JAXBException, URISyntaxException, AuthenticationException {
-        return update(oldEntity, newEntity, updateTime, null);
+    public ServiceResponse update(String oldEntity, String newEntity, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        String url = createUrl(this.hostname + Util.URLS.UPDATE.getValue(), getEntityType(),
+            Util.readDatasetName(oldEntity));
+        return Util.sendRequest(url + colo, "post", newEntity, user);
     }
 
     public abstract ServiceResponse update(String oldEntity,

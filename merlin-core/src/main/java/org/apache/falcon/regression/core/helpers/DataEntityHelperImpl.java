@@ -107,14 +107,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse update(String oldEntity, String newEntity, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        String url = createUrl(this.hostname + Util.URLS.UPDATE.getValue(), getEntityType(),
-            Util.readDatasetName(oldEntity));
-        return Util.sendRequest(url + colo, "post", newEntity, user);
-    }
-
-    @Override
     public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
                                   String user)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
