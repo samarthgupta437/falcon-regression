@@ -92,12 +92,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
             "post", user);
     }
 
-    public ServiceResponse submitAndSchedule(String url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        logger.info("Submitting feed: \n" + Util.prettyPrintXml(data));
-        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
-    }
-
     public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         return submitAndSchedule(this.hostname + url.getValue(), data, user);

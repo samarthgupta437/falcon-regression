@@ -299,8 +299,11 @@ public abstract class IEntityManagerHelper {
         return submitAndSchedule(url, data, null);
     }
 
-    public abstract ServiceResponse submitAndSchedule(String url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse submitAndSchedule(String url, String data, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        logger.info("Submitting " + getEntityType() + ": \n" + Util.prettyPrintXml(data));
+        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
+    }
 
     public ServiceResponse submitAndSchedule(URLS url, String data)
         throws IOException, URISyntaxException, AuthenticationException {
