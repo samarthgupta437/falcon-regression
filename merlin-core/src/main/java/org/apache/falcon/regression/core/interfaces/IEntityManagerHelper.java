@@ -405,9 +405,10 @@ public abstract class IEntityManagerHelper {
         return getEntityDefinition(url, data, null);
     }
 
-    public abstract ServiceResponse getEntityDefinition(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
-
+    public ServiceResponse getEntityDefinition(URLS url, String data, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return getEntityDefinition(this.hostname + url.getValue(), data, user);
+    }
 
     public abstract void validateResponse(String response, APIResult.Status expectedResponse,
                                           String filename) throws JAXBException, IOException

@@ -161,12 +161,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return getEntityDefinition(this.hostname + url.getValue(), data, user);
-    }
-
-    @Override
     public ServiceResponse update(String oldEntity, String newEntity, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

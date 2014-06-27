@@ -196,12 +196,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(URLS getUrl, String data, String user)
-        throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        return getEntityDefinition(this.hostname + getUrl.getValue(), data, user);
-    }
-
-    @Override
     public ServiceResponse update(String oldEntity, String newEntity, String user)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + URLS.PROCESS_UPDATE.getValue(),
