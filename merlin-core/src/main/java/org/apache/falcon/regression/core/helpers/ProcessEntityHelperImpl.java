@@ -63,23 +63,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.getProcessName(entity);
     }
 
-    public void validateResponse(String response, APIResult.Status expectedResponse,
-                                 String filename) throws JAXBException, IOException {
-        JAXBContext jc = JAXBContext.newInstance(APIResult.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        APIResult result = (APIResult) u.unmarshal(new InputSource(new StringReader(response)));
-        Assert.assertEquals(expectedResponse, result.getStatus(),
-            "Status message does not match with expected one!");
-        if (expectedResponse.equals(APIResult.Status.FAILED)) {
-            //now to check for the correct error message!
-            Assert.assertEquals(result.getMessage(), Util.getExpectedErrorMessage(filename),
-                "Error message does not match in failure case!");
-        } else {
-            Assert.assertEquals(result.getMessage(), "Validate successful",
-                "validation success message does not match in valid case!");
-        }
-    }
-
     public String readEntityName(String data) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();

@@ -67,27 +67,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return suspend(this.hostname + url.getValue(), data, user);
     }
 
-    public void validateResponse(String response, APIResult.Status expectedResponse,
-                                 String filename) throws JAXBException, IOException {
-        JAXBContext jc = JAXBContext.newInstance(APIResult.class);
-
-        Unmarshaller u = jc.createUnmarshaller();
-
-        APIResult result = (APIResult) u.unmarshal(new InputSource(new StringReader(response)));
-
-        Assert.assertEquals(expectedResponse, result.getStatus(),
-            "Status message does not match with expected one!");
-
-        if (expectedResponse.equals(APIResult.Status.FAILED)) {
-            //now to check for the correct error message!
-            Assert.assertEquals(result.getMessage(), Util.getExpectedErrorMessage(filename),
-                "Error message does not match in failure case!");
-        } else {
-            Assert.assertEquals(result.getMessage(), "Validate successful",
-                "validation success message does not match in valid case!");
-        }
-    }
-
     @Override
     public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {

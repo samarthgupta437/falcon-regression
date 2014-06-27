@@ -410,10 +410,6 @@ public abstract class IEntityManagerHelper {
         return getEntityDefinition(this.hostname + url.getValue(), data, user);
     }
 
-    public abstract void validateResponse(String response, APIResult.Status expectedResponse,
-                                          String filename) throws JAXBException, IOException
-        ;
-
     public ServiceResponse schedule(URLS scheduleUrl, String processData)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return schedule(scheduleUrl, processData, null);

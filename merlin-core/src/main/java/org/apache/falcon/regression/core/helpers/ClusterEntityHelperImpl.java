@@ -91,11 +91,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void validateResponse(String response, APIResult.Status expectedResponse,
-                                 String filename) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
     public ServiceResponse schedule(URLS scheduleUrl, String processData, String user) {
         // TODO Auto-generated method stub
