@@ -142,12 +142,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse submitEntity(Util.URLS url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        return submitEntity(this.hostname + url.getValue(), data, user);
-    }
-
-    @Override
     public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return schedule(this.hostname + scheduleUrl.getValue(), processData, user);

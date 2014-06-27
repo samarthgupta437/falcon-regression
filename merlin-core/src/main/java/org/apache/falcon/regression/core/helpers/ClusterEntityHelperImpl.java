@@ -105,12 +105,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse submitEntity(Util.URLS url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        return submitEntity(this.hostname + url.getValue(), data, user);
-    }
-
-    @Override
     public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not supported yet.");

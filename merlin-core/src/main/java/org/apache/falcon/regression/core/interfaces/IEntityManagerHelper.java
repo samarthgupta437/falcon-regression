@@ -277,8 +277,11 @@ public abstract class IEntityManagerHelper {
         return submitEntity(url, data, null);
     }
 
-    public abstract ServiceResponse submitEntity(URLS url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse submitEntity(Util.URLS url, String data, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        return submitEntity(this.hostname + url.getValue(), data, user);
+    }
+
 
     public ServiceResponse schedule(String url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
