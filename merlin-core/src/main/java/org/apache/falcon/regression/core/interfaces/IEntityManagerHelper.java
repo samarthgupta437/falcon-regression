@@ -266,8 +266,11 @@ public abstract class IEntityManagerHelper {
         return submitEntity(url, data, null);
     }
 
-    public abstract ServiceResponse submitEntity(String url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse submitEntity(String url, String data, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        logger.info("Submitting " + getEntityType() +  ": \n" + Util.prettyPrintXml(data));
+        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
+    }
 
     public ServiceResponse submitEntity(URLS url, String data)
         throws IOException, URISyntaxException, AuthenticationException {

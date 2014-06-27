@@ -91,13 +91,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return null;
     }
 
-    public ServiceResponse submitEntity(String url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        logger.info("Submitting cluster: \n" + Util.prettyPrintXml(data));
-        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
-    }
-
     public ServiceResponse suspend(String url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
