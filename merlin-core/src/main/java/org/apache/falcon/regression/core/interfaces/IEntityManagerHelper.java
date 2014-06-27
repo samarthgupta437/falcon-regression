@@ -476,9 +476,14 @@ public abstract class IEntityManagerHelper {
 
     }
 
-    public abstract ProcessInstancesResult getProcessInstanceSuspend(
-        String readEntityName, String params, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ProcessInstancesResult getProcessInstanceSuspend(
+        String entityName, String params, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue(),
+            getEntityType(), entityName, "");
+        return (ProcessInstancesResult) InstanceUtil
+            .createAndsendRequestProcessInstance(url, params, allColo, user);
+    }
 
     public abstract String list();
 

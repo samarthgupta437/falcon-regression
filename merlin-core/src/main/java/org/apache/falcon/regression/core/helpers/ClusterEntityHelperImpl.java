@@ -107,8 +107,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     public ProcessInstancesResult getProcessInstanceSuspend(
         String readEntityName, String params, String user) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public String list() {
