@@ -102,14 +102,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String getDependencies(String entityName) {
-
-        return Util.executeCommandGetOutput(
-            BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type feed -name " +
-                entityName);
-    }
-
-    @Override
     public List<String> getArchiveInfo() throws IOException, JSchException {
         return Util.getDataSetArchiveInfo(this);
     }

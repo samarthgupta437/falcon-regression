@@ -490,7 +490,11 @@ public abstract class IEntityManagerHelper {
             BASE_COMMAND + " entity -list -url " + this.hostname + " -type " + getEntityType());
     }
 
-    public abstract String getDependencies(String entityName);
+    public String getDependencies(String entityName) {
+        return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type " +
+                getEntityType() + " -name " + entityName);
+    }
 
     public abstract List<String> getArchiveInfo() throws IOException, JSchException;
 
