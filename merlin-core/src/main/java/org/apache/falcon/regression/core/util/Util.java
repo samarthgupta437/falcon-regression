@@ -1040,6 +1040,7 @@ public class Util {
         VALIDATE_URL("/api/entities/validate"),
         SUSPEND_URL("/api/entities/suspend"),
         RESUME_URL("/api/entities/resume"),
+        UPDATE("/api/entities/update"),
         STATUS_URL("/api/entities/status"),
         SUBMIT_AND_SCHEDULE_URL("/api/entities/submitAndSchedule"),
         INSTANCE_RUNNING("/api/instance/running"),

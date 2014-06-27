@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.xml.sax.InputSource;
@@ -58,15 +59,20 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return "feed";
     }
 
+    public String createUrl(String... parts) {
+        return StringUtils.join("/", parts);
+    }
 
     public ServiceResponse delete(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "delete", user);
+        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
+            "delete", user);
     }
 
     public ServiceResponse getEntityDefinition(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data), "get", user);
+        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data)),
+            "get", user);
     }
 
     public ServiceResponse getEntityDefinition(Util.URLS url, String data, String user)
@@ -76,7 +82,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     public ServiceResponse getStatus(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "get", user);
+        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
+            "get", user);
     }
 
     public ServiceResponse getStatus(Util.URLS url, String data, String user)
@@ -86,19 +93,20 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     public ServiceResponse resume(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "post", user);
+        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
+            "post", user);
     }
 
     public ServiceResponse schedule(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        url += "/feed/" + Util.readDatasetName(data) + colo;
-        return Util.sendRequest(url, "post", user);
+        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
+            "post", user);
     }
 
     public ServiceResponse submitAndSchedule(String url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("Submitting feed: \n" + Util.prettyPrintXml(data));
-        return Util.sendRequest(url + "/feed" + colo, "post", data, user);
+        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
     }
 
     public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)
@@ -109,7 +117,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     public ServiceResponse listEntities(Util.URLS url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("fetching feed list");
-        return Util.sendRequest(this.hostname + url.getValue() + "/feed" + colo,
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo),
             "get", null, user);
     }
 
@@ -117,13 +125,13 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         throws IOException, URISyntaxException, AuthenticationException {
 
         logger.info("Submitting feed: \n" + Util.prettyPrintXml(data));
-        url += "/feed" + colo;
-        return Util.sendRequest(url, "post", data, user);
+        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
     }
 
     public ServiceResponse suspend(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(url + "/feed/" + Util.readDatasetName(data) + colo, "post", user);
+        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
+            "post", user);
     }
 
     public ServiceResponse suspend(Util.URLS url, String data, String user)
@@ -180,29 +188,28 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     public ProcessInstancesResult getRunningInstance(
         Util.URLS processRunningInstance, String name, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        String url = this.hostname + processRunningInstance.getValue() + "/feed/" + name + allColo;
+        String url = createUrl(this.hostname + processRunningInstance.getValue(), getEntityType(),
+            name + allColo);
         return (ProcessInstancesResult) InstanceUtil.sendRequestProcessInstance
             (url, user);
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceStatus(
-        String EntityName, String params, String user)
+        String entityName, String params, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        String url =
-            this.hostname + Util.URLS.INSTANCE_STATUS.getValue() + "/" + "feed/" + EntityName +
-                "/";
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_STATUS.getValue(),
+            getEntityType(), entityName, "");
         return (ProcessInstancesResult) InstanceUtil
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceSuspend(
-        String EntityName, String params, String user)
+        String entityName, String params, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        String url =
-            this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue() + "/" + "feed/" + EntityName +
-                "/";
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue(),
+            getEntityType(), entityName, "");
         return (ProcessInstancesResult) InstanceUtil
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
@@ -213,12 +220,11 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
 
-    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params,
+    public ProcessInstancesResult getProcessInstanceResume(String entityName, String params,
                                                            String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        String url =
-            this.hostname + Util.URLS.INSTANCE_RESUME.getValue() + "/" + "feed/" + EntityName +
-                "/";
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_RESUME.getValue(),
+            getEntityType(), entityName, "");
         return (ProcessInstancesResult) InstanceUtil
             .createAndsendRequestProcessInstance(url, params,
                 allColo, user);
@@ -228,31 +234,27 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     public InstancesSummaryResult getInstanceSummary(String entityName,
                                                      String params
     ) throws IOException, URISyntaxException, AuthenticationException {
-        String url =
-            this.hostname + Util.URLS.INSTANCE_SUMMARY.getValue() + "/" + "feed/" +
-                entityName +
-                "/";
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_SUMMARY.getValue(),
+            getEntityType(), entityName, "");
         return ((InstancesSummaryResult) InstanceUtil
             .createAndsendRequestProcessInstance(url, params,
                 allColo, null));
     }
 
-    public ProcessInstancesResult getProcessInstanceKill(String EntityName, String params,
+    public ProcessInstancesResult getProcessInstanceKill(String entityName, String params,
                                                          String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        String url =
-            this.hostname + Util.URLS.INSTANCE_KILL.getValue() + "/" + "feed/" + EntityName +
-                "/";
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_KILL.getValue(), getEntityType(),
+            entityName, "");
         return (ProcessInstancesResult) InstanceUtil
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params,
+    public ProcessInstancesResult getProcessInstanceRerun(String entityName, String params,
                                                           String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        String url =
-            this.hostname + Util.URLS.INSTANCE_RERUN.getValue() + "/" + "feed/" + EntityName +
-                "/";
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_RERUN.getValue(), getEntityType(),
+            entityName, "");
         return (ProcessInstancesResult) InstanceUtil
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
@@ -278,8 +280,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public ServiceResponse update(String oldEntity, String newEntity, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        String url = this.hostname + Util.URLS.FEED_UPDATE.getValue() + "/" +
-            Util.readDatasetName(oldEntity);
+        String url = createUrl(this.hostname + Util.URLS.UPDATE.getValue(), getEntityType(),
+            Util.readDatasetName(oldEntity));
         return Util.sendRequest(url + colo, "post", newEntity, user);
     }
 
@@ -288,7 +290,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
                                   String user)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
         return updateRequestHelper(oldEntity, newEntity, updateTime,
-            Util.URLS.FEED_UPDATE.getValue(), user);
+            Util.URLS.UPDATE.getValue() + "/" + getEntityType(), user);
     }
 
     public ServiceResponse update(String oldEntity, String newEntity)
