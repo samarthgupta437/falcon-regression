@@ -37,6 +37,7 @@ import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.entity.v0.feed.Retention;
 import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
@@ -84,8 +85,6 @@ import java.util.TreeMap;
 public class InstanceUtil {
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
-    private static String aclOwner = getAclOwner();
-    private static String aclGroup = getAclGroup();
     public static APIResult sendRequestProcessInstance(String
                                                            url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -1339,29 +1338,15 @@ public class InstanceUtil {
             Assert.fail(e.getMessage());
         }
         ACL acl = feedObject.getACL();
+        acl.setOwner(MerlinConstants.aclOwner);
+        acl.setGroup(MerlinConstants.aclGroup);
         if(ownerGroup.length > 0) {
-            aclOwner = ownerGroup[0];
+            acl.setOwner(ownerGroup[0]);
             if (ownerGroup.length == 2)
-                aclGroup = ownerGroup[1];
+                acl.setGroup(ownerGroup[1]);
         }
-        acl.setOwner(aclOwner);
-        acl.setGroup(aclGroup);
         feedObject.setACL(acl);
         return feedObject.toString();
-    }
-
-    public static String getAclOwner() {
-        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.OWNER")))
-            return Util.readPropertiesFile("Merlin.properties", "ACL.OWNER");
-        else
-            return RequestKeys.CURRENT_USER;
-    }
-
-    public static String getAclGroup() {
-        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.GROUP")))
-            return Util.readPropertiesFile("Merlin.properties", "ACL.GROUP");
-        else
-            return "default";
     }
 }
 
