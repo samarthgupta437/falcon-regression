@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.ui.pages;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
@@ -27,7 +26,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.testng.Assert;
 import org.openqa.selenium.Point;
 
 import java.util.ArrayList;
@@ -59,6 +57,8 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String G_XPATH = "//*[name()='g']";
     private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH +
         G_XPATH + "[not(@class='lineage-link')]";
+    private static final String VERTICES_TEXT_XPATH = VERTICES_BLOCKS_XPATH +
+        "//div[@class='lineage-node-text']";
     private static final String EDGE_XPATH = SVG_XPATH + G_XPATH + "[@class='lineage-link']" +
         "//*[name()='path']";
     private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
@@ -107,17 +107,15 @@ public class ProcessPage extends EntityPage<Process> {
     public HashMap<String, List<String>> getAllVertices() {
         HashMap<String, List<String>> map = null;
         if (isLineageOpened) {
-            waitForElement(VERTICES_BLOCKS_XPATH + "[contains(.,'/')]", DEFAULT_TIMEOUT,
+            waitForElement(VERTICES_TEXT_XPATH, DEFAULT_TIMEOUT,
                 "Vertices blocks with names not found");
-            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
+            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_TEXT_XPATH));
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
+                waitForElement(block, ".[contains(.,'/')]", DEFAULT_TIMEOUT,
+                    "Expecting text to contain '/' :" + block.getText());
                 String text = block.getText();
                 //needed for firefox
-                if(StringUtils.isEmpty(text)) {
-                    text = block.getAttribute("textContent");
-                }
-                Assert.assertTrue(text.contains("/"), "Expecting text to contain /: " + text);
                 String[] separate = text.split("/");
                 String name = separate[0];
                 String nominalTime = separate[1];
