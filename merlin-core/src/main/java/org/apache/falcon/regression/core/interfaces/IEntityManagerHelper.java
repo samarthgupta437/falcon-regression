@@ -393,8 +393,12 @@ public abstract class IEntityManagerHelper {
         return getEntityDefinition(url, data, null);
     }
 
-    public abstract ServiceResponse getEntityDefinition(String url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse getEntityDefinition(String url, String data, String user)
+        throws JAXBException,
+        IOException, URISyntaxException, AuthenticationException {
+        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data)),
+            "get", user);
+    }
 
     public ServiceResponse getEntityDefinition(URLS url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {

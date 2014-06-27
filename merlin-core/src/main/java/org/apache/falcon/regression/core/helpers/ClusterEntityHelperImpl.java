@@ -59,13 +59,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return Util.readClusterName(entity);
     }
 
-    public ServiceResponse getEntityDefinition(String url, String data, String user)
-        throws JAXBException,
-        IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), Util.readClusterName(data)),
-            "get", user);
-    }
-
     public ServiceResponse getStatus(String url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
