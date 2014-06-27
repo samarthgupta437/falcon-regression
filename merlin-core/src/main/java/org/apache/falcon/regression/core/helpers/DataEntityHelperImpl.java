@@ -25,7 +25,6 @@ package org.apache.falcon.regression.core.helpers;
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
-import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -33,15 +32,11 @@ import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -103,12 +98,12 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public List<String> getArchiveInfo() throws IOException, JSchException {
-        return Util.getDataSetArchiveInfo(this);
+        return Util.getStoreInfo(this, "/archive/FEED");
     }
 
     @Override
     public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getDataSetStoreInfo(this);
+        return Util.getStoreInfo(this, "/FEED");
     }
 
     @Override

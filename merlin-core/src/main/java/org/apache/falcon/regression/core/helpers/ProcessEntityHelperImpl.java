@@ -25,7 +25,6 @@ package org.apache.falcon.regression.core.helpers;
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
-import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -34,8 +33,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
-import org.testng.Assert;
-import org.xml.sax.InputSource;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -110,12 +107,12 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public List<String> getArchiveInfo() throws IOException, JSchException {
-        return Util.getArchiveStoreInfo(this);
+        return Util.getStoreInfo(this, "/archive/PROCESS");
     }
 
     @Override
     public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getProcessStoreInfo(this);
+        return Util.getStoreInfo(this, "/PROCESS");
     }
 
     @Override

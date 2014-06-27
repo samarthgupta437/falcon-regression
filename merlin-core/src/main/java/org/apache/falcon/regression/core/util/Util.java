@@ -181,37 +181,7 @@ public class Util {
         return temp;
     }
 
-    public static List<String> getProcessStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/PROCESS");
-    }
-
-    public static List<String> getDataSetStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/FEED");
-    }
-
-    public static List<String> getDataSetArchiveInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/FEED");
-    }
-
-    public static List<String> getArchiveStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/PROCESS");
-    }
-
-    public static List<String> getClusterStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/CLUSTER");
-    }
-
-    public static List<String> getClusterArchiveInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/CLUSTER");
-    }
-
-    private static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
+    public static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
         throws IOException, JSchException {
         if (helper.getStoreLocation().startsWith("hdfs:")) {
             return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(),
