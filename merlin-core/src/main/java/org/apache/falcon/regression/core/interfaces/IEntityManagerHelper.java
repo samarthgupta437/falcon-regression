@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.log4j.Logger;
@@ -240,6 +241,10 @@ public abstract class IEntityManagerHelper {
         this.namenodePrincipal = prop.getProperty(prefix + "namenode.kerberos.principal", "none");
         this.hiveMetaStorePrincipal = prop.getProperty(prefix + "hive.metastore.kerberos" +
             ".principal", "none");
+    }
+
+    protected String createUrl(String... parts) {
+        return StringUtils.join("/", parts);
     }
 
     public ServiceResponse listEntities(URLS url)

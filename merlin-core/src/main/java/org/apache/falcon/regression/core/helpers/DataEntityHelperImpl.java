@@ -32,7 +32,6 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.xml.sax.InputSource;
@@ -57,10 +56,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     public String getEntityType() {
         return "feed";
-    }
-
-    public String createUrl(String... parts) {
-        return StringUtils.join("/", parts);
     }
 
     public ServiceResponse delete(String url, String data, String user)
