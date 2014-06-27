@@ -353,7 +353,7 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse resume(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data) + colo),
+        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data)),
             "post", user);
     }
 
