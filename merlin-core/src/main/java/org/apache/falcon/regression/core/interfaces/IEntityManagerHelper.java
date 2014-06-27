@@ -26,6 +26,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
@@ -445,9 +446,13 @@ public abstract class IEntityManagerHelper {
         return getRunningInstance(processRunningInstance, name, null);
     }
 
-    public abstract ProcessInstancesResult getRunningInstance(URLS processRunningInstance,
-                                                              String name, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ProcessInstancesResult getRunningInstance(
+        URLS processRunningInstance, String name, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        String url = createUrl(this.hostname + processRunningInstance.getValue(), getEntityType(),
+            name + allColo);
+        return (ProcessInstancesResult) InstanceUtil.sendRequestProcessInstance(url, user);
+    }
 
     public ProcessInstancesResult getProcessInstanceStatus(
         String readEntityName, String params)
