@@ -106,6 +106,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Run process. Suspend it and then resume. Get all -running instances. Response should
+     * contain all process instances.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getResumedProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
@@ -127,7 +133,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
-
+    /**
+     * Run process. Suspend it. Try to get -running instances. Response should be
+     * successful but shouldn't contain any instance.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getSuspendedProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
@@ -145,7 +156,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         InstanceUtil.validateSuccessWOInstances(r);
     }
 
-
+    /**
+     * Run process. Get -running instances. Check that response contains expected number of
+     * instances.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -159,6 +175,11 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
+    /**
+     * Attempt to get -running instances of nonexistent process should result in error.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getNonExistenceProcessInstance() throws Exception {
         ProcessInstancesResult r =
@@ -168,7 +189,11 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
             "Unexpected status code");
     }
 
-
+    /**
+     * Attempt to get -running instances of deleted process should result in error.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getKilledProcessInstance() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
@@ -180,7 +205,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
             "Unexpected status code");
     }
 
-
+    /**
+     * Launch process and wait till it got succeeded. Try to get -running instances. Response
+     * should reflect success but shouldn't contain any of instances.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getSucceededProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
