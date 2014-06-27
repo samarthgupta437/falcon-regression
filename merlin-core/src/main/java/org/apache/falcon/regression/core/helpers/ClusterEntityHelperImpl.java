@@ -92,13 +92,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse delete(URLS deleteUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        // TODO Auto-generated method stub
-        return delete(this.hostname + deleteUrl.getValue(), data, user);
-    }
-
-    @Override
     public ServiceResponse resume(URLS url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

@@ -425,8 +425,10 @@ public abstract class IEntityManagerHelper {
         return delete(deleteUrl, data, null);
     }
 
-    public abstract ServiceResponse delete(URLS deleteUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse delete(URLS deleteUrl, String data, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return delete(this.hostname + deleteUrl.getValue(), data, user);
+    }
 
     public ServiceResponse suspend(URLS suspendUrl, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {

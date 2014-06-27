@@ -68,12 +68,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse delete(Util.URLS deleteUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return delete(this.hostname + deleteUrl.getValue(), data, user);
-    }
-
-    @Override
     public ProcessInstancesResult getRunningInstance(
         Util.URLS processRunningInstance, String name, String user)
         throws IOException, URISyntaxException, AuthenticationException {
