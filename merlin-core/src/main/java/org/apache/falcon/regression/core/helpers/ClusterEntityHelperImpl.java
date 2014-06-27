@@ -110,11 +110,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String list() {
-        return Util.executeCommandGetOutput(
-            BASE_COMMAND + " entity -list -url " + this.hostname + " -type cluster");
-    }
-
     @Override
     public String getDependencies(String entityName) {
 

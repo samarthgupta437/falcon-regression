@@ -485,7 +485,10 @@ public abstract class IEntityManagerHelper {
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public abstract String list();
+    public String list() {
+        return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -list -url " + this.hostname + " -type " + getEntityType());
+    }
 
     public abstract String getDependencies(String entityName);
 

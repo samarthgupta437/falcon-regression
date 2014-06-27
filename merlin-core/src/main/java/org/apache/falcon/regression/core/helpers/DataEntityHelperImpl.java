@@ -62,12 +62,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return Util.readDatasetName(entity);
     }
 
-    @Override
-    public String list() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-
     public ProcessInstancesResult getProcessInstanceResume(String entityName, String params,
                                                            String user)
         throws IOException, URISyntaxException, AuthenticationException {

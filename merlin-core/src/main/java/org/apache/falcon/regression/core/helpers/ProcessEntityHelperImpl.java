@@ -108,11 +108,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public String list() {
-        return Util.executeCommandGetOutput(
-            BASE_COMMAND + " entity -list -url " + this.hostname + " -type process");
-    }
-
     @Override
     public String getDependencies(String entityName) {
         return Util.executeCommandGetOutput(
