@@ -63,16 +63,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ProcessInstancesResult getProcessInstanceStatus(
-        String entityName, String params, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        String url = createUrl(this.hostname + Util.URLS.INSTANCE_STATUS.getValue(),
-            getEntityType(), entityName, "");
-        return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
-    }
-
-    @Override
     public ProcessInstancesResult getProcessInstanceSuspend(
         String entityName, String params, String user)
         throws IOException, URISyntaxException, AuthenticationException {

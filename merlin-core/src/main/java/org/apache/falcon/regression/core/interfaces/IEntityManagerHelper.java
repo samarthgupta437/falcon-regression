@@ -460,9 +460,14 @@ public abstract class IEntityManagerHelper {
         return getProcessInstanceStatus(readEntityName, params, null);
     }
 
-    public abstract ProcessInstancesResult getProcessInstanceStatus(
-        String readEntityName, String params, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ProcessInstancesResult getProcessInstanceStatus(
+        String entityName, String params, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_STATUS.getValue(),
+            getEntityType(), entityName, "");
+        return (ProcessInstancesResult) InstanceUtil
+            .createAndsendRequestProcessInstance(url, params, allColo, user);
+    }
 
     public ProcessInstancesResult getProcessInstanceSuspend(
         String readEntityName, String params)
