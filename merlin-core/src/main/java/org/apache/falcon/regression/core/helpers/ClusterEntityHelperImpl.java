@@ -88,7 +88,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user) {
-        return null;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public ServiceResponse suspend(String url, String data, String user) {

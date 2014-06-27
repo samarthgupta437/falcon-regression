@@ -310,8 +310,10 @@ public abstract class IEntityManagerHelper {
         return submitAndSchedule(url, data, null);
     }
 
-    public abstract ServiceResponse submitAndSchedule(URLS url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        return submitAndSchedule(this.hostname + url.getValue(), data, user);
+    }
 
     private String getUrlPrefixPart(URLS url) {
         return this.hostname + url.getValue() + "/" + getEntityType() + "/";

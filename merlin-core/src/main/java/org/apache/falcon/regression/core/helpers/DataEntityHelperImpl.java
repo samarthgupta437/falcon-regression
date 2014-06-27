@@ -92,11 +92,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
             "post", user);
     }
 
-    public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        return submitAndSchedule(this.hostname + url.getValue(), data, user);
-    }
-
     public ServiceResponse suspend(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),

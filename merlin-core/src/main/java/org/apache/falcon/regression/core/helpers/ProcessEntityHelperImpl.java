@@ -194,12 +194,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse submitAndSchedule(URLS url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        return submitAndSchedule(this.hostname + url.getValue(), data, user);
-    }
-
-    @Override
     public ServiceResponse resume(URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return resume(this.hostname + url.getValue(), data, user);
