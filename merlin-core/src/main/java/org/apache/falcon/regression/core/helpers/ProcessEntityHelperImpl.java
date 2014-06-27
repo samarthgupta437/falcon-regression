@@ -131,7 +131,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         URLS processRunningInstance, String name, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + URLS.INSTANCE_RUNNING.getValue(), getEntityType(), name,
-            "/");
+            "");
         return (ProcessInstancesResult) InstanceUtil
             .createAndsendRequestProcessInstance(url, null, allColo, user);
     }
