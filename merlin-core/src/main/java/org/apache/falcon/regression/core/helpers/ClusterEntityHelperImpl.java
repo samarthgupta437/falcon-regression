@@ -52,15 +52,15 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     public ServiceResponse delete(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        url += "/cluster/" + Util.readClusterName(data) + colo;
-        return Util.sendRequest(url, "delete", user);
+        return Util.sendRequest(createUrl(url, "cluster", Util.readClusterName(data) + colo),
+            "delete", user);
     }
 
     public ServiceResponse getEntityDefinition(String url, String data, String user)
         throws JAXBException,
         IOException, URISyntaxException, AuthenticationException {
-        url += "/cluster/" + Util.readClusterName(data);
-        return Util.sendRequest(url, "get", user);
+        return Util.sendRequest(createUrl(url, "cluster", Util.readClusterName(data)),
+            "get", user);
     }
 
     public ServiceResponse getStatus(String url, String data, String user) {
@@ -94,7 +94,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     public ServiceResponse listEntities(Util.URLS url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         logger.info("fetching cluster list");
-        return Util.sendRequest(this.hostname + url.getValue() + "/cluster" + colo,
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), "cluster" + colo),
             "get", null, user);
     }
 
@@ -102,8 +102,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throws IOException, URISyntaxException, AuthenticationException {
         //throw new UnsupportedOperationException("Not supported yet.");
         logger.info("Submitting cluster: \n" + Util.prettyPrintXml(data));
-        url += "/cluster" + colo;
-        return Util.sendRequest(url, "post", data, user);
+        return Util.sendRequest(createUrl(url, "cluster" + colo), "post", data, user);
     }
 
     public ServiceResponse suspend(String url, String data, String user) {
