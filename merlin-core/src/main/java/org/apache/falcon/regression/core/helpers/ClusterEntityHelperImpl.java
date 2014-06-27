@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 
@@ -69,7 +70,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse getStatus(Util.URLS url, String data, String user) {
+    public ServiceResponse getStatus(URLS url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -85,7 +86,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse submitAndSchedule(Util.URLS url, String data, String user) {
+    public ServiceResponse submitAndSchedule(URLS url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -93,7 +94,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse suspend(Util.URLS url, String data, String user) {
+    public ServiceResponse suspend(URLS url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -103,26 +104,26 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user) {
+    public ServiceResponse schedule(URLS scheduleUrl, String processData, String user) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public ServiceResponse delete(Util.URLS deleteUrl, String data, String user)
+    public ServiceResponse delete(URLS deleteUrl, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         // TODO Auto-generated method stub
         return delete(this.hostname + deleteUrl.getValue(), data, user);
     }
 
     @Override
-    public ServiceResponse resume(Util.URLS url, String data, String user) {
+    public ServiceResponse resume(URLS url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public ProcessInstancesResult getRunningInstance(
-        Util.URLS processRunningInstance, String name, String user) {
+        URLS processRunningInstance, String name, String user) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -167,7 +168,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse getEntityDefinition(Util.URLS url, String data, String user)
+    public ServiceResponse getEntityDefinition(URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(this.hostname + url.getValue(), data, user);
     }
