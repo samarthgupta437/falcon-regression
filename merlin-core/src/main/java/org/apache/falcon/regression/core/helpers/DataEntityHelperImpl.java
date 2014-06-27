@@ -62,11 +62,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return Util.readDatasetName(entity);
     }
 
-    public ServiceResponse suspend(Util.URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return suspend(this.hostname + url.getValue(), data, user);
-    }
-
     @Override
     public ProcessInstancesResult getRunningInstance(
         Util.URLS processRunningInstance, String name, String user)

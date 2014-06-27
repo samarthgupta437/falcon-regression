@@ -435,8 +435,10 @@ public abstract class IEntityManagerHelper {
         return suspend(suspendUrl, data, null);
     }
 
-    public abstract ServiceResponse suspend(URLS suspendUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse suspend(URLS url, String data, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return suspend(this.hostname + url.getValue(), data, user);
+    }
 
     public ProcessInstancesResult getRunningInstance(URLS processRunningInstance, String name)
         throws IOException, URISyntaxException, AuthenticationException {

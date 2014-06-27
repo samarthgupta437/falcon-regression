@@ -151,12 +151,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ServiceResponse suspend(URLS suspendUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return suspend(this.hostname + suspendUrl.getValue(), data, user);
-    }
-
-    @Override
     public List<String> getArchiveInfo() throws IOException, JSchException {
         return Util.getArchiveStoreInfo(this);
     }

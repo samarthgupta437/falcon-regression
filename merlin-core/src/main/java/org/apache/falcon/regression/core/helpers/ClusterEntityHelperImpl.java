@@ -87,10 +87,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ServiceResponse suspend(URLS url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
     public ServiceResponse resume(URLS url, String data, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
