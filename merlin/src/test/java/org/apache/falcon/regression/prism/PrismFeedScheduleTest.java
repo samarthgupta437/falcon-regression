@@ -68,6 +68,12 @@ public class PrismFeedScheduleTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Run feed. Suspend it. Run another feed on another cluster. Check that 1st feed is
+     * suspended on 1st cluster and wnd feed is running on 2nd cluster and not criss cross.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2"})
     public void testFeedScheduleOn1ColoWhileAnotherColoHasSuspendedFeed()
         throws Exception {
