@@ -58,12 +58,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return Util.readClusterName(entity);
     }
 
-    public ServiceResponse delete(String url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), Util.readClusterName(data) + colo),
-            "delete", user);
-    }
-
     public ServiceResponse getEntityDefinition(String url, String data, String user)
         throws JAXBException,
         IOException, URISyntaxException, AuthenticationException {
