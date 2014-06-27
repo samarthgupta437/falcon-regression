@@ -59,6 +59,10 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return "process";
     }
 
+    public String getEntityName(String entity) throws JAXBException {
+        return Util.getProcessName(entity);
+    }
+
     public ServiceResponse delete(String url, String data, String user)
         throws IOException, URISyntaxException, JAXBException, AuthenticationException {
         return Util.sendRequest(createUrl(url, getEntityType(), readEntityName(data) + colo),

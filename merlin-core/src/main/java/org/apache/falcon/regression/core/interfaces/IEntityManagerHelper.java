@@ -244,6 +244,7 @@ public abstract class IEntityManagerHelper {
     }
 
     public abstract String getEntityType();
+    public abstract String getEntityName(String entity) throws JAXBException;
 
     protected String createUrl(String... parts) {
         return StringUtils.join("/", parts);
@@ -290,7 +291,7 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse schedule(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
+        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data) + colo),
             "post", user);
     }
 

@@ -54,6 +54,10 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return "cluster";
     }
 
+    public String getEntityName(String entity) throws JAXBException {
+        return Util.readClusterName(entity);
+    }
+
     public ServiceResponse delete(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(createUrl(url, getEntityType(), Util.readClusterName(data) + colo),

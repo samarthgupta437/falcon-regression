@@ -58,6 +58,10 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return "feed";
     }
 
+    public String getEntityName(String entity) throws JAXBException {
+        return Util.readDatasetName(entity);
+    }
+
     public ServiceResponse delete(String url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(createUrl(url, getEntityType(), Util.readDatasetName(data) + colo),
