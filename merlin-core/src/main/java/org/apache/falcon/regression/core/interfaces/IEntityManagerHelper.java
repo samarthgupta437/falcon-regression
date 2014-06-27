@@ -372,8 +372,11 @@ public abstract class IEntityManagerHelper {
         return getStatus(url, data, null);
     }
 
-    public abstract ServiceResponse getStatus(String url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException;
+    public ServiceResponse getStatus(String url, String data, String user)
+        throws IOException, URISyntaxException, JAXBException, AuthenticationException {
+        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data) + colo),
+            "get", user);
+    }
 
     public ServiceResponse getStatus(URLS url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {

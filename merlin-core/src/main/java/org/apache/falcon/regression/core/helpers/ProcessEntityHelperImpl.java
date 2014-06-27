@@ -69,12 +69,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
             "get", user);
     }
 
-    public ServiceResponse getStatus(String url, String data, String user)
-        throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), readEntityName(data) + colo),
-            "get", user);
-    }
-
     public void validateResponse(String response, APIResult.Status expectedResponse,
                                  String filename) throws JAXBException, IOException {
         JAXBContext jc = JAXBContext.newInstance(APIResult.class);
