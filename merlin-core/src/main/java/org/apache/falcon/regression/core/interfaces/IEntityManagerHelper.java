@@ -536,9 +536,14 @@ public abstract class IEntityManagerHelper {
         return getProcessInstanceKill(readEntityName, params, null);
     }
 
-    public abstract ProcessInstancesResult getProcessInstanceKill(String readEntityName,
-                                                                  String string, String user)
-        throws IOException, URISyntaxException, AuthenticationException;
+    public ProcessInstancesResult getProcessInstanceKill(String entityName, String params,
+                                                         String user)
+        throws IOException, URISyntaxException, AuthenticationException {
+        String url = createUrl(this.hostname + URLS.INSTANCE_KILL.getValue(), getEntityType(),
+            entityName, "");
+        return (ProcessInstancesResult) InstanceUtil
+            .createAndsendRequestProcessInstance(url, params, allColo, user);
+    }
 
     public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
