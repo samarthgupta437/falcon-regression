@@ -138,8 +138,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     @Override
     public ProcessInstancesResult getProcessInstanceRerun(
         String readEntityName, String string, String user) {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

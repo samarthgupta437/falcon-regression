@@ -78,15 +78,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
                 allColo, null));
     }
 
-    public ProcessInstancesResult getProcessInstanceRerun(String entityName, String params,
-                                                          String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        String url = createUrl(this.hostname + Util.URLS.INSTANCE_RERUN.getValue(), getEntityType(),
-            entityName, "");
-        return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
-    }
-
     @Override
     public List<String> getArchiveInfo() throws IOException, JSchException {
         return Util.getStoreInfo(this, "/archive/FEED");

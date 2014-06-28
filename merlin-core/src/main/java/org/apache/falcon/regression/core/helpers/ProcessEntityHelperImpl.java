@@ -86,15 +86,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
             .createAndsendRequestProcessInstance(url, params, allColo, null);
     }
 
-    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params,
-                                                          String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        String url = createUrl(this.hostname + URLS.INSTANCE_RERUN.getValue(), getEntityType(),
-            EntityName, "");
-        return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
-    }
-
     @Override
     public List<String> getArchiveInfo() throws IOException, JSchException {
         return Util.getStoreInfo(this, "/archive/PROCESS");
