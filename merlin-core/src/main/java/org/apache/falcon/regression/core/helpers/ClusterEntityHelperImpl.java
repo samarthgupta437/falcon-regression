@@ -130,17 +130,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public String toString(Object object) throws JAXBException {
-        Cluster processObject = (Cluster) object;
-
-        JAXBContext context = JAXBContext.newInstance(Cluster.class);
-        Marshaller um = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-        um.marshal(processObject, writer);
-        return writer.toString();
-    }
-
-    @Override
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName,
                                                          String string, String user) {
         // TODO Auto-generated method stub

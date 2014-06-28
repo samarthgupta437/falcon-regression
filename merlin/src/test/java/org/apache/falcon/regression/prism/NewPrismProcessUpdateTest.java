@@ -1585,11 +1585,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     public ServiceResponse updateProcessConcurrency(Bundle bundle, int concurrency)
         throws Exception {
         String oldData = bundle.getProcessData();
-        Process updatedProcess = bundle.getProcessObject();
+        ProcessMerlin updatedProcess = new ProcessMerlin(bundle.getProcessObject());
         updatedProcess.setParallel(concurrency);
 
         return prism.getProcessHelper()
-            .update(oldData, prism.getProcessHelper().toString(updatedProcess));
+            .update(oldData, updatedProcess.toString());
     }
 
     /**
@@ -1686,10 +1686,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                                                   org.apache.falcon.entity.v0.Frequency frequency)
         throws Exception {
         String oldData = bundle.getProcessData();
-        Process updatedProcess = bundle.getProcessObject();
+        ProcessMerlin updatedProcess = new ProcessMerlin(bundle.getProcessObject());
         updatedProcess.setFrequency(frequency);
         return prism.getProcessHelper()
-            .update(oldData, prism.getProcessHelper().toString(updatedProcess));
+            .update(oldData, updatedProcess.toString());
     }
 
     //need to expand this function more later

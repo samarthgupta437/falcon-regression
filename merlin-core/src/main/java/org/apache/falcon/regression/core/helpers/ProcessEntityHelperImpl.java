@@ -115,15 +115,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return Util.getStoreInfo(this, "/PROCESS");
     }
 
-    @Override
-    public String toString(Object object) throws JAXBException {
-        Process processObject = (Process) object;
-        JAXBContext context = JAXBContext.newInstance(Process.class);
-        Marshaller um = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-        um.marshal(processObject, writer);
-        return writer.toString();
-    }
 }
 
 

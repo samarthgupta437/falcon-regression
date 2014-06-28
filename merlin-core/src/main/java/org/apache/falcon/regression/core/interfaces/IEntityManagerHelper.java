@@ -531,8 +531,6 @@ public abstract class IEntityManagerHelper {
             newEntity, user);
     }
 
-    public abstract String toString(Object object) throws JAXBException;
-
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceKill(readEntityName, params, null);

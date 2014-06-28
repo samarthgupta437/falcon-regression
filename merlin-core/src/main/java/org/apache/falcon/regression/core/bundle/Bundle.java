@@ -19,6 +19,8 @@
 package org.apache.falcon.regression.core.bundle;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.regression.Entities.ClusterMerlin;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.entity.v0.cluster.Interface;
 import org.apache.falcon.entity.v0.cluster.Interfaces;
@@ -997,7 +999,7 @@ public class Bundle {
         this.clusters.add(clusterData);
         //now to add clusters to feeds
         for (int i = 0; i < dataSets.size(); i++) {
-            Feed feedObject = Util.getFeedObject(dataSets.get(i));
+            FeedMerlin feedObject = new FeedMerlin(dataSets.get(i));
             org.apache.falcon.entity.v0.feed.Cluster cluster =
                 new org.apache.falcon.entity.v0.feed.Cluster();
             cluster.setName(Util.getClusterObject(clusterData).getName());
@@ -1007,12 +1009,12 @@ public class Bundle {
             feedObject.getClusters().getClusters().add(cluster);
 
             dataSets.remove(i);
-            dataSets.add(i, this.feedHelper.toString(feedObject));
+            dataSets.add(i, feedObject.toString());
 
         }
 
         //now to add cluster to process
-        Process processObject = Util.getProcessObject(processData);
+        ProcessMerlin processObject = new ProcessMerlin(processData);
         Cluster cluster = new Cluster();
         cluster.setName(Util.getClusterObject(clusterData).getName());
         org.apache.falcon.entity.v0.process.Validity v =
@@ -1023,15 +1025,14 @@ public class Bundle {
             v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
         cluster.setValidity(v);
         processObject.getClusters().getClusters().add(cluster);
-        this.processData = processHelper.toString(processObject);
+        this.processData = processObject.toString();
 
     }
 
     private String setNewClusterName(String clusterData) throws JAXBException {
-        org.apache.falcon.entity.v0.cluster.Cluster clusterObj =
-            Util.getClusterObject(clusterData);
+        ClusterMerlin clusterObj = new ClusterMerlin(clusterData);
         clusterObj.setName(clusterObj.getName() + this.clusters.size() + 1);
-        return clusterHelper.toString(clusterObj);
+        return clusterObj.toString();
     }
 
     public void deleteBundle(PrismHelper prismHelper) {

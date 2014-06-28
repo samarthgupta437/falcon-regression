@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.Cluster;
@@ -48,22 +49,27 @@ public class FeedMerlin extends Feed {
 
     private static Logger logger = Logger.getLogger(FeedMerlin.class);
 
-    public FeedMerlin(String entity)
-        throws JAXBException, NoSuchMethodException, InvocationTargetException,
-        IllegalAccessException {
+    public FeedMerlin(String entity) throws JAXBException {
         this(InstanceUtil.getFeedElement(entity));
     }
 
-    public FeedMerlin(Feed element)
-        throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    public FeedMerlin(Feed element) {
         Field[] fields = Feed.class.getDeclaredFields();
         for (Field fld : fields) {
             if ("acl".equals(fld.getName())) {
                 this.setACL(element.getACL());
                 continue;
             }
-            PropertyUtils.setProperty(this, fld.getName(),
-                PropertyUtils.getProperty(element, fld.getName()));
+            try {
+                PropertyUtils.setProperty(this, fld.getName(),
+                    PropertyUtils.getProperty(element, fld.getName()));
+            } catch (IllegalAccessException e) {
+                Assert.fail("Can't create FeedMerlin: " + ExceptionUtils.getStackTrace(e));
+            } catch (InvocationTargetException e) {
+                Assert.fail("Can't create FeedMerlin: " + ExceptionUtils.getStackTrace(e));
+            } catch (NoSuchMethodException e) {
+                Assert.fail("Can't create FeedMerlin: " + ExceptionUtils.getStackTrace(e));
+            }
         }
     }
 

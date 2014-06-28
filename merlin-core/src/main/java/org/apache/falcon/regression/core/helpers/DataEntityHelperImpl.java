@@ -106,14 +106,5 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return Util.getStoreInfo(this, "/FEED");
     }
 
-    @Override
-    public String toString(Object object) throws JAXBException {
-        Feed processObject = (Feed) object;
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Marshaller um = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-        um.marshal(processObject, writer);
-        return writer.toString();
-    }
 }
 
