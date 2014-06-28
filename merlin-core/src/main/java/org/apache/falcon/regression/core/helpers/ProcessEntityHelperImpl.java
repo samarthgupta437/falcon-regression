@@ -67,15 +67,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return processElement.getName();
     }
 
-    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params,
-                                                           String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        String url = createUrl(this.hostname + URLS.INSTANCE_RESUME.getValue(),
-            getEntityType(), EntityName, "");
-        return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
-    }
-
     @Override
     public InstancesSummaryResult getInstanceSummary(String entityName,
                                                      String params
