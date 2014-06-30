@@ -257,10 +257,6 @@ public abstract class IEntityManagerHelper {
         return StringUtils.join("/", parts);
     }
 
-    private String getUrlPrefixPart(URLS url) {
-        return this.hostname + url.getValue() + "/" + getEntityType() + "/";
-    }
-
     public ServiceResponse listEntities(URLS url)
         throws IOException, URISyntaxException, AuthenticationException {
         return listEntities(url, null);
@@ -339,7 +335,9 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse deleteByName(URLS deleteUrl, String entityName, String user)
         throws AuthenticationException, IOException, URISyntaxException {
-        return Util.sendRequest(getUrlPrefixPart(deleteUrl) + entityName + colo, "delete", user);
+        return Util.sendRequest(
+            createUrl(this.hostname + deleteUrl.getValue(), getEntityType(), entityName + colo),
+            "delete", user);
     }
 
     public ServiceResponse delete(String url, String data)
