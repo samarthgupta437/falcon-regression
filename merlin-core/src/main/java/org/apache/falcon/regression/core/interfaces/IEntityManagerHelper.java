@@ -20,7 +20,6 @@ package org.apache.falcon.regression.core.interfaces;
 
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -496,7 +495,9 @@ public abstract class IEntityManagerHelper {
                 getEntityType() + " -name " + entityName);
     }
 
-    public abstract List<String> getArchiveInfo() throws IOException, JSchException;
+    public List<String> getArchiveInfo() throws IOException, JSchException {
+        return Util.getStoreInfo(this, "/archive/" + getEntityType().toUpperCase());
+    }
 
     public abstract List<String> getStoreInfo() throws IOException, JSchException;
 

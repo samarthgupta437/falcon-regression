@@ -23,7 +23,6 @@
 package org.apache.falcon.regression.core.helpers;
 
 import com.jcraft.jsch.JSchException;
-import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
@@ -32,11 +31,8 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -106,11 +102,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     public ProcessInstancesResult getProcessInstanceSuspend(
         String readEntityName, String params, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<String> getArchiveInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/archive/CLUSTER");
     }
 
     @Override

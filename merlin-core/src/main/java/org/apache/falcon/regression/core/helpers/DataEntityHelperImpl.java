@@ -16,29 +16,15 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.helpers;
 
 import com.jcraft.jsch.JSchException;
-import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
-import org.apache.falcon.regression.core.response.InstancesSummaryResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
-import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
-import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
 import java.util.List;
 
 public class DataEntityHelperImpl extends IEntityManagerHelper {
@@ -55,11 +41,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     public String getEntityName(String entity) throws JAXBException {
         return Util.readDatasetName(entity);
-    }
-
-    @Override
-    public List<String> getArchiveInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/archive/FEED");
     }
 
     @Override
