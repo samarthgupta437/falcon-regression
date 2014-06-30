@@ -333,17 +333,6 @@ public abstract class IEntityManagerHelper {
             "post", user);
     }
 
-    public ServiceResponse resume(String url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return resume(url, data, null);
-    }
-
-    public ServiceResponse resume(String url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data)),
-            "post", user);
-    }
-
     public ServiceResponse resume(URLS url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return resume(url, data, null);
@@ -351,7 +340,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse resume(URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return resume(this.hostname + url.getValue(), data, user);
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
+            "post", user);
     }
 
     public ServiceResponse getStatus(String url, String data)
