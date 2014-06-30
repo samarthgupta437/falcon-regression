@@ -269,27 +269,16 @@ public abstract class IEntityManagerHelper {
             "get", null, user);
     }
 
-    public ServiceResponse submitEntity(String url, String data)
-        throws IOException, URISyntaxException, AuthenticationException {
-        return submitEntity(url, data, null);
-    }
-
-    public ServiceResponse submitEntity(String url, String data, String user)
-        throws IOException, URISyntaxException, AuthenticationException {
-        logger.info("Submitting " + getEntityType() +  ": \n" + Util.prettyPrintXml(data));
-        return Util.sendRequest(createUrl(url, getEntityType() + colo), "post", data, user);
-    }
-
     public ServiceResponse submitEntity(URLS url, String data)
         throws IOException, URISyntaxException, AuthenticationException {
         return submitEntity(url, data, null);
     }
 
-    public ServiceResponse submitEntity(Util.URLS url, String data, String user)
+    public ServiceResponse submitEntity(URLS url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        return submitEntity(this.hostname + url.getValue(), data, user);
-    }
-
+        logger.info("Submitting " + getEntityType() +  ": \n" + Util.prettyPrintXml(data));
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo), "post",
+            data, user);
 
     public ServiceResponse schedule(String url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
