@@ -105,11 +105,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/CLUSTER");
-    }
-
-    @Override
     public ServiceResponse update(String oldEntity, String newEntity, String user) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

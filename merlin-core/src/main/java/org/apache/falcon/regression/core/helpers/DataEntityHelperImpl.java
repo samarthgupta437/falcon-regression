@@ -43,10 +43,5 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return Util.readDatasetName(entity);
     }
 
-    @Override
-    public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/FEED");
-    }
-
 }
 

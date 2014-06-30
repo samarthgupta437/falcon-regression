@@ -58,11 +58,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return processElement.getName();
     }
 
-    @Override
-    public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/PROCESS");
-    }
-
 }
 
 

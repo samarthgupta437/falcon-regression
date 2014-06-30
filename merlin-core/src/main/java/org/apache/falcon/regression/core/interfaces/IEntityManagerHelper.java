@@ -499,7 +499,9 @@ public abstract class IEntityManagerHelper {
         return Util.getStoreInfo(this, "/archive/" + getEntityType().toUpperCase());
     }
 
-    public abstract List<String> getStoreInfo() throws IOException, JSchException;
+    public List<String> getStoreInfo() throws IOException, JSchException {
+        return Util.getStoreInfo(this, "/" + getEntityType());
+    }
 
     public ServiceResponse update(String oldEntity, String newEntity)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
