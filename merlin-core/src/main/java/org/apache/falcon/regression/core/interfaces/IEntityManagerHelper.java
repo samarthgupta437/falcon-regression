@@ -355,18 +355,6 @@ public abstract class IEntityManagerHelper {
             "get", user);
     }
 
-    public ServiceResponse getEntityDefinition(String url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return getEntityDefinition(url, data, null);
-    }
-
-    public ServiceResponse getEntityDefinition(String url, String data, String user)
-        throws JAXBException,
-        IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data)),
-            "get", user);
-    }
-
     public ServiceResponse getEntityDefinition(URLS url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(url, data, null);
@@ -374,7 +362,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse getEntityDefinition(URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return getEntityDefinition(this.hostname + url.getValue(), data, user);
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
+            "get", user);
     }
 
     public ProcessInstancesResult getRunningInstance(URLS processRunningInstance, String name)
