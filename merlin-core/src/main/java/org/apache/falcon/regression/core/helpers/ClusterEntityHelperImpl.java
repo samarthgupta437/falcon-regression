@@ -52,23 +52,23 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return Util.readClusterName(entity);
     }
 
-    public ServiceResponse getStatus(String url, String data, String user) {
+    public ServiceResponse getStatus(URLS url, String data, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
-    public ServiceResponse resume(String url, String data, String user) {
+    public ServiceResponse resume(URLS url, String data, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
-    public ServiceResponse schedule(String url, String data, String user) {
+    public ServiceResponse schedule(URLS url, String data, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
-    public ServiceResponse submitAndSchedule(String url, String data, String user) {
+    public ServiceResponse submitAndSchedule(URLS url, String data, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
-    public ServiceResponse suspend(String url, String data, String user) {
+    public ServiceResponse suspend(URLS url, String data, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
