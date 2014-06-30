@@ -22,18 +22,11 @@
  */
 package org.apache.falcon.regression.core.helpers;
 
-import com.jcraft.jsch.JSchException;
-import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.List;
 
 public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
@@ -49,13 +42,6 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     public String getEntityName(String entity) throws JAXBException {
         return Util.getProcessName(entity);
-    }
-
-    public String readEntityName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
-        return processElement.getName();
     }
 
 }

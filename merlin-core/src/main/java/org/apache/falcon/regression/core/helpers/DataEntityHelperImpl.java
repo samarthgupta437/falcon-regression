@@ -18,14 +18,11 @@
 
 package org.apache.falcon.regression.core.helpers;
 
-import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBException;
-import java.io.IOException;
-import java.util.List;
 
 public class DataEntityHelperImpl extends IEntityManagerHelper {
 
