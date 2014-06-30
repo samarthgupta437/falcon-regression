@@ -20,22 +20,20 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.process.Properties;
 import org.apache.falcon.entity.v0.process.Property;
+import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hive.hcatalog.api.HCatClient;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;

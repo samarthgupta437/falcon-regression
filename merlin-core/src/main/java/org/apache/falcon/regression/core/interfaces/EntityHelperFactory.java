@@ -29,13 +29,13 @@ public class EntityHelperFactory {
                                                        String prefix) {
         switch (type) {
             case FEED:
-            return new DataEntityHelperImpl(envFileName, prefix);
+                return new DataEntityHelperImpl(envFileName, prefix);
             case CLUSTER:
-            return new ClusterEntityHelperImpl(envFileName, prefix);
+                return new ClusterEntityHelperImpl(envFileName, prefix);
             case PROCESS:
-            return new ProcessEntityHelperImpl(envFileName, prefix);
+                return new ProcessEntityHelperImpl(envFileName, prefix);
             default:
-        return null;
+                return null;
+        }
     }
-}
 }

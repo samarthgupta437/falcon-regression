@@ -995,7 +995,6 @@ public class Util {
         INSTANCE_KILL("/api/instance/kill"),
         INSTANCE_RESUME("/api/instance/resume"),
         INSTANCE_SUSPEND("/api/instance/suspend"),
-        PROCESS_UPDATE("/api/entities/update/process"),
         INSTANCE_RERUN("/api/instance/rerun"),
         FEED_UPDATE("/api/entities/update/feed"),
         INSTANCE_SUMMARY("/api/instance/summary");
