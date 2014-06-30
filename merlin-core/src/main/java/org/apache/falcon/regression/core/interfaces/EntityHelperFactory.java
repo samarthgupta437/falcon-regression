@@ -27,18 +27,15 @@ public class EntityHelperFactory {
 
     public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName,
                                                        String prefix) {
-        if (type.equals(ENTITY_TYPE.FEED)) {
+        switch (type) {
+            case FEED:
             return new DataEntityHelperImpl(envFileName, prefix);
-        }
-
-        if (type.equals(ENTITY_TYPE.CLUSTER)) {
+            case CLUSTER:
             return new ClusterEntityHelperImpl(envFileName, prefix);
-        }
-
-        if (type.equals(ENTITY_TYPE.PROCESS)) {
+            case PROCESS:
             return new ProcessEntityHelperImpl(envFileName, prefix);
-        }
-
+            default:
         return null;
     }
+}
 }
