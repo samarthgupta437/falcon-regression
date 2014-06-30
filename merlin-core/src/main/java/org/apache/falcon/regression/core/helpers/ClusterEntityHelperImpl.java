@@ -22,7 +22,6 @@
  */
 package org.apache.falcon.regression.core.helpers;
 
-import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
@@ -34,11 +33,11 @@ import org.apache.log4j.Logger;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 
 public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
 
+    private static final String INVALID_ERR = "Not Valid for Cluster Entity";
     private static Logger logger = Logger.getLogger(ClusterEntityHelperImpl.class);
 
     public ClusterEntityHelperImpl(String envFileName, String prefix) {
@@ -54,83 +53,83 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     public ServiceResponse getStatus(String url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     public ServiceResponse getStatus(URLS url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     public ServiceResponse resume(String url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     public ServiceResponse schedule(String url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     public ServiceResponse submitAndSchedule(String url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     public ServiceResponse submitAndSchedule(URLS url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     public ServiceResponse suspend(String url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ServiceResponse resume(URLS url, String data, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ProcessInstancesResult getRunningInstance(
         URLS processRunningInstance, String name, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceStatus(
         String readEntityName, String params, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
 
     public ProcessInstancesResult getProcessInstanceSuspend(
         String readEntityName, String params, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ServiceResponse update(String oldEntity, String newEntity, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
                                   String user) throws IOException, JAXBException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceKill(String readEntityName,
                                                          String string, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceRerun(
         String readEntityName, String string, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
     public ProcessInstancesResult getProcessInstanceResume(
         String readEntityName, String string, String user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
@@ -138,7 +137,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
                                                      String string
     ) throws
         IOException, URISyntaxException {
-        logger.info("Not Valid for Cluster Entity");
+        logger.info(INVALID_ERR);
         return null;
     }
 
