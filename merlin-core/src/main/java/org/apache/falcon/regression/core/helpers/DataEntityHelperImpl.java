@@ -58,17 +58,6 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public InstancesSummaryResult getInstanceSummary(String entityName,
-                                                     String params
-    ) throws IOException, URISyntaxException, AuthenticationException {
-        String url = createUrl(this.hostname + Util.URLS.INSTANCE_SUMMARY.getValue(),
-            getEntityType(), entityName, "");
-        return ((InstancesSummaryResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params,
-                allColo, null));
-    }
-
-    @Override
     public List<String> getArchiveInfo() throws IOException, JSchException {
         return Util.getStoreInfo(this, "/archive/FEED");
     }

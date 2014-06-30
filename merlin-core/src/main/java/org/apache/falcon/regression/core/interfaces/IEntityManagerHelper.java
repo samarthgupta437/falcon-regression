@@ -573,10 +573,14 @@ public abstract class IEntityManagerHelper {
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public abstract InstancesSummaryResult getInstanceSummary(String readEntityName,
-                                                              String string)
-        throws IOException, AuthenticationException,
-        URISyntaxException;
+    public InstancesSummaryResult getInstanceSummary(String entityName,
+                                                     String params
+    ) throws IOException, URISyntaxException, AuthenticationException {
+        String url = createUrl(this.hostname + URLS.INSTANCE_SUMMARY.getValue(), getEntityType(),
+            entityName, "");
+        return (InstancesSummaryResult) InstanceUtil
+            .createAndsendRequestProcessInstance(url, params, allColo, null);
+    }
 
     public String getColo() {
         return colo;
