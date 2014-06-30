@@ -56,10 +56,6 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
-    public ServiceResponse getStatus(URLS url, String data, String user) {
-        throw new UnsupportedOperationException(INVALID_ERR);
-    }
-
     public ServiceResponse resume(String url, String data, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
@@ -72,16 +68,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
-    public ServiceResponse submitAndSchedule(URLS url, String data, String user) {
-        throw new UnsupportedOperationException(INVALID_ERR);
-    }
-
     public ServiceResponse suspend(String url, String data, String user) {
-        throw new UnsupportedOperationException(INVALID_ERR);
-    }
-
-    @Override
-    public ServiceResponse resume(URLS url, String data, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
