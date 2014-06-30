@@ -379,10 +379,9 @@ public abstract class IEntityManagerHelper {
         return (ProcessInstancesResult) InstanceUtil.sendRequestProcessInstance(url, user);
     }
 
-    public ProcessInstancesResult getProcessInstanceStatus(
-        String readEntityName, String params)
+    public ProcessInstancesResult getProcessInstanceStatus(String entityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
-        return getProcessInstanceStatus(readEntityName, params, null);
+        return getProcessInstanceStatus(entityName, params, null);
     }
 
     public ProcessInstancesResult getProcessInstanceStatus(
@@ -398,7 +397,6 @@ public abstract class IEntityManagerHelper {
         String readEntityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceSuspend(readEntityName, params, null);
-
     }
 
     public ProcessInstancesResult getProcessInstanceSuspend(
