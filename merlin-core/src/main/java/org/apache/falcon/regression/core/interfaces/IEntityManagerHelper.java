@@ -196,6 +196,14 @@ public abstract class IEntityManagerHelper {
         return envFileName;
     }
 
+    public String getColo() {
+        return colo;
+    }
+
+    public String getColoName() {
+        return coloName;
+    }
+
     public IEntityManagerHelper(String envFileName, String prefix) {
         if ((null == prefix) || prefix.isEmpty()) {
             prefix = "";
@@ -249,6 +257,10 @@ public abstract class IEntityManagerHelper {
         return StringUtils.join("/", parts);
     }
 
+    private String getUrlPrefixPart(URLS url) {
+        return this.hostname + url.getValue() + "/" + getEntityType() + "/";
+    }
+
     public ServiceResponse listEntities(URLS url)
         throws IOException, URISyntaxException, AuthenticationException {
         return listEntities(url, null);
@@ -294,6 +306,16 @@ public abstract class IEntityManagerHelper {
             "post", user);
     }
 
+    public ServiceResponse schedule(URLS scheduleUrl, String processData)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return schedule(scheduleUrl, processData, null);
+    }
+
+    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
+    }
+
     public ServiceResponse submitAndSchedule(String url, String data)
         throws IOException, URISyntaxException, AuthenticationException {
         return submitAndSchedule(url, data, null);
@@ -315,10 +337,6 @@ public abstract class IEntityManagerHelper {
         return submitAndSchedule(this.hostname + url.getValue(), data, user);
     }
 
-    private String getUrlPrefixPart(URLS url) {
-        return this.hostname + url.getValue() + "/" + getEntityType() + "/";
-    }
-
     public ServiceResponse deleteByName(URLS deleteUrl, String entityName, String user)
         throws AuthenticationException, IOException, URISyntaxException {
         return Util.sendRequest(getUrlPrefixPart(deleteUrl) + entityName + colo, "delete", user);
@@ -335,6 +353,16 @@ public abstract class IEntityManagerHelper {
             "delete", user);
     }
 
+    public ServiceResponse delete(URLS deleteUrl, String data)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return delete(deleteUrl, data, null);
+    }
+
+    public ServiceResponse delete(URLS deleteUrl, String data, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return delete(this.hostname + deleteUrl.getValue(), data, user);
+    }
+
     public ServiceResponse suspend(String url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return suspend(url, data, null);
@@ -344,6 +372,16 @@ public abstract class IEntityManagerHelper {
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data)),
             "post", user);
+    }
+
+    public ServiceResponse suspend(URLS suspendUrl, String data)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return suspend(suspendUrl, data, null);
+    }
+
+    public ServiceResponse suspend(URLS url, String data, String user)
+        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        return suspend(this.hostname + url.getValue(), data, user);
     }
 
     public ServiceResponse resume(String url, String data)
@@ -410,36 +448,6 @@ public abstract class IEntityManagerHelper {
         return getEntityDefinition(this.hostname + url.getValue(), data, user);
     }
 
-    public ServiceResponse schedule(URLS scheduleUrl, String processData)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return schedule(scheduleUrl, processData, null);
-    }
-
-    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
-    }
-
-    public ServiceResponse delete(URLS deleteUrl, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return delete(deleteUrl, data, null);
-    }
-
-    public ServiceResponse delete(URLS deleteUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return delete(this.hostname + deleteUrl.getValue(), data, user);
-    }
-
-    public ServiceResponse suspend(URLS suspendUrl, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return suspend(suspendUrl, data, null);
-    }
-
-    public ServiceResponse suspend(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return suspend(this.hostname + url.getValue(), data, user);
-    }
-
     public ProcessInstancesResult getRunningInstance(URLS processRunningInstance, String name)
         throws IOException, URISyntaxException, AuthenticationException {
         return getRunningInstance(processRunningInstance, name, null);
@@ -484,25 +492,6 @@ public abstract class IEntityManagerHelper {
             .createAndsendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public String list() {
-        return Util.executeCommandGetOutput(
-            BASE_COMMAND + " entity -list -url " + this.hostname + " -type " + getEntityType());
-    }
-
-    public String getDependencies(String entityName) {
-        return Util.executeCommandGetOutput(
-            BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type " +
-                getEntityType() + " -name " + entityName);
-    }
-
-    public List<String> getArchiveInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/archive/" + getEntityType().toUpperCase());
-    }
-
-    public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/" + getEntityType());
-    }
-
     public ServiceResponse update(String oldEntity, String newEntity)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return update(oldEntity, newEntity, null);
@@ -518,16 +507,7 @@ public abstract class IEntityManagerHelper {
     public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
                                   String user)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
-        return updateRequestHelper(oldEntity, newEntity, updateTime,
-            Util.URLS.UPDATE.getValue() + "/" + getEntityType(), user);
-    }
-
-    public ServiceResponse updateRequestHelper(String oldEntity,
-                                               String newEntity,
-                                               String updateTime,
-                                               String updateUrl, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        String url = this.hostname + updateUrl + "/" +
+        String url = this.hostname + URLS.UPDATE.getValue() + "/" + getEntityType() + "/" +
             Util.readEntityName(oldEntity);
         String urlPart = colo == null || colo.isEmpty() ? "?" : colo + "&";
         return Util.sendRequest(url + urlPart + "effective=" + updateTime, "post",
@@ -585,11 +565,22 @@ public abstract class IEntityManagerHelper {
             .createAndsendRequestProcessInstance(url, params, allColo, null);
     }
 
-    public String getColo() {
-        return colo;
+    public String list() {
+        return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -list -url " + this.hostname + " -type " + getEntityType());
     }
 
-    public String getColoName() {
-        return coloName;
+    public String getDependencies(String entityName) {
+        return Util.executeCommandGetOutput(
+            BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type " +
+                getEntityType() + " -name " + entityName);
+    }
+
+    public List<String> getArchiveInfo() throws IOException, JSchException {
+        return Util.getStoreInfo(this, "/archive/" + getEntityType().toUpperCase());
+    }
+
+    public List<String> getStoreInfo() throws IOException, JSchException {
+        return Util.getStoreInfo(this, "/" + getEntityType());
     }
 }
