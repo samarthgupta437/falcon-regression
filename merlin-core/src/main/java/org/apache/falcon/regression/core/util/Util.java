@@ -69,7 +69,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -122,16 +121,6 @@ public class Util {
         request.addHeader(RequestKeys.CONTENT_TYPE_HEADER, RequestKeys.XML_CONTENT_TYPE);
         HttpResponse response = request.run();
         return new ServiceResponse(response);
-    }
-
-    public static String getExpectedErrorMessage(String filename) throws IOException {
-
-        Properties properties = new Properties();
-        final InputStream resourceAsStream =
-            Util.class.getResourceAsStream("/" + "errorMapping.properties");
-        properties.load(resourceAsStream);
-        resourceAsStream.close();
-        return properties.getProperty(filename);
     }
 
     public static String getProcessName(String data) throws JAXBException {
@@ -298,13 +287,8 @@ public class Util {
         String desired_property;
 
         try {
-            InputStream conf_stream = Util.class.getResourceAsStream("/" + filename);
-
-            Properties properties = new Properties();
-            properties.load(conf_stream);
+            Properties properties = getPropertiesObj(filename);
             desired_property = properties.getProperty(property, defaultValue);
-            conf_stream.close();
-
             return desired_property;
         } catch (Exception e) {
             logger.info(e.getStackTrace());
@@ -788,13 +772,6 @@ public class Util {
         JAXBContext context = JAXBContext.newInstance(Process.class);
         Unmarshaller um = context.createUnmarshaller();
         return (Process) um.unmarshal(new StringReader(processData));
-    }
-
-    public static Feed getFeedObject(String feedData) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-
-        return (Feed) um.unmarshal(new StringReader(feedData));
     }
 
     /**
