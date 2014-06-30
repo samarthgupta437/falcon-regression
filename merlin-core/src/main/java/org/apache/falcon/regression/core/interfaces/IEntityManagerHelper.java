@@ -344,17 +344,6 @@ public abstract class IEntityManagerHelper {
             "post", user);
     }
 
-    public ServiceResponse getStatus(String url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return getStatus(url, data, null);
-    }
-
-    public ServiceResponse getStatus(String url, String data, String user)
-        throws IOException, URISyntaxException, JAXBException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data)),
-            "get", user);
-    }
-
     public ServiceResponse getStatus(URLS url, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return getStatus(url, data, null);
@@ -362,7 +351,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse getStatus(Util.URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return getStatus(this.hostname + url.getValue(), data, user);
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
+            "get", user);
     }
 
     public ServiceResponse getEntityDefinition(String url, String data)
