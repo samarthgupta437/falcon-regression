@@ -279,16 +279,6 @@ public abstract class IEntityManagerHelper {
         logger.info("Submitting " + getEntityType() +  ": \n" + Util.prettyPrintXml(data));
         return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo), "post",
             data, user);
-
-    public ServiceResponse schedule(String url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return schedule(url, data, null);
-    }
-
-    public ServiceResponse schedule(String url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data) + colo),
-            "post", user);
     }
 
     public ServiceResponse schedule(URLS scheduleUrl, String processData)
@@ -296,9 +286,10 @@ public abstract class IEntityManagerHelper {
         return schedule(scheduleUrl, processData, null);
     }
 
-    public ServiceResponse schedule(Util.URLS scheduleUrl, String processData, String user)
+    public ServiceResponse schedule(URLS scheduleUrl, String processData, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return schedule(this.hostname + scheduleUrl.getValue(), processData, user);
+        return Util.sendRequest(createUrl(this.hostname + scheduleUrl.getValue(), getEntityType(),
+                getEntityName(processData) + colo), "post", user);
     }
 
     public ServiceResponse submitAndSchedule(String url, String data)
