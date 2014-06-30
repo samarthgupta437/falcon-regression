@@ -311,17 +311,6 @@ public abstract class IEntityManagerHelper {
             "delete", user);
     }
 
-    public ServiceResponse delete(String url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return delete(url, data, null);
-    }
-
-    public ServiceResponse delete(String url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(url, getEntityType(), getEntityName(data)),
-            "delete", user);
-    }
-
     public ServiceResponse delete(URLS deleteUrl, String data)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         return delete(deleteUrl, data, null);
@@ -329,7 +318,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse delete(URLS deleteUrl, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return delete(this.hostname + deleteUrl.getValue(), data, user);
+        return Util.sendRequest(createUrl(this.hostname + deleteUrl.getValue(), getEntityType(), getEntityName(data)),
+            "delete", user);
     }
 
     public ServiceResponse suspend(String url, String data)
