@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.supportClasses;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
@@ -43,25 +39,27 @@ public class Brother extends Thread {
     }
 
     IEntityManagerHelper entityManagerHelper;
-    PrismHelper p;
 
     public Brother(String threadName, String operation, ENTITY_TYPE entityType, ThreadGroup tGroup,
-                   Bundle b,
-                   PrismHelper p, URLS url) {
+                   Bundle b, PrismHelper p, URLS url) {
         super(tGroup, threadName);
         this.operation = operation;
-        this.p = p;
-        if (entityType.equals(ENTITY_TYPE.PROCESS)) {
-            this.data = b.getProcessData();
-            this.entityManagerHelper = p.getProcessHelper();
-        } else if (entityType.equals(ENTITY_TYPE.CLUSTER)) {
-            this.entityManagerHelper = p.getClusterHelper();
-            this.data = b.getClusters().get(0);
-        } else {
-            this.entityManagerHelper = p.getFeedHelper();
-            this.data = b.getDataSets().get(0);
+        switch (entityType) {
+            case PROCESS:
+                this.data = b.getProcessData();
+                this.entityManagerHelper = p.getProcessHelper();
+                break;
+            case CLUSTER:
+                this.entityManagerHelper = p.getClusterHelper();
+                this.data = b.getClusters().get(0);
+                break;
+            case FEED:
+                this.entityManagerHelper = p.getFeedHelper();
+                this.data = b.getDataSets().get(0);
+                break;
+            default:
+                logger.error("Unexpected entityType=" + entityType);
         }
-
         this.url = url;
         this.output = new ServiceResponse();
     }

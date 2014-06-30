@@ -66,7 +66,7 @@ public class PrismHelper {
                 EntityHelperFactory
                     .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
             feedHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, this.envFileName, prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, this.envFileName, prefix);
 
         } catch (Exception e) {
             logger.info(e.getMessage());

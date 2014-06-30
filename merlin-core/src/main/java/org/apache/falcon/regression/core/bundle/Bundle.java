@@ -245,7 +245,7 @@ public class Bundle {
 
         if (null == bundle.getFeedHelper()) {
             this.feedHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.DATA, envFileName, prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, envFileName, prefix);
         } else {
             this.feedHelper = bundle.getFeedHelper();
         }

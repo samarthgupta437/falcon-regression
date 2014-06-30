@@ -983,7 +983,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
         IEntityManagerHelper ua1 = cluster2.getClusterHelper();
         IEntityManagerHelper ua2 = cluster1.getClusterHelper();
 
-        if (entityType.equals(ENTITY_TYPE.DATA)) {
+        if (entityType.equals(ENTITY_TYPE.FEED)) {
             prizm = prism.getFeedHelper();
             ua1 = cluster2.getFeedHelper();
             ua2 = cluster1.getFeedHelper();
