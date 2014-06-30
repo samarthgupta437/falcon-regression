@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
 public class Brother extends Thread {
     String operation;
     String data;
-    String url;
+    URLS url;
     ServiceResponse output;
     private Logger logger = Logger.getLogger(this.getClass());
 
@@ -62,7 +62,7 @@ public class Brother extends Thread {
             this.data = b.getDataSets().get(0);
         }
 
-        this.url = p.getClusterHelper().getHostname() + url.getValue();
+        this.url = url;
         this.output = new ServiceResponse();
     }
 
@@ -79,24 +79,36 @@ public class Brother extends Thread {
         }
         logger.info("Brother " + this.getName() + " will be executing " + operation);
         try {
-            if (operation.equalsIgnoreCase("submit")) {
-                output = entityManagerHelper.submitEntity(url, data);
-            } else if (operation.equalsIgnoreCase("get")) {
-                output = entityManagerHelper.getEntityDefinition(url, data);
-            } else if (operation.equalsIgnoreCase("delete")) {
-                output = entityManagerHelper.delete(url, data);
-            } else if (operation.equalsIgnoreCase("suspend")) {
-                output = entityManagerHelper.suspend(url, data);
-            } else if (operation.equalsIgnoreCase("schedule")) {
-                output = entityManagerHelper.schedule(url, data);
-            } else if (operation.equalsIgnoreCase("resume")) {
-                output = entityManagerHelper.resume(url, data);
-            } else if (operation.equalsIgnoreCase("SnS")) {
-                output = entityManagerHelper.submitAndSchedule(url, data);
-            } else if (operation.equalsIgnoreCase("status")) {
-                output = entityManagerHelper.getStatus(url, data);
+            switch (url) {
+                case SUBMIT_URL:
+                    output = entityManagerHelper.submitEntity(url, data);
+                    break;
+                case GET_ENTITY_DEFINITION:
+                    output = entityManagerHelper.getEntityDefinition(url, data);
+                    break;
+                case DELETE_URL:
+                    output = entityManagerHelper.delete(url, data);
+                    break;
+                case SUSPEND_URL:
+                    output = entityManagerHelper.suspend(url, data);
+                    break;
+                case SCHEDULE_URL:
+                    output = entityManagerHelper.schedule(url, data);
+                    break;
+                case RESUME_URL:
+                    output = entityManagerHelper.resume(url, data);
+                    break;
+                case SUBMIT_AND_SCHEDULE_URL:
+                    output = entityManagerHelper.submitAndSchedule(url, data);
+                    break;
+                case STATUS_URL:
+                    output = entityManagerHelper.getStatus(url, data);
+                    break;
+                default:
+                    logger.error("Unexpected url: " + url);
+                    break;
             }
-            logger.info("Brother " + this.getName() + "'s response to the " + operation + " is: " +
+            logger.info("Brother " + getName() + "'s response to the " + operation + " is: " +
                 output);
         } catch (Exception e) {
             e.printStackTrace();
