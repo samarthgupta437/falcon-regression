@@ -47,14 +47,14 @@ import java.util.Properties;
 
 public abstract class IEntityManagerHelper {
 
-	public static boolean AUTHENTICATE = setAuthenticate();
-	
+    public static boolean AUTHENTICATE = setAuthenticate();
+
     private Logger logger = Logger.getLogger(IEntityManagerHelper.class);
 
     protected String CLIENT_LOCATION = OSUtil.RESOURCES
         + OSUtil.getPath("IvoryClient", "IvoryCLI.jar");
     protected String BASE_COMMAND = "java -jar " + CLIENT_LOCATION;
-    
+
     private static boolean setAuthenticate() {
         String value = Util.readPropertiesFile("Merlin.properties", "isAuthenticationSet");
         value = (null == value) ? "true" : value;
@@ -251,6 +251,7 @@ public abstract class IEntityManagerHelper {
     }
 
     public abstract String getEntityType();
+
     public abstract String getEntityName(String entity) throws JAXBException;
 
     protected String createUrl(String... parts) {
@@ -264,7 +265,7 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse listEntities(Util.URLS url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        logger.info("fetching " + getEntityType() +" list");
+        logger.info("fetching " + getEntityType() + " list");
         return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo),
             "get", null, user);
     }
@@ -276,9 +277,9 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse submitEntity(URLS url, String data, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-        logger.info("Submitting " + getEntityType() +  ": \n" + Util.prettyPrintXml(data));
-        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo), "post",
-            data, user);
+        logger.info("Submitting " + getEntityType() + ": \n" + Util.prettyPrintXml(data));
+        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType() + colo),
+            "post", data, user);
     }
 
     public ServiceResponse schedule(URLS scheduleUrl, String processData)
@@ -318,7 +319,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse delete(URLS deleteUrl, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(this.hostname + deleteUrl.getValue(), getEntityType(), getEntityName(data)),
+        return Util.sendRequest(
+            createUrl(this.hostname + deleteUrl.getValue(), getEntityType(), getEntityName(data)),
             "delete", user);
     }
 
@@ -329,7 +331,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse suspend(URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
+        return Util.sendRequest(
+            createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "post", user);
     }
 
@@ -340,7 +343,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse resume(URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
+        return Util.sendRequest(
+            createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "post", user);
     }
 
@@ -351,7 +355,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse getStatus(Util.URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
+        return Util.sendRequest(
+            createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "get", user);
     }
 
@@ -362,7 +367,8 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse getEntityDefinition(URLS url, String data, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        return Util.sendRequest(createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
+        return Util.sendRequest(
+            createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "get", user);
     }
 
