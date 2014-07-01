@@ -1346,6 +1346,14 @@ public class Bundle {
         return InstanceUtil.processToString(p);
     }
 
+    /**
+     * Sets partition for each input, according to number of supplied partitions.
+     *
+     * @param process process definition to be modified
+     * @param partition partitions to be set
+     * @return modified process definition
+     * @throws JAXBException
+     */
     public String setProcessInputPartition(String process, String... partition)
         throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
