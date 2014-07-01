@@ -266,7 +266,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
             .getProcessData()), Job.Status.SUCCEEDED, counter);
         r = prism.getProcessHelper()
-            .getRunningInstance(URLS.INSTANCE_STATUS,
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
     }
