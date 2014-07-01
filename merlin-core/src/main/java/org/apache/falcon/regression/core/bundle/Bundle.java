@@ -101,7 +101,6 @@ public class Bundle {
     String clusterData;
 
     String processFilePath;
-    String envFileName;
     List<String> clusters;
 
     private static String sBundleLocation;
@@ -195,22 +194,8 @@ public class Bundle {
         return processHelper;
     }
 
-    public String getEnvFileName() {
-        return envFileName;
-    }
-
     public String getProcessFilePath() {
         return processFilePath;
-    }
-
-    public Bundle(Bundle bundle) {
-        this.dataSets = new ArrayList<String>(bundle.getDataSets());
-        this.processData = bundle.getProcessData();
-        this.clusters = bundle.getClusters();
-        this.clusterHelper = bundle.getClusterHelper();
-        this.processHelper = bundle.getProcessHelper();
-        this.feedHelper = bundle.getFeedHelper();
-        this.envFileName = bundle.getEnvFileName();
     }
 
     public Bundle(List<String> dataSets, String processData, String clusterData) {
@@ -249,8 +234,6 @@ public class Bundle {
         } else {
             this.feedHelper = bundle.getFeedHelper();
         }
-
-        this.envFileName = envFileName;
     }
 
     public Bundle(Bundle bundle, PrismHelper prismHelper) throws JAXBException {

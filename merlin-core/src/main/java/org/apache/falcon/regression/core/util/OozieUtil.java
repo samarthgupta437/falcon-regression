@@ -181,13 +181,6 @@ public class OozieUtil {
             "Coordinator job should have got created by now.");
     }
 
-    public static String getBundleStatus(PrismHelper prismHelper, String bundleId)
-        throws OozieClientException {
-        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
-        return bundleJob.getStatus().toString();
-    }
-
     public static Job.Status getOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType)
         throws OozieClientException {

@@ -94,6 +94,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         processBundle.setProcessWorkflow(aggregateWorkflowDir);
     }
 
+    @AfterMethod(alwaysRun = true)
     public void tearDown() {
         removeBundles();
         removeBundles(processBundle);
