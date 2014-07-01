@@ -21,13 +21,12 @@ package org.apache.falcon.regression.ui.pages;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import javax.annotation.Nullable;
 
 
 public abstract class Page {
@@ -143,11 +142,8 @@ public abstract class Page {
 
         @Override
         public Boolean apply(WebDriver webDriver) {
-            if (webElement == null) {
-                return (!webDriver.findElements(By.xpath(xpath)).isEmpty() == isPresent);
-            } else {
-                return (!webElement.findElements(By.xpath(xpath)).isEmpty() == isPresent);
-            }
+            SearchContext search = (webElement == null) ? webDriver : webElement;
+            return search.findElements(By.xpath(xpath)).isEmpty() != isPresent;
         }
     }
 }
