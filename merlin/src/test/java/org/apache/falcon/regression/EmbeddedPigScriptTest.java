@@ -237,7 +237,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getSucceededProcessInstance() throws Exception {
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:10Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
 
         final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
