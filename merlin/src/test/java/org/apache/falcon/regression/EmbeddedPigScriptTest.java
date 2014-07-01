@@ -118,19 +118,9 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
             .setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "INPUT"));
         bundles[0].setProcessData(
             bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
-    }
-
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() {
-        removeBundles();
-    }
-
-    @Test(groups = {"singleCluster"})
-    public void getResumedProcessInstance() throws Exception {
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:10Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setProcessConcurrency(3);
 
         final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
         final Properties properties = new Properties();
@@ -141,9 +131,16 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
-
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() {
+        removeBundles();
+    }
+
+    @Test(groups = {"singleCluster"})
+    public void getResumedProcessInstance() throws Exception {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
@@ -163,22 +160,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getSuspendedProcessInstance() throws Exception {
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setProcessConcurrency(3);
-
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(10000);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
@@ -191,21 +172,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
-        bundles[0].setCLusterColo("ua2");
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
@@ -216,17 +182,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getKilledProcessInstance() throws Exception {
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
@@ -237,20 +192,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getSucceededProcessInstance() throws Exception {
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:10Z");
-        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
