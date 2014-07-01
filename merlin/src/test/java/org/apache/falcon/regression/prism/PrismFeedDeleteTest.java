@@ -1102,13 +1102,13 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         IEntityManagerHelper server1Helper = cluster1.getClusterHelper();
         IEntityManagerHelper server2Helper = cluster2.getClusterHelper();
 
-        if (entityType.equals(ENTITY_TYPE.FEED)) {
+        if (entityType == ENTITY_TYPE.FEED) {
             prismHelper = prism.getFeedHelper();
             server1Helper = cluster1.getFeedHelper();
             server2Helper = cluster2.getFeedHelper();
         }
 
-        if (entityType.equals(ENTITY_TYPE.PROCESS)) {
+        if (entityType == ENTITY_TYPE.PROCESS) {
             prismHelper = prism.getProcessHelper();
             server1Helper = cluster1.getProcessHelper();
             server2Helper = cluster2.getProcessHelper();

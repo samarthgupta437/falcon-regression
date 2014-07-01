@@ -359,7 +359,7 @@ public class Util {
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
         for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType().equals(LocationType.DATA)) {
+            if (location.getType() == LocationType.DATA) {
                 return location.getPath();
             }
         }
@@ -496,7 +496,7 @@ public class Util {
 
         //set the value
         for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType().equals(LocationType.DATA)) {
+            if (location.getType() == LocationType.DATA) {
                 location.setPath(pathValue);
             }
         }
@@ -887,17 +887,17 @@ public class Util {
 
         //now read and set relevant values
         for (Interface iface : clusterObject.getInterfaces().getInterfaces()) {
-            if (iface.getType().equals(Interfacetype.READONLY)) {
+            if (iface.getType() == Interfacetype.READONLY) {
                 iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_readonly"));
-            } else if (iface.getType().equals(Interfacetype.WRITE)) {
+            } else if (iface.getType() == Interfacetype.WRITE) {
                 iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_write"));
-            } else if (iface.getType().equals(Interfacetype.EXECUTE)) {
+            } else if (iface.getType() == Interfacetype.EXECUTE) {
                 iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_execute"));
-            } else if (iface.getType().equals(Interfacetype.WORKFLOW)) {
+            } else if (iface.getType() == Interfacetype.WORKFLOW) {
                 iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
-            } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
+            } else if (iface.getType() == Interfacetype.MESSAGING) {
                 iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
-            } else if (iface.getType().equals(Interfacetype.REGISTRY)) {
+            } else if (iface.getType() == Interfacetype.REGISTRY) {
                 iface.setEndpoint(hcat_endpoint);
             }
         }
@@ -1134,9 +1134,9 @@ public class Util {
         IOException, URISyntaxException, AuthenticationException {
         ENTITY_TYPE type = getEntityType(entity);
         IEntityManagerHelper helper;
-        if (ENTITY_TYPE.PROCESS.equals(type))
+        if (ENTITY_TYPE.PROCESS == type)
             helper = cluster.getProcessHelper();
-        else if (ENTITY_TYPE.FEED.equals(type))
+        else if (ENTITY_TYPE.FEED == type)
             helper = cluster.getFeedHelper();
         else
             helper = cluster.getClusterHelper();

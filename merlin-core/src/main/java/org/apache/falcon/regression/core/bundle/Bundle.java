@@ -599,7 +599,7 @@ public class Bundle {
         if (!dataElement.getName().contains("raaw-logs16")) {
             dataElement = (Feed) u.unmarshal(new StringReader(dataSets.get(1)));
         }
-        if (dataElement.getFrequency().getTimeUnit().equals(TimeUnit.hours))
+        if (dataElement.getFrequency().getTimeUnit() == TimeUnit.hours)
             return (Integer.parseInt(dataElement.getFrequency().getFrequency())) * 60;
         else return (Integer.parseInt(dataElement.getFrequency().getFrequency()));
     }

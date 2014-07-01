@@ -209,7 +209,7 @@ public class InstanceUtil {
                     pArray[instanceIndex].getInstance()
             );
 
-            if (pArray[instanceIndex].getStatus().equals(ws)) {
+            if (pArray[instanceIndex].getStatus() == ws) {
                 runningCount++;
             }
         }
@@ -322,18 +322,22 @@ public class InstanceUtil {
                 "pArray[" + instanceIndex + "]: " + pArray[instanceIndex].getStatus() + " , " +
                     pArray[instanceIndex].getInstance());
 
-            if (pArray[instanceIndex].getStatus()
-                .equals(ProcessInstancesResult.WorkflowStatus.RUNNING))
-                actualRunningInstances++;
-            else if (pArray[instanceIndex].getStatus()
-                .equals(ProcessInstancesResult.WorkflowStatus.SUSPENDED))
-                actualSuspendedInstances++;
-            else if (pArray[instanceIndex].getStatus()
-                .equals(ProcessInstancesResult.WorkflowStatus.WAITING))
-                actualWaitingInstances++;
-            else if (pArray[instanceIndex].getStatus()
-                .equals(ProcessInstancesResult.WorkflowStatus.KILLED))
-                actualKilledInstances++;
+            switch (pArray[instanceIndex].getStatus()) {
+                case RUNNING:
+                    actualRunningInstances++;
+                    break;
+                case SUSPENDED:
+                    actualSuspendedInstances++;
+                    break;
+                case WAITING:
+                    actualWaitingInstances++;
+                    break;
+                case KILLED:
+                    actualKilledInstances++;
+                    break;
+                default:
+                    Assert.fail("Unexpected status=" + pArray[instanceIndex].getStatus());
+            }
         }
 
         Assert.assertEquals(actualRunningInstances, runningInstances, "Running Instances");
@@ -481,7 +485,7 @@ public class InstanceUtil {
         int instanceCount = 0;
         for (CoordinatorAction aList : list) {
 
-            if (aList.getStatus().equals(status))
+            if (aList.getStatus() == status)
                 instanceCount++;
         }
         return instanceCount;
@@ -1203,7 +1207,7 @@ public class InstanceUtil {
         throws InterruptedException, OozieClientException {
         String filter;
         // get the bunlde ids
-        if (entityType.equals(ENTITY_TYPE.FEED)) {
+        if (entityType == ENTITY_TYPE.FEED) {
             filter = "name=FALCON_FEED_" + entityName;
         } else {
             filter = "name=FALCON_PROCESS_" + entityName;
@@ -1231,7 +1235,7 @@ public class InstanceUtil {
         OozieUtil.waitForCoordinatorJobCreation(client, bundleId);
         List<CoordinatorJob> coords = client.getBundleJobInfo(bundleId).getCoordinators();
         List<String> cIds = new ArrayList<String>();
-        if (entityType.equals(ENTITY_TYPE.PROCESS)) {
+        if (entityType == ENTITY_TYPE.PROCESS) {
             for (CoordinatorJob coord : coords) {
                 cIds.add(coord.getId());
             }
@@ -1293,8 +1297,7 @@ public class InstanceUtil {
 
             BundleJob j = oozieClient.getBundleJobInfo(BundleID);
 
-
-            if (j.getStatus().equals(expectedStatus))
+            if (j.getStatus() == expectedStatus)
                 break;
 
             try {
