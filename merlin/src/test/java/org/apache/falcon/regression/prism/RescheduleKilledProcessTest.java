@@ -20,6 +20,7 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -67,11 +68,13 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     *  Run process and delete it. Submit and schedule once more.
+     *
+     * @throws Exception
+     */
     @Test(enabled = false, timeOut = 1200000)
-    public void recheduleKilledProcess() throws Exception {
-        // submit and schedule a process with error in workflow .
-        //it will get killed
-        //generate bundles according to config files
+    public void rescheduleKilledProcess() throws Exception {
         String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
         String processEndTime = TimeUtil.getTimeWrtSystemTime(6);
         String process = bundles[0].getProcessData();
@@ -89,23 +92,26 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(prism);
 
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
-        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData());
-
+        AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL,
+            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
+            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL,
+            bundles[0].getProcessData()));
     }
 
-
+    /**
+     * Submit and schedule a process. Then remove it. Repeat all procedure twice.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, timeOut = 1200000)
-    public void recheduleKilledProcess02() throws Exception {
-        // submit and schedule a process with error in workflow .
-        //it will get killed
+    public void rescheduleKilledProcess02() throws Exception {
         bundles[0].setProcessValidity(TimeUtil.getTimeWrtSystemTime(-11),
             TimeUtil.getTimeWrtSystemTime(6));
 
         bundles[0].setInputFeedDataPath(
             baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-
 
         String prefix = InstanceUtil.getFeedPrefix(BundleUtil.getInputFeedFromBundle(bundles[0]));
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
@@ -115,12 +121,17 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(prism);
 
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
-        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData());
-        prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-        prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getProcessData());
-        prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData());
-
+        AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL,
+            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
+            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL,
+            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL,
+            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
+            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().schedule(URLS.SCHEDULE_URL,
+            bundles[0].getProcessData()));
     }
 }
