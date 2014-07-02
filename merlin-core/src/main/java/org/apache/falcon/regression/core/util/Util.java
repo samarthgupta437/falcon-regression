@@ -274,7 +274,7 @@ public class Util {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
         Process processElement = (Process) u.unmarshal((new StringReader(data)));
-        processElement.setName(processElement.getName() + "-" + UUID.randomUUID());
+        processElement.setName(processElement.getName() + getUniqueString());
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(processElement, sw);
@@ -292,7 +292,7 @@ public class Util {
         JAXBContext jc = JAXBContext.newInstance(Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
         Cluster clusterElement = (Cluster) u.unmarshal((new StringReader(data)));
-        clusterElement.setName(clusterElement.getName() + "-" + UUID.randomUUID());
+        clusterElement.setName(clusterElement.getName() + getUniqueString());
 
         //lets marshall it back and return
         java.io.StringWriter sw = new StringWriter();
@@ -312,8 +312,12 @@ public class Util {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
-        dataElement.setName(dataElement.getName() + "-" + UUID.randomUUID());
+        dataElement.setName(dataElement.getName() + getUniqueString());
         return InstanceUtil.feedElementToString(dataElement);
+    }
+
+    private static String getUniqueString() {
+        return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
     public static String readPropertiesFile(String filename, String property) {

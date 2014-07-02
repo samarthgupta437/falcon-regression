@@ -461,9 +461,6 @@ public class Bundle {
     public ServiceResponse submitBundle(PrismHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
-        //make sure bundle is unique
-        generateUniqueBundle();
-
         submitClusters(prismHelper);
 
         //lets submit all data first

@@ -90,10 +90,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     public void testSetup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
         bundles[0] = new Bundle(b, cluster1);
+        bundles[0].generateUniqueBundle();
         bundles[1] = new Bundle(b, cluster2);
+        bundles[1].generateUniqueBundle();
         bundles[2] = new Bundle(b, cluster3);
+        bundles[2].generateUniqueBundle();
         setBundleWFPath(bundles[0], bundles[1], bundles[2]);
         bundles[1].addClusterToBundle(bundles[2].getClusters().get(0),
             ClusterType.TARGET, null, null);
@@ -1536,6 +1538,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         try {
 
             b = new Bundle(b, cluster1);
+            b.generateUniqueBundle();
             b.submitBundle(prism);
 
             b.setProcessValidity(TimeUtil.getTimeWrtSystemTime(-10),
