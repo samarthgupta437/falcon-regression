@@ -23,9 +23,13 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.process.*;
 import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.oozie.client.BundleJob;
+import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.OozieClientException;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBContext;
@@ -218,5 +222,22 @@ public class BundleUtil {
             }
         }
         return null;
+    }
+
+    public static String getBundleUser(ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType)
+            throws OozieClientException {
+        String newProcessBundleId = InstanceUtil.getLatestBundleID(coloHelper, entityName,
+                entityType);
+        BundleJob newProcessBundlejob =
+                coloHelper.getClusterHelper().getOozieClient().getBundleJobInfo
+                        (newProcessBundleId);
+        CoordinatorJob coordinatorJob = null;
+        for (CoordinatorJob coord : newProcessBundlejob.getCoordinators()) {
+            if (coord.getAppName().contains("DEFAULT")) {
+                coordinatorJob = coord;
+            }
+        }
+        Assert.assertNotNull(coordinatorJob);
+        return coordinatorJob.getUser();
     }
 }
