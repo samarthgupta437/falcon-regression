@@ -200,7 +200,7 @@ public class Util {
         if (data.contains("uri:falcon:feed"))
             return InstanceUtil.getFeedElement(data).getName();
         else if (data.contains("uri:falcon:process"))
-            return InstanceUtil.getProcessElement(data).getName();
+            return ((Process) Entity.fromString(EntityType.PROCESS, data)).getName();
         else
             return Entity.fromString(EntityType.CLUSTER, data).getName();
     }

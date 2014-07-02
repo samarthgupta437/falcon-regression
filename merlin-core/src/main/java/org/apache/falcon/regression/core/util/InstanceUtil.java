@@ -23,6 +23,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.falcon.entity.v0.feed.ACL;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.Cluster;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.Locations;
@@ -233,7 +235,7 @@ public class InstanceUtil {
     public static void writeProcessElement(Bundle bundle, Process processElement)
         throws JAXBException {
         //logger.info("modified process is: " + sw);
-        bundle.setProcessData(processToString(processElement));
+        bundle.setProcessData(processElement.toString());
     }
 
     public static Process getProcessElement(Bundle bundle) throws JAXBException {
@@ -889,37 +891,14 @@ public class InstanceUtil {
             new org.apache.falcon.entity.v0.process.Cluster();
         c.setName(clusterName);
         c.setValidity(validity);
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         if (clusterName == null)
             p.getClusters().getClusters().set(0, null);
         else {
             p.getClusters().getClusters().add(c);
         }
-        return processToString(p);
-    }
-
-    /**
-     * Represents process XML definition as string
-     *
-     * @param p - process XML definition which is to be converted
-     * @throws JAXBException
-     */
-    public static String processToString(Process p) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(p, sw);
-        return sw.toString();
-    }
-
-    /**
-     * Converts process string representation to XML
-     */
-    public static Process getProcessElement(String process) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        return (Process) u.unmarshal((new StringReader(process)));
+        return p.toString();
     }
 
     /**
@@ -932,7 +911,7 @@ public class InstanceUtil {
      */
     public static String addProcessInputFeed(String process, String feed,
                                              String feedName) throws JAXBException {
-        Process processElement = InstanceUtil.getProcessElement(process);
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, process);
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
         in2.setEnd(in1.getEnd());
@@ -941,7 +920,7 @@ public class InstanceUtil {
         in2.setPartition(in1.getPartition());
         in2.setStart(in1.getStart());
         processElement.getInputs().getInputs().add(in2);
-        return processToString(processElement);
+        return processElement.toString();
     }
 
     public static org.apache.oozie.client.WorkflowJob.Status getInstanceStatusFromCoord(
@@ -1076,18 +1055,22 @@ public class InstanceUtil {
      */
     public static String setProcessFrequency(String process,
                                              Frequency frequency) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         p.setFrequency(frequency);
-        return InstanceUtil.processToString(p);
+
+        return p.toString();
     }
 
     /**
      * Sets new process name
      */
     public static String setProcessName(String process, String newName) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         p.setName(newName);
-        return InstanceUtil.processToString(p);
+
+        return p.toString();
     }
 
     /**
@@ -1101,14 +1084,15 @@ public class InstanceUtil {
      */
     public static String setProcessValidity(String process,
                                             String startTime, String endTime) throws JAXBException {
-        Process processElement = InstanceUtil.getProcessElement(process);
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         for (int i = 0; i < processElement.getClusters().getClusters().size(); i++) {
             processElement.getClusters().getClusters().get(i).getValidity().setStart(
                 TimeUtil.oozieDateToDate(startTime).toDate());
             processElement.getClusters().getClusters().get(i).getValidity()
                 .setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
         }
-        return InstanceUtil.processToString(processElement);
+        return processElement.toString();
     }
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(

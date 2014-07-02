@@ -531,7 +531,7 @@ public class Bundle {
         input.setName("inputData");
         inputs.getInputs().add(input);
         process.setInputs(inputs);
-        this.setProcessData(InstanceUtil.processToString(process));
+        this.setProcessData(process.toString());
     }
 
     public void setInvalidData() throws JAXBException {
@@ -1158,7 +1158,7 @@ public class Bundle {
                                   int numberOfInputs, int numberOfOptionalInput,
                                   int numberOfOutputs) throws JAXBException {
 
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         int numberOfOptionalSet = 0;
         boolean isFirst = true;
 
@@ -1198,7 +1198,7 @@ public class Bundle {
         }
         p.setOutputs(os);
         p.setLateProcess(null);
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1215,7 +1215,7 @@ public class Bundle {
     public String setProcessClusters(String process, List<String> newClusters, String startTime,
                                      String endTime) throws JAXBException {
 
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         org.apache.falcon.entity.v0.process.Clusters cs =
             new org.apache.falcon.entity.v0.process.Clusters();
         for (String newCluster : newClusters) {
@@ -1229,7 +1229,7 @@ public class Bundle {
             cs.getClusters().add(c);
         }
         p.setClusters(cs);
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1312,11 +1312,11 @@ public class Bundle {
      * @throws JAXBException
      */
     public String setProcessInputNames(String process, String... names) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (int i = 0; i < names.length; i++) {
             p.getInputs().getInputs().get(i).setName(names[i]);
         }
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1328,11 +1328,11 @@ public class Bundle {
      * @throws JAXBException
      */
     public String addProcessProperty(String process, Property... properties) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (Property property : properties) {
             p.getProperties().getProperties().add(property);
         }
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1345,11 +1345,11 @@ public class Bundle {
      */
     public String setProcessInputPartition(String process, String... partition)
         throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (int i = 0; i < partition.length; i++) {
             p.getInputs().getInputs().get(i).setPartition(partition[i]);
         }
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     public static Object[][] readBundle(String bundleLocation) throws IOException {
@@ -1366,7 +1366,7 @@ public class Bundle {
     }
 
     public String setProcessOutputNames(String process, String... names) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         Outputs outputs = p.getOutputs();
         if (outputs.getOutputs().size() != names.length) {
             logger.info("Number of output names not equal to output in processdef");
@@ -1376,7 +1376,7 @@ public class Bundle {
             outputs.getOutputs().get(i).setName(names[i]);
         }
         p.setOutputs(outputs);
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx)
@@ -1385,7 +1385,7 @@ public class Bundle {
         String feedName = Util.readEntityName(feed);
         String processData = getProcessData();
 
-        Process processObject = InstanceUtil.getProcessElement(processData);
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
         final List<Input> processInputs = processObject.getInputs().getInputs();
         Input templateInput = processInputs.get(templateInputIdx);
         Input newInput = new Input();
