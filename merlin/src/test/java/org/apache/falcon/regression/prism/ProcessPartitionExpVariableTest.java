@@ -77,8 +77,16 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(baseTestDir, clusterFS);
     }
 
+    /**
+     * Test case: set 1 optional and 1 compulsory input for process. Set partitions for each
+     * input as expression language variable linked with process properties. Check that process
+     * runs fine with partition provided for compulsory input as exp variable and succeeds in
+     * spite of nonexistent partition provided for optional input.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true)
-    public void ProcessPartitionExpVariableTest_OptionalCompulsaryPartition() throws Exception {
+    public void ProcessPartitionExpVariableTest_OptionalCompulsoryPartition() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
@@ -113,6 +121,16 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
             CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
     }
 
+    /**
+     * Generates list of remote directories between start and end date and then places data there.
+     *
+     * @param colo colohelper for remote cluster
+     * @param startDateJoda start date
+     * @param endDateJoda end date
+     * @param prefix root path for all directories
+     * @param interval interval with which directories are created
+     * @throws IOException
+     */
     private static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
                                                        DateTime endDateJoda, String prefix,
                                                        int interval) throws IOException {
@@ -129,10 +147,17 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         InstanceUtil.putDataInFolders(colo, dataFolder, "");
     }
 
+    /**
+     * Generates patterns of the form .../2014/03/06/21/57/2014-Mar-07 between two supplied dates.
+     * There are two dates and the second date is one day after the first one
+     *
+     * @param startDate start date
+     * @param endDate end date
+     * @param minuteSkip interval with which directories are created
+     * @return list of such dates
+     */
     private static List<String> generateDateAndOneDayAfter(DateTime startDate, DateTime endDate,
                                                            int minuteSkip) {
-        //we want to generate patterns of the form .../2014/03/06/21/57/2014-Mar-07
-        //note there are two dates and the second date is one day after the first one
         final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm/");
         final DateTimeFormatter formatter2 = DateTimeFormat.forPattern("yyyy-MMM-dd");
         logger.info("generating data between " + formatter.print(startDate) + " and " +

@@ -89,6 +89,13 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Set feed cluster1 as target, clusters 2 and 3 as source. Run feed. Update feed and check
+     * if action succeed. Check that appropriate number of replication and retention coordinators
+     * exist on matching clusters.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, timeOut = 1200000)
     public void multipleSourceOneTarget() throws Exception {
 
@@ -168,6 +175,13 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
                 "RETENTION"), 2);
     }
 
+    /**
+     * Set feed1 to have cluster1 as source, cluster3 as target. Set feed2 clusters vise versa.
+     * Add both clusters to process and feed2 as input feed. Run process. Update feed1.
+     * TODO test case is incomplete
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, timeOut = 1200000)
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
