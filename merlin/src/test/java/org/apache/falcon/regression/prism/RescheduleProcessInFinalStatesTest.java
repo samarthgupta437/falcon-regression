@@ -32,6 +32,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job.Status;
 import org.joda.time.DateTime;
@@ -41,7 +42,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +61,6 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-
         logger.info("in @BeforeClass");
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
@@ -104,8 +107,8 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(
             baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
+        bundles[0].submitAndScheduleBundle(prism);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -113,53 +116,56 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         removeBundles();
     }
 
-
-    // DWE mean Done With Error In Oozie
-    @Test(enabled = false)
+    /**
+     * Wait till process succeed and delete it. Check that entity is absent on server. Reschedule
+     * it and check that it succeeds after some time.
+     *
+     * @throws Exception
+     */
+    @Test(enabled = true)
     public void rescheduleSucceeded() throws Exception {
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
-
-        //delete the process
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-
-        //check ... get definition should return process not found
-        ServiceResponse r = prism.getProcessHelper()
-            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
-        Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        AssertUtil.assertFailed(r);
+        checkNotFoundDefinition(bundles[0].getProcessData());
 
         //submit and schedule process again
-        r = prism.getProcessHelper()
-            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        AssertUtil.assertSucceeded(r);
+        AssertUtil.assertSucceeded(prism.getProcessHelper()
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 
+    /**
+     * Fully duplicates rescheduleSucceeded().
+     * TODO : modify test to match test case
+     * Make process run into FAILED state. Delete it and check that entity was removed.
+     * Run it again and check that process succeeds.
+     *
+     * @throws Exception
+     */
     @Test(enabled = false)
     public void rescheduleFailed() throws Exception {
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
-
-        //delete the process
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-
-        //check ... get definition should return process not found
-        ServiceResponse r = prism.getProcessHelper()
-            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
-        Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        AssertUtil.assertFailed(r);
+        checkNotFoundDefinition(bundles[0].getProcessData());
 
         //submit and schedule process again
-        r = prism.getProcessHelper()
-            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        AssertUtil.assertSucceeded(r);
+        AssertUtil.assertSucceeded(prism.getProcessHelper()
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 
-    @Test(enabled = false)
+    /**
+     * Make process got DOWN WITH ERROR state. Delete it. Check that entity is absent on the
+     * server. Reschedule it and check that it succeeds in some time.
+     * DWE mean Done With Error In Oozie
+     *
+     * @throws Exception
+     */
+    @Test(enabled = true)
     public void rescheduleDWE() throws Exception {
         prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
@@ -170,38 +176,48 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
 
         //delete the process
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-
-        //check ... get definition should return process not found
-        ServiceResponse r = prism.getProcessHelper()
-            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
-        Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        AssertUtil.assertFailed(r);
+        checkNotFoundDefinition(bundles[0].getProcessData());
 
         //submit and schedule process again
-        r = prism.getProcessHelper()
-            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        AssertUtil.assertSucceeded(r);
+        AssertUtil.assertSucceeded(prism.getProcessHelper()
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
     }
 
-    @Test(enabled = false)
+    /**
+     * Make process run into DOWN WITH ERROR state. Delete it. Check that entity is absent on the
+     * server. Reschedule it and check that it succeeds in some time.
+     **/
+    @Test(enabled = true)
     public void rescheduleKilled() throws Exception {
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.KILLED, 20);
-
-        //check ... get definition should return process not found
-        ServiceResponse r = prism.getProcessHelper()
-            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, bundles[0].getProcessData());
-        Assert.assertTrue(r.getMessage().contains("(process) not found"));
-        AssertUtil.assertFailed(r);
+        checkNotFoundDefinition(bundles[0].getProcessData());
 
         //submit and schedule process again
-        r = prism.getProcessHelper()
-            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData());
-        AssertUtil.assertSucceeded(r);
+        AssertUtil.assertSucceeded(prism.getProcessHelper()
+            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
             .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+    }
+
+    /**
+     * Tries to get entity definition and checks it is absent (-get definition should return
+     * process not found)
+     *
+     * @param process process entity definition
+     * @throws URISyntaxException
+     * @throws IOException
+     * @throws AuthenticationException
+     * @throws JAXBException
+     */
+    private void checkNotFoundDefinition(String process)
+        throws URISyntaxException, IOException, AuthenticationException, JAXBException {
+        ServiceResponse r = prism.getProcessHelper()
+            .getEntityDefinition(URLS.GET_ENTITY_DEFINITION, process);
+        Assert.assertTrue(r.getMessage().contains("(process) not found"));
+        AssertUtil.assertFailed(r);
     }
 }
