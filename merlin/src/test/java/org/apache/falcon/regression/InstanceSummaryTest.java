@@ -91,17 +91,9 @@ public class InstanceSummaryTest extends BaseTestClass {
             20
         );
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, Util.getPathPrefix(feedInputPath) + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
-        }
-
         for (FileSystem fs : serverFS) {
-            HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT, dataFolder);
+            HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT,
+                Util.getPathPrefix(feedInputPath), dataDates);
         }
     }
 

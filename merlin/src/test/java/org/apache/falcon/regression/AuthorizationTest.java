@@ -304,9 +304,7 @@ public class AuthorizationTest extends BaseTestClass {
         DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
         logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
@@ -376,9 +374,7 @@ public class AuthorizationTest extends BaseTestClass {
         DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
         logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
@@ -430,9 +426,7 @@ public class AuthorizationTest extends BaseTestClass {
         DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
         logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
@@ -499,9 +493,7 @@ public class AuthorizationTest extends BaseTestClass {
         DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
         logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));

@@ -94,14 +94,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         List<String> dataDates =
             TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
     }
 
     @BeforeMethod(alwaysRun = true)

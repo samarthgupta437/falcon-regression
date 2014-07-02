@@ -84,13 +84,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         List<String> dataDates =
             TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
 
-        ArrayList<String> dataFolder = new ArrayList<String>();
-        int i = 0;
-        for (String dataDate : dataDates) {
-            dataFolder.add(i, prefix + dataDate);
-            i++;
-        }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
     }
 
     @BeforeMethod(alwaysRun = true)

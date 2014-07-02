@@ -117,23 +117,20 @@ public class ProcessUITest extends BaseUITestClass {
         DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -2)));
         DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        List<String> dataPaths = new ArrayList<String>();
-        logger.info("Creating data in folders: \n" + dataDates);
-        prefix = prefix.substring(0, prefix.length()-1);
 
         // use 5 <= x < 10 input feeds
         final int numInputFeeds = 5 + new Random().nextInt(5);
         // use 5 <= x < 10 output feeds
         final int numOutputFeeds = 5 + new Random().nextInt(5);
 
-        for (String dataDate : dataDates) {
-            dataPaths.add(prefix + "/" + dataDate);
-            for (int k = 1; k <= numInputFeeds; k++) {
-                dataPaths.add(prefix + "_00" + k + "/" + dataDate);
+        logger.info("Creating data in folders: \n" + dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
-            }
+        prefix = prefix.substring(0, prefix.length()-1);
+        for (int k = 1; k <= numInputFeeds; k++) {
+            HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT,
+                prefix + "_00" + k + "/", dataDates);
         }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataPaths);
 
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         FeedMerlin[] inputFeeds;
