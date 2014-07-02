@@ -344,6 +344,12 @@ public class HadoopUtil {
 
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  List<String> remoteLocations) throws IOException {
+        flattenAndPutDataInFolder(fs, inputPath, "", remoteLocations);
+    }
+
+    public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
+                                                 String remotePathPrefix,
+                                                 List<String> remoteLocations) throws IOException {
         File[] files = new File(inputPath).listFiles();
         List<Path> filePaths = new ArrayList<Path>();
         assert files != null;
@@ -353,7 +359,8 @@ public class HadoopUtil {
                 filePaths.add(filePath);
             }
         }
-        for (String remoteLocation : remoteLocations) {
+        for (String remoteDir : remoteLocations) {
+            String remoteLocation = remotePathPrefix + remoteDir;
             logger.info(String.format("copying to: %s files: %s",
                 fs.getUri() + remoteLocation, Arrays.toString(files)));
             if (!fs.exists(new Path(remoteLocation)))
