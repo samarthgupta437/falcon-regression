@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -105,6 +106,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Run process. Suspend it and then resume. Get all -running instances. Response should
+     * contain all process instances.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getResumedProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
@@ -114,9 +121,11 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
         Thread.sleep(15000);
-        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
+            bundles[0].getProcessData()));
         Thread.sleep(15000);
-        prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().resume(URLS.RESUME_URL,
+            bundles[0].getProcessData()));
         Thread.sleep(15000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
@@ -124,7 +133,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
-
+    /**
+     * Run process. Suspend it. Try to get -running instances. Response should be
+     * successful but shouldn't contain any instance.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getSuspendedProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
@@ -133,7 +147,8 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
-        prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
+        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
+            bundles[0].getProcessData()));
         Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
@@ -141,7 +156,12 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         InstanceUtil.validateSuccessWOInstances(r);
     }
 
-
+    /**
+     * Run process. Get -running instances. Check that response contains expected number of
+     * instances.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -149,13 +169,17 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
     }
 
+    /**
+     * Attempt to get -running instances of nonexistent process should result in error.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getNonExistenceProcessInstance() throws Exception {
         ProcessInstancesResult r =
@@ -165,12 +189,15 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
             "Unexpected status code");
     }
 
-
+    /**
+     * Attempt to get -running instances of deleted process should result in error.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getKilledProcessInstance() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-        Thread.sleep(5000);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
@@ -178,23 +205,18 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
             "Unexpected status code");
     }
 
-
+    /**
+     * Launch process and wait till it got succeeded. Try to get -running instances. Response
+     * should reflect success but shouldn't contain any of instances.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"singleCluster"})
     public void getSucceededProcessInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
         bundles[0].submitAndScheduleBundle(prism);
-        Job.Status status = null;
-        for (int i = 0; i < 45; i++) {
-            status = InstanceUtil.getDefaultCoordinatorStatus(cluster,
-                Util.getProcessName(bundles[0].getProcessData()), 0);
-            if (status == Job.Status.SUCCEEDED || status == Job.Status.KILLED)
-                break;
-            Thread.sleep(45000);
-        }
-        Assert.assertNotNull(status);
-        Assert.assertEquals(status, Job.Status.SUCCEEDED,
-            "The job did not succeeded even in long time");
-
+        InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
+            .getProcessData()), Job.Status.SUCCEEDED, 20);
         ProcessInstancesResult result = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));

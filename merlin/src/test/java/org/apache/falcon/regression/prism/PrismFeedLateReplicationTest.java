@@ -124,7 +124,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             "UK/${cluster.colo}");
 
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -164,8 +164,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
             HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
-
-        logger.info("test");
     }
 
     @Test(groups = {"multiCluster"})
@@ -202,7 +200,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             "UK/${cluster.colo}");
 
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -398,7 +396,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Util.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
 
         //submit and schedule feed
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);
@@ -600,7 +598,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Thread.sleep(15000);
 
         //submit and schedule feed
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
         Thread.sleep(10000);

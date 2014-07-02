@@ -611,6 +611,14 @@ public class InstanceUtil {
         return actions.get(instanceNumber).getStatus();
     }
 
+    /**
+     * Copies local data to each of directories from the supplied list of remote locations
+     *
+     * @param colo colohelper for remote cluster
+     * @param inputFoldersForInstance list of directories where data will be placed
+     * @param type type of provided data
+     * @throws IOException
+     */
     public static void putDataInFolders(ColoHelper colo,
                                         final List<String> inputFoldersForInstance,
                                         String type) throws IOException {
@@ -621,7 +629,14 @@ public class InstanceUtil {
 
     }
 
-
+    /**
+     * Creates directories on remote cluster and copies local data there.
+     *
+     * @param fs remote file system
+     * @param remoteLocation remote location for copied data
+     * @param type
+     * @throws IOException
+     */
     public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type)
         throws IOException {
         String inputPath = OSUtil.NORMAL_INPUT;

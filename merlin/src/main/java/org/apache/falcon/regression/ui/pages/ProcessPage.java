@@ -26,7 +26,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.testng.Assert;
 import org.openqa.selenium.Point;
 
 import java.util.ArrayList;
@@ -56,8 +55,10 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
     private static final String SVG_XPATH = "//*[name() = 'svg']";
     private static final String G_XPATH = "//*[name()='g']";
-    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH + G_XPATH +
+    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH +
         G_XPATH + "[not(@class='lineage-link')]";
+    private static final String VERTICES_TEXT_XPATH = VERTICES_BLOCKS_XPATH +
+        "//div[@class='lineage-node-text']";
     private static final String EDGE_XPATH = SVG_XPATH + G_XPATH + "[@class='lineage-link']" +
         "//*[name()='path']";
     private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
@@ -106,12 +107,14 @@ public class ProcessPage extends EntityPage<Process> {
     public HashMap<String, List<String>> getAllVertices() {
         HashMap<String, List<String>> map = null;
         if (isLineageOpened) {
-            waitForElement(VERTICES_BLOCKS_XPATH + "[contains(.,'/')]", DEFAULT_TIMEOUT,
+            waitForElement(VERTICES_TEXT_XPATH, DEFAULT_TIMEOUT,
                 "Vertices blocks with names not found");
-            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
+            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_TEXT_XPATH));
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
-                String text = getTextContaining(block, "/");
+                waitForElement(block, ".[contains(.,'/')]", DEFAULT_TIMEOUT,
+                    "Expecting text to contain '/' :" + block.getText());
+                String text = block.getText();
                 String[] separate = text.split("/");
                 String name = separate[0];
                 String nominalTime = separate[1];
@@ -125,21 +128,6 @@ public class ProcessPage extends EntityPage<Process> {
             }
         }
         return map;
-    }
-
-    private String getTextContaining(WebElement element, String expected) {
-        String text = "";
-        for (int i = 0; i < 100; i++) {
-             text = element.getText();
-            if (text.contains(expected)) return text;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                logger.info("Sleep was interrupted");
-            }
-        }
-        Assert.fail(String.format("Expecting '%s' to contain '%s'", text, expected));
-        return null;
     }
 
     /**

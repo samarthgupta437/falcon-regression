@@ -48,7 +48,7 @@ import java.lang.reflect.Method;
 /**
  * Feed instance status tests.
  */
-@Test(groups = {"distributed", "embedded"})
+@Test(groups = "embedded")
 public class FeedInstanceStatusTest extends BaseTestClass {
 
     private String baseTestDir = baseHDFSDir + "/FeedInstanceStatusTest";
@@ -87,26 +87,23 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(feedInputPath);
 
         bundles[0].setCLusterColo("ua1");
-        logger.info("cluster bundle1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundle1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
 
         ServiceResponse r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-
         bundles[1].setCLusterColo("ua2");
-        logger.info("cluster bundle2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundle2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-
         bundles[2].setCLusterColo("ua3");
-        logger.info("cluster bundle3: " + bundles[2].getClusters().get(0));
+        logger.info("cluster bundle3: " + Util.prettyPrintXml(bundles[2].getClusters().get(0)));
         r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[2].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-
 
         String feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
@@ -114,7 +111,6 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             XmlUtil.createRtention("hours(10)", ActionType.DELETE), null,
             ClusterType.SOURCE, null);
         String startTime = TimeUtil.getTimeWrtSystemTime(-50);
-
 
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
                 TimeUtil.addMinsToTime(startTime, 65)),
@@ -134,7 +130,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             "UK/${cluster.colo}");
 
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         //status before submit
         prism.getFeedHelper()
@@ -143,21 +139,18 @@ public class FeedInstanceStatusTest extends BaseTestClass {
                 TimeUtil.addMinsToTime(startTime, 120));
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
-        Thread.sleep(10000);
         prism.getFeedHelper()
             .getProcessInstanceStatus(Util.readDatasetName(feed),
                 "?start=" + startTime + "&end=" + TimeUtil
                     .addMinsToTime(startTime, 100));
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Thread.sleep(15000);
 
         // both replication instances
         prism.getFeedHelper()
             .getProcessInstanceStatus(Util.readDatasetName(feed),
                 "?start=" + startTime + "&end=" + TimeUtil
                     .addMinsToTime(startTime, 100));
-
 
         // single instance at -30
         prism.getFeedHelper().getProcessInstanceStatus(Util.readDatasetName(feed),
@@ -169,30 +162,25 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 40));
 
-
         //single at 10
         prism.getFeedHelper()
             .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 40));
-
 
         //single at 30
         prism.getFeedHelper()
             .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 40));
 
-
         String postFix = "/US/ua2";
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 80, 1, prefix, postFix);
 
-
         postFix = "/UK/ua3";
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 80, 1, prefix, postFix);
-
 
         // both replication instances
         prism.getFeedHelper()
@@ -210,21 +198,17 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 40));
 
-
         //single at 10
         prism.getFeedHelper()
             .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 40));
-
 
         //single at 30
         prism.getFeedHelper()
             .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 40));
 
-
         logger.info("Wait till feed goes into running ");
-
 
         //suspend instances -10
         prism.getFeedHelper()
@@ -245,7 +229,6 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             .getProcessInstanceStatus(Util.readDatasetName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 20) + "&end=" +
                 TimeUtil.addMinsToTime(startTime, 40));
-
 
         //resume -10 and -30
         prism.getFeedHelper()
@@ -289,7 +272,6 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             .getProcessInstanceStatus(Util.readDatasetName(feed),
                 "?start=" + startTime + "&end=" + TimeUtil
                     .addMinsToTime(startTime, 110));
-
 
         //kill feed
         prism.getFeedHelper().delete(URLS.DELETE_URL, feed);

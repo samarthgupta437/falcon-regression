@@ -263,8 +263,14 @@ public class Util {
 
     }
 
+    /**
+     * Sets unique name for process.
+     *
+     * @param data process definition
+     * @return process definition with unique name
+     * @throws JAXBException
+     */
     public static String generateUniqueProcessEntity(String data) throws JAXBException {
-
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
         Process processElement = (Process) u.unmarshal((new StringReader(data)));
@@ -272,14 +278,17 @@ public class Util {
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(processElement, sw);
-
         return sw.toString();
-
     }
 
-
+    /**
+     * Sets unique name for cluster.
+     *
+     * @param data cluster definition
+     * @return cluster definition with unique name
+     * @throws JAXBException
+     */
     public static String generateUniqueClusterEntity(String data) throws JAXBException {
-
         JAXBContext jc = JAXBContext.newInstance(Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
         Cluster clusterElement = (Cluster) u.unmarshal((new StringReader(data)));
@@ -289,17 +298,21 @@ public class Util {
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(clusterElement, sw);
-
         return sw.toString();
     }
 
+    /**
+     * Sets unique name for feed.
+     *
+     * @param data feed definition
+     * @return feed definition with unique name
+     * @throws JAXBException
+     */
     public static String generateUniqueDataEntity(String data) throws JAXBException {
-
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
         dataElement.setName(dataElement.getName() + "-" + UUID.randomUUID());
-
         return InstanceUtil.feedElementToString(dataElement);
     }
 
@@ -430,26 +443,13 @@ public class Util {
         return null;
     }
 
-    public static String insertLateFeedValue(String feed, String delay, String delayUnit)
+    public static String insertLateFeedValue(String feed, Frequency frequency)
         throws JAXBException {
         JAXBContext context = JAXBContext.newInstance(Feed.class);
         Unmarshaller um = context.createUnmarshaller();
         Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
 
-
-        String delayTime = "";
-
-        if (delayUnit.equalsIgnoreCase("hours")) {
-            delayTime = "hours(" + delay + ")";
-        } else if (delayUnit.equalsIgnoreCase("minutes")) {
-            delayTime = "minutes(" + delay + ")";
-        } else if (delayUnit.equalsIgnoreCase("days")) {
-            delayTime = "days(" + delay + ")";
-        } else if (delayUnit.equalsIgnoreCase("months")) {
-            delayTime = "months(" + delay + ")";
-        }
-
-        feedObject.getLateArrival().setCutOff(new Frequency(delayTime));
+        feedObject.getLateArrival().setCutOff(frequency);
 
         Marshaller m = context.createMarshaller();
         StringWriter sw = new StringWriter();
@@ -821,13 +821,19 @@ public class Util {
         return (Feed) um.unmarshal(new StringReader(feedData));
     }
 
+    /**
+     * Sets unique names for each cluster entity in supplied list.
+     *
+     * @param clusterData list of cluster definitions to be modified
+     * @return list of unique cluster definitions
+     * @throws JAXBException
+     */
     public static List<String> generateUniqueClusterEntity(List<String> clusterData)
         throws JAXBException {
         List<String> newList = new ArrayList<String>();
         for (String cluster : clusterData) {
             newList.add(generateUniqueClusterEntity(cluster));
         }
-
         return newList;
     }
 

@@ -193,7 +193,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
         String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_target);
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         //submit and schedule feed
         ServiceResponse r =
@@ -370,7 +370,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
             String feed = getMultiClusterFeed(startTimeCluster_source, startTimeCluster_source);
 
-            logger.info("feed: " + feed);
+            logger.info("feed: " + Util.prettyPrintXml(feed));
 
             //submit feed on all 3 clusters
             ServiceResponse r = prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed);

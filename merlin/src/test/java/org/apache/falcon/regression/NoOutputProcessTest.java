@@ -80,16 +80,13 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         List<String> dataDates =
             TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
-
         for (int i = 0; i < dataDates.size(); i++)
             dataDates.set(i, prefix + dataDates.get(i));
 
         ArrayList<String> dataFolder = new ArrayList<String>();
-
         for (String dataDate : dataDates) {
             dataFolder.add(dataDate);
         }
-
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
     }
 
@@ -118,7 +115,6 @@ public class NoOutputProcessTest extends BaseTestClass {
         Consumer consumer =
             new Consumer("FALCON.ENTITY.TOPIC", cluster.getClusterHelper().getActiveMQ());
         consumer.start();
-        Thread.sleep(15000);
 
         //wait for all the instances to complete
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
@@ -130,7 +126,6 @@ public class NoOutputProcessTest extends BaseTestClass {
         consumer.interrupt();
 
         Util.dumpConsumerData(consumer);
-
     }
 
 
@@ -145,10 +140,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         consumerInternalMsg.start();
         consumerProcess.start();
 
-        Thread.sleep(15000);
-
         //wait for all the instances to complete
-
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
             CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
 

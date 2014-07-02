@@ -154,7 +154,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(5);
 
-        logger.info("process: " + bundles[0].getProcessData());
+        logger.info("process: " + Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
@@ -198,7 +198,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        Thread.sleep(5000);
         InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 6, 6, 0, 0);
     }
 
@@ -246,9 +245,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
         String wfID = InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0]
-                .getProcessData()),
-            Status.RUNNING, Status.SUCCEEDED)
-            .get(0);
+            .getProcessData()), Status.RUNNING, Status.SUCCEEDED).get(0);
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
             .getProcessData()), 0, CoordinatorAction
             .Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
@@ -272,16 +269,14 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(2);
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
-        Thread.sleep(15000);
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:06Z");
         Assert.assertEquals(InstanceUtil
-                .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0, 1),
+            .getInstanceStatus(cluster, Util.getProcessName(bundles[0].getProcessData()), 0, 1),
             CoordinatorAction.Status.SUSPENDED);
     }
 
@@ -331,11 +326,8 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
         CoordinatorAction.Status s = null;
-        while (!CoordinatorAction.Status.TIMEDOUT.equals(s)) {
-            s = InstanceUtil
-                .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
-            Thread.sleep(15000);
-        }
+        InstanceUtil.waitTillInstanceReachState(clusterOC, Util.getProcessName(bundles[0]
+            .getProcessData()), 1, CoordinatorAction.Status.TIMEDOUT, 20, ENTITY_TYPE.PROCESS);
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");

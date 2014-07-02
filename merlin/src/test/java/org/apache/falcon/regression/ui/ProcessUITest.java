@@ -135,7 +135,7 @@ public class ProcessUITest extends BaseUITestClass {
         }
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataPaths);
 
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         FeedMerlin[] inputFeeds;
         FeedMerlin[] outputFeeds;
         final FeedMerlin inputMerlin = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundles[0]));

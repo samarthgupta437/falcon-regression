@@ -93,6 +93,171 @@ public class FeedReplicationTest extends BaseTestClass {
     }
 
     /**
+     * Test demonstrates replication of stored data from one source cluster to one target cluster.
+     * It checks the lifecycle of replication workflow instance including its creation. When
+     * replication ends test checks if data was replicated correctly.
+     */
+    @Test
+    public void replicate1Source1Target()
+        throws AuthenticationException, IOException, URISyntaxException, JAXBException,
+        InterruptedException, OozieClientException {
+        Bundle.submitCluster(bundles[0], bundles[1]);
+        String startTime = TimeUtil.getTimeWrtSystemTime(0);
+        String endTime = TimeUtil.addMinsToTime(startTime, 5);
+        logger.info("Time range between : " + startTime + " and " + endTime);
+
+        //configure feed
+        String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedFilePath(feed, feedDataLocation);
+        //erase all clusters from feed definition
+        feed = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
+            ClusterType.SOURCE, null);
+        //set cluster1 as source
+        feed = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity(startTime, endTime),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)),
+            ClusterType.SOURCE, null);
+        //set cluster2 as target
+        feed = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity(startTime, endTime),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)),
+            ClusterType.TARGET, null, targetDataLocation);
+
+        //submit and schedule feed
+        logger.info("Feed : " + Util.prettyPrintXml(feed));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
+                feed));
+
+        //upload necessary data
+        DateTime date = new DateTime(startTime, DateTimeZone.UTC);
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'/'MM'/'dd'/'HH'/'mm'");
+        String timePattern = fmt.print(date);
+        String sourceLocation = sourcePath + "/" + timePattern + "/";
+        String targetLocation = targetPath + "/" + timePattern + "/";
+        HadoopUtil.createDir(sourceLocation, cluster1FS);
+
+        Path toSource = new Path(sourceLocation);
+        Path toTarget = new Path(targetLocation);
+        HadoopUtil
+            .copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
+
+        //check if coordinator exists
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+                "REPLICATION"), 1);
+
+        //replication should start, wait while it ends
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+
+        //check if data has been replicated correctly
+        List<Path> cluster1ReplicatedData = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster1, toSource);
+        List<Path> cluster2ReplicatedData = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
+
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
+    }
+
+    /**
+     * Test demonstrates replication of stored data from one source cluster to two target clusters.
+     * It checks the lifecycle of replication workflow instances including their creation on both
+     * targets. When replication ends test checks if data was replicated correctly.
+     */
+    @Test
+    public void replicate1Source2Targets() throws Exception {
+        Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
+        String startTime = TimeUtil.getTimeWrtSystemTime(0);
+        String endTime = TimeUtil.addMinsToTime(startTime, 5);
+        logger.info("Time range between : " + startTime + " and " + endTime);
+
+        //configure feed
+        String feed = bundles[0].getDataSets().get(0);
+        feed = InstanceUtil.setFeedFilePath(feed, feedDataLocation);
+        //erase all clusters from feed definition
+        feed = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity("2012-10-01T12:00Z", "2010-01-01T00:00Z"),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE), null,
+            ClusterType.SOURCE, null);
+        //set cluster1 as source
+        feed = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity(startTime, endTime),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+            Util.readClusterName(bundles[0].getClusters().get(0)),
+            ClusterType.SOURCE, null);
+        //set cluster2 as target
+        feed = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity(startTime, endTime),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+            Util.readClusterName(bundles[1].getClusters().get(0)),
+            ClusterType.TARGET, null, targetDataLocation);
+        //set cluster3 as target
+        feed = InstanceUtil.setFeedCluster(feed,
+            XmlUtil.createValidity(startTime, endTime),
+            XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
+            Util.readClusterName(bundles[2].getClusters().get(0)),
+            ClusterType.TARGET, null, targetDataLocation);
+
+        //submit and schedule feed
+        logger.info("Feed : " + Util.prettyPrintXml(feed));
+        AssertUtil.assertSucceeded(
+            prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
+                feed));
+
+        //upload necessary data
+        DateTime date = new DateTime(startTime, DateTimeZone.UTC);
+        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'/'MM'/'dd'/'HH'/'mm'");
+        String timePattern = fmt.print(date);
+        String sourceLocation = sourcePath + "/" + timePattern + "/";
+        String targetLocation = targetPath + "/" + timePattern + "/";
+        HadoopUtil.createDir(sourceLocation, cluster1FS);
+
+        Path toSource = new Path(sourceLocation);
+        Path toTarget = new Path(targetLocation);
+        HadoopUtil
+            .copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "feed-s4Replication.xml");
+        HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
+
+        //check if all coordinators exist
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, feed, 0, defaultTimeout);
+
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+                "REPLICATION"), 1);
+        Assert.assertEquals(InstanceUtil
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+                "REPLICATION"), 1);
+        //replication on cluster 2 should start, wait till it ends
+        InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
+            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+
+        //replication on cluster 3 should start, wait till it ends
+        InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
+            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+
+        //check if data has been replicated correctly
+        List<Path> cluster1ReplicatedData = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster1, toSource);
+        List<Path> cluster2ReplicatedData = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
+        List<Path> cluster3ReplicatedData = HadoopUtil
+            .getAllFilesRecursivelyHDFS(cluster3, toTarget, "_SUCCESS");
+
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
+        AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster3ReplicatedData);
+    }
+
+    /**
      * Test demonstrates how replication depends on availability flag. Scenario includes one
      * source and one target cluster. When feed is submitted and scheduled and data is available,
      * feed still waits for availability flag (file which name is defined as availability flag in
@@ -134,7 +299,7 @@ public class FeedReplicationTest extends BaseTestClass {
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        logger.info("Feed : " + feed);
+        logger.info("Feed : " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed));
@@ -160,7 +325,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), feedName, "REPLICATION"), 1);
 
-        //replication should not start
+        //replication should not start even after time
         Thread.sleep(60000);
         ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
             "?start=" + startTime + "&end=" + endTime);
