@@ -503,6 +503,6 @@ public abstract class IEntityManagerHelper {
     }
 
     public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/" + getEntityType());
+        return Util.getStoreInfo(this, "/" + getEntityType().toUpperCase());
     }
 }
