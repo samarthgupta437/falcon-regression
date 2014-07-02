@@ -115,7 +115,6 @@ public class ProcessPage extends EntityPage<Process> {
                 waitForElement(block, ".[contains(.,'/')]", DEFAULT_TIMEOUT,
                     "Expecting text to contain '/' :" + block.getText());
                 String text = block.getText();
-                //needed for firefox
                 String[] separate = text.split("/");
                 String name = separate[0];
                 String nominalTime = separate[1];
