@@ -122,7 +122,6 @@ public class ProcessUITest extends BaseUITestClass {
         // use 5 <= x < 10 output feeds
         final int numOutputFeeds = 5 + new Random().nextInt(5);
 
-        logger.info("Creating data in folders: \n" + dataDates);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         prefix = prefix.substring(0, prefix.length()-1);

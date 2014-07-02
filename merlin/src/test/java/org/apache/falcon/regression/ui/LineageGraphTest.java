@@ -106,7 +106,6 @@ public class LineageGraphTest extends BaseUITestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
             TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
-        logger.info("Creating data in folders: \n" + dataDates);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitBundle(prism);

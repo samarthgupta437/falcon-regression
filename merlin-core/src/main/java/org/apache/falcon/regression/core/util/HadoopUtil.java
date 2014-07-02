@@ -350,6 +350,7 @@ public class HadoopUtil {
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  String remotePathPrefix,
                                                  List<String> remoteLocations) throws IOException {
+        logger.info("Creating data in folders: \n" + remoteLocations);
         File[] files = new File(inputPath).listFiles();
         List<Path> filePaths = new ArrayList<Path>();
         assert files != null;
