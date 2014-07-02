@@ -21,7 +21,9 @@ package org.apache.falcon.regression.prism;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -34,6 +36,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
+import org.apache.oozie.client.Job;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -43,7 +46,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-@Test(groups = {"distributed", "embedded"})
+@Test(groups = "embedded")
 public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -86,6 +89,13 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Set feed cluster1 as target, clusters 2 and 3 as source. Run feed. Update feed and check
+     * if action succeed. Check that appropriate number of replication and retention coordinators
+     * exist on matching clusters.
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, timeOut = 1200000)
     public void multipleSourceOneTarget() throws Exception {
 
@@ -104,7 +114,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 5, 80, prefix, postFix);
 
-
         // use the colo string here so that the test works in embedded and distributed mode.
         postFix = "/UK/" + cluster3Colo;
         prefix = bundles[0].getFeedDataPathPrefix();
@@ -113,9 +122,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-30);
 
-
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
-                TimeUtil.addMinsToTime(startTime, 85)),
+            TimeUtil.addMinsToTime(startTime, 85)),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
             Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "US/${cluster.colo}");
@@ -133,22 +141,19 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "UK/${cluster.colo}");
 
-        logger.info("feed: " + feed);
+        logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
-
         prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-        Thread.sleep(30000);
+        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
 
         //change feed location path
         feed = InstanceUtil.setFeedFilePath(feed, alternativeInputPath);
 
-        logger.info("updated feed: " + feed);
+        logger.info("updated feed: " + Util.prettyPrintXml(feed));
 
         //update feed
-        prism.getFeedHelper().update(feed, feed);
-        Thread.sleep(30000);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed, feed));
 
         Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
             Util.readDatasetName(feed),
@@ -170,15 +175,22 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
                 "RETENTION"), 2);
     }
 
+    /**
+     * Set feed1 to have cluster1 as source, cluster3 as target. Set feed2 clusters vise versa.
+     * Add both clusters to process and feed2 as input feed. Run process. Update feed1.
+     * TODO test case is incomplete
+     *
+     * @throws Exception
+     */
     @Test(enabled = true, timeOut = 1200000)
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
         bundles[0].setCLusterColo(cluster1Colo);
-        logger.info("cluster bundles[0]: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundles[0]: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         bundles[1].setCLusterColo(cluster2Colo);
-        logger.info("cluster bundles[1]: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundles[1]: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         bundles[2].setCLusterColo(cluster3Colo);
-        logger.info("cluster bundles[2]: " + bundles[2].getClusters().get(0));
+        logger.info("cluster bundles[2]: " + Util.prettyPrintXml(bundles[2].getClusters().get(0)));
 
         //submit 3 clusters
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
@@ -258,16 +270,14 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
             Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
-
         //submit and schedule feeds
-        logger.info("feed01: " + feed01);
-        logger.info("feed02: " + feed02);
-        logger.info("outputFeed: " + outputFeed);
+        logger.info("feed01: " + Util.prettyPrintXml(feed01));
+        logger.info("feed02: " + Util.prettyPrintXml(feed02));
+        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, outputFeed);
-
 
         //create a process with 2 clusters
 
@@ -292,35 +302,19 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readDatasetName(feed02));
 
         //submit and schedule process
-        logger.info("process: " + process);
+        logger.info("process: " + Util.prettyPrintXml(process));
 
         prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
         logger.info("Wait till process goes into running ");
 
-        for (int i = 0; i < 30; i++) {
-            Status status1 =
-                InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
-            Status status2 = InstanceUtil.getInstanceStatus(cluster3,
-                Util.getProcessName(process), 0, 0);
-            // if the status is failed or killed lets fail
-            // this will stop unnecessary looping
-            if ((status1 != null && status2 != null) && (status1 == Status.FAILED || status2 ==
-                Status.FAILED || status1 == Status.KILLED
-                || status2 == Status.KILLED)) {
-                Assert.fail(String.format("status1 = %s, status2 = %s", status1, status2));
-            }
-
-            if (status1 != null && status2 != null &&
-                (status1 == Status.RUNNING || status1 == Status.SUCCEEDED)
-                && (status2 == Status.RUNNING || status2 == Status.SUCCEEDED)) {
-                break;
-            }
-            Thread.sleep(20000);
-        }
+        InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
+            Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+        InstanceUtil.waitTillInstanceReachState(serverOC.get(2), Util.getProcessName(process), 1,
+            Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
-        logger.info("updated feed: " + feed01);
+        logger.info("updated feed: " + Util.prettyPrintXml(feed01));
         prism.getFeedHelper().update(feed01, feed01);
     }
 }

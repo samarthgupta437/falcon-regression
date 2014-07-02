@@ -29,6 +29,8 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
+import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -41,10 +43,12 @@ import java.lang.reflect.Method;
 public class PrismConcurrentRequestTest extends BaseTestClass {
 
     ColoHelper cluster = servers.get(0);
+    OozieClient clusterOC = serverOC.get(0);
     private ThreadGroup brotherGrimm = null;
     private Brother brothers[] = null;
     String aggregateWorkflowDir = baseHDFSDir + "/PrismConcurrentRequest/aggregator";
     private static final Logger logger = Logger.getLogger(PrismConcurrentRequestTest.class);
+    String feed;
 
     @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
@@ -60,6 +64,7 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         brotherGrimm = new ThreadGroup("mixed");
         brothers = new Brother[10];
+        feed = bundles[0].getDataSets().get(0);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -165,12 +170,11 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
     public void resumeAnsSuspendParallel() throws Exception {
         brothers = new Brother[4];
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
-        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getDataSets().get(0));
-        AssertUtil.assertSucceeded(
-            prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
-        Thread.sleep(15000);
-        prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0));
-        Thread.sleep(15000);
+        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         for (int i = 1; i <= 2; i++) {
             brothers[i - 1] =
                 new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
@@ -199,14 +203,16 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
     @Test(groups = {"multiCluster"})
     public void resumeParallel() throws Exception {
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
-        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getDataSets().get(0));
-        AssertUtil.assertSucceeded(
-            prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getDataSets().get(0)));
+        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
         Thread.sleep(15000);
-        prism.getFeedHelper().resume(URLS.RESUME_URL, bundles[0].getDataSets().get(0));
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        prism.getFeedHelper().resume(URLS.RESUME_URL, feed);
         Thread.sleep(5000);
-        prism.getFeedHelper().suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0));
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
         Thread.sleep(15000);
+        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
                 new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],

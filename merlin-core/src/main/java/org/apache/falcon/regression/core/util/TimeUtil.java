@@ -18,15 +18,13 @@
 
 package org.apache.falcon.regression.core.util;
 
-import junit.framework.Assert;
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
+import org.testng.Assert;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -82,20 +80,24 @@ public class TimeUtil {
                                                           int minuteSkip) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         formatter.withZoneUTC();
+
+        return getMinuteDatesOnEitherSide(startDate, endDate, minuteSkip, formatter);
+    }
+
+    public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
+                                                          int minuteSkip,
+                                                          DateTimeFormatter formatter) {
         Util.logger.info("generating data between " + formatter.print(startDate) + " and " +
             formatter.print(endDate));
-
-        List<String> dates = new ArrayList<String>();
-
-
-        while (!startDate.isAfter(endDate)) {
-            dates.add(formatter.print(startDate.plusMinutes(minuteSkip)));
-            if (minuteSkip == 0) {
-                minuteSkip = 1;
-            }
-            startDate = startDate.plusMinutes(minuteSkip);
+        if (minuteSkip == 0) {
+            minuteSkip = 1;
         }
 
+        List<String> dates = new ArrayList<String>();
+        while (!startDate.isAfter(endDate)) {
+            dates.add(formatter.print(startDate));
+            startDate = startDate.plusMinutes(minuteSkip);
+        }
         return dates;
     }
 
@@ -193,21 +195,21 @@ public class TimeUtil {
         else
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
 
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         DateTimeZone tz = DateTimeZone.getDefault();
         return fmt.print(tz.convertLocalToUTC(jodaTime.getMillis(), false));
     }
 
     public static String addMinsToTime(String time, int minutes) {
 
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         DateTime jodaTime = fmt.parseDateTime(time);
         jodaTime = jodaTime.plusMinutes(minutes);
         return fmt.print(jodaTime);
     }
 
     public static DateTime oozieDateToDate(String time) {
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         fmt = fmt.withZoneUTC();
         return fmt.parseDateTime(time);
     }
@@ -216,7 +218,7 @@ public class TimeUtil {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
         InstanceUtil.logger.info("SystemTime: " + jodaTime);
-        DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+        DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         return fmt.print(jodaTime);
     }
 

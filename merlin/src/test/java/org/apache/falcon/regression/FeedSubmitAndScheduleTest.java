@@ -43,7 +43,6 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Feed submit and schedule tests.
@@ -56,6 +55,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     String aggregateWorkflowDir = baseHDFSDir + "/FeedSubmitAndScheduleTest/aggregator";
     private static final Logger logger = Logger.getLogger(FeedSubmitAndScheduleTest.class);
 
+    @BeforeMethod(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
@@ -77,7 +77,6 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void snsNewFeed() throws Exception {
         submitFirstClusterScheduleFirstFeed();
-        TimeUnit.SECONDS.sleep(5);
     }
 
     /**
@@ -112,7 +111,6 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         String bundleId = InstanceUtil
             .getLatestBundleID(cluster, Util.readEntityName(bundles[0].getDataSets().get(0)),
                 ENTITY_TYPE.FEED);
-        ;
 
         //try to submit and schedule the same process again
         ServiceResponse response = prism.getFeedHelper()
@@ -135,7 +133,6 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     public void snsFeedWithoutCluster() throws Exception {
         ServiceResponse response = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
-
         AssertUtil.assertFailed(response);
     }
 
@@ -170,7 +167,6 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void snsSuspendedFeed() throws Exception {
         submitFirstClusterScheduleFirstFeed();
-        TimeUnit.SECONDS.sleep(20);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
         Assert.assertEquals(Util.parseResponse(
                 prism.getFeedHelper()

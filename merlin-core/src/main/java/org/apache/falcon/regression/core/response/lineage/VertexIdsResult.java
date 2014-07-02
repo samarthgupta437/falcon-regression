@@ -18,36 +18,20 @@
 
 package org.apache.falcon.regression.core.response.lineage;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class EdgesResult extends GraphResult {
-    List<Edge> results;
+public class VertexIdsResult extends GraphResult {
+    List<Integer> results;
 
-    public List<Edge> getResults() {
+    public List<Integer> getResults() {
         return results;
     }
 
     @Override
     public String toString() {
-        return "AllEdges{" +
+        return "AllVertices{" +
             "totalSize=" + totalSize +
             ", results=" + results +
             '}';
     }
-
-    public List<Edge> filterByType(Edge.LEBEL_TYPE edgeLabel) {
-        return filterEdgesByType(results, edgeLabel);
-    }
-
-    public List<Edge> filterEdgesByType(List<Edge> edges, Edge.LEBEL_TYPE edgeLabel) {
-        final List<Edge> result = new ArrayList<Edge>();
-        for (Edge edge : edges) {
-            if(edge.get_label() == edgeLabel) {
-                result.add(edge);
-            }
-        }
-        return result;
-    }
-
 }

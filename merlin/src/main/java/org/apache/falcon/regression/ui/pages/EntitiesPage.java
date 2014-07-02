@@ -47,8 +47,13 @@ public class EntitiesPage extends Page {
         notFoundMsg = String.format("No entities on %sS page", type);
     }
 
+    /**
+     * Returns status of defined entity
+     * @param entityName name of entity
+     * @return status of defined entity
+     */
     public EntityStatus getEntityStatus(String entityName) {
-        if (getPageNumber() != 1) navigateTo();
+        navigateTo();
         while (true) {
             String status = getEntitiesOnPage().get(entityName);
             if (status != null) return EntityStatus.valueOf(status);
@@ -64,18 +69,22 @@ public class EntitiesPage extends Page {
     private void goNextPage() {
         WebElement nextButton = driver.findElement(By.xpath(ACTIVE_NXT_BTN));
         nextButton.click();
-        waitForElement(expectedElement, DEFAULT_TIMEOUT);
+        waitForElement(expectedElement, DEFAULT_TIMEOUT, "Next page didn't load");
     }
 
     private boolean nextPagePresent() {
         try {
-            new WebDriverWait(driver, DEFAULT_TIMEOUT).until(new Condition(ACTIVE_NXT_BTN));
+            new WebDriverWait(driver, DEFAULT_TIMEOUT).until(new Condition(ACTIVE_NXT_BTN, true));
             return true;
         } catch (TimeoutException e) {
             return false;
         }
     }
 
+    /**
+     * Returns page number
+     * @return page number
+     */
     public int getPageNumber() {
         String number = driver.findElement(By.xpath(PAGE_NUMBER)).getText();
         return Integer.parseInt(number);
@@ -92,6 +101,9 @@ public class EntitiesPage extends Page {
         return entities;
     }
 
+    /**
+     * Status of entity that can be shown on Falcon UI
+     */
     public enum EntityStatus {
         UNKNOWN, SUBMITTED, RUNNING, SUSPENDED
     }

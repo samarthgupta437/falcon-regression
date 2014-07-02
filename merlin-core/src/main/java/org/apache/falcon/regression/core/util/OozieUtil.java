@@ -32,6 +32,8 @@ import org.apache.oozie.client.XOozieClient;
 import org.joda.time.DateTime;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
@@ -40,6 +42,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 public class OozieUtil {
@@ -58,9 +62,7 @@ public class OozieUtil {
 
     public static List<String> getBundleIds(OozieClient client, String filter, int start, int len)
         throws OozieClientException {
-        logger.info("Connecting to oozie: " + client.getOozieUrl());
-        List<BundleJob> bundles = getBundles(client, filter, start, len);
-        return getBundleIds(bundles);
+        return getBundleIds(getBundles(client, filter, start, len));
     }
 
     public static List<String> getBundleIds(List<BundleJob> bundles) {
@@ -74,8 +76,7 @@ public class OozieUtil {
 
     public static List<Job.Status> getBundleStatuses(OozieClient client, String filter, int start,
                                                      int len) throws OozieClientException {
-        List<BundleJob> bundles = getBundles(client, filter, start, len);
-        return getBundleStatuses(bundles);
+        return getBundleStatuses(getBundles(client, filter, start, len));
     }
 
     public static List<Job.Status> getBundleStatuses(List<BundleJob> bundles) {
@@ -166,11 +167,15 @@ public class OozieUtil {
     }
 
     public static void waitForCoordinatorJobCreation(OozieClient oozieClient, String bundleID)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         for (int i = 0;
              i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
-            Thread.sleep(2000);
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                //ignore
+            }
         }
         Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
             "Coordinator job should have got created by now.");
@@ -236,7 +241,7 @@ public class OozieUtil {
     public static boolean verifyOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType, Job.Status expectedStatus)
         throws OozieClientException, InterruptedException {
-        for (int seconds = 0; seconds < 20; seconds++) {
+        for (int seconds = 0; seconds < 100; seconds+=5) {
             Job.Status status = getOozieJobStatus(client, processName, entityType);
             logger.info("Current status: " + status);
             if (status == expectedStatus) {
@@ -266,8 +271,9 @@ public class OozieUtil {
 
     public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
         throws OozieClientException {
-        List<String> jobIds = new ArrayList<String>();
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
+        waitForCoordinatorJobCreation(oozieClient, bundleID);
+        List<String> jobIds = new ArrayList<String>();
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
             oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
@@ -323,13 +329,23 @@ public class OozieUtil {
                                                      String bundleId,
                                                      ENTITY_TYPE type)
         throws OozieClientException {
+        Map<Date, CoordinatorAction.Status> actions = getActionsNominalTimeAndStatus(prismHelper, bundleId, type);
         List<String> nominalTime = new ArrayList<String>();
-        List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
-            bundleId, type).getActions();
-        for (CoordinatorAction action : actions) {
-            nominalTime.add(action.getNominalTime().toString());
+        for (Date date : actions.keySet()) {
+            nominalTime.add(date.toString());
         }
         return nominalTime;
+    }
+
+    public static Map<Date, CoordinatorAction.Status> getActionsNominalTimeAndStatus(PrismHelper prismHelper, String bundleId,
+                                                                       ENTITY_TYPE type) throws OozieClientException {
+        Map<Date, CoordinatorAction.Status> result = new TreeMap<Date, CoordinatorAction.Status>();
+        List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
+                bundleId, type).getActions();
+        for (CoordinatorAction action : actions) {
+            result.put(action.getNominalTime(), action.getStatus());
+        }
+        return result;
     }
 
     public static boolean isBundleOver(ColoHelper coloHelper, String bundleId)
@@ -427,5 +443,9 @@ public class OozieUtil {
 
         return TimeUtil.dateToOozieDate(coord.getStartTime()
         );
+    }
+
+    public static DateTimeFormatter getOozieDateTimeFormatter() {
+        return DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
     }
 }

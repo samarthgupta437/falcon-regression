@@ -58,10 +58,7 @@ public abstract class IEntityManagerHelper {
     private static boolean setAuthenticate() {
         String value = Util.readPropertiesFile("Merlin.properties", "isAuthenticationSet");
         value = (null == value) ? "true" : value;
-        if(value.equalsIgnoreCase("false")) {
-                return false;
-        }
-        return true;
+        return !value.equalsIgnoreCase("false");
     }
 
     public String getActiveMQ() {

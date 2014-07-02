@@ -18,10 +18,12 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.commons.io.IOUtils;
 import org.apache.falcon.entity.v0.feed.Feed;
-import org.apache.falcon.entity.v0.process.*;
+import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.entity.v0.process.Output;
 import org.apache.falcon.entity.v0.process.Process;
+import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
@@ -82,7 +84,7 @@ public class BundleUtil {
                     bundleList.addAll(getDataFromFolder(file.getAbsolutePath()));
                 } else {
 
-                    String data = Util.fileToString(new File(file.getAbsolutePath()));
+                    String data = IOUtils.toString(file.toURI());
 
                     if (data.contains("uri:ivory:process:0.1") ||
                         data.contains("uri:falcon:process:0.1")) {
@@ -95,6 +97,7 @@ public class BundleUtil {
                     } else if (data.contains("uri:ivory:feed:0.1") ||
                         data.contains("uri:falcon:feed:0.1")) {
                         Util.logger.info("data been added to feed");
+                        data = InstanceUtil.setFeedACL(data);
                         dataSets.add(data);
                     }
                 }

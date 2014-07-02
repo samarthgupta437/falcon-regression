@@ -293,7 +293,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(5);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath);
-        bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
+        bundles[0].setProcessInput("now(0,0)", "now(0,4)");
 
         //provide necessary data for first 3 instances to run
         logger.info("Creating necessary data...");
@@ -309,7 +309,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -365,7 +365,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(5);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath);
-        bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
+        bundles[0].setProcessInput("now(0,0)", "now(0,4)");
 
         //provide necessary data for first 3 instances to run
         logger.info("Creating necessary data...");
@@ -381,7 +381,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -419,7 +419,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(5);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath);
-        bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,4)"));
+        bundles[0].setProcessInput("now(0,0)", "now(0,4)");
 
         //provide necessary data for first 3 instances to run
         logger.info("Creating necessary data...");
@@ -435,7 +435,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
@@ -488,7 +488,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(5);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath);
-        bundles[0].setProcessData(setProcessInput(bundles[0], "now(0,0)", "now(0,3)"));
+        bundles[0].setProcessInput("now(0,0)", "now(0,3)");
 
         //provide necessary data for first 4 instances to run
         logger.info("Creating necessary data...");
@@ -504,7 +504,7 @@ public class AuthorizationTest extends BaseTestClass {
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + bundles[0].getProcessData());
+        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 4 running instances
@@ -707,19 +707,4 @@ public class AuthorizationTest extends BaseTestClass {
         KerberosHelper.loginFromKeytab(MerlinConstants.CURRENT_USER_NAME);
         removeBundles();
     }
-
-    public String setProcessInput(Bundle bundle, String startEl,
-                                  String endEl) throws JAXBException {
-        Process process = InstanceUtil.getProcessElement(bundle);
-        Inputs inputs = new Inputs();
-        Input input = new Input();
-        input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(bundle)));
-        input.setStart(startEl);
-        input.setEnd(endEl);
-        input.setName("inputData");
-        inputs.getInputs().add(input);
-        process.setInputs(inputs);
-        return InstanceUtil.processToString(process);
-    }
-
 }

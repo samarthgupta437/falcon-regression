@@ -37,6 +37,7 @@ import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
+@Test(groups = "distributed")
 public class PrismProcessResumeTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
@@ -72,7 +73,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeSuspendedFeedOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster2);
@@ -129,7 +130,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeDeletedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster2);
@@ -172,7 +173,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeResumedProcessOnBothColos() throws Exception {
         //schedule using colohelpers
         bundles[0].submitAndScheduleProcessUsingColoHelper(cluster2);
@@ -234,7 +235,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = "distributed")
+    @Test
     public void testResumeNonExistentProcessOnBothColos() throws Exception {
         AssertUtil.assertFailed(prism.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
@@ -252,7 +253,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = "distributed")
+    @Test
     public void testResumeSubmittedProcessOnBothColos() throws Exception {
         bundles[0].submitProcess(true);
         bundles[1].submitProcess(true);
@@ -276,7 +277,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeScheduledProcessOnBothColosWhen1ColoIsDown()
         throws Exception {
         try {
@@ -323,7 +324,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeDeletedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         try {
             //schedule using colohelpers
@@ -385,7 +386,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeResumedProcessOnBothColosWhen1ColoIsDown() throws Exception {
         try {
             //schedule using colohelpers
@@ -453,7 +454,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeNonExistentProcessOnBothColosWhen1ColoIsDown()
         throws Exception {
         try {
@@ -481,7 +482,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(groups = {"prism", "0.2", "distributed"})
+    @Test(groups = {"prism", "0.2"})
     public void testResumeSubmittedProcessOnBothColosWhen1ColoIsDown()
         throws Exception {
         try {

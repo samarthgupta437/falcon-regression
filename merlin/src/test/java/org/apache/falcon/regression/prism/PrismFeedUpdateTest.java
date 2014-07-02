@@ -76,6 +76,9 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * TODO : complete test case
+     */
     @Test(enabled = true, timeOut = 1200000)
     public void updateFeedQueue_dependentMultipleProcess_oneProcessZeroInput() throws Exception {
         //cluster1colo and cluster2colo are source. feed01 on cluster1colo target cluster2colo,
@@ -84,10 +87,10 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //get 3 unique bundles
         //set cluster colos
         bundles[0].setCLusterColo(cluster1colo);
-        logger.info("cluster bundles[0]: " + bundles[0].getClusters().get(0));
+        logger.info("cluster bundles[0]: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
 
         bundles[1].setCLusterColo(cluster2colo);
-        logger.info("cluster bundles[1]: " + bundles[1].getClusters().get(0));
+        logger.info("cluster bundles[1]: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
 
         //submit 3 clusters
 
@@ -146,8 +149,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
 
         //submit and schedule feeds
-        logger.info("feed01: " + feed01);
-        logger.info("outputFeed: " + outputFeed);
+        logger.info("feed01: " + Util.prettyPrintXml(feed01));
+        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
 
         //create 2 process with 2 clusters
 
@@ -180,8 +183,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
 
         //submit and schedule both process
-        logger.info("process: " + process01);
-        logger.info("process: " + process02);
+        logger.info("process: " + Util.prettyPrintXml(process01));
+        logger.info("process: " + Util.prettyPrintXml(process02));
 
 
         logger.info("Wait till process goes into running ");
@@ -189,7 +192,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //change feed location path
         outputFeed = Util.setFeedProperty(outputFeed, "queueName", "myQueue");
 
-        logger.info("updated feed: " + outputFeed);
+        logger.info("updated feed: " + Util.prettyPrintXml(outputFeed));
 
         //update feed first time
         prism.getFeedHelper().update(outputFeed, outputFeed);

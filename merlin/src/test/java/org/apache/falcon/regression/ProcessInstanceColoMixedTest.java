@@ -21,6 +21,7 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -84,9 +85,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         //set cluster colos
         bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColoName());
-        logger.info("cluster b1: " + bundles[0].getClusters().get(0));
+        logger.info("cluster b1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColoName());
-        logger.info("cluster b2: " + bundles[1].getClusters().get(0));
+        logger.info("cluster b2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
@@ -184,9 +185,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
-        logger.info("feed01: " + feed01);
-        logger.info("feed02: " + feed02);
-        logger.info("outputFeed: " + outputFeed);
+        logger.info("feed01: " + Util.prettyPrintXml(feed01));
+        logger.info("feed02: " + Util.prettyPrintXml(feed02));
+        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
 
         ServiceResponse r = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
@@ -225,7 +226,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
 
         //submit and schedule process
-        logger.info("process: " + process);
+        logger.info("process: " + Util.prettyPrintXml(process));
 
         prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
@@ -234,30 +235,16 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         int i;
 
-        Status sUa1 = null, sUa2 = null;
-        int counter = 30;
+//        Status sUa1 = null, sUa2 = null;
+        int counter = 10;
         if (OSUtil.IS_WINDOWS) {
-            counter = 60;
-        }
-        for (i = 0; i < counter; i++) {
-            sUa1 = InstanceUtil.getInstanceStatus(cluster1, Util.getProcessName(process), 0, 0);
-            sUa2 = InstanceUtil.getInstanceStatus(cluster2, Util.getProcessName(process), 0, 0);
-            logger.info(String.format("i = %d sUa1 = %s sUa2 = %s", i, sUa1, sUa2));
-            if (sUa1 != null && sUa2 != null &&
-                (sUa1 == Status.RUNNING || sUa1 == Status.SUCCEEDED || sUa1 == Status.KILLED) &&
-                (sUa2 == Status.RUNNING || sUa2 == Status.SUCCEEDED || sUa2 == Status.KILLED)) {
-                break;
-            }
-            Thread.sleep(20000);
+            counter = 20;
         }
 
-        Assert.assertNotNull(sUa1, "sUa1 should not be null.");
-        Assert.assertTrue(sUa1 == Status.RUNNING || sUa1 == Status.SUCCEEDED,
-            "Unexpected sUa1: " + sUa1);
-        Assert.assertNotNull(sUa2, "sUa2 should not be null.");
-        Assert.assertTrue(sUa2 == Status.RUNNING || sUa2 == Status.SUCCEEDED,
-            "Unexpected sUa2: " + sUa2);
-
+        InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
+            Status.RUNNING, counter, ENTITY_TYPE.PROCESS);
+        InstanceUtil.waitTillInstanceReachState(serverOC.get(1), Util.getProcessName(process), 1,
+            Status.RUNNING, counter, ENTITY_TYPE.PROCESS);
         ProcessInstancesResult responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + processStartTime + "&end=" + TimeUtil

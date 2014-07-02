@@ -23,6 +23,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
@@ -67,11 +68,17 @@ public class PrismFeedScheduleTest extends BaseTestClass {
         removeBundles();
     }
 
+    /**
+     * Run feed. Suspend it. Run another feed on another cluster. Check that 1st feed is
+     * suspended on 1st cluster and wnd feed is running on 2nd cluster and not criss cross.
+     *
+     * @throws Exception
+     */
     @Test(groups = {"prism", "0.2"})
     public void testFeedScheduleOn1ColoWhileAnotherColoHasSuspendedFeed()
         throws Exception {
-        logger.info("cluster: " + bundles[0].getClusters().get(0));
-        logger.info("feed: " + bundles[0].getDataSets().get(0));
+        logger.info("cluster: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
+        logger.info("feed: " + Util.prettyPrintXml(bundles[0].getDataSets().get(0)));
 
         bundles[0].submitAndScheduleFeed();
         AssertUtil.assertSucceeded(prism.getFeedHelper()

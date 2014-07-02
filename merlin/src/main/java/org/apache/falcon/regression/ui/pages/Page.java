@@ -19,13 +19,14 @@
 package org.apache.falcon.regression.ui.pages;
 
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import javax.annotation.Nullable;
 
 
 public abstract class Page {
@@ -36,22 +37,87 @@ public abstract class Page {
     protected String expectedElement;
     protected String notFoundMsg;
 
+    private Logger logger = Logger.getLogger(Page.class);
+
     Page(WebDriver driver, PrismHelper helper) {
         this.driver = driver;
         URL = helper.getClusterHelper().getHostname();
     }
-    
+
+    /**
+     * Go to page in browser
+     */
     public void navigateTo() {
         driver.get(URL);
-        waitForElement(expectedElement, DEFAULT_TIMEOUT);
+        waitForElement(expectedElement, DEFAULT_TIMEOUT, notFoundMsg);
     }
 
-    public void waitForElement(final String xpath, final long timeoutSeconds) {
+    /**
+     * Refresh page
+     */
+    public void refresh() {
+        driver.navigate().refresh();
+    }
 
+    /**
+     * Wait for some WebElement defined by xpath. Throws TimeoutException if element is not visible after defined time.
+     * @param webElement find xpath inside this WebElement
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for element
+     * @param errMessage message for TimeoutException
+     */
+    public void waitForElement(WebElement webElement, final String xpath,
+                               final long timeoutSeconds, String errMessage) {
+        waitForElementAction(webElement, xpath, timeoutSeconds, errMessage, true);
+    }
+
+    /**
+     * Wait for some WebElement defined by xpath. Throws TimeoutException if element is not visible after defined time.
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for element
+     * @param errMessage message for TimeoutException
+     */
+    public void waitForElement(final String xpath, final long timeoutSeconds, String errMessage) {
+        waitForElementAction(null, xpath, timeoutSeconds, errMessage, true);
+    }
+
+    /**
+     * Wait until WebElement disappears.
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for disappearing
+     * @param errMessage message for TimeoutException
+     */
+    public void waitForDisappear(final String xpath, final long timeoutSeconds, String errMessage) {
+        waitForElementAction(null, xpath, timeoutSeconds, errMessage, false);
+    }
+
+    /**
+     * Wait until WebElement became visible
+     * @param xpath xpath of expected WebElement
+     * @param timeoutSeconds how many seconds we should wait for visibility
+     * @param errMessage message for TimeoutException
+     */
+    public void waitForDisplayed(String xpath, long timeoutSeconds, String errMessage) {
+        waitForElement(xpath, timeoutSeconds, errMessage);
+        WebElement element = driver.findElement(By.xpath(xpath));
+        for (int i = 0; i < timeoutSeconds * 10; i++) {
+            if (element.isDisplayed()) return;
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                logger.info("Sleep was interrupted");
+            }
+        }
+        throw new TimeoutException(errMessage);
+    }
+
+    private void waitForElementAction(WebElement webElement, String xpath, long timeoutSeconds,
+                                      String errMessage, boolean expected) {
         try {
-            new WebDriverWait(driver, timeoutSeconds).until(new Condition(xpath));
+            new WebDriverWait(driver, timeoutSeconds)
+                .until(new Condition(webElement, xpath, expected));
         } catch (TimeoutException e) {
-            TimeoutException ex = new TimeoutException(notFoundMsg);
+            TimeoutException ex = new TimeoutException(errMessage);
             ex.initCause(e);
             throw ex;
         }
@@ -59,15 +125,25 @@ public abstract class Page {
 
     public static class Condition implements ExpectedCondition<Boolean> {
 
+        private final boolean isPresent;
         private String xpath;
+        private WebElement webElement;
 
-        public Condition(String xpath) {
+        public Condition(String xpath, boolean isPresent) {
             this.xpath = xpath;
+            this.isPresent = isPresent;
+        }
+
+        public Condition(WebElement webElement, String xpath, boolean isPresent) {
+            this.webElement = webElement;
+            this.xpath = xpath;
+            this.isPresent = isPresent;
         }
 
         @Override
         public Boolean apply(WebDriver webDriver) {
-            return !webDriver.findElements(By.xpath(xpath)).isEmpty();
+            SearchContext search = (webElement == null) ? webDriver : webElement;
+            return search.findElements(By.xpath(xpath)).isEmpty() != isPresent;
         }
     }
 }
