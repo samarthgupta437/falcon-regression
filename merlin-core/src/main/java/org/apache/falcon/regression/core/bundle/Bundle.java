@@ -923,7 +923,7 @@ public class Bundle {
 
     public void setInputFeedTableUri(String tableUri) throws JAXBException {
         final String feedStr = BundleUtil.getInputFeedFromBundle(this);
-        Feed feed = InstanceUtil.getFeedElement(feedStr);
+        Feed feed = (Feed) Entity.fromString(EntityType.FEED, feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
@@ -932,7 +932,7 @@ public class Bundle {
 
     public void setOutputFeedTableUri(String tableUri) throws JAXBException {
         final String feedStr = BundleUtil.getOutputFeedFromBundle(this);
-        Feed feed = InstanceUtil.getFeedElement(feedStr);
+        Feed feed = (Feed) Entity.fromString(EntityType.FEED, feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
@@ -1247,7 +1247,7 @@ public class Bundle {
                                   List<String> newClusters, String location, String startTime,
                                   String endTime) throws JAXBException {
 
-        Feed f = InstanceUtil.getFeedElement(referenceFeed);
+        Feed f = (Feed) Entity.fromString(EntityType.FEED, referenceFeed);
         Clusters cs = new Clusters();
         f.setFrequency(new Frequency("" + 5, TimeUnit.minutes));
 
@@ -1276,7 +1276,7 @@ public class Bundle {
             cs.getClusters().add(c);
         }
         f.setClusters(cs);
-        return InstanceUtil.feedElementToString(f);
+        return f.toString();
     }
 
     public void submitAndScheduleBundle(Bundle b, PrismHelper prismHelper,

@@ -753,7 +753,7 @@ public class InstanceUtil {
                                                  ClusterType clusterType, String partition,
                                                  String tableUri, String... locations)
         throws JAXBException {
-        Feed f = getFeedElement(feed);
+        Feed f = (Feed) Entity.fromString(EntityType.FEED, feed);
         if (clusterName == null) {
             f.getClusters().getClusters().clear();
         } else {
@@ -761,7 +761,7 @@ public class InstanceUtil {
                 clusterType, partition, tableUri, locations);
             f.getClusters().getClusters().add(feedCluster);
         }
-        return feedElementToString(f);
+        return f.toString();
     }
 
     private static CatalogTable getCatalogTable(String tableUri) {
@@ -810,26 +810,6 @@ public class InstanceUtil {
     }
 
     /**
-     * Converts string feed representation to XML form
-     */
-    public static Feed getFeedElement(String feed) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        return (Feed) u.unmarshal((new StringReader(feed)));
-    }
-
-    /**
-     * Converts XML feed representation to string form
-     */
-    public static String feedElementToString(Feed feedElement) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(feedElement, sw);
-        return sw.toString();
-    }
-
-    /**
      * Retrieves replication coordinatorID from bundle of coordinators
      */
     public static List<String> getReplicationCoordID(String bundlID,
@@ -868,7 +848,7 @@ public class InstanceUtil {
      * Retrieves prefix (main sub-folders) of feed data path.
      */
     public static String getFeedPrefix(String feed) throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(feed);
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         String p = feedElement.getLocations().getLocations().get(0).getPath();
         p = p.substring(0, p.indexOf("$"));
         return p;
@@ -1017,9 +997,9 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static String setFeedFilePath(String feed, String path) throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(feed);
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedElement.getLocations().getLocations().get(0).setPath(path);
-        return InstanceUtil.feedElementToString(feedElement);
+        return feedElement.toString();
     }
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
@@ -1356,9 +1336,9 @@ public class InstanceUtil {
      * @return modified feed
      */
     public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(feed);
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedElement.setFrequency(f);
-        return InstanceUtil.feedElementToString(feedElement);
+        return feedElement.toString();
     }
 
     /**

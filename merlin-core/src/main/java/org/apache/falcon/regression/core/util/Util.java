@@ -198,9 +198,9 @@ public class Util {
     public static String readEntityName(String data) throws JAXBException {
 
         if (data.contains("uri:falcon:feed"))
-            return InstanceUtil.getFeedElement(data).getName();
+            return Entity.fromString(EntityType.FEED, data).getName();
         else if (data.contains("uri:falcon:process"))
-            return ((Process) Entity.fromString(EntityType.PROCESS, data)).getName();
+            return Entity.fromString(EntityType.PROCESS, data).getName();
         else
             return Entity.fromString(EntityType.CLUSTER, data).getName();
     }
@@ -274,7 +274,7 @@ public class Util {
         Unmarshaller u = jc.createUnmarshaller();
         Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
         dataElement.setName(dataElement.getName() + getUniqueString());
-        return InstanceUtil.feedElementToString(dataElement);
+        return dataElement.toString();
     }
 
     private static String getUniqueString() {
@@ -330,7 +330,7 @@ public class Util {
     public static String setFeedProperty(String feed, String propertyName, String propertyValue)
         throws JAXBException {
 
-        Feed feedObject = InstanceUtil.getFeedElement(feed);
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
 
         boolean found = false;
         for (Property prop : feedObject.getProperties().getProperties()) {
@@ -350,7 +350,7 @@ public class Util {
         }
 
 
-        return InstanceUtil.feedElementToString(feedObject);
+        return feedObject.toString();
 
     }
 
