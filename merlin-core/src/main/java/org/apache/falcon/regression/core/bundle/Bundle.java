@@ -19,6 +19,8 @@
 package org.apache.falcon.regression.core.bundle;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.Entities.ProcessMerlin;
@@ -940,7 +942,8 @@ public class Bundle {
     public void setCLusterWorkingPath(String clusterData, String path) throws JAXBException {
 
         org.apache.falcon.entity.v0.cluster.Cluster c =
-            InstanceUtil.getClusterElement(clusterData);
+            (org.apache.falcon.entity.v0.cluster.Cluster)
+                Entity.fromString(EntityType.CLUSTER, clusterData);
 
         for (int i = 0; i < c.getLocations().getLocations().size(); i++) {
             if (c.getLocations().getLocations().get(i).getName().contains("working"))
@@ -1097,15 +1100,17 @@ public class Bundle {
                                     String endTime) throws JAXBException {
 
         //generate and set clusters
-        org.apache.falcon.entity.v0.cluster.Cluster c = InstanceUtil
-            .getClusterElement(Util.generateUniqueClusterEntity(b.getClusters().get(0)));
+        org.apache.falcon.entity.v0.cluster.Cluster c =
+            (org.apache.falcon.entity.v0.cluster.Cluster)
+                Entity.fromString(EntityType.CLUSTER,
+                    Util.generateUniqueClusterEntity(b.getClusters().get(0)));
         List<String> newClusters = new ArrayList<String>();
         List<String> newDataSets = new ArrayList<String>();
 
         for (int i = 0; i < numberOfClusters; i++) {
             String clusterName = c.getName() + i;
             c.setName(clusterName);
-            newClusters.add(i, InstanceUtil.ClusterElementToString(c));
+            newClusters.add(i, c.toString());
         }
         b.setClusterData(newClusters);
 

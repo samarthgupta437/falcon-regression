@@ -1175,41 +1175,6 @@ public class InstanceUtil {
     }
 
     /**
-     * Unwraps Cluster object to string
-     *
-     * @param c Cluster object to be unwrapped
-     * @return cluster definition
-     * @throws JAXBException
-     */
-    public static String ClusterElementToString(
-        org.apache.falcon.entity.v0.cluster.Cluster c)
-        throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(c, sw);
-        return sw.toString();
-    }
-
-    /**
-     * Wraps cluster definition into Cluster object
-     *
-     * @param clusterData cluster entity definition
-     * @return Cluster object
-     * @throws JAXBException
-     */
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
-        String clusterData) throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        return (org.apache.falcon.entity.v0.cluster.Cluster) u
-            .unmarshal((new StringReader(clusterData)));
-    }
-
-    /**
      * Waits till supplied number of instances of process/feed reach expected state during
      * specific time.
      *

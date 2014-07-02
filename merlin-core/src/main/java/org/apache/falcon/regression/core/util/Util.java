@@ -29,6 +29,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.entity.v0.cluster.Interface;
@@ -200,7 +202,7 @@ public class Util {
         else if (data.contains("uri:falcon:process"))
             return InstanceUtil.getProcessElement(data).getName();
         else
-            return InstanceUtil.getClusterElement(data).getName();
+            return Entity.fromString(EntityType.CLUSTER, data).getName();
     }
 
     public static String readClusterName(String data) throws JAXBException {
