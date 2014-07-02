@@ -60,6 +60,15 @@ public class TimeUtil {
             today.plusMinutes(interval), minuteSkip);
     }
 
+    public static List<String> getMinuteDatesOnEitherSide(String startOozieDate, String endOozieDate,
+                                                          int minuteSkip) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        formatter.withZoneUTC();
+
+        return getMinuteDatesOnEitherSide(TimeUtil.oozieDateToDate(startOozieDate),
+            TimeUtil.oozieDateToDate(endOozieDate), minuteSkip, formatter);
+    }
+
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip) {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");

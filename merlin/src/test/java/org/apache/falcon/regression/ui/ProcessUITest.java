@@ -114,9 +114,8 @@ public class ProcessUITest extends BaseUITestClass {
         logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
 
         // use 5 <= x < 10 input feeds
         final int numInputFeeds = 5 + new Random().nextInt(5);

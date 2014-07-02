@@ -86,10 +86,7 @@ public class InstanceSummaryTest extends BaseTestClass {
                 (-20));
         endTime = TimeUtil.getTimeWrtSystemTime(60);
         String startTimeData = TimeUtil.addMinsToTime(startTime, -100);
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(TimeUtil
-                .oozieDateToDate(startTimeData), TimeUtil.oozieDateToDate(endTime),
-            20
-        );
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTime, 20);
 
         for (FileSystem fs : serverFS) {
             HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT,
