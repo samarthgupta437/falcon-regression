@@ -39,7 +39,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.AuthOozieClient;
 import org.testng.Assert;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -252,7 +251,7 @@ public abstract class IEntityManagerHelper {
 
     public abstract String getEntityType();
 
-    public abstract String getEntityName(String entity) throws JAXBException;
+    public abstract String getEntityName(String entity);
 
     protected String createUrl(String... parts) {
         return StringUtils.join(parts, "/");
@@ -283,12 +282,12 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse schedule(URLS scheduleUrl, String processData)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return schedule(scheduleUrl, processData, null);
     }
 
     public ServiceResponse schedule(URLS scheduleUrl, String processData, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(createUrl(this.hostname + scheduleUrl.getValue(), getEntityType(),
             getEntityName(processData) + colo), "post", user);
     }
@@ -313,60 +312,60 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse delete(URLS deleteUrl, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return delete(deleteUrl, data, null);
     }
 
     public ServiceResponse delete(URLS deleteUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + deleteUrl.getValue(), getEntityType(), getEntityName(data)),
             "delete", user);
     }
 
     public ServiceResponse suspend(URLS suspendUrl, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return suspend(suspendUrl, data, null);
     }
 
     public ServiceResponse suspend(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "post", user);
     }
 
     public ServiceResponse resume(URLS url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return resume(url, data, null);
     }
 
     public ServiceResponse resume(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "post", user);
     }
 
     public ServiceResponse getStatus(URLS url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return getStatus(url, data, null);
     }
 
     public ServiceResponse getStatus(Util.URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "get", user);
     }
 
     public ServiceResponse getEntityDefinition(URLS url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(url, data, null);
     }
 
     public ServiceResponse getEntityDefinition(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "get", user);
@@ -415,12 +414,12 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse update(String oldEntity, String newEntity)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return update(oldEntity, newEntity, null);
     }
 
     public ServiceResponse update(String oldEntity, String newEntity, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + Util.URLS.UPDATE.getValue(), getEntityType(),
             getEntityName(oldEntity));
         return Util.sendRequest(url + colo, "post", newEntity, user);
@@ -428,7 +427,7 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
                                   String user)
-        throws IOException, JAXBException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         String url = this.hostname + URLS.UPDATE.getValue() + "/" + getEntityType() + "/" +
             Util.readEntityName(oldEntity);
         String urlPart = colo == null || colo.isEmpty() ? "?" : colo + "&";

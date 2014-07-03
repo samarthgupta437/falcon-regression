@@ -65,16 +65,11 @@ import org.apache.oozie.client.WorkflowJob;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
@@ -234,38 +229,30 @@ public class InstanceUtil {
 
     public static void writeProcessElement(Bundle bundle, Process processElement)
         throws JAXBException {
-        //logger.info("modified process is: " + sw);
         bundle.setProcessData(processElement.toString());
     }
 
     public static Process getProcessElement(Bundle bundle) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        return (Process) u.unmarshal((new StringReader(bundle.getProcessData())));
+        return (Process) Entity.fromString(EntityType.PROCESS, bundle.getProcessData());
     }
 
     public static Feed getFeedElement(Bundle bundle, String feedName) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Feed feedElement = (Feed) u.unmarshal((new StringReader(bundle.dataSets.get(0))));
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
         if (!feedElement.getName().contains(feedName)) {
-            feedElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
-
+            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
         }
         return feedElement;
     }
 
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
                                         String feedName) throws JAXBException {
-        writeFeedElement(bundle, feedElementToString(feedElement), feedName);
+        writeFeedElement(bundle, feedElement.toString(), feedName);
     }
 
     public static void writeFeedElement(Bundle bundle, String feedString,
                                         String feedName) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
         int index = 0;
-        Feed dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(0)));
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
         if (!dataElement.getName().contains(feedName)) {
             index = 1;
         }
@@ -701,11 +688,8 @@ public class InstanceUtil {
      */
     public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle)
         throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        return (org.apache.falcon.entity.v0.cluster.Cluster) u
-            .unmarshal((new StringReader(bundle.getClusters().get(0))));
+        return (org.apache.falcon.entity.v0.cluster.Cluster)
+            Entity.fromString(EntityType.CLUSTER, bundle.getClusters().get(0));
     }
 
     /**
@@ -716,15 +700,9 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static void writeClusterElement(Bundle bundle,
-                                           org.apache.falcon.entity.v0.cluster
-                                               .Cluster c)
+                                           org.apache.falcon.entity.v0.cluster.Cluster c)
         throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(c, sw);
-        bundle.setClusterData(sw.toString());
+        bundle.setClusterData(c.toString());
     }
 
     /**

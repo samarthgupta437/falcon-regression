@@ -36,7 +36,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
         return "feed";
     }
 
-    public String getEntityName(String entity) throws JAXBException {
+    public String getEntityName(String entity) {
         return Util.readDatasetName(entity);
     }
 

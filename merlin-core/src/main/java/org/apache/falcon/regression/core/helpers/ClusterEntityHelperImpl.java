@@ -44,7 +44,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
         return "cluster";
     }
 
-    public String getEntityName(String entity) throws JAXBException {
+    public String getEntityName(String entity) {
         return Util.readClusterName(entity);
     }
 
@@ -93,7 +93,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
-                                  String user) throws IOException, JAXBException {
+                                  String user) throws IOException {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 

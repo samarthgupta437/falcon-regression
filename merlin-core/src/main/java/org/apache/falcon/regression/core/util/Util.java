@@ -67,7 +67,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
@@ -125,10 +124,8 @@ public class Util {
         return new ServiceResponse(response);
     }
 
-    public static String getProcessName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
+    public static String getProcessName(String data) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, data);
         return processElement.getName();
     }
 
@@ -195,8 +192,7 @@ public class Util {
         return files;
     }
 
-    public static String readEntityName(String data) throws JAXBException {
-
+    public static String readEntityName(String data) {
         if (data.contains("uri:falcon:feed"))
             return Entity.fromString(EntityType.FEED, data).getName();
         else if (data.contains("uri:falcon:process"))
@@ -205,23 +201,14 @@ public class Util {
             return Entity.fromString(EntityType.CLUSTER, data).getName();
     }
 
-    public static String readClusterName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Cluster clusterElement = (Cluster) u.unmarshal(new StringReader(data));
-
-        return clusterElement.getName();
+    public static String readClusterName(String data) {
+        Cluster cluster = (Cluster) Entity.fromString(EntityType.CLUSTER, data);
+        return cluster.getName();
     }
 
-    public static String readDatasetName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Feed datasetElement = (Feed) u.unmarshal((new StringReader(data)));
-
+    public static String readDatasetName(String data) {
+        Feed datasetElement = (Feed) Entity.fromString(EntityType.FEED, data);
         return datasetElement.getName();
-
     }
 
     /**
@@ -229,17 +216,11 @@ public class Util {
      *
      * @param data process definition
      * @return process definition with unique name
-     * @throws JAXBException
      */
-    public static String generateUniqueProcessEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
-        processElement.setName(processElement.getName() + getUniqueString());
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(processElement, sw);
-        return sw.toString();
+    public static String generateUniqueProcessEntity(String data) {
+        Process process = (Process) Entity.fromString(EntityType.PROCESS, data);
+        process.setName(process.getName() + getUniqueString());
+        return process.toString();
     }
 
     /**
@@ -247,19 +228,11 @@ public class Util {
      *
      * @param data cluster definition
      * @return cluster definition with unique name
-     * @throws JAXBException
      */
-    public static String generateUniqueClusterEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Cluster clusterElement = (Cluster) u.unmarshal((new StringReader(data)));
-        clusterElement.setName(clusterElement.getName() + getUniqueString());
-
-        //lets marshall it back and return
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(clusterElement, sw);
-        return sw.toString();
+    public static String generateUniqueClusterEntity(String data) {
+        Cluster cluster = (Cluster) Entity.fromString(EntityType.CLUSTER, data);
+        cluster.setName(cluster.getName() + getUniqueString());
+        return cluster.toString();
     }
 
     /**
@@ -267,14 +240,11 @@ public class Util {
      *
      * @param data feed definition
      * @return feed definition with unique name
-     * @throws JAXBException
      */
-    public static String generateUniqueDataEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
-        dataElement.setName(dataElement.getName() + getUniqueString());
-        return dataElement.toString();
+    public static String generateUniqueDataEntity(String data) {
+        Feed feed = (Feed) Entity.fromString(EntityType.FEED, data);
+        feed.setName(feed.getName() + getUniqueString());
+        return feed.toString();
     }
 
     private static String getUniqueString() {
@@ -299,7 +269,7 @@ public class Util {
     }
 
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
-        throws JAXBException, IOException {
+        throws IOException {
         List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
@@ -327,8 +297,7 @@ public class Util {
         return executeCommand(command).getOutput();
     }
 
-    public static String setFeedProperty(String feed, String propertyName, String propertyValue)
-        throws JAXBException {
+    public static String setFeedProperty(String feed, String propertyName, String propertyValue) {
 
         Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
 
@@ -355,11 +324,8 @@ public class Util {
     }
 
 
-    public static String getFeedPath(String feed) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
+    public static String getFeedPath(String feed) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType() == LocationType.DATA) {
                 return location.getPath();
@@ -403,20 +369,10 @@ public class Util {
         return null;
     }
 
-    public static String insertLateFeedValue(String feed, Frequency frequency)
-        throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
+    public static String insertLateFeedValue(String feed, Frequency frequency) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedObject.getLateArrival().setCutOff(frequency);
-
-        Marshaller m = context.createMarshaller();
-        StringWriter sw = new StringWriter();
-
-        m.marshal(feedObject, sw);
-
-        return sw.toString();
+        return feedObject.toString();
     }
 
     public static void createLateDataFoldersWithRandom(PrismHelper prismHelper, String folderPrefix,
@@ -492,20 +448,14 @@ public class Util {
     }
 
 
-    public static String setFeedPathValue(String feed, String pathValue) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
-
-        //set the value
+    public static String setFeedPathValue(String feed, String pathValue) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType() == LocationType.DATA) {
                 location.setPath(pathValue);
             }
         }
-
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString();
+        return feedObject.toString();
     }
 
 
@@ -565,35 +515,21 @@ public class Util {
 
     }
 
-    public static String setFeedName(String feedString, String newName) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject =
-            (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
-
-        //set the value
+    public static String setFeedName(String feedString, String newName) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedString);
         feedObject.setName(newName);
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString().trim();
+        return feedObject.toString().trim();
     }
 
     public static String setClusterNameInFeed(String feedString, String clusterName,
-                                              int clusterIndex) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject =
-            (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
-        //set the value
+                                              int clusterIndex) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedString);
         feedObject.getClusters().getClusters().get(clusterIndex).setName(clusterName);
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString().trim();
+        return feedObject.toString().trim();
     }
 
-    public static Cluster getClusterObject(
-        String clusterXML) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (Cluster) um.unmarshal(new StringReader(clusterXML));
+    public static Cluster getClusterObject(String clusterXML) {
+        return (Cluster) Entity.fromString(EntityType.CLUSTER, clusterXML);
     }
 
     public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
@@ -768,10 +704,8 @@ public class Util {
         return data;
     }
 
-    public static Process getProcessObject(String processData) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Process.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (Process) um.unmarshal(new StringReader(processData));
+    public static Process getProcessObject(String processData) {
+        return (Process) Entity.fromString(EntityType.PROCESS, processData);
     }
 
     /**
@@ -779,10 +713,8 @@ public class Util {
      *
      * @param clusterData list of cluster definitions to be modified
      * @return list of unique cluster definitions
-     * @throws JAXBException
      */
-    public static List<String> generateUniqueClusterEntity(List<String> clusterData)
-        throws JAXBException {
+    public static List<String> generateUniqueClusterEntity(List<String> clusterData) {
         List<String> newList = new ArrayList<String>();
         for (String cluster : clusterData) {
             newList.add(generateUniqueClusterEntity(cluster));
@@ -874,8 +806,7 @@ public class Util {
     }
 
 
-    public static String getEnvClusterXML(String filename, String cluster, String prefix)
-        throws JAXBException {
+    public static String getEnvClusterXML(String filename, String cluster, String prefix) {
 
         Cluster clusterObject =
             getClusterObject(cluster);
@@ -935,14 +866,7 @@ public class Util {
                     .add(getFalconClusterPropertyObject("hive.metastore.uris", hcat_endpoint));
             }
         }
-
-
-        JAXBContext context = JAXBContext.newInstance(Cluster.class);
-        Marshaller m = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-
-        m.marshal(clusterObject, writer);
-        return writer.toString();
+        return clusterObject.toString();
     }
 
     public static org.apache.falcon.entity.v0.cluster.Property

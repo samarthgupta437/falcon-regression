@@ -36,7 +36,7 @@ public class ProcessEntityHelperImpl extends IEntityManagerHelper {
         return "process";
     }
 
-    public String getEntityName(String entity) throws JAXBException {
+    public String getEntityName(String entity) {
         return Util.getProcessName(entity);
     }
 
