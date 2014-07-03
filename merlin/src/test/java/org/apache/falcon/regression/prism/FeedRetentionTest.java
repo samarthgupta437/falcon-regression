@@ -42,7 +42,6 @@ import java.lang.reflect.Method;
 
 import org.apache.hadoop.fs.Path;
 
-import java.util.concurrent.TimeUnit;
 
 @Test(groups = "embedded")
 public class FeedRetentionTest extends BaseTestClass {

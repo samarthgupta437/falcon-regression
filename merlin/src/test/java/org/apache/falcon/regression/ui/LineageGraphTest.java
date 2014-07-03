@@ -42,7 +42,6 @@ import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.codehaus.jettison.json.JSONException;
-import org.joda.time.DateTime;
 import org.openqa.selenium.Point;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
