@@ -53,27 +53,20 @@ public class TimeUtil {
     }
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        if (minuteSkip == 0) {
-            minuteSkip = 1;
-        }
         DateTime today = new DateTime(DateTimeZone.UTC);
         Util.logger.info("today is: " + today.toString());
 
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(today));
+        return getMinuteDatesOnEitherSide(today.minusMinutes(interval),
+            today.plusMinutes(interval), minuteSkip);
+    }
 
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += minuteSkip) {
-            dates.add(formatter.print(today.minusMinutes(backward)));
-        }
+    public static List<String> getMinuteDatesOnEitherSide(String startOozieDate, String endOozieDate,
+                                                          int minuteSkip) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        formatter.withZoneUTC();
 
-        //now the forward dates
-        for (int i = 0; i <= interval; i += minuteSkip) {
-            dates.add(formatter.print(today.plusMinutes(i)));
-        }
-
-        return dates;
+        return getMinuteDatesOnEitherSide(TimeUtil.oozieDateToDate(startOozieDate),
+            TimeUtil.oozieDateToDate(endOozieDate), minuteSkip, formatter);
     }
 
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,

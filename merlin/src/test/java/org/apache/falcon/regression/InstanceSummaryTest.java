@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -84,23 +83,12 @@ public class InstanceSummaryTest extends BaseTestClass {
                 (-20));
         endTime = TimeUtil.getTimeWrtSystemTime(60);
         String startTimeData = TimeUtil.addMinsToTime(startTime, -100);
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(TimeUtil
-                .oozieDateToDate(startTimeData), TimeUtil.oozieDateToDate(endTime),
-            20
-        );
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, Util.getPathPrefix(feedInputPath) + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
-        }
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTime, 20);
 
         for (FileSystem fs : serverFS) {
             HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
-            HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT, dataFolder);
+            HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT,
+                Util.getPathPrefix(feedInputPath), dataDates);
         }
     }
 
