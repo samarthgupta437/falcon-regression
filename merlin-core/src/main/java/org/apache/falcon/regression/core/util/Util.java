@@ -645,8 +645,6 @@ public class Util {
     public static void startService(IEntityManagerHelper helper)
         throws IOException, JSchException, AuthenticationException, URISyntaxException {
 
-        //putting shutdown to stop multiple start, to take care of bug https://issues.apache.org/jira/browse/FALCON-442
-        shutDownService(helper);
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
             helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
             helper.getIdentityFile());

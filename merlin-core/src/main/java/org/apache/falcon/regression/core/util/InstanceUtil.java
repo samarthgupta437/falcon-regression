@@ -22,10 +22,12 @@ import com.google.gson.GsonBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.falcon.entity.v0.feed.ACL;
 import org.apache.falcon.entity.v0.feed.Cluster;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.Locations;
 import org.apache.falcon.entity.v0.feed.Validity;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.CatalogTable;
 import org.apache.falcon.entity.v0.process.Process;
@@ -35,6 +37,7 @@ import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.entity.v0.feed.Retention;
 import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
@@ -44,6 +47,7 @@ import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.request.BaseRequest;
+import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -81,7 +85,6 @@ import java.util.TreeMap;
 public class InstanceUtil {
 
     static Logger logger = Logger.getLogger(InstanceUtil.class);
-
     public static APIResult sendRequestProcessInstance(String
                                                            url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -93,7 +96,6 @@ public class InstanceUtil {
         IOException, AuthenticationException {
         BaseRequest request = new BaseRequest(url, method, user);
         HttpResponse response = request.run();
-
         BufferedReader reader = new BufferedReader(
             new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
         StringBuilder string_response = new StringBuilder();
@@ -1340,6 +1342,26 @@ public class InstanceUtil {
 
         }
 
+    }
+
+    public static String setFeedACL(String feed, String... ownerGroup) {
+        FeedMerlin feedObject = null;
+        try {
+            feedObject = new FeedMerlin(feed);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+        ACL acl = feedObject.getACL();
+        acl.setOwner(MerlinConstants.aclOwner);
+        acl.setGroup(MerlinConstants.aclGroup);
+        if(ownerGroup.length > 0) {
+            acl.setOwner(ownerGroup[0]);
+            if (ownerGroup.length == 2)
+                acl.setGroup(ownerGroup[1]);
+        }
+        feedObject.setACL(acl);
+        return feedObject.toString();
     }
 }
 
