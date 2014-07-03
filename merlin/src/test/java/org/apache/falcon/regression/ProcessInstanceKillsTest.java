@@ -306,7 +306,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(1);
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(bundles[0]
-            .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 15, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");

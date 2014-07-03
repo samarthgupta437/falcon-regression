@@ -140,7 +140,6 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(100)), prefix,
             1);
 
-
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         TimeUtil.createDataWithinDatesAndPrefix(cluster2,
@@ -224,7 +223,6 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             .addProcessInputFeed(process, Util.readDatasetName(feed02),
                 Util.readDatasetName(feed02));
 
-
         //submit and schedule process
         logger.info("process: " + Util.prettyPrintXml(process));
 
@@ -233,18 +231,10 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         logger.info("Wait till process goes into running ");
 
-        int i;
-
-//        Status sUa1 = null, sUa2 = null;
-        int counter = 10;
-        if (OSUtil.IS_WINDOWS) {
-            counter = 20;
-        }
-
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
-            Status.RUNNING, counter, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, ENTITY_TYPE.PROCESS);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(1), Util.getProcessName(process), 1,
-            Status.RUNNING, counter, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, ENTITY_TYPE.PROCESS);
         ProcessInstancesResult responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + processStartTime + "&end=" + TimeUtil

@@ -467,7 +467,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0),
             Util.readEntityName(processBundle.getProcessData()), 0,
-            CoordinatorAction.Status.WAITING, 2, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         //save old data
         String oldProcess = processBundle.getProcessData();

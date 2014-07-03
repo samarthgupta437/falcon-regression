@@ -118,7 +118,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(clusterOC,
             Util.getProcessName(bundles[0].getProcessData()), 2,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     /**

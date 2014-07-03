@@ -235,7 +235,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
             .getProcessData()), Status.RUNNING, Status.SUCCEEDED).get(0);
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
             .getProcessData()), 0, CoordinatorAction
-            .Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+            .Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
@@ -282,18 +282,14 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0, 10);
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 2, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 2, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
         List<String> wfIDs =
             InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
                 ()));
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        InstanceUtil
-            .areWorkflowsRunning(clusterOC, wfIDs,
-                3,
-                3, 0,
-                0);
+        InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 3, 3, 0, 0);
     }
 
     /**
@@ -314,7 +310,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         CoordinatorAction.Status s = null;
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.getProcessName(bundles[0]
-            .getProcessData()), 1, CoordinatorAction.Status.TIMEDOUT, 20, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 1, CoordinatorAction.Status.TIMEDOUT, ENTITY_TYPE.PROCESS);
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");

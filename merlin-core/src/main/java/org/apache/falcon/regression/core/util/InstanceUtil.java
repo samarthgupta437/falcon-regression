@@ -55,6 +55,7 @@ import org.apache.http.HttpResponse;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
 import org.apache.oozie.client.Job.Status;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
@@ -180,9 +181,9 @@ public class InstanceUtil {
     /**
      * Checks if API response reflects success and if it's instances match to expected status.
      *
-     * @param r  - kind of response from API which should contain information about instances
-     * @param b  - bundle from which process instances are being analyzed
-     * @param ws - - expected status of instances
+     * @param r kind of response from API which should contain information about instances
+     * @param b bundle from which process instances are being analyzed
+     * @param ws expected status of instances
      * @throws JAXBException
      */
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
@@ -195,9 +196,9 @@ public class InstanceUtil {
     /**
      * Check the number of instances in response which have the same status as expected.
      *
-     * @param r  - kind of response from API which should contain information about instances
-     * @param ws - expected status of instances
-     * @return - number of instances which have expected status
+     * @param r kind of response from API which should contain information about instances
+     * @param ws expected status of instances
+     * @return number of instances which have expected status
      */
     public static int runningInstancesInResult(ProcessInstancesResult r,
                                                ProcessInstancesResult.WorkflowStatus ws) {
@@ -282,8 +283,8 @@ public class InstanceUtil {
      * Checks that API action succeed and the instance on which it has been performed on has
      * expected status.
      *
-     * @param r  - - kind of response from API which should contain information about instance
-     * @param ws - - expected status of instance
+     * @param r kind of response from API which should contain information about instance
+     * @param ws expected status of instance
      */
     public static void validateSuccessOnlyStart(ProcessInstancesResult r,
                                                 ProcessInstancesResult.WorkflowStatus ws) {
@@ -295,10 +296,9 @@ public class InstanceUtil {
      * Checks that actual number of instances with different statuses are equal to expected number
      * of instances with matching statuses.
      *
-     * @param r                  - - kind of response from API which should contain information
-     *                           about instances
-     *                           All parameters below reflect number of expected instances of
-     *                           some kind of status.
+     * @param r kind of response from API which should contain information about instances
+     *
+     * All parameters below reflect number of expected instances with some kind of status.
      * @param totalInstances
      * @param runningInstances
      * @param suspendedInstances
@@ -350,9 +350,8 @@ public class InstanceUtil {
     /**
      * Checks that expected number of failed instances matches actual number of failed ones.
      *
-     * @param r         - - kind of response from API which should contain information about
-     *                  instances
-     * @param failCount - number of instances which should be failed.
+     * @param r kind of response from API which should contain information about instances.
+     * @param failCount number of instances which should be failed.
      */
     public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
         AssertUtil.assertSucceeded(r);
@@ -393,7 +392,6 @@ public class InstanceUtil {
         }
         return toBeReturned;
     }
-
 
     public static boolean isWorkflowRunning(OozieClient OC, String workflowID) throws
         OozieClientException {
@@ -470,12 +468,9 @@ public class InstanceUtil {
                 minString = coord.getId();
             }
         }
-
         logger.info("function getDefaultCoordIDFromBundle: minString: " + minString);
         return minString;
-
     }
-
 
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
@@ -485,28 +480,22 @@ public class InstanceUtil {
         List<CoordinatorAction> list = getProcessInstanceList(coloHelper, processName, entityType);
         int instanceCount = 0;
         for (CoordinatorAction aList : list) {
-
-            if (aList.getStatus() == status)
+            if (aList.getStatus().equals(status))
                 instanceCount++;
         }
         return instanceCount;
-
     }
-
 
     public static Status getDefaultCoordinatorStatus(ColoHelper colohelper, String processName,
                                                      int bundleNumber) throws OozieClientException {
-
         OozieClient oozieClient = colohelper.getProcessHelper().getOozieClient();
         String coordId =
             getDefaultCoordinatorFromProcessName(colohelper, processName, bundleNumber);
         return oozieClient.getCoordJobInfo(coordId).getStatus();
     }
 
-
     public static String getDefaultCoordinatorFromProcessName(
         ColoHelper coloHelper, String processName, int bundleNumber) throws OozieClientException {
-        //String bundleId = Util.getCoordID(Util.getOozieJobStatus(processName,"NONE").get(0));
         String bundleID =
             getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
         return getDefaultCoordIDFromBundle(coloHelper, bundleID);
@@ -637,7 +626,7 @@ public class InstanceUtil {
      *
      * @param fs remote file system
      * @param remoteLocation remote location for copied data
-     * @param type
+     * @param type type of provided data
      * @throws IOException
      */
     public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type)
@@ -685,7 +674,6 @@ public class InstanceUtil {
         logger.info("created folders.....");
 
     }
-
 
     public static void putFileInFolders(ColoHelper colo, List<String> folderList,
                                         final String... fileName) throws IOException {
@@ -786,7 +774,6 @@ public class InstanceUtil {
             cluster.setTable(getCatalogTable(tableUri));
         }
 
-
         Locations feedLocations = new Locations();
         if (ArrayUtils.isNotEmpty(locations)) {
             for (int i = 0; i < locations.length; i++) {
@@ -869,7 +856,6 @@ public class InstanceUtil {
         return InstanceUtil.sendRequestProcessInstance(url, user);
 
     }
-
 
     /**
      * Retrieves prefix (main sub-folders) of feed data path.
@@ -1068,7 +1054,6 @@ public class InstanceUtil {
         return numberOfCoord;
     }
 
-
     public static String setProcessFrequency(String process,
                                              Frequency frequency) throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
@@ -1085,7 +1070,6 @@ public class InstanceUtil {
 
         return InstanceUtil.processToString(p);
     }
-
 
     public static String setProcessValidity(String process,
                                             String startTime, String endTime) throws JAXBException {
@@ -1132,7 +1116,6 @@ public class InstanceUtil {
         }
 
         String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
-        //String coordId = getDefaultCoordinatorFromProcessName(processName);
         logger.info("default coordID: " + coordId);
 
         return list;
@@ -1200,15 +1183,28 @@ public class InstanceUtil {
             .unmarshal((new StringReader(clusterData)));
     }
 
+    /**
+     * Waits till supplied number of instances of process/feed reach expected state during
+     * specific time.
+     *
+     *
+     * @param client oozie client to retrieve info about instances
+     * @param entityName name of feed or process
+     * @param numberOfInstance number of instances which status we are waiting for
+     * @param expectedStatus expected status we are waiting for
+     * @param entityType type of entity - feed or process expected
+     * @throws OozieClientException
+     * @throws InterruptedException
+     */
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
-                                                  org.apache.oozie.client.CoordinatorAction
-                                                      .Status expectedStatus,
-                                                  int totalMinutesToWait, ENTITY_TYPE entityType)
+                                                  CoordinatorAction.Status expectedStatus,
+                                                  ENTITY_TYPE entityType)
         throws InterruptedException, OozieClientException {
+        int totalMinutesToWait = getMinutesToWait(entityType, expectedStatus);
         String filter;
-        // get the bunlde ids
-        if (entityType == ENTITY_TYPE.FEED) {
+        // get the bundle ids
+        if (entityType.equals(ENTITY_TYPE.FEED)) {
             filter = "name=FALCON_FEED_" + entityName;
         } else {
             filter = "name=FALCON_PROCESS_" + entityName;
@@ -1280,32 +1276,103 @@ public class InstanceUtil {
         Assert.assertTrue(false, "expected state of instance was never reached");
     }
 
-    public static void waitForBundleToReachState(
-        ColoHelper coloHelper,
-        String processName,
-        org.apache.oozie.client.Job.Status expectedStatus,
-        int totalMinutesToWait) throws OozieClientException {
+    /**
+     * Waits till bundle job will reach expected status.
+     * Generates time according to expected status.
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param processName name of process which job is being analyzed
+     * @param expectedStatus job status we are waiting for
+     * @throws OozieClientException
+     */
+    public static void waitForBundleToReachState(ColoHelper coloHelper,
+                                                 String processName, Job.Status expectedStatus) throws
+        OozieClientException {
+        int totalMinutesToWait = getMinutesToWait(expectedStatus);
+        waitForBundleToReachState(coloHelper, processName, expectedStatus, totalMinutesToWait);
+    }
+
+    /**
+     * Waits till bundle job will reach expected status during specific time.
+     * Use it directly in test cases when timeouts are different from trivial, in other cases use
+     * waitForBundleToReachState(ColoHelper, String, Status)
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param processName name of process which job is being analyzed
+     * @param expectedStatus job status we are waiting for
+     * @param totalMinutesToWait specific time to wait expected state
+     * @throws OozieClientException
+     */
+    public static void waitForBundleToReachState(ColoHelper coloHelper,
+        String processName, Job.Status expectedStatus, int totalMinutesToWait) throws
+        OozieClientException {
 
         int sleep = totalMinutesToWait * 60 / 20;
-
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
             String BundleID =
                 InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
-
             OozieClient oozieClient =
                 coloHelper.getProcessHelper().getOozieClient();
-
             BundleJob j = oozieClient.getBundleJobInfo(BundleID);
-
             if (j.getStatus() == expectedStatus)
                 break;
-
             try {
                 Thread.sleep(20000);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Generates time which is presumably needed for process/feed instances to reach particular
+     * state.
+     * Feed instances are running faster then process, so feed timeouts are less then process.
+     *
+     * @param entityType type of entity which instances status we are waiting for
+     * @param expectedStatus expected status we are waiting for
+     * @return minutes to wait for expected status
+     */
+    private static int getMinutesToWait(ENTITY_TYPE entityType,
+                                        CoordinatorAction.Status expectedStatus){
+        switch (expectedStatus) {
+            case RUNNING:
+                if(entityType == ENTITY_TYPE.PROCESS) {
+                    return OSUtil.IS_WINDOWS ? 20 : 10;
+                } else if(entityType == ENTITY_TYPE.FEED) {
+                    return OSUtil.IS_WINDOWS ? 10 : 5;
+                }
+            case WAITING:
+                return OSUtil.IS_WINDOWS ? 6 : 3;
+            case SUCCEEDED:
+                if(entityType == ENTITY_TYPE.PROCESS) {
+                    return OSUtil.IS_WINDOWS ? 25 : 15;
+                } else if(entityType == ENTITY_TYPE.FEED) {
+                    return OSUtil.IS_WINDOWS ? 20 : 10;
+                }
+            case KILLED:
+            case TIMEDOUT:
+                return OSUtil.IS_WINDOWS ? 40 : 20;
+            default:
+                return OSUtil.IS_WINDOWS ? 30 : 15;
+        }
+    }
+
+    /**
+     * Generates time which is presumably needed for bundle job to reach particular state.
+     *
+     * @param expectedStatus status which we are expect to get from bundle job
+     * @return minutes to wait for expected status
+     */
+    private static int getMinutesToWait(Job.Status expectedStatus) {
+        switch (expectedStatus) {
+            case DONEWITHERROR:
+            case SUCCEEDED:
+                return OSUtil.IS_WINDOWS ? 40 : 20;
+            case KILLED:
+                return OSUtil.IS_WINDOWS ? 30 : 15;
+            default:
+                return OSUtil.IS_WINDOWS ? 60 : 30;
         }
     }
 

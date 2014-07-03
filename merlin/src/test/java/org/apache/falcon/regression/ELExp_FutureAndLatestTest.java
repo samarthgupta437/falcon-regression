@@ -106,7 +106,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         bundles[0].setDatasetInstances("latest(-3)", "latest(0)");
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     @Test(groups = {"singleCluster"})
@@ -114,7 +114,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         bundles[0].setDatasetInstances("future(0,10)", "future(3,10)");
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     @AfterClass(alwaysRun = true)

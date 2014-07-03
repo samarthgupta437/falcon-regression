@@ -156,7 +156,7 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -239,11 +239,11 @@ public class FeedReplicationTest extends BaseTestClass {
                 "REPLICATION"), 1);
         //replication on cluster 2 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //replication on cluster 3 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -337,11 +337,11 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //check if instance become running
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.RUNNING, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.RUNNING, ENTITY_TYPE.FEED);
 
         //wait till instance succeed
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil

@@ -1545,7 +1545,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             b.submitAndScheduleBundle(prism);
 
             InstanceUtil.waitTillInstanceReachState(serverOC.get(1),
-                Util.readEntityName(b.getProcessData()), 0, CoordinatorAction.Status.RUNNING, 10,
+                Util.readEntityName(b.getProcessData()), 0, CoordinatorAction.Status.RUNNING,
                 ENTITY_TYPE.PROCESS);
 
             //save old data

@@ -181,7 +181,7 @@ public class ProcessUITest extends BaseUITestClass {
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, 5, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
 
         softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
                 EntitiesPage.EntityStatus.RUNNING, "Process status should be RUNNING");
@@ -195,7 +195,7 @@ public class ProcessUITest extends BaseUITestClass {
         checkActions(actions, processPage);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
 
         processPage.refresh();
         actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, ENTITY_TYPE.PROCESS);

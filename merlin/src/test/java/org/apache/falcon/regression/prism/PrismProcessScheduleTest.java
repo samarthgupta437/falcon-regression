@@ -366,7 +366,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
 
             InstanceUtil.waitForBundleToReachState(cluster1,
                 Util.readEntityName(bundles[0].getProcessData()),
-                org.apache.oozie.client.Job.Status.KILLED, 10);
+                org.apache.oozie.client.Job.Status.KILLED);
 
             String oldBundleID = InstanceUtil.getLatestBundleID(cluster1,
                 Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS);

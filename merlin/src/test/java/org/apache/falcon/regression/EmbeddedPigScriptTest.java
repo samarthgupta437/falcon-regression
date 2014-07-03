@@ -187,11 +187,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
 
-        int counter = 50;
-        // increase the wait for windows
-        if (OSUtil.IS_WINDOWS) {
-            counter = 100;
-        }
+        int counter = OSUtil.IS_WINDOWS ? 100 : 50;
         InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
             .getProcessData()), Job.Status.SUCCEEDED, counter);
         r = prism.getProcessHelper()

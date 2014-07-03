@@ -124,7 +124,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(2),
             Util.readEntityName(processBundle.getProcessData()), 2,
-            Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+            Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
 
 
         //AssertUtil.assertSucceeded(r);
