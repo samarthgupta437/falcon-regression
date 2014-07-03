@@ -109,6 +109,7 @@ public class InstanceSummaryTest extends BaseTestClass {
         logger.info("test name: " + method.getName());
         processBundle = BundleUtil.readELBundles()[0][0];
         processBundle = new Bundle(processBundle, cluster3);
+        processBundle.generateUniqueBundle();
         processBundle.setInputFeedDataPath(feedInputPath);
         processBundle.setProcessWorkflow(aggregateWorkflowDir);
 
@@ -259,9 +260,6 @@ public class InstanceSummaryTest extends BaseTestClass {
     public void testSummaryMultiClusterFeed() throws JAXBException,
         ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException,
         AuthenticationException {
-        bundles[0].generateUniqueBundle();
-        bundles[1].generateUniqueBundle();
-        bundles[2].generateUniqueBundle();
 
         //create desired feed
         String feed = bundles[0].getDataSets().get(0);

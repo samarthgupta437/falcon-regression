@@ -61,6 +61,7 @@ public class OptionalInputTest extends BaseTestClass {
         logger.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
+        bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 

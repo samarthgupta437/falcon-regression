@@ -69,7 +69,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,16 +123,6 @@ public class Util {
         return new ServiceResponse(response);
     }
 
-    public static String getExpectedErrorMessage(String filename) throws IOException {
-
-        Properties properties = new Properties();
-        final InputStream resourceAsStream =
-            Util.class.getResourceAsStream("/" + "errorMapping.properties");
-        properties.load(resourceAsStream);
-        resourceAsStream.close();
-        return properties.getProperty(filename);
-    }
-
     public static String getProcessName(String data) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
@@ -181,37 +170,7 @@ public class Util {
         return temp;
     }
 
-    public static List<String> getProcessStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/PROCESS");
-    }
-
-    public static List<String> getDataSetStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/FEED");
-    }
-
-    public static List<String> getDataSetArchiveInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/FEED");
-    }
-
-    public static List<String> getArchiveStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/PROCESS");
-    }
-
-    public static List<String> getClusterStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/CLUSTER");
-    }
-
-    public static List<String> getClusterArchiveInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/CLUSTER");
-    }
-
-    private static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
+    public static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
         throws IOException, JSchException {
         if (helper.getStoreLocation().startsWith("hdfs:")) {
             return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(),
@@ -274,7 +233,7 @@ public class Util {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
         Process processElement = (Process) u.unmarshal((new StringReader(data)));
-        processElement.setName(processElement.getName() + "-" + UUID.randomUUID());
+        processElement.setName(processElement.getName() + getUniqueString());
         java.io.StringWriter sw = new StringWriter();
         Marshaller marshaller = jc.createMarshaller();
         marshaller.marshal(processElement, sw);
@@ -292,7 +251,7 @@ public class Util {
         JAXBContext jc = JAXBContext.newInstance(Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
         Cluster clusterElement = (Cluster) u.unmarshal((new StringReader(data)));
-        clusterElement.setName(clusterElement.getName() + "-" + UUID.randomUUID());
+        clusterElement.setName(clusterElement.getName() + getUniqueString());
 
         //lets marshall it back and return
         java.io.StringWriter sw = new StringWriter();
@@ -312,8 +271,12 @@ public class Util {
         JAXBContext jc = JAXBContext.newInstance(Feed.class);
         Unmarshaller u = jc.createUnmarshaller();
         Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
-        dataElement.setName(dataElement.getName() + "-" + UUID.randomUUID());
+        dataElement.setName(dataElement.getName() + getUniqueString());
         return InstanceUtil.feedElementToString(dataElement);
+    }
+
+    private static String getUniqueString() {
+        return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
     public static String readPropertiesFile(String filename, String property) {
@@ -324,13 +287,8 @@ public class Util {
         String desired_property;
 
         try {
-            InputStream conf_stream = Util.class.getResourceAsStream("/" + filename);
-
-            Properties properties = new Properties();
-            properties.load(conf_stream);
+            Properties properties = getPropertiesObj(filename);
             desired_property = properties.getProperty(property, defaultValue);
-            conf_stream.close();
-
             return desired_property;
         } catch (Exception e) {
             logger.info(e.getStackTrace());
@@ -814,13 +772,6 @@ public class Util {
         return (Process) um.unmarshal(new StringReader(processData));
     }
 
-    public static Feed getFeedObject(String feedData) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-
-        return (Feed) um.unmarshal(new StringReader(feedData));
-    }
-
     /**
      * Sets unique names for each cluster entity in supplied list.
      *
@@ -1034,6 +985,7 @@ public class Util {
         VALIDATE_URL("/api/entities/validate"),
         SUSPEND_URL("/api/entities/suspend"),
         RESUME_URL("/api/entities/resume"),
+        UPDATE("/api/entities/update"),
         STATUS_URL("/api/entities/status"),
         SUBMIT_AND_SCHEDULE_URL("/api/entities/submitAndSchedule"),
         INSTANCE_RUNNING("/api/instance/running"),
@@ -1041,7 +993,6 @@ public class Util {
         INSTANCE_KILL("/api/instance/kill"),
         INSTANCE_RESUME("/api/instance/resume"),
         INSTANCE_SUSPEND("/api/instance/suspend"),
-        PROCESS_UPDATE("/api/entities/update/process"),
         INSTANCE_RERUN("/api/instance/rerun"),
         FEED_UPDATE("/api/entities/update/feed"),
         INSTANCE_SUMMARY("/api/instance/summary");

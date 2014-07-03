@@ -77,7 +77,7 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                new Brother("brother" + i, "submit", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                new Brother("brother" + i, "submit", ENTITY_TYPE.FEED, brotherGrimm, bundles[0],
                     prism,
                     URLS.SUBMIT_URL);
         }
@@ -177,13 +177,13 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         for (int i = 1; i <= 2; i++) {
             brothers[i - 1] =
-                new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                new Brother("brother" + i, "resume", ENTITY_TYPE.FEED, brotherGrimm, bundles[0],
                     prism,
                     URLS.RESUME_URL);
         }
         for (int i = 3; i <= 4; i++) {
             brothers[i - 1] =
-                new Brother("brother" + i, "suspend", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                new Brother("brother" + i, "suspend", ENTITY_TYPE.FEED, brotherGrimm, bundles[0],
                     prism,
                     URLS.SUSPEND_URL);
         }
@@ -215,7 +215,7 @@ public class PrismConcurrentRequestTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         for (int i = 1; i <= brothers.length; i++) {
             brothers[i - 1] =
-                new Brother("brother" + i, "resume", ENTITY_TYPE.DATA, brotherGrimm, bundles[0],
+                new Brother("brother" + i, "resume", ENTITY_TYPE.FEED, brotherGrimm, bundles[0],
                     prism,
                     URLS.RESUME_URL);
         }
