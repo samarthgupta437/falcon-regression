@@ -18,7 +18,10 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
@@ -39,6 +42,8 @@ public class MerlinConstants {
     private static final String USER_2_KEYTAB_STR = "user2_keytab";
     public static final String USER2_NAME;
     private static HashMap<String, String> keyTabMap;
+    public static String aclOwner = getAclOwner();
+    public static String aclGroup = getAclGroup();
 
     /* initialize keyTabMap */
     static {
@@ -59,5 +64,19 @@ public class MerlinConstants {
     public static String getKeytabForUser(String user) {
         Assert.assertTrue(keyTabMap.containsKey(user), "Unknown user: " + user);
         return keyTabMap.get(user);
+    }
+
+    public static String getAclOwner() {
+        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.OWNER")))
+            return Util.readPropertiesFile("Merlin.properties", "ACL.OWNER");
+        else
+            return RequestKeys.CURRENT_USER;
+    }
+
+    public static String getAclGroup() {
+        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.GROUP")))
+            return Util.readPropertiesFile("Merlin.properties", "ACL.GROUP");
+        else
+            return "default";
     }
 }

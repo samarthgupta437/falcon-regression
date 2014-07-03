@@ -88,6 +88,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         logger.info("setup " + method.getName());
         bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
+        bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(feedInputPath);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);

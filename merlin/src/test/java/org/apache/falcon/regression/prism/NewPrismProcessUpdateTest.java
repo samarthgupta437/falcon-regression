@@ -90,10 +90,12 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     public void testSetup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         Bundle b = (Bundle) Bundle.readBundle("updateBundle")[0][0];
-        b.generateUniqueBundle();
         bundles[0] = new Bundle(b, cluster1);
+        bundles[0].generateUniqueBundle();
         bundles[1] = new Bundle(b, cluster2);
+        bundles[1].generateUniqueBundle();
         bundles[2] = new Bundle(b, cluster3);
+        bundles[2].generateUniqueBundle();
         setBundleWFPath(bundles[0], bundles[1], bundles[2]);
         bundles[1].addClusterToBundle(bundles[2].getClusters().get(0),
             ClusterType.TARGET, null, null);
@@ -1536,6 +1538,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         try {
 
             b = new Bundle(b, cluster1);
+            b.generateUniqueBundle();
             b.submitBundle(prism);
 
             b.setProcessValidity(TimeUtil.getTimeWrtSystemTime(-10),
@@ -1582,11 +1585,11 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     public ServiceResponse updateProcessConcurrency(Bundle bundle, int concurrency)
         throws Exception {
         String oldData = bundle.getProcessData();
-        Process updatedProcess = bundle.getProcessObject();
+        ProcessMerlin updatedProcess = new ProcessMerlin(bundle.getProcessObject());
         updatedProcess.setParallel(concurrency);
 
         return prism.getProcessHelper()
-            .update(oldData, prism.getProcessHelper().toString(updatedProcess));
+            .update(oldData, updatedProcess.toString());
     }
 
     /**
@@ -1683,10 +1686,10 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                                                   org.apache.falcon.entity.v0.Frequency frequency)
         throws Exception {
         String oldData = bundle.getProcessData();
-        Process updatedProcess = bundle.getProcessObject();
+        ProcessMerlin updatedProcess = new ProcessMerlin(bundle.getProcessObject());
         updatedProcess.setFrequency(frequency);
         return prism.getProcessHelper()
-            .update(oldData, prism.getProcessHelper().toString(updatedProcess));
+            .update(oldData, updatedProcess.toString());
     }
 
     //need to expand this function more later

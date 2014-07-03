@@ -716,7 +716,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
 
-        HashMap<String, List<String>> finalSystemState = getSystemState(ENTITY_TYPE.DATA);
+        HashMap<String, List<String>> finalSystemState = getSystemState(ENTITY_TYPE.FEED);
 
         compareDataStoreStates(finalSystemState.get("prismArchive"), finalPrismArchiveStore,
             clusterName);
@@ -789,7 +789,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
 
-        HashMap<String, List<String>> systemStatePostUp = getSystemState(ENTITY_TYPE.DATA);
+        HashMap<String, List<String>> systemStatePostUp = getSystemState(ENTITY_TYPE.FEED);
 
         compareDataStoreStates(finalPrismStore, systemStatePostUp.get("prismStore"), clusterName);
         compareDataStoreStates(systemStatePostUp.get("prismArchive"), finalPrismArchiveStore,
@@ -1067,7 +1067,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
         clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
 
-        HashMap<String, List<String>> systemPostUp = getSystemState(ENTITY_TYPE.DATA);
+        HashMap<String, List<String>> systemPostUp = getSystemState(ENTITY_TYPE.FEED);
 
         compareDataStoreStates(systemPostUp.get("prismArchive"), finalPrismArchiveStore,
             clusterName);
@@ -1102,7 +1102,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         IEntityManagerHelper server1Helper = cluster1.getClusterHelper();
         IEntityManagerHelper server2Helper = cluster2.getClusterHelper();
 
-        if (entityType.equals(ENTITY_TYPE.DATA)) {
+        if (entityType.equals(ENTITY_TYPE.FEED)) {
             prismHelper = prism.getFeedHelper();
             server1Helper = cluster1.getFeedHelper();
             server2Helper = cluster2.getFeedHelper();

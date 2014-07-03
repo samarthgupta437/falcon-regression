@@ -64,9 +64,10 @@ public class InstanceSummaryTest extends BaseTestClass {
     // 4. feed : same as test 2 for feed
 
 
-    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceKillsTest";
-    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String aggregateWorkflowDir = baseTestHDFSDir + "/PrismProcessSuspendTest/aggregator";
+    String baseTestHDFSDir = baseHDFSDir + "/InstanceSummaryTest";
+    String feedInputPath = baseTestHDFSDir +
+        "/testInputData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     String startTime;
     String endTime;
 
@@ -77,9 +78,6 @@ public class InstanceSummaryTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        for (FileSystem fs : serverFS) {
-            HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
-        }
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         startTime = TimeUtil.get20roundedTime(TimeUtil
             .getTimeWrtSystemTime
@@ -89,6 +87,7 @@ public class InstanceSummaryTest extends BaseTestClass {
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTime, 20);
 
         for (FileSystem fs : serverFS) {
+            HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
             HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT,
                 Util.getPathPrefix(feedInputPath), dataDates);
         }
@@ -99,6 +98,7 @@ public class InstanceSummaryTest extends BaseTestClass {
         logger.info("test name: " + method.getName());
         processBundle = BundleUtil.readELBundles()[0][0];
         processBundle = new Bundle(processBundle, cluster3);
+        processBundle.generateUniqueBundle();
         processBundle.setInputFeedDataPath(feedInputPath);
         processBundle.setProcessWorkflow(aggregateWorkflowDir);
 
@@ -115,18 +115,19 @@ public class InstanceSummaryTest extends BaseTestClass {
         OozieClientException, AuthenticationException {
         processBundle.setProcessValidity(startTime, endTime);
         processBundle.submitAndScheduleBundle(prism);
-
         InstanceUtil.waitTillInstancesAreCreated(cluster3,
             processBundle.getProcessData(), 0, 10);
-
-        InstanceUtil.waitTillInstanceReachState(serverOC.get(2),
-            Util.readEntityName(processBundle.getProcessData()), 2,
-            Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
 
         // start only at start time
         InstancesSummaryResult r = prism.getProcessHelper()
             .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
                 "?start=" + startTime);
+
+        InstanceUtil.waitTillInstanceReachState(serverOC.get(2),
+            Util.readEntityName(processBundle.getProcessData()), 2,
+            Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+
+
         //AssertUtil.assertSucceeded(r);
 
         //start only before process start
@@ -248,9 +249,6 @@ public class InstanceSummaryTest extends BaseTestClass {
     public void testSummaryMultiClusterFeed() throws JAXBException,
         ParseException, InterruptedException, IOException, URISyntaxException, OozieClientException,
         AuthenticationException {
-        bundles[0].generateUniqueBundle();
-        bundles[1].generateUniqueBundle();
-        bundles[2].generateUniqueBundle();
 
         //create desired feed
         String feed = bundles[0].getDataSets().get(0);

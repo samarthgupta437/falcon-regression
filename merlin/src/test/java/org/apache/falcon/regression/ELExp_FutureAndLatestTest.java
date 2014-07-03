@@ -85,6 +85,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         logger.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundles()[0][0];
         bundles[0] = new Bundle(bundles[0], cluster);
+        bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(
             baseTestDir + "/ELExp_latest/testData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setInputFeedPeriodicity(5, TimeUnit.minutes);

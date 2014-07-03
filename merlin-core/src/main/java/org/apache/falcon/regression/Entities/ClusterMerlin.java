@@ -19,10 +19,12 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.entity.v0.cluster.Location;
 import org.apache.falcon.regression.core.enumsAndConstants.ClusterLocationTypes;
 import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.lang.reflect.Field;
@@ -30,14 +32,20 @@ import java.lang.reflect.InvocationTargetException;
 
 public class ClusterMerlin extends Cluster {
 
-    public ClusterMerlin(String clusterData)
-        throws JAXBException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException {
+    public ClusterMerlin(String clusterData) throws JAXBException {
         Cluster element = InstanceUtil.getClusterElement(clusterData);
         Field[] fields = Cluster.class.getDeclaredFields();
         for (Field fld : fields) {
-            PropertyUtils.setProperty(this, fld.getName(),
-                PropertyUtils.getProperty(element, fld.getName()));
+            try {
+                PropertyUtils.setProperty(this, fld.getName(),
+                    PropertyUtils.getProperty(element, fld.getName()));
+            } catch (IllegalAccessException e) {
+                Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+            } catch (InvocationTargetException e) {
+                Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+            } catch (NoSuchMethodException e) {
+                Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+            }
         }
     }
 
