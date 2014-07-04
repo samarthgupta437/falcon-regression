@@ -115,7 +115,7 @@ public class InstanceSummaryTest extends BaseTestClass {
         processBundle.setProcessValidity(startTime, endTime);
         processBundle.submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster3,
-            processBundle.getProcessData(), 0, 10);
+            processBundle.getProcessData(), 0);
 
         // start only at start time
         InstancesSummaryResult r = prism.getProcessHelper()

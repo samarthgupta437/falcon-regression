@@ -90,6 +90,7 @@ public class InstanceUtil {
         throws IOException, URISyntaxException, AuthenticationException {
         return hitUrl(url, Util.getMethodType(url), user);
     }
+    public static int INSTANCES_CREATED_TIMEOUT = OSUtil.IS_WINDOWS ? 20 : 10;
 
     public static APIResult hitUrl(String url,
                                    String method, String user) throws URISyntaxException,
@@ -1376,24 +1377,35 @@ public class InstanceUtil {
         }
     }
 
+    /**
+     * Sets feed frequency
+     * @return modified feed
+     */
     public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
         feedElement.setFrequency(f);
         return InstanceUtil.feedElementToString(feedElement);
     }
 
+    /**
+     * Waits till instances of specific job will be created
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param entity definition of entity which describes job
+     * @param bundleSeqNo
+     * @throws JAXBException
+     * @throws OozieClientException
+     */
     public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
                                                    String entity,
-                                                   int bundleSeqNo,
-                                                   int totalMinutesToWait
+                                                   int bundleSeqNo
     ) throws JAXBException, OozieClientException {
-        int sleep = totalMinutesToWait * 60 / 5;
+        int sleep = INSTANCES_CREATED_TIMEOUT * 60 / 5;
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE type = Util.getEntityType(entity);
         String bundleID = getSequenceBundleID(coloHelper, entityName, type,
             bundleSeqNo);
         String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);
-
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
             CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient()
                 .getCoordJobInfo(coordID);
@@ -1408,9 +1420,7 @@ public class InstanceUtil {
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
             }
-
         }
-
     }
 
     public static String setFeedACL(String feed, String... ownerGroup) {
