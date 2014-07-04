@@ -69,7 +69,6 @@ public class LineageApiTest extends BaseTestClass {
     LineageHelper lineageHelper;
     final ColoHelper cluster = servers.get(0);
     final String baseTestHDFSDir = baseHDFSDir + "/LineageApiTest";
-    final String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     final String feedInputPath = baseTestHDFSDir + "/input";
     final String feedOutputPath = baseTestHDFSDir + "/output";
     // use 5 <= x < 10 input feeds

@@ -320,7 +320,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         s = InstanceUtil
             .getInstanceStatus(cluster, Util.readEntityName(bundles[0].getProcessData()), 0, 0);
-        Assert.assertTrue(CoordinatorAction.Status.WAITING.equals(s),
+        Assert.assertEquals(s, CoordinatorAction.Status.WAITING,
             "instance should have been in WAITING state");
     }
 

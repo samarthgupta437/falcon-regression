@@ -1677,7 +1677,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         do {
 
             i = r.nextInt(values.length);
-        } while (current.equals(values[i]));
+        } while (current == values[i]);
         return values[i];
     }
 

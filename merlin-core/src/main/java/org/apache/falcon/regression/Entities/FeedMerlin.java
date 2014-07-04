@@ -67,7 +67,7 @@ public class FeedMerlin extends Feed {
      */
     public String getTargetCluster() {
         for (Cluster c : getClusters().getClusters()) {
-            if (c.getType().equals(ClusterType.TARGET))
+            if (c.getType() == ClusterType.TARGET)
                 return c.getName();
         }
         return "";

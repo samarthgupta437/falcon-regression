@@ -422,7 +422,7 @@ public abstract class IEntityManagerHelper {
     public ServiceResponse update(String oldEntity, String newEntity, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + Util.URLS.UPDATE.getValue(), getEntityType(),
-            Util.readDatasetName(oldEntity));
+            getEntityName(oldEntity));
         return Util.sendRequest(url + colo, "post", newEntity, user);
     }
 
@@ -503,6 +503,6 @@ public abstract class IEntityManagerHelper {
     }
 
     public List<String> getStoreInfo() throws IOException, JSchException {
-        return Util.getStoreInfo(this, "/" + getEntityType());
+        return Util.getStoreInfo(this, "/" + getEntityType().toUpperCase());
     }
 }

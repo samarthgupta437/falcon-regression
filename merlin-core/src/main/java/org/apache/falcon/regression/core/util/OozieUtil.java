@@ -181,13 +181,6 @@ public class OozieUtil {
             "Coordinator job should have got created by now.");
     }
 
-    public static String getBundleStatus(PrismHelper prismHelper, String bundleId)
-        throws OozieClientException {
-        XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleId);
-        return bundleJob.getStatus().toString();
-    }
-
     public static Job.Status getOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType)
         throws OozieClientException {
@@ -306,10 +299,8 @@ public class OozieUtil {
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
         for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-            if ((coord.getAppName().contains("DEFAULT") && ENTITY_TYPE.PROCESS
-                .equals(type)) || (coord.getAppName().contains("REPLICATION") && ENTITY_TYPE
-                .FEED
-                .equals(type))) {
+            if ((coord.getAppName().contains("DEFAULT") && ENTITY_TYPE.PROCESS == type) ||
+                (coord.getAppName().contains("REPLICATION") && ENTITY_TYPE.FEED == type)) {
                 return client.getCoordJobInfo(coord.getId());
             } else {
                 logger.info("Desired coord does not exists on " + client.getOozieUrl());
@@ -354,10 +345,10 @@ public class OozieUtil {
 
         BundleJob bundleJob = client.getBundleJobInfo(bundleId);
 
-        if (bundleJob.getStatus().equals(BundleJob.Status.DONEWITHERROR) ||
-            bundleJob.getStatus().equals(BundleJob.Status.FAILED) ||
-            bundleJob.getStatus().equals(BundleJob.Status.SUCCEEDED) ||
-            bundleJob.getStatus().equals(BundleJob.Status.KILLED)) {
+        if (bundleJob.getStatus() == BundleJob.Status.DONEWITHERROR ||
+            bundleJob.getStatus() == BundleJob.Status.FAILED ||
+            bundleJob.getStatus() == BundleJob.Status.SUCCEEDED ||
+            bundleJob.getStatus() == BundleJob.Status.KILLED) {
             return true;
         }
 

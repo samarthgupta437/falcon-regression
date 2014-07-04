@@ -123,26 +123,6 @@ public class BundleUtil {
         return bundleSet.toArray(new Bundle[bundleSet.size()]);
     }
 
-    public static Bundle getBundle(ColoHelper cluster, String... xmlLocation) {
-        Bundle b;
-        try {
-            if (xmlLocation.length == 1)
-                b = (Bundle) Bundle.readBundle(xmlLocation[0])[0][0];
-            else if (xmlLocation.length == 0)
-                b = readELBundles()[0][0];
-            else {
-                Util.logger.info("invalid size of xmlLocaltions return null");
-                return null;
-            }
-
-            b.generateUniqueBundle();
-            return new Bundle(b, cluster.getEnvFileName(), cluster.getPrefix());
-        } catch (Exception e) {
-            Util.logger.info(Arrays.toString(e.getStackTrace()));
-        }
-        return null;
-    }
-
     public static void submitAllClusters(Bundle... b)
         throws IOException, URISyntaxException, AuthenticationException {
         for (Bundle aB : b) {

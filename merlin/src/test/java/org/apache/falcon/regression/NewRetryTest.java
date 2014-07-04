@@ -1102,7 +1102,7 @@ public class NewRetryTest extends BaseTestClass {
 
         for (CoordinatorAction action : coordinator.getActions()) {
             CoordinatorAction coordAction = oozieClient.getCoordActionInfo(action.getExternalId());
-            if (!coordAction.getStatus().equals(CoordinatorAction.Status.SUCCEEDED)) {
+            if (!(coordAction.getStatus() == CoordinatorAction.Status.SUCCEEDED)) {
                 int expectedDelay = retry.getDelay().getFrequencyAsInt();
                 //first get data from logs:
                 List<String> instanceRetryTimes =

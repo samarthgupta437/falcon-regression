@@ -64,10 +64,6 @@ public class Brother extends Thread {
         this.output = new ServiceResponse();
     }
 
-    public String getData() {
-        return data;
-    }
-
     public void run() {
         try {
             sleep(50L);
