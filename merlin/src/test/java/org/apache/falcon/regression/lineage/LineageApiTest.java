@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.lineage;
 
-import com.sun.tools.javac.util.Pair;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
@@ -48,8 +48,8 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.testng.internal.collections.Pair;
 
-import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -192,7 +192,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertNotEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+            HttpStatus.SC_INTERNAL_SERVER_ERROR,
             "We should not get internal server error");
     }
 
@@ -221,7 +221,7 @@ public class LineageApiTest extends BaseTestClass {
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "We should get http not found error");
     }
 
@@ -275,7 +275,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(), "We should get http not found error");
+            HttpStatus.SC_NOT_FOUND, "We should get http not found error");
     }
 
     /**
@@ -304,7 +304,7 @@ public class LineageApiTest extends BaseTestClass {
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "We should get http not found error");
     }
 
@@ -386,7 +386,7 @@ public class LineageApiTest extends BaseTestClass {
         String responseString = lineageHelper.getResponseString(response);
         logger.info(responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.BAD_REQUEST.getStatusCode(),
+            HttpStatus.SC_BAD_REQUEST,
             "The get request was a bad request");
         Assert.assertTrue(responseString.contains(inValidArgumentStr),
             "Result should contain string Invalid argument");
@@ -401,7 +401,7 @@ public class LineageApiTest extends BaseTestClass {
         String responseString = lineageHelper.getResponseString(response);
         logger.info(responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.BAD_REQUEST.getStatusCode(),
+            HttpStatus.SC_BAD_REQUEST,
             "The get request was a bad request");
         Assert.assertTrue(responseString.contains(inValidArgumentStr),
             "Result should contain string Invalid argument");
@@ -552,7 +552,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.BAD_REQUEST.getStatusCode(),
+            HttpStatus.SC_BAD_REQUEST,
             "We should not get internal server error");
     }
 
@@ -593,7 +593,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info(httpResponse.toString());
         logger.info(lineageHelper.getResponseString(httpResponse));
         Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "Expecting not-found error.");
     }
 
@@ -604,7 +604,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info(response.toString());
         logger.info(lineageHelper.getResponseString(response));
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "Expecting not-found error.");
     }
 

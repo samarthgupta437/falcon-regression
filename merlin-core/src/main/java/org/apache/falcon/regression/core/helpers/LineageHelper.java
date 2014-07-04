@@ -19,7 +19,6 @@
 package org.apache.falcon.regression.core.helpers;
 
 import com.google.gson.GsonBuilder;
-import com.sun.tools.javac.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.EdgeResult;
@@ -36,6 +35,7 @@ import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
+import org.testng.internal.collections.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -149,7 +149,8 @@ public class LineageHelper {
         if(paramPairs.length > 0) {
             String[] params = new String[paramPairs.length];
             for (int i = 0; i < paramPairs.length; ++i) {
-                params[i] = StringUtils.join(new String[] {paramPairs[i].fst, paramPairs[i].snd}, "=");
+                params[i] = StringUtils.join(new String[] {paramPairs[i].first(),
+                    paramPairs[i].second()}, "=");
             }
             return hostAndPath + "/?" + StringUtils.join(params, "&");
         }
