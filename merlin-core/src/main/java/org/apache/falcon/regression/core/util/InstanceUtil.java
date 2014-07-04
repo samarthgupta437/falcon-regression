@@ -619,7 +619,6 @@ public class InstanceUtil {
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(colo.getClusterHelper().getHadoopFS(),
                 anInputFoldersForInstance, type);
-
     }
 
     /**
@@ -639,14 +638,11 @@ public class InstanceUtil {
         else if ((null !=type) && type.equals("oneFile")) {
              inputPath = OSUtil.SINGLE_FILE  ;
         }
-
         File[] files = new File(inputPath).listFiles();
         assert files != null;
-
         Path remotePath = new Path(remoteLocation);
         if (!fs.exists(remotePath))
             fs.mkdirs(remotePath);
-
         List<Path> localPaths = new ArrayList<Path>();
         for (final File file : files) {
             if (!file.isDirectory()) {
@@ -662,24 +658,27 @@ public class InstanceUtil {
     public static void createHDFSFolders(PrismHelper helper, List<String> folderList)
         throws IOException {
         logger.info("creating folders.....");
-
-
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
-
         final FileSystem fs = FileSystem.get(conf);
-
         for (final String folder : folderList) {
             fs.mkdirs(new Path(folder));
         }
         logger.info("created folders.....");
-
     }
 
+    /**
+     * Copies specific file(s) to each of remote folders
+     * Creates folders if they don't exist
+     *
+     * @param colo colohelper for remote cluster
+     * @param folderList list of remote folders
+     * @param fileName specific files
+     * @throws IOException
+     */
     public static void putFileInFolders(ColoHelper colo, List<String> folderList,
                                         final String... fileName) throws IOException {
         final FileSystem fs = colo.getClusterHelper().getHadoopFS();
-
         for (final String folder : folderList) {
             for (String aFileName : fileName) {
                 logger.info("copying  " + aFileName + " to " + folder);
@@ -691,13 +690,18 @@ public class InstanceUtil {
         }
     }
 
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
-        Bundle bundle)
+    /**
+     * Wraps bundle cluster in a Cluster object
+     *
+     * @param bundle target bundle
+     * @return cluster definition in a form of Cluster object
+     * @throws JAXBException
+     */
+    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle)
         throws JAXBException {
         JAXBContext jc = JAXBContext
             .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
-
         return (org.apache.falcon.entity.v0.cluster.Cluster) u
             .unmarshal((new StringReader(bundle.getClusters().get(0))));
     }
@@ -774,7 +778,6 @@ public class InstanceUtil {
         if (StringUtils.isNotEmpty(tableUri)) {
             cluster.setTable(getCatalogTable(tableUri));
         }
-
         Locations feedLocations = new Locations();
         if (ArrayUtils.isNotEmpty(locations)) {
             for (int i = 0; i < locations.length; i++) {
@@ -790,10 +793,8 @@ public class InstanceUtil {
                     oneLocation.setType(LocationType.TMP);
                 else
                     Assert.fail("unexpected value of locations: " + Arrays.toString(locations));
-
                 feedLocations.getLocations().add(oneLocation);
             }
-
             cluster.setLocations(feedLocations);
         }
         return cluster;
@@ -841,21 +842,18 @@ public class InstanceUtil {
      *
      * @param colo - servers on which action should be performed
      * @param user - whose credentials will be used for this action
-     * @return
+     * @return result from API
      */
-    public static APIResult createAndsendRequestProcessInstance(
+    public static APIResult createAndSendRequestProcessInstance(
         String url, String params, String colo, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-
         if (params != null && !colo.equals("")) {
             url = url + params + "&" + colo.substring(1);
         } else if (params != null) {
             url = url + params;
         } else
             url = url + colo;
-
         return InstanceUtil.sendRequestProcessInstance(url, user);
-
     }
 
     /**
@@ -881,24 +879,17 @@ public class InstanceUtil {
                                            String clusterName,
                                            org.apache.falcon.entity.v0.process
                                                .Validity validity) throws JAXBException {
-
-
         org.apache.falcon.entity.v0.process.Cluster c =
             new org.apache.falcon.entity.v0.process.Cluster();
-
         c.setName(clusterName);
         c.setValidity(validity);
-
         Process p = InstanceUtil.getProcessElement(process);
-
-
         if (clusterName == null)
             p.getClusters().getClusters().set(0, null);
         else {
             p.getClusters().getClusters().add(c);
         }
         return processToString(p);
-
     }
 
     /**
@@ -990,29 +981,39 @@ public class InstanceUtil {
         return actionInfo.getRun();
     }
 
+    /**
+     * Puts late data in remote directories
+     *
+     * @param helper colo helper for cluster where remote directories are
+     * @param inputFolderList list of remote folders where data will be placed
+     * @param lateDataFolderNumber describes which specific data should be used
+     * @throws IOException
+     */
     public static void putLateDataInFolders(ColoHelper helper,
                                             List<String> inputFolderList,
                                             int lateDataFolderNumber) throws IOException {
-
         for (String anInputFolderList : inputFolderList)
             putLateDataInFolder(helper, anInputFolderList, lateDataFolderNumber);
     }
 
+    /**
+     * Puts specific data in a remote folder.
+     *
+     * @param helper colo helper for cluster where remote directory is
+     * @param remoteLocation remote location for copied data
+     * @param lateDataFolderNumber describes which specific data should be used
+     * @throws IOException
+     */
     public static void putLateDataInFolder(ColoHelper helper, final String remoteLocation,
                                            int lateDataFolderNumber)
         throws IOException {
-
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
-
-
         final FileSystem fs = FileSystem.get(conf);
-
         File[] files = new File(OSUtil.NORMAL_INPUT).listFiles();
         if (lateDataFolderNumber == 2) {
             files = new File(OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "2ndLateData").listFiles();
         }
-
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
@@ -1022,11 +1023,18 @@ public class InstanceUtil {
         }
     }
 
+    /**
+     * Sets new feed data path
+     *
+     * @param feed feed which is to be modified
+     * @param path new feed data path
+     * @return modified feed
+     * @throws JAXBException
+     */
     public static String setFeedFilePath(String feed, String path) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
         feedElement.getLocations().getLocations().get(0).setPath(path);
         return InstanceUtil.feedElementToString(feedElement);
-
     }
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
@@ -1055,58 +1063,61 @@ public class InstanceUtil {
         return numberOfCoord;
     }
 
+    /**
+     * Sets process frequency
+     * @return modified process definition
+     * @throws JAXBException
+     */
     public static String setProcessFrequency(String process,
                                              Frequency frequency) throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
-
         p.setFrequency(frequency);
-
         return InstanceUtil.processToString(p);
     }
 
+    /**
+     * Sets new process name
+     */
     public static String setProcessName(String process, String newName) throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
-
         p.setName(newName);
-
         return InstanceUtil.processToString(p);
     }
 
+    /**
+     * Sets new process validity on all the process clusters
+     *
+     * @param process process entity to be modified
+     * @param startTime start of process validity
+     * @param endTime end of process validity
+     * @return modified process definition
+     * @throws JAXBException
+     */
     public static String setProcessValidity(String process,
                                             String startTime, String endTime) throws JAXBException {
-
         Process processElement = InstanceUtil.getProcessElement(process);
-
         for (int i = 0; i < processElement.getClusters().getClusters().size(); i++) {
             processElement.getClusters().getClusters().get(i).getValidity().setStart(
                 TimeUtil.oozieDateToDate(startTime).toDate());
             processElement.getClusters().getClusters().get(i).getValidity()
                 .setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
-
         }
-
         return InstanceUtil.processToString(processElement);
     }
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
         ColoHelper coloHelper, String processName, ENTITY_TYPE entityType)
         throws OozieClientException {
-
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-
         List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
-
         logger.info("bundle size for process is " +
             OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName,
                 entityType).size());
-
         for (String bundleId : OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(),
             processName, entityType)) {
             BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
             List<CoordinatorJob> coords = bundleInfo.getCoordinators();
-
             logger.info("number of coords in bundle " + bundleId + "=" + coords.size());
-
             for (CoordinatorJob coord : coords) {
                 List<CoordinatorAction> actions =
                     oozieClient.getCoordJobInfo(coord.getId()).getActions();
@@ -1115,10 +1126,8 @@ public class InstanceUtil {
                 list.addAll(actions);
             }
         }
-
         String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
         logger.info("default coordID: " + coordId);
-
         return list;
     }
 
@@ -1128,21 +1137,17 @@ public class InstanceUtil {
         throws OozieClientException {
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-
         return InstanceUtil.getReplicatedFolderFromInstanceRunConf(
             oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId())
-                .getConf()
-        );
+                .getConf());
     }
 
     private static String getReplicatedFolderFromInstanceRunConf(
         String runConf) {
-
         String inputPathExample =
             InstanceUtil.getReplicationFolderFromInstanceRunConf(runConf).get(0);
         String postFix = inputPathExample
             .substring(inputPathExample.length() - 7, inputPathExample.length());
-
         return getReplicatedFolderBaseFromInstanceRunConf(runConf) + postFix;
     }
 
@@ -1163,6 +1168,13 @@ public class InstanceUtil {
         return conf;
     }
 
+    /**
+     * Unwraps Cluster object to string
+     *
+     * @param c Cluster object to be unwrapped
+     * @return cluster definition
+     * @throws JAXBException
+     */
     public static String ClusterElementToString(
         org.apache.falcon.entity.v0.cluster.Cluster c)
         throws JAXBException {
@@ -1174,6 +1186,13 @@ public class InstanceUtil {
         return sw.toString();
     }
 
+    /**
+     * Wraps cluster definition into Cluster object
+     *
+     * @param clusterData cluster entity definition
+     * @return Cluster object
+     * @throws JAXBException
+     */
     public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
         String clusterData) throws JAXBException {
         JAXBContext jc = JAXBContext
