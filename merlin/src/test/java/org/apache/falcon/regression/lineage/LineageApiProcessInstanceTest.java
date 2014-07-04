@@ -88,8 +88,8 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         // data set creation
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(dataStartDate, endDate, 5);
         logger.info("dataDates = " + dataDates);
-        HadoopUtil.createPeriodicDataset(dataDates, OSUtil.NORMAL_INPUT, clusterFS,
-            feedInputPrefix);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, feedInputPrefix,
+            dataDates);
 
         // running process
         bundles[0].setInputFeedDataPath(feedInputPath);

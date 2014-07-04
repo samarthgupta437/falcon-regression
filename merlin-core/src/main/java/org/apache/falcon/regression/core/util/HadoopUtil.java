@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -347,9 +348,12 @@ public class HadoopUtil {
         flattenAndPutDataInFolder(fs, inputPath, "", remoteLocations);
     }
 
-    public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
+    public static List<String> flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  String remotePathPrefix,
                                                  List<String> remoteLocations) throws IOException {
+        if (StringUtils.isEmpty(remotePathPrefix)) {
+            deleteDirIfExists(remotePathPrefix, fs);
+        }
         logger.info("Creating data in folders: \n" + remoteLocations);
         File[] files = new File(inputPath).listFiles();
         List<Path> filePaths = new ArrayList<Path>();
@@ -365,8 +369,10 @@ public class HadoopUtil {
             remotePathPrefix += "/";
         }
 
+        List<String> locations = new ArrayList<String>();
         for (String remoteDir : remoteLocations) {
             String remoteLocation = remotePathPrefix + remoteDir;
+            locations.add(remoteLocation);
             logger.info(String.format("copying to: %s files: %s",
                 fs.getUri() + remoteLocation, Arrays.toString(files)));
             if (!fs.exists(new Path(remoteLocation)))
@@ -375,19 +381,6 @@ public class HadoopUtil {
             fs.copyFromLocalFile(false, true, filePaths.toArray(new Path[filePaths.size()]),
                 new Path(remoteLocation));
         }
-    }
-
-    public static ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
-                                                          FileSystem fileSystem,
-                                                          String baseHDFSLocation)
-        throws IOException {
-        deleteDirIfExists(baseHDFSLocation, fileSystem);
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates)
-            dataFolder.add(baseHDFSLocation + "/" + dataDate);
-
-        flattenAndPutDataInFolder(fileSystem, localData, dataFolder);
-        return dataFolder;
+        return locations;
     }
 }

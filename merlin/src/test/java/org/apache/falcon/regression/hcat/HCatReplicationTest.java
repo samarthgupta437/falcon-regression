@@ -148,8 +148,8 @@ public class HCatReplicationTest extends BaseTestClass {
         // use the start date for both as this will only generate 2 partitions.
         List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
 
-        final ArrayList<String> dataset =
-            createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+        final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
+            localHCatData, testHdfsDir, dataDates);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
@@ -235,8 +235,8 @@ public class HCatReplicationTest extends BaseTestClass {
         // use the start date for both as this will only generate 2 partitions.
         List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
 
-        final ArrayList<String> dataset =
-            createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+        final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
+            localHCatData, testHdfsDir, dataDates);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
@@ -336,18 +336,6 @@ public class HCatReplicationTest extends BaseTestClass {
                     .build());
         }
         hc.addPartitions(partitionDesc);
-    }
-
-    private ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
-                                                    FileSystem fileSystem,
-                                                    String baseHDFSLocation) throws IOException {
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates)
-            dataFolder.add(baseHDFSLocation + "/" + dataDate);
-
-        HadoopUtil.flattenAndPutDataInFolder(fileSystem, localData, dataFolder);
-        return dataFolder;
     }
 
     public static List<String> getDatesList(String startDate, String endDate, String datePattern,

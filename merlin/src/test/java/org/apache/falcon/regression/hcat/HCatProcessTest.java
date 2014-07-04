@@ -137,8 +137,8 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -200,10 +200,10 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
+        final List<String> dataset2 = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir2, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -297,8 +297,8 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -380,10 +380,10 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
+        final List<String> dataset2 = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir2, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -498,8 +498,8 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
@@ -563,8 +563,8 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil.createPeriodicDataset(dataDates,
-            localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil.
+            flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
