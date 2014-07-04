@@ -360,6 +360,11 @@ public class HadoopUtil {
                 filePaths.add(filePath);
             }
         }
+
+        if (!remotePathPrefix.endsWith("/") && !remoteLocations.get(0).startsWith("/")) {
+            remotePathPrefix += "/";
+        }
+
         for (String remoteDir : remoteLocations) {
             String remoteLocation = remotePathPrefix + remoteDir;
             logger.info(String.format("copying to: %s files: %s",

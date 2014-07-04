@@ -38,6 +38,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 
 @Test(groups = "embedded")
@@ -93,10 +94,10 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate("2010-01-02T00:00Z"),
-            TimeUtil.oozieDateToDate("2010-01-02T01:15Z"), inputPath + "/input1/",
-            1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-02T00:00Z",
+            "2010-01-02T01:15Z", 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input1/", dataDates);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -133,14 +134,12 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.WAITING, 5, ENTITY_TYPE.PROCESS);
 
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
-            TimeUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input2/",
-            1);
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
-            TimeUtil.oozieDateToDate("2010-01-02T03:00Z"), inputPath + "/input1/",
-            1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-01T22:00Z",
+            "2010-01-02T03:00Z", 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input1/", dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input2/", dataDates);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -176,10 +175,10 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
-            TimeUtil.oozieDateToDate("2010-01-02T04:00Z"), inputPath + "/input2/",
-            1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-01T22:00Z",
+            "2010-01-02T04:00Z", 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input2/", dataDates);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -209,11 +208,10 @@ public class OptionalInputTest extends BaseTestClass {
 
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
-            inputPath + "/input1/",
-            1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -25), TimeUtil.addMinsToTime(endTime, 25), 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input1/", dataDates);
         TimeUtil.createEmptyDirWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
@@ -289,11 +287,10 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
-            inputPath + "/input1/",
-            1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -25), TimeUtil.addMinsToTime(endTime, 25), 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input1/", dataDates);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -315,11 +312,8 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
-            inputPath + "/input0/",
-            1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input0/", dataDates);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -357,11 +351,10 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
 
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
-            inputPath + "/input1/",
-            1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -25), TimeUtil.addMinsToTime(endTime, 25), 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            inputPath + "/input1/", dataDates);
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),

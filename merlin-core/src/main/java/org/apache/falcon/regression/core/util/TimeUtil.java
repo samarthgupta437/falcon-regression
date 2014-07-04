@@ -235,26 +235,6 @@ public class TimeUtil {
 
     }
 
-    public static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
-                                                      DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException {
-        List<String> dataDates =
-            getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        if (!prefix.endsWith("/"))
-            prefix = prefix + "/";
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.putDataInFolders(colo, dataFolder, "oneFile");
-
-    }
-
     public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
                                                                   DateTime startDateJoda,
                                                                   DateTime endDateJoda,

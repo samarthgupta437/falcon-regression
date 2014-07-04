@@ -178,9 +178,10 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         String endTime = TimeUtil.getTimeWrtSystemTime(400);
         String startTimeData = TimeUtil.getTimeWrtSystemTime(-150);
         String endTimeData = TimeUtil.getTimeWrtSystemTime(50);
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(startTimeData),
-            TimeUtil.oozieDateToDate(endTimeData), baseTestHDFSDir + "/", 1);
+
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTimeData, 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            baseTestHDFSDir + "/", dataDates);
         bundles[0].setProcessValidity(startTime, endTime);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
