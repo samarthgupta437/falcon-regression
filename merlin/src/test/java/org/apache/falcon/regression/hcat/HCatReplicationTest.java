@@ -45,9 +45,7 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
-import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -146,7 +144,8 @@ public class HCatReplicationTest extends BaseTestClass {
         final String datePattern =
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
-        List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, startDate, 60,
+            DateTimeFormat.forPattern(datePattern));
 
         final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
             localHCatData, testHdfsDir, dataDates);
@@ -233,7 +232,8 @@ public class HCatReplicationTest extends BaseTestClass {
         final String datePattern =
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
-        List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, startDate, 60,
+            DateTimeFormat.forPattern(datePattern));
 
         final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
             localHCatData, testHdfsDir, dataDates);
@@ -336,22 +336,6 @@ public class HCatReplicationTest extends BaseTestClass {
                     .build());
         }
         hc.addPartitions(partitionDesc);
-    }
-
-    public static List<String> getDatesList(String startDate, String endDate, String datePattern,
-                                            int skipMinutes) {
-        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);
-        logger.info("generating data between " + formatter.print(startDateJoda) + " and " +
-            formatter.print(endDateJoda));
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(startDateJoda));
-        while (!startDateJoda.isAfter(endDateJoda)) {
-            startDateJoda = startDateJoda.plusMinutes(skipMinutes);
-            dates.add(formatter.print(startDateJoda));
-        }
-        return dates;
     }
 
     private static void createTable(HCatClient hcatClient, String dbName, String tblName,

@@ -77,6 +77,13 @@ public class TimeUtil {
         return getMinuteDatesOnEitherSide(startDate, endDate, minuteSkip, formatter);
     }
 
+    public static List<String> getMinuteDatesOnEitherSide(String startOozieDate, String endOozieDate,
+                                                          int minuteSkip,
+                                                          DateTimeFormatter formatter) {
+        return getMinuteDatesOnEitherSide(TimeUtil.oozieDateToDate(startOozieDate),
+            TimeUtil.oozieDateToDate(endOozieDate), minuteSkip, formatter);
+    }
+
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip,
                                                           DateTimeFormatter formatter) {
