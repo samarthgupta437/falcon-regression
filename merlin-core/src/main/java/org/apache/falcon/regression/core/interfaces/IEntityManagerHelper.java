@@ -32,7 +32,7 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
-import org.apache.hadoop.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.log4j.Logger;
@@ -255,7 +255,7 @@ public abstract class IEntityManagerHelper {
     public abstract String getEntityName(String entity) throws JAXBException;
 
     protected String createUrl(String... parts) {
-        return StringUtils.join("/", parts);
+        return StringUtils.join(parts, "/");
     }
 
     public ServiceResponse listEntities(URLS url)
