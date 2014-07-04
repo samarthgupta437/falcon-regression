@@ -232,19 +232,14 @@ public class InstanceUtil {
 
     public static void writeProcessElement(Bundle bundle, Process processElement)
         throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(processElement, sw);
         //logger.info("modified process is: " + sw);
-        bundle.setProcessData(sw.toString());
+        bundle.setProcessData(processToString(processElement));
     }
 
     public static Process getProcessElement(Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
         return (Process) u.unmarshal((new StringReader(bundle.getProcessData())));
-
     }
 
     public static Feed getFeedElement(Bundle bundle, String feedName) throws JAXBException {
@@ -260,12 +255,7 @@ public class InstanceUtil {
 
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
                                         String feedName) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(feedElement, sw);
-        //logger.info("feed to be written is: "+sw);
-        writeFeedElement(bundle, sw.toString(), feedName);
+        writeFeedElement(bundle, feedElementToString(feedElement), feedName);
     }
 
     public static void writeFeedElement(Bundle bundle, String feedString,
@@ -341,7 +331,6 @@ public class InstanceUtil {
                     Assert.fail("Unexpected status=" + pArray[instanceIndex].getStatus());
             }
         }
-
         Assert.assertEquals(actualRunningInstances, runningInstances, "Running Instances");
         Assert.assertEquals(actualSuspendedInstances, suspendedInstances, "Suspended Instances");
         Assert.assertEquals(actualWaitingInstances, waitingInstances, "Waiting Instances");
@@ -431,7 +420,6 @@ public class InstanceUtil {
             Assert.assertEquals(actualKilledWorkflows, killedWorkflows);
         if (succeededWorkflows != -1)
             Assert.assertEquals(actualSucceededWorkflows, succeededWorkflows);
-
     }
 
     public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
@@ -502,6 +490,14 @@ public class InstanceUtil {
         return getDefaultCoordIDFromBundle(coloHelper, bundleID);
     }
 
+    /**
+     * Retrieves all coordinators of bundle
+     *
+     * @param bundleID specific bundle ID
+     * @param helper entity helper which is related to job
+     * @return list of bundle coordinators
+     * @throws OozieClientException
+     */
     public static List<CoordinatorJob> getBundleCoordinators(String bundleID,
                                                              IEntityManagerHelper helper)
         throws OozieClientException {
@@ -510,13 +506,20 @@ public class InstanceUtil {
         return bundleInfo.getCoordinators();
     }
 
+    /**
+     * Retrieves the latest bundle ID
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param entityName name of entity job is related to
+     * @param entityType type of entity - feed or process expected
+     * @return latest bundle ID
+     * @throws OozieClientException
+     */
     public static String getLatestBundleID(ColoHelper coloHelper,
                                            String entityName, ENTITY_TYPE entityType)
         throws OozieClientException {
-
         List<String> bundleIds = OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(),
             entityName, entityType);
-
         String max = "0";
         int maxID = -1;
         for (String strID : bundleIds) {
@@ -551,11 +554,9 @@ public class InstanceUtil {
             int key = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
             bundleMap.put(key, strID);
         }
-
         for (Map.Entry<Integer, String> entry : bundleMap.entrySet()) {
             logger.info("Key = " + entry.getKey() + ", Value = " + entry.getValue());
         }
-
         int i = 0;
         for (Integer key : bundleMap.keySet()) {
             bundleID = bundleMap.get(key);
@@ -615,7 +616,6 @@ public class InstanceUtil {
     public static void putDataInFolders(ColoHelper colo,
                                         final List<String> inputFoldersForInstance,
                                         String type) throws IOException {
-
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(colo.getClusterHelper().getHadoopFS(),
                 anInputFoldersForInstance, type);
@@ -706,6 +706,13 @@ public class InstanceUtil {
             .unmarshal((new StringReader(bundle.getClusters().get(0))));
     }
 
+    /**
+     * Unwraps cluster element to string and writes it to bundle.
+     *
+     * @param bundle target bundle
+     * @param c Cluster object to be unwrapped and set into bundle
+     * @throws JAXBException
+     */
     public static void writeClusterElement(Bundle bundle,
                                            org.apache.falcon.entity.v0.cluster
                                                .Cluster c)
@@ -832,7 +839,6 @@ public class InstanceUtil {
             if (coord.getAppName().contains("FEED_REPLICATION"))
                 ReplicationCoordID.add(coord.getId());
         }
-
         return ReplicationCoordID;
     }
 
