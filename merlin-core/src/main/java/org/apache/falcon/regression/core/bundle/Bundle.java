@@ -53,7 +53,6 @@ import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.entity.v0.process.Retry;
 import org.apache.falcon.entity.v0.process.Workflow;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -94,7 +93,7 @@ import java.util.List;
 public class Bundle {
 
     public static final String PRISM_PREFIX = "prism";
-    static PrismHelper prismHelper = new PrismHelper(PRISM_PREFIX);
+    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
     private static final Logger logger = Logger.getLogger(Bundle.class);
 
     public List<String> dataSets;
@@ -237,7 +236,7 @@ public class Bundle {
         }
     }
 
-    public Bundle(Bundle bundle, PrismHelper prismHelper) throws JAXBException {
+    public Bundle(Bundle bundle, ColoHelper prismHelper) throws JAXBException {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
@@ -444,7 +443,7 @@ public class Bundle {
     }
 
 
-    public ServiceResponse submitBundle(PrismHelper prismHelper)
+    public ServiceResponse submitBundle(ColoHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
         submitClusters(prismHelper);
@@ -489,7 +488,7 @@ public class Bundle {
      * @throws URISyntaxException
      * @throws AuthenticationException
      */
-    public String submitAndScheduleBundle(PrismHelper prismHelper)
+    public String submitAndScheduleBundle(ColoHelper prismHelper)
         throws IOException, JAXBException, URISyntaxException,
         AuthenticationException {
         if (colohelper != null) {
@@ -954,12 +953,12 @@ public class Bundle {
     }
 
 
-    public void submitClusters(PrismHelper prismHelper)
+    public void submitClusters(ColoHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         submitClusters(prismHelper, null);
     }
 
-    public void submitClusters(PrismHelper prismHelper, String user)
+    public void submitClusters(ColoHelper prismHelper, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String cluster : this.clusters) {
             AssertUtil.assertSucceeded(
@@ -967,7 +966,7 @@ public class Bundle {
         }
     }
 
-    public void submitFeeds(PrismHelper prismHelper)
+    public void submitFeeds(ColoHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String feed : this.dataSets) {
             AssertUtil.assertSucceeded(
@@ -1020,7 +1019,7 @@ public class Bundle {
         return clusterObj.toString();
     }
 
-    public void deleteBundle(PrismHelper prismHelper) {
+    public void deleteBundle(ColoHelper prismHelper) {
 
         try {
             prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
@@ -1278,7 +1277,7 @@ public class Bundle {
         return f.toString();
     }
 
-    public void submitAndScheduleBundle(Bundle b, PrismHelper prismHelper,
+    public void submitAndScheduleBundle(Bundle b, ColoHelper prismHelper,
                                         boolean checkSuccess)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 

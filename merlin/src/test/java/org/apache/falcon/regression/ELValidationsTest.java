@@ -21,7 +21,6 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -122,7 +121,7 @@ public class ELValidationsTest extends BaseTestClass {
         Assert.fail("Response is not valid");
     }
 
-    private String testWith(PrismHelper prismHelper, ColoHelper server, String feedStart,
+    private String testWith(ColoHelper prismHelper, ColoHelper server, String feedStart,
                             String feedEnd, String processStart,
                             String processEnd,
                             String startInstance, String endInstance, boolean isMatch)
@@ -160,7 +159,7 @@ public class ELValidationsTest extends BaseTestClass {
         }
     }
 
-    private void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle) {
+    private void getAndMatchDependencies(ColoHelper prismHelper, Bundle bundle) {
         try {
             List<String> bundles = null;
             for (int i = 0; i < 10; ++i) {

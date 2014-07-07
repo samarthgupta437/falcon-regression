@@ -41,7 +41,6 @@ import org.apache.falcon.entity.v0.feed.Retention;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
@@ -343,7 +342,7 @@ public class InstanceUtil {
             "match expected number of failed instances.");
     }
 
-    public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
+    public static List<String> getWorkflows(ColoHelper prismHelper, String processName,
                                             WorkflowJob.Status... ws) throws OozieClientException {
 
         String bundleID = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
@@ -529,7 +528,7 @@ public class InstanceUtil {
      * @return bundle ID
      * @throws OozieClientException
      */
-    public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
+    public static String getSequenceBundleID(ColoHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber)
         throws OozieClientException {
 
@@ -644,7 +643,7 @@ public class InstanceUtil {
             new Path(remoteLocation));
     }
 
-    public static void createHDFSFolders(PrismHelper helper, List<String> folderList)
+    public static void createHDFSFolders(ColoHelper helper, List<String> folderList)
         throws IOException {
         logger.info("creating folders.....");
         Configuration conf = new Configuration();

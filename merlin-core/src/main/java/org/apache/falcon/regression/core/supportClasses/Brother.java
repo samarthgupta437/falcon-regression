@@ -20,7 +20,7 @@ package org.apache.falcon.regression.core.supportClasses;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -41,7 +41,7 @@ public class Brother extends Thread {
     IEntityManagerHelper entityManagerHelper;
 
     public Brother(String threadName, String operation, ENTITY_TYPE entityType, ThreadGroup tGroup,
-                   Bundle b, PrismHelper p, URLS url) {
+                   Bundle b, ColoHelper p, URLS url) {
         super(tGroup, threadName);
         this.operation = operation;
         switch (entityType) {

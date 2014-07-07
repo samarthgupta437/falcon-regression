@@ -22,7 +22,7 @@ package org.apache.falcon.regression.ui.pages;
 import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -36,7 +36,7 @@ public class EntityPage<T> extends Page {
 
     private Class<T> type;
 
-    protected EntityPage(WebDriver driver, PrismHelper helper, ENTITY_TYPE type, Class<T> entity, String entityName) {
+    protected EntityPage(WebDriver driver, ColoHelper helper, ENTITY_TYPE type, Class<T> entity, String entityName) {
         super(driver, helper);
         URL += String.format("/entity.html?type=%s&id=%s", type.toString().toLowerCase(), entityName);
         this.type = entity;
@@ -49,7 +49,7 @@ public class EntityPage<T> extends Page {
      * @param entityName name of defined entity
      * @return page of defined CLUSTER entity
      */
-    public static EntityPage<Cluster> getClusterPage(WebDriver driver, PrismHelper helper, String entityName) {
+    public static EntityPage<Cluster> getClusterPage(WebDriver driver, ColoHelper helper, String entityName) {
         return new EntityPage<Cluster>(driver, helper, ENTITY_TYPE.CLUSTER, Cluster.class, entityName);
     }
 
@@ -58,7 +58,7 @@ public class EntityPage<T> extends Page {
      * @param entityName name of defined entity
      * @return page of defined FEED entity
      */
-    public static EntityPage<Feed> getFeedPage(WebDriver driver, PrismHelper helper, String entityName) {
+    public static EntityPage<Feed> getFeedPage(WebDriver driver, ColoHelper helper, String entityName) {
         return new EntityPage<Feed>(driver, helper, ENTITY_TYPE.FEED, Feed.class, entityName);
     }
 

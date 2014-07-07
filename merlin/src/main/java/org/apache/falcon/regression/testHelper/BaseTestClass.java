@@ -21,7 +21,6 @@ package org.apache.falcon.regression.testHelper;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.KerberosHelper;
@@ -46,7 +45,7 @@ public class BaseTestClass {
         }
     }
 
-    public PrismHelper prism;
+    public ColoHelper prism;
     public List<ColoHelper> servers;
     public List<FileSystem> serverFS;
     public List<OozieClient> serverOC;
@@ -58,7 +57,7 @@ public class BaseTestClass {
     public BaseTestClass() {
         // loginFromKeytab as the current user
         KerberosHelper.loginFromKeytab(MerlinConstants.CURRENT_USER_NAME);
-        prism = new PrismHelper(PRISM_PREFIX);
+        prism = new ColoHelper(PRISM_PREFIX);
         servers = getServers();
         serverFS = new ArrayList<FileSystem>();
         serverOC = new ArrayList<OozieClient>();

@@ -25,7 +25,6 @@ import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.entity.v0.process.ExecutionType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
@@ -1596,7 +1595,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
      * be identical. If the definitions are identical then the definition from @param coloHelper1
      * is @return are response.
      */
-    private String dualComparison(PrismHelper coloHelper1, PrismHelper coloHelper2,
+    private String dualComparison(ColoHelper coloHelper1, ColoHelper coloHelper2,
                                   String processData) throws Exception {
         String colo1Response = getResponse(coloHelper1, processData, true);
         String colo2Response = getResponse(coloHelper2, processData, true);
@@ -1609,7 +1608,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
      * this method compares process xml definition from 2 falcon servers / prism and expects them to
      * be different.
      */
-    private void dualComparisonFailure(PrismHelper coloHelper1, PrismHelper coloHelper2,
+    private void dualComparisonFailure(ColoHelper coloHelper1, ColoHelper coloHelper2,
                                        String processData) throws Exception {
         Assert.assertFalse(XmlUtil.isIdentical(getResponse(coloHelper1, processData, true),
             getResponse(coloHelper2, processData, true)),
@@ -1617,7 +1616,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 "identical");
     }
 
-    private String getResponse(PrismHelper prism, String processData, boolean bool)
+    private String getResponse(ColoHelper prism, String processData, boolean bool)
         throws Exception {
         ServiceResponse response = prism.getProcessHelper()
             .getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, processData);
@@ -1656,7 +1655,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         }
     }
 
-    private Bundle usualGrind(PrismHelper prism, Bundle b) throws Exception {
+    private Bundle usualGrind(ColoHelper prism, Bundle b) throws Exception {
         b.setInputFeedDataPath(inputFeedPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);

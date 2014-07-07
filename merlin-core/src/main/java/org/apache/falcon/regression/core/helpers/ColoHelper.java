@@ -18,11 +18,49 @@
 
 package org.apache.falcon.regression.core.helpers;
 
-public class ColoHelper extends PrismHelper {
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
+import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
+import org.apache.log4j.Logger;
 
+public class ColoHelper {
+    private static Logger logger = Logger.getLogger(ColoHelper.class);
+    protected IEntityManagerHelper clusterHelper;
+    protected IEntityManagerHelper processHelper;
+    protected IEntityManagerHelper feedHelper;
+    protected String prefix;
 
     public ColoHelper(String prefix) {
-        super(prefix);
+        try {
+            this.prefix = prefix;
+            clusterHelper =
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER,
+                    prefix);
+            processHelper =
+                EntityHelperFactory
+                    .getEntityHelper(ENTITY_TYPE.PROCESS, prefix);
+            feedHelper =
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, prefix);
+
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+
     }
 
+    public IEntityManagerHelper getClusterHelper() {
+        return clusterHelper;
+    }
+
+    public IEntityManagerHelper getFeedHelper() {
+        return feedHelper;
+    }
+
+    public IEntityManagerHelper getProcessHelper() {
+        return processHelper;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
 }

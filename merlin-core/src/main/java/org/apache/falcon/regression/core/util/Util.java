@@ -42,7 +42,6 @@ import org.apache.falcon.entity.v0.feed.Property;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -102,7 +101,7 @@ public class Util {
     static Logger logger = Logger.getLogger(Util.class);
     static final String PRISM_PREFIX = "prism";
 
-    static PrismHelper prismHelper = new PrismHelper(PRISM_PREFIX);
+    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -357,7 +356,7 @@ public class Util {
         return feedObject.toString();
     }
 
-    public static void createLateDataFoldersWithRandom(PrismHelper prismHelper, String folderPrefix,
+    public static void createLateDataFoldersWithRandom(ColoHelper prismHelper, String folderPrefix,
                                                        List<String> folderList)
         throws IOException {
         logger.info("creating late data folders.....");
@@ -375,7 +374,7 @@ public class Util {
         logger.info("created all late data folders.....");
     }
 
-    public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
+    public static void copyDataToFolders(ColoHelper prismHelper, List<String> folderList,
                                          String directory, String folderPrefix)
         throws IOException {
         logger.info("copying data into folders....");
@@ -390,7 +389,7 @@ public class Util {
             fileLocations.toArray(new String[fileLocations.size()]));
     }
 
-    public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
+    public static void copyDataToFolders(ColoHelper prismHelper, final String folderPrefix,
                                          List<String> folderList,
                                          String... fileLocations)
         throws IOException {
@@ -454,7 +453,7 @@ public class Util {
         return null;
     }
 
-    public static void lateDataReplenish(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenish(ColoHelper prismHelper, int interval,
                                          int minuteSkip, String folderPrefix) throws IOException {
         List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
@@ -463,7 +462,7 @@ public class Util {
             OSUtil.NORMAL_INPUT, folderPrefix);
     }
 
-    public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
+    public static void createLateDataFolders(ColoHelper prismHelper, List<String> folderList,
                                              final String FolderPrefix)
         throws IOException {
         Configuration conf = new Configuration();
@@ -476,7 +475,7 @@ public class Util {
         }
     }
 
-    public static void injectMoreData(PrismHelper prismHelper, final String remoteLocation,
+    public static void injectMoreData(ColoHelper prismHelper, final String remoteLocation,
                                       String localLocation)
         throws IOException {
         Configuration conf = new Configuration();
@@ -716,7 +715,7 @@ public class Util {
         }
     }
 
-    public static void lateDataReplenish(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenish(ColoHelper prismHelper, int interval,
                                          int minuteSkip,
                                          String folderPrefix, String postFix)
         throws IOException {
@@ -734,7 +733,7 @@ public class Util {
             OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-    public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenishWithout_Success(ColoHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
                                                         String postFix)
         throws IOException {
@@ -752,7 +751,7 @@ public class Util {
     }
 
 
-    public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
+    public static void putFileInFolderHDFS(ColoHelper prismHelper, int interval, int minuteSkip,
                                            String folderPrefix, String fileToBePut)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
@@ -875,7 +874,7 @@ public class Util {
         return null;
     }
 
-    public static boolean isDefinitionSame(PrismHelper server1, PrismHelper server2,
+    public static boolean isDefinitionSame(ColoHelper server1, ColoHelper server2,
                                            String entity)
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
         SAXException {
@@ -1032,7 +1031,7 @@ public class Util {
         return str;
     }
 
-    public static String getEntityDefinition(PrismHelper cluster,
+    public static String getEntityDefinition(ColoHelper cluster,
                                              String entity,
                                              boolean shouldReturn) throws
         JAXBException,

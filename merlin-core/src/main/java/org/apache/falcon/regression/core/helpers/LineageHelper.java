@@ -80,7 +80,7 @@ public class LineageHelper {
      * Create a LineageHelper to use with a specified prismHelper
      * @param prismHelper prismHelper
      */
-    public LineageHelper(PrismHelper prismHelper) {
+    public LineageHelper(ColoHelper prismHelper) {
         this(prismHelper.getClusterHelper().getHostname());
     }
 
