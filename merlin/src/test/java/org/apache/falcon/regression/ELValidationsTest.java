@@ -131,7 +131,7 @@ public class ELValidationsTest extends BaseTestClass {
         HadoopUtil.uploadDir(server.getClusterHelper().getHadoopFS(),
             aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = BundleUtil.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server.getEnvFileName(), server.getPrefix());
+        bundle = new Bundle(bundle, server.getPrefix());
         bundle.generateUniqueBundle();
         bundle.setProcessWorkflow(aggregateWorkflowDir);
         if (feedStart != null && feedEnd != null) {

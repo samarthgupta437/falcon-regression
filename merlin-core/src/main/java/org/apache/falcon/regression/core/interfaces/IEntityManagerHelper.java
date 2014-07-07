@@ -132,7 +132,6 @@ public abstract class IEntityManagerHelper {
     protected String activeMQ = "";
     protected String storeLocation = "";
     protected String hadoopGetCommand = "";
-    protected String envFileName;
     protected String colo;
     protected String allColo;
     protected String coloName;
@@ -191,10 +190,6 @@ public abstract class IEntityManagerHelper {
 
     protected String serviceUser;
 
-    public String getEnvFileName() {
-        return envFileName;
-    }
-
     public String getColo() {
         return colo;
     }
@@ -203,13 +198,12 @@ public abstract class IEntityManagerHelper {
         return coloName;
     }
 
-    public IEntityManagerHelper(String envFileName, String prefix) {
+    public IEntityManagerHelper(String prefix) {
         if ((null == prefix) || prefix.isEmpty()) {
             prefix = "";
         } else {
             prefix += ".";
         }
-        logger.info("envFileName: " + envFileName);
         this.qaHost = Config.getProperty(prefix + "qa_host");
         this.hostname = Config.getProperty(prefix + "ivory_hostname");
         this.username = Config.getProperty(prefix + "username", System.getProperty("user.name"));
@@ -225,7 +219,6 @@ public abstract class IEntityManagerHelper {
         this.hadoopGetCommand =
             hadoopLocation + "  fs -cat hdfs://" + hadoopURL +
                 "/projects/ivory/staging/ivory/workflows/process";
-        this.envFileName = envFileName;
         this.allColo = "?colo=" + Config.getProperty(prefix + "colo", "*");
         this.colo = (!Config.getProperty(prefix + "colo", "").isEmpty()) ? "?colo=" + Config
             .getProperty(prefix + "colo") : "";

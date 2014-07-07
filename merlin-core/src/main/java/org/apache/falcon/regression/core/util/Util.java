@@ -100,10 +100,9 @@ public class Util {
 
 
     static Logger logger = Logger.getLogger(Util.class);
-    static final String MERLIN_PROPERTIES = "Merlin.properties";
     static final String PRISM_PREFIX = "prism";
 
-    static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
+    static PrismHelper prismHelper = new PrismHelper(PRISM_PREFIX);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -789,7 +788,7 @@ public class Util {
     }
 
 
-    public static String getEnvClusterXML(String filename, String cluster, String prefix) {
+    public static String getEnvClusterXML(String cluster, String prefix) {
 
         Cluster clusterObject =
             getClusterObject(cluster);

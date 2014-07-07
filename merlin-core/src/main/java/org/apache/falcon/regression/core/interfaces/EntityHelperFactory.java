@@ -25,15 +25,15 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 
 public class EntityHelperFactory {
 
-    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName,
+    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type,
                                                        String prefix) {
         switch (type) {
             case FEED:
-                return new DataEntityHelperImpl(envFileName, prefix);
+                return new DataEntityHelperImpl(prefix);
             case CLUSTER:
-                return new ClusterEntityHelperImpl(envFileName, prefix);
+                return new ClusterEntityHelperImpl(prefix);
             case PROCESS:
-                return new ProcessEntityHelperImpl(envFileName, prefix);
+                return new ProcessEntityHelperImpl(prefix);
             default:
                 return null;
         }

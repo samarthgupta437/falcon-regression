@@ -28,8 +28,8 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     private static Logger logger = Logger.getLogger(DataEntityHelperImpl.class);
 
-    public DataEntityHelperImpl(String envFileName, String prefix) {
-        super(envFileName, prefix);
+    public DataEntityHelperImpl(String prefix) {
+        super(prefix);
     }
 
     public String getEntityType() {

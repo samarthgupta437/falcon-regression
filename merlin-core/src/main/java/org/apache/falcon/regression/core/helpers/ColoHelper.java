@@ -21,8 +21,8 @@ package org.apache.falcon.regression.core.helpers;
 public class ColoHelper extends PrismHelper {
 
 
-    public ColoHelper(String envFileName, String prefix) {
-        super(envFileName, prefix);
+    public ColoHelper(String prefix) {
+        super(prefix);
     }
 
 }

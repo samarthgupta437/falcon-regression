@@ -43,30 +43,23 @@ public class PrismHelper {
         return processHelper;
     }
 
-    protected String envFileName;
-
     public String getPrefix() {
         return prefix;
     }
 
     protected String prefix;
 
-    public String getEnvFileName() {
-        return envFileName;
-    }
-
-    public PrismHelper(String envFileName, String prefix) {
+    public PrismHelper(String prefix) {
         try {
-            this.envFileName = envFileName;
             this.prefix = prefix;
             clusterHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, this.envFileName,
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER,
                     prefix);
             processHelper =
                 EntityHelperFactory
-                    .getEntityHelper(ENTITY_TYPE.PROCESS, this.envFileName, prefix);
+                    .getEntityHelper(ENTITY_TYPE.PROCESS, prefix);
             feedHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, this.envFileName, prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, prefix);
 
         } catch (Exception e) {
             logger.info(e.getMessage());
