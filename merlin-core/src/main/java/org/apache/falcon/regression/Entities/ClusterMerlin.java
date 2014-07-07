@@ -33,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class ClusterMerlin extends Cluster {
 
-    public ClusterMerlin(String clusterData) throws JAXBException {
+    public ClusterMerlin(String clusterData) {
         Cluster element = (Cluster) fromString(EntityType.CLUSTER, clusterData);
         Field[] fields = Cluster.class.getDeclaredFields();
         for (Field fld : fields) {

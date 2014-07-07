@@ -334,7 +334,7 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void verifyFeedDeletion(String feed)
-        throws JAXBException, IOException {
+        throws IOException {
         String directory = "/projects/ivory/staging/" + cluster.getFeedHelper().getServiceUser()
             + "/workflows/feed/" + Util.readDatasetName(feed);
         //make sure feed bundle is not there

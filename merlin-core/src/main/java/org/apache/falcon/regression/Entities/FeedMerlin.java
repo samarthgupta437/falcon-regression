@@ -39,7 +39,7 @@ public class FeedMerlin extends Feed {
 
     private static Logger logger = Logger.getLogger(FeedMerlin.class);
 
-    public FeedMerlin(String entity) throws JAXBException {
+    public FeedMerlin(String entity) {
         this((Feed) fromString(EntityType.FEED, entity));
     }
 

@@ -66,10 +66,9 @@ public class EntityPage<T> extends Page {
      * Returns entity object
      * @return entity object
      * @throws JAXBException
-     * @throws IOException
      */
     @SuppressWarnings("unchecked")
-    public T getEntity() throws JAXBException, IOException {
+    public T getEntity() throws JAXBException {
         String entity = driver.findElement(By.id("entity-def-textarea")).getText();
         JAXBContext jc = JAXBContext.newInstance(type);
         Unmarshaller u = jc.createUnmarshaller();

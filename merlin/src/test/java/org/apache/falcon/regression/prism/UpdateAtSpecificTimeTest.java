@@ -143,9 +143,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     @Test(groups = {"singleCluster", "0.3.1"}, timeOut = 1200000,
         enabled = true)
     public void updateTimeInPast_Process()
-        throws JAXBException, InterruptedException, IOException, URISyntaxException,
-        OozieClientException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException, AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException,
+        OozieClientException,
+        AuthenticationException {
 
         processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
                 TimeUtil.getTimeWrtSystemTime(20));
@@ -238,8 +238,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         enabled = true)
     public void inNextFewMinutesUpdate_RollForward_Process()
         throws JAXBException, IOException, URISyntaxException, InterruptedException, JSchException,
-        OozieClientException, SAXException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException, AuthenticationException {
+        OozieClientException, SAXException,
+        AuthenticationException {
     /*
     submit process on 3 clusters. Schedule on 2 clusters. Bring down one of
     the scheduled cluster. Update with time 5 minutes from now. On running
@@ -363,7 +363,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
         enabled = true)
     public void inNextFewMinutesUpdate_RollForward_Feed()
-        throws InterruptedException, JAXBException,
+        throws JAXBException,
         IOException, URISyntaxException, JSchException, OozieClientException, SAXException,
         AuthenticationException {
         try {
@@ -450,8 +450,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         enabled = true)
     public void updateTimeAfterEndTime_Process()
         throws JAXBException, InterruptedException, IOException, URISyntaxException,
-        OozieClientException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException, AuthenticationException {
+        OozieClientException,
+        AuthenticationException {
 
     /*
       submit and schedule process with end time after 60 mins. Set update time
@@ -595,7 +595,6 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         enabled = true)
     public void updateDiffClusterDiffValidity_Process()
         throws JAXBException, IOException, URISyntaxException, OozieClientException,
-        IllegalAccessException, NoSuchMethodException, InvocationTargetException,
         AuthenticationException {
 
         //set start end process time for 3 clusters
@@ -714,7 +713,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     private String getMultiClusterFeed(String startTimeCluster_source,
                                        String startTimeCluster_target)
-        throws IOException, JAXBException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         String testDataDir = baseTestDir + "/replication";
 
         //create desired feed

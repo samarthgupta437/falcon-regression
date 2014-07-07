@@ -178,14 +178,12 @@ public class InstanceUtil {
     /**
      * Checks if API response reflects success and if it's instances match to expected status.
      *
-     * @param r kind of response from API which should contain information about instances
-     * @param b bundle from which process instances are being analyzed
-     * @param ws expected status of instances
-     * @throws JAXBException
+     * @param r  - kind of response from API which should contain information about instances
+     * @param b  - bundle from which process instances are being analyzed
+     * @param ws - - expected status of instances
      */
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
-                                       ProcessInstancesResult.WorkflowStatus ws)
-        throws JAXBException {
+                                       ProcessInstancesResult.WorkflowStatus ws) {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(runningInstancesInResult(r, ws), b.getProcessConcurrency());
     }
@@ -226,16 +224,15 @@ public class InstanceUtil {
             "Parameter start is empty should have the response");
     }
 
-    public static void writeProcessElement(Bundle bundle, Process processElement)
-        throws JAXBException {
+    public static void writeProcessElement(Bundle bundle, Process processElement) {
         bundle.setProcessData(processElement.toString());
     }
 
-    public static Process getProcessElement(Bundle bundle) throws JAXBException {
+    public static Process getProcessElement(Bundle bundle) {
         return (Process) Entity.fromString(EntityType.PROCESS, bundle.getProcessData());
     }
 
-    public static Feed getFeedElement(Bundle bundle, String feedName) throws JAXBException {
+    public static Feed getFeedElement(Bundle bundle, String feedName) {
         Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
         if (!feedElement.getName().contains(feedName)) {
             feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
@@ -244,12 +241,12 @@ public class InstanceUtil {
     }
 
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
-                                        String feedName) throws JAXBException {
+                                        String feedName) {
         writeFeedElement(bundle, feedElement.toString(), feedName);
     }
 
     public static void writeFeedElement(Bundle bundle, String feedString,
-                                        String feedName) throws JAXBException {
+                                        String feedName) {
         int index = 0;
         Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
         if (!dataElement.getName().contains(feedName)) {
@@ -699,8 +696,7 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static void writeClusterElement(Bundle bundle,
-                                           org.apache.falcon.entity.v0.cluster.Cluster c)
-        throws JAXBException {
+                                           org.apache.falcon.entity.v0.cluster.Cluster c) {
         bundle.setClusterData(c.toString());
     }
 
@@ -715,12 +711,11 @@ public class InstanceUtil {
      * @param partition - partition where data is available for feed
      * @param locations - location where data is picked
      * @return - string representation of the modified feed
-     * @throws JAXBException
      */
     public static String setFeedCluster(String feed, Validity feedValidity, Retention feedRetention,
                                         String clusterName,
                                         ClusterType clusterType, String partition,
-                                        String... locations) throws JAXBException {
+                                        String... locations) {
         return setFeedClusterWithTable(feed, feedValidity, feedRetention, clusterName, clusterType,
             partition, null, locations);
     }
@@ -728,8 +723,7 @@ public class InstanceUtil {
     public static String setFeedClusterWithTable(String feed, Validity feedValidity,
                                                  Retention feedRetention, String clusterName,
                                                  ClusterType clusterType, String partition,
-                                                 String tableUri, String... locations)
-        throws JAXBException {
+                                                 String tableUri, String... locations) {
         Feed f = (Feed) Entity.fromString(EntityType.FEED, feed);
         if (clusterName == null) {
             f.getClusters().getClusters().clear();
@@ -824,7 +818,7 @@ public class InstanceUtil {
     /**
      * Retrieves prefix (main sub-folders) of feed data path.
      */
-    public static String getFeedPrefix(String feed) throws JAXBException {
+    public static String getFeedPrefix(String feed) {
         Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         String p = feedElement.getLocations().getLocations().get(0).getPath();
         p = p.substring(0, p.indexOf("$"));
@@ -838,12 +832,11 @@ public class InstanceUtil {
      * @param clusterName - name of cluster
      * @param validity    - cluster validity
      * @return - string representation of modified process
-     * @throws JAXBException
      */
     public static String setProcessCluster(String process,
                                            String clusterName,
                                            org.apache.falcon.entity.v0.process
-                                               .Validity validity) throws JAXBException {
+                                               .Validity validity) {
         org.apache.falcon.entity.v0.process.Cluster c =
             new org.apache.falcon.entity.v0.process.Cluster();
         c.setName(clusterName);
@@ -864,10 +857,9 @@ public class InstanceUtil {
      * @param process - where input should be inserted
      * @param feed    - feed which will be used as input feed
      * @return - string representation of process definition
-     * @throws JAXBException
      */
     public static String addProcessInputFeed(String process, String feed,
-                                             String feedName) throws JAXBException {
+                                             String feedName) {
         Process processElement = (Process) Entity.fromString(EntityType.PROCESS, process);
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
@@ -973,7 +965,7 @@ public class InstanceUtil {
      * @return modified feed
      * @throws JAXBException
      */
-    public static String setFeedFilePath(String feed, String path) throws JAXBException {
+    public static String setFeedFilePath(String feed, String path) {
         Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedElement.getLocations().getLocations().get(0).setPath(path);
         return feedElement.toString();
@@ -981,7 +973,7 @@ public class InstanceUtil {
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
                                             String feedName, String coordType)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
@@ -1011,7 +1003,7 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static String setProcessFrequency(String process,
-                                             Frequency frequency) throws JAXBException {
+                                             Frequency frequency) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
 
         p.setFrequency(frequency);
@@ -1022,7 +1014,7 @@ public class InstanceUtil {
     /**
      * Sets new process name
      */
-    public static String setProcessName(String process, String newName) throws JAXBException {
+    public static String setProcessName(String process, String newName) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
 
         p.setName(newName);
@@ -1040,7 +1032,7 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static String setProcessValidity(String process,
-                                            String startTime, String endTime) throws JAXBException {
+                                            String startTime, String endTime) {
         Process processElement = (Process) Entity.fromString(EntityType.PROCESS, process);
 
         for (int i = 0; i < processElement.getClusters().getClusters().size(); i++) {
@@ -1312,7 +1304,7 @@ public class InstanceUtil {
      * Sets feed frequency
      * @return modified feed
      */
-    public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
+    public static String setFeedFrequency(String feed, Frequency f) {
         Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedElement.setFrequency(f);
         return feedElement.toString();
@@ -1333,7 +1325,7 @@ public class InstanceUtil {
                                                    String entity,
                                                    int bundleSeqNo,
                                                    int totalMinutesToWait
-    ) throws OozieClientException, JAXBException {
+    ) throws OozieClientException {
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE type = Util.getEntityType(entity);
         String bundleID = getSequenceBundleID(coloHelper, entityName, type,
@@ -1376,12 +1368,7 @@ public class InstanceUtil {
 
     public static String setFeedACL(String feed, String... ownerGroup) {
         FeedMerlin feedObject = null;
-        try {
-            feedObject = new FeedMerlin(feed);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-        }
+        feedObject = new FeedMerlin(feed);
         ACL acl = feedObject.getACL();
         acl.setOwner(MerlinConstants.aclOwner);
         acl.setGroup(MerlinConstants.aclGroup);

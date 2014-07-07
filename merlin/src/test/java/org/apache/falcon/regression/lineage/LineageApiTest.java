@@ -80,7 +80,7 @@ public class LineageApiTest extends BaseTestClass {
     FeedMerlin[] outputFeeds;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() {
         lineageHelper = new LineageHelper(prism);
     }
 
@@ -122,9 +122,7 @@ public class LineageApiTest extends BaseTestClass {
     public static FeedMerlin[] generateFeeds(final int numInputFeeds,
                                              final FeedMerlin originalFeedMerlin,
                                              final Generator nameGenerator,
-                                             final Generator pathGenerator)
-        throws JAXBException, NoSuchMethodException, InvocationTargetException,
-        IllegalAccessException, IOException, URISyntaxException, AuthenticationException {
+                                             final Generator pathGenerator) {
         FeedMerlin[] inputFeeds = new FeedMerlin[numInputFeeds];
         //submit all input feeds
         for(int count = 0; count < numInputFeeds; ++count) {

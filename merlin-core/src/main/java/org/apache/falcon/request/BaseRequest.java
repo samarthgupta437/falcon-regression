@@ -107,7 +107,7 @@ public class BaseRequest {
     private static final Logger LOGGER = Logger.getLogger(BaseRequest.class);
 
     private HttpResponse execute(HttpRequest request)
-        throws IOException, AuthenticationException, URISyntaxException {
+        throws IOException, AuthenticationException {
         // add headers to the request
         if (null != headers && headers.size() > 0) {
             for (Header header : headers) {

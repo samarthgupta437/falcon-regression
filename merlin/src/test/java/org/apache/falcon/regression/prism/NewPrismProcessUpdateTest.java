@@ -1267,7 +1267,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
-    private void setBundleWFPath(Bundle... bundles) throws Exception {
+    private void setBundleWFPath(Bundle... bundles) {
         for (Bundle bundle : bundles) {
             bundle.setProcessWorkflow(WORKFLOW_PATH);
         }
@@ -1529,8 +1529,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     @Test(timeOut = 1200000)
     public void
     updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException,
-        IOException, OozieClientException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException, AuthenticationException {
+        IOException, OozieClientException,
+        AuthenticationException {
         Bundle b = BundleUtil.readELBundles()[0][0];
         HadoopFileEditor hadoopFileEditor = null;
         try {

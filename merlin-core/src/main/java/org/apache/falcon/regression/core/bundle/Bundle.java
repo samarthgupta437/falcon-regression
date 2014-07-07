@@ -205,7 +205,7 @@ public class Bundle {
         this.clusters.add(clusterData);
     }
 
-    public Bundle(Bundle bundle, String prefix) throws JAXBException {
+    public Bundle(Bundle bundle, String prefix) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
@@ -236,7 +236,7 @@ public class Bundle {
         }
     }
 
-    public Bundle(Bundle bundle, ColoHelper prismHelper) throws JAXBException {
+    public Bundle(Bundle bundle, ColoHelper prismHelper) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
@@ -254,7 +254,7 @@ public class Bundle {
         this.clusters = new ArrayList<String>(clusters);
     }
 
-    public List<String> getClusterNames() throws JAXBException {
+    public List<String> getClusterNames() {
         List<String> clusterNames = new ArrayList<String>();
         for (String cluster : clusters) {
             final org.apache.falcon.entity.v0.cluster.Cluster clusterObject =
@@ -454,7 +454,7 @@ public class Bundle {
         return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public void updateWorkFlowFile() throws IOException, JAXBException {
+    public void updateWorkFlowFile() throws IOException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
         File wfFile = new File(sBundleLocation + "/workflow/workflow.xml");
@@ -565,8 +565,7 @@ public class Bundle {
     }
 
 
-    public void setFeedValidity(String feedStart, String feedEnd, String feedName) throws
-        JAXBException {
+    public void setFeedValidity(String feedStart, String feedEnd, String feedName) {
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getClusters().getClusters().get(0).getValidity()
             .setStart(TimeUtil.oozieDateToDate(feedStart).toDate());
@@ -587,13 +586,13 @@ public class Bundle {
         else return (Integer.parseInt(dataElement.getFrequency().getFrequency()));
     }
 
-    public Date getStartInstanceProcess(Calendar time) throws JAXBException {
+    public Date getStartInstanceProcess(Calendar time) {
         Process processElement = InstanceUtil.getProcessElement(this);
         logger.info("start instance: " + processElement.getInputs().getInputs().get(0).getStart());
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getStart(), time);
     }
 
-    public Date getEndInstanceProcess(Calendar time) throws JAXBException {
+    public Date getEndInstanceProcess(Calendar time) {
         Process processElement = InstanceUtil.getProcessElement(this);
         logger.info("end instance: " + processElement.getInputs().getInputs().get(0).getEnd());
         logger.info("timezone in getendinstance: " + time.getTimeZone().toString());
@@ -601,21 +600,21 @@ public class Bundle {
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getEnd(), time);
     }
 
-    public void setDatasetInstances(String startInstance, String endInstance) throws JAXBException {
+    public void setDatasetInstances(String startInstance, String endInstance) {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.getInputs().getInputs().get(0).setStart(startInstance);
         processElement.getInputs().getInputs().get(0).setEnd(endInstance);
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
+    public void setProcessPeriodicity(int frequency, TimeUnit periodicity) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Frequency frq = new Frequency("" + frequency, periodicity);
         processElement.setFrequency(frq);
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessInputStartEnd(String start, String end) throws JAXBException {
+    public void setProcessInputStartEnd(String start, String end) {
         Process processElement = InstanceUtil.getProcessElement(this);
         for (Input input : processElement.getInputs().getInputs()) {
             input.setStart(start);
@@ -650,7 +649,7 @@ public class Bundle {
         logger.info("modified o/p dataSet is: " + dataSets.get(datasetIndex));
     }
 
-    public int getProcessConcurrency() throws JAXBException {
+    public int getProcessConcurrency() {
         return InstanceUtil.getProcessElement(this).getParallel();
     }
 
@@ -682,22 +681,21 @@ public class Bundle {
         logger.info("modified location path dataSet is: " + dataSets.get(datasetIndex));
     }
 
-    public void setProcessConcurrency(int concurrency) throws JAXBException {
+    public void setProcessConcurrency(int concurrency) {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.setParallel((concurrency));
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessWorkflow(String wfPath) throws JAXBException {
+    public void setProcessWorkflow(String wfPath) {
         setProcessWorkflow(wfPath, null);
     }
 
-    public void setProcessWorkflow(String wfPath, EngineType engineType) throws JAXBException {
+    public void setProcessWorkflow(String wfPath, EngineType engineType) {
         setProcessWorkflow(wfPath, null, engineType);
     }
 
-    public void setProcessWorkflow(String wfPath, String libPath, EngineType engineType)
-        throws JAXBException {
+    public void setProcessWorkflow(String wfPath, String libPath, EngineType engineType) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow w = processElement.getWorkflow();
         if (engineType != null) {
@@ -718,7 +716,7 @@ public class Bundle {
     }
 
 
-    public String getFeed(String feedName) throws JAXBException {
+    public String getFeed(String feedName) {
         for (String feed : getDataSets()) {
             if (Util.readDatasetName(feed).contains(feedName)) {
                 return feed;
@@ -836,7 +834,7 @@ public class Bundle {
     }
 
 
-    public void verifyDependencyListing() throws JAXBException {
+    public void verifyDependencyListing() {
         //display dependencies of process:
         String dependencies = processHelper.getDependencies(Util.readEntityName(getProcessData()));
 
@@ -857,7 +855,7 @@ public class Bundle {
 
     }
 
-    public void addProcessInput(String feed, String feedName) throws JAXBException {
+    public void addProcessInput(String feed, String feedName) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
@@ -870,7 +868,7 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessName(String newName) throws JAXBException {
+    public void setProcessName(String newName) {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.setName(newName);
         InstanceUtil.writeProcessElement(this, processElement);
@@ -896,7 +894,7 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
-    public void setCLusterColo(String colo) throws JAXBException {
+    public void setCLusterColo(String colo) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
             InstanceUtil.getClusterElement(this);
         c.setColo(colo);
@@ -904,8 +902,7 @@ public class Bundle {
 
     }
 
-    public void setClusterInterface(Interfacetype interfacetype, String value)
-        throws JAXBException {
+    public void setClusterInterface(Interfacetype interfacetype, String value) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
             InstanceUtil.getClusterElement(this);
         final Interfaces interfaces = c.getInterfaces();
@@ -937,7 +934,7 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feed, feed.getName());
     }
 
-    public void setCLusterWorkingPath(String clusterData, String path) throws JAXBException {
+    public void setCLusterWorkingPath(String clusterData, String path) {
 
         org.apache.falcon.entity.v0.cluster.Cluster c =
             (org.apache.falcon.entity.v0.cluster.Cluster)
@@ -976,7 +973,7 @@ public class Bundle {
 
     public void addClusterToBundle(String clusterData, ClusterType type,
                                    String startTime, String endTime
-    ) throws JAXBException {
+    ) {
 
         clusterData = setNewClusterName(clusterData);
 
@@ -1013,7 +1010,7 @@ public class Bundle {
 
     }
 
-    private String setNewClusterName(String clusterData) throws JAXBException {
+    private String setNewClusterName(String clusterData) {
         ClusterMerlin clusterObj = new ClusterMerlin(clusterData);
         clusterObj.setName(clusterObj.getName() + this.clusters.size() + 1);
         return clusterObj.toString();
@@ -1043,12 +1040,12 @@ public class Bundle {
 
     }
 
-    public String getProcessName() throws JAXBException {
+    public String getProcessName() {
 
         return Util.getProcessName(this.getProcessData());
     }
 
-    public void setProcessLibPath(String libPath) throws JAXBException {
+    public void setProcessLibPath(String libPath) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
         wf.setLib(libPath);
@@ -1057,7 +1054,7 @@ public class Bundle {
 
     }
 
-    public void setProcessTimeOut(int magnitude, TimeUnit unit) throws JAXBException {
+    public void setProcessTimeOut(int magnitude, TimeUnit unit) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Frequency frq = new Frequency("" + magnitude, unit);
         processElement.setTimeout(frq);
@@ -1090,12 +1087,11 @@ public class Bundle {
      * @param startTime start of feeds and process validity on every cluster
      * @param endTime end of feeds and process validity on every cluster
      * @return modified bundle
-     * @throws JAXBException
      */
     public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
                                     String inputBasePaths, int numberOfOutputs, String startTime,
-                                    String endTime) throws JAXBException {
+                                    String endTime) {
 
         //generate and set clusters
         org.apache.falcon.entity.v0.cluster.Cluster c =
@@ -1150,11 +1146,10 @@ public class Bundle {
      * @param numberOfOptionalInput how many inputs should be optional
      * @param numberOfOutputs number of outputs
      * @return modified process
-     * @throws JAXBException
      */
     public String setProcessFeeds(String process, List<String> newDataSets,
                                   int numberOfInputs, int numberOfOptionalInput,
-                                  int numberOfOutputs) throws JAXBException {
+                                  int numberOfOutputs) {
 
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         int numberOfOptionalSet = 0;
@@ -1208,10 +1203,9 @@ public class Bundle {
      * @param startTime start of process validity on every cluster
      * @param endTime end of process validity on every cluster
      * @return modified process definition
-     * @throws JAXBException
      */
     public String setProcessClusters(String process, List<String> newClusters, String startTime,
-                                     String endTime) throws JAXBException {
+                                     String endTime) {
 
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         org.apache.falcon.entity.v0.process.Clusters cs =
@@ -1239,11 +1233,10 @@ public class Bundle {
      * @param startTime start of feed validity on every cluster
      * @param endTime end of feed validity on every cluster
      * @return modified feed definition
-     * @throws JAXBException
      */
     public String setFeedClusters(String referenceFeed,
                                   List<String> newClusters, String location, String startTime,
-                                  String endTime) throws JAXBException {
+                                  String endTime) {
 
         Feed f = (Feed) Entity.fromString(EntityType.FEED, referenceFeed);
         Clusters cs = new Clusters();
@@ -1307,9 +1300,8 @@ public class Bundle {
      * @param process process definition to be modified
      * @param names desired names of inputs
      * @return modified process definition
-     * @throws JAXBException
      */
-    public String setProcessInputNames(String process, String... names) throws JAXBException {
+    public String setProcessInputNames(String process, String... names) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (int i = 0; i < names.length; i++) {
             p.getInputs().getInputs().get(i).setName(names[i]);
@@ -1323,9 +1315,8 @@ public class Bundle {
      * @param process process definition to be modified
      * @param properties desired properties to be added
      * @return modified process definition
-     * @throws JAXBException
      */
-    public String addProcessProperty(String process, Property... properties) throws JAXBException {
+    public String addProcessProperty(String process, Property... properties) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (Property property : properties) {
             p.getProperties().getProperties().add(property);
@@ -1339,10 +1330,8 @@ public class Bundle {
      * @param process process definition to be modified
      * @param partition partitions to be set
      * @return modified process definition
-     * @throws JAXBException
      */
-    public String setProcessInputPartition(String process, String... partition)
-        throws JAXBException {
+    public String setProcessInputPartition(String process, String... partition) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (int i = 0; i < partition.length; i++) {
             p.getInputs().getInputs().get(i).setPartition(partition[i]);
@@ -1363,7 +1352,7 @@ public class Bundle {
         return testData;
     }
 
-    public String setProcessOutputNames(String process, String... names) throws JAXBException {
+    public String setProcessOutputNames(String process, String... names) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         Outputs outputs = p.getOutputs();
         if (outputs.getOutputs().size() != names.length) {
@@ -1377,8 +1366,7 @@ public class Bundle {
         return p.toString();
     }
 
-    public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx)
-        throws JAXBException {
+    public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) {
         this.getDataSets().add(feed);
         String feedName = Util.readEntityName(feed);
         String processData = getProcessData();
@@ -1412,9 +1400,7 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processObject);
     }
 
-    public void setProcessProperty(String property, String value)
-        throws JAXBException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException {
+    public void setProcessProperty(String property, String value) {
 
         ProcessMerlin process = new ProcessMerlin(this.getProcessData());
         process.setProperty(property, value);

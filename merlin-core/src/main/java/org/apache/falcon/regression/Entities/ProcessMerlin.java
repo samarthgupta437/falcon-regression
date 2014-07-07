@@ -43,8 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProcessMerlin extends Process {
-    public ProcessMerlin(String processData)
-        throws JAXBException {
+    public ProcessMerlin(String processData) {
         this((Process) fromString(EntityType.PROCESS, processData));
     }
 
@@ -91,7 +90,7 @@ public class ProcessMerlin extends Process {
         return null;
     }
 
-    public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) throws Exception {
+    public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) {
         Date start = getClusters().getClusters().get(0).getValidity().getStart();
         Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         String startDate = formatter.format(start);
@@ -109,7 +108,7 @@ public class ProcessMerlin extends Process {
         return b;
     }
 
-    public Map<String, FeedMerlin> getInputFeeds(Bundle b) throws Exception {
+    public Map<String, FeedMerlin> getInputFeeds(Bundle b) {
         Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
         for (Input input : getInputs().getInputs()) {
             for (String feed : b.getDataSets()) {

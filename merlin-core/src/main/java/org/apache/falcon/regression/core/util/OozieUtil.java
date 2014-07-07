@@ -367,8 +367,7 @@ public class OozieUtil {
                                                String entity,
                                                boolean shouldBeCreated,
 
-                                               boolean matchInstances) throws OozieClientException,
-        JAXBException {
+                                               boolean matchInstances) throws OozieClientException {
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE entityType = Util.getEntityType(entity);
         String newBundleId = InstanceUtil.getLatestBundleID(cluster, entityName,
@@ -424,7 +423,7 @@ public class OozieUtil {
 
     public static String getCoordStartTime(ColoHelper colo, String entity,
                                            int bundleNo)
-        throws JAXBException, OozieClientException {
+        throws OozieClientException {
         String bundleID = InstanceUtil.getSequenceBundleID(colo,
             Util.readEntityName(entity), Util.getEntityType(entity), bundleNo);
 
