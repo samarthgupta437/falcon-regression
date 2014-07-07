@@ -26,7 +26,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 

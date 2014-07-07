@@ -22,8 +22,6 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBException;
-
 public class DataEntityHelperImpl extends IEntityManagerHelper {
 
     private static Logger logger = Logger.getLogger(DataEntityHelperImpl.class);
