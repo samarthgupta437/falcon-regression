@@ -251,23 +251,6 @@ public class Util {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
-    public static String readPropertiesFile(String filename, String property) {
-        return readPropertiesFile(filename, property, null);
-    }
-
-    public static String readPropertiesFile(String filename, String property, String defaultValue) {
-        String desired_property;
-
-        try {
-            Properties properties = getPropertiesObj(filename);
-            desired_property = properties.getProperty(property, defaultValue);
-            return desired_property;
-        } catch (Exception e) {
-            logger.info(e.getStackTrace());
-        }
-        return null;
-    }
-
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
         throws IOException {
         List<String> finalResult = new ArrayList<String>();
@@ -814,27 +797,27 @@ public class Util {
             prefix = "";
         else prefix = prefix + ".";
 
-        String hcat_endpoint = readPropertiesFile(filename, prefix + "hcat_endpoint");
+        String hcat_endpoint = Config.getProperty(prefix + "hcat_endpoint");
 
         //now read and set relevant values
         for (Interface iface : clusterObject.getInterfaces().getInterfaces()) {
             if (iface.getType() == Interfacetype.READONLY) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_readonly"));
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_readonly"));
             } else if (iface.getType() == Interfacetype.WRITE) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_write"));
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_write"));
             } else if (iface.getType() == Interfacetype.EXECUTE) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_execute"));
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_execute"));
             } else if (iface.getType() == Interfacetype.WORKFLOW) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
+                iface.setEndpoint(Config.getProperty(prefix + "oozie_url"));
             } else if (iface.getType() == Interfacetype.MESSAGING) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
+                iface.setEndpoint(Config.getProperty(prefix + "activemq_url"));
             } else if (iface.getType() == Interfacetype.REGISTRY) {
                 iface.setEndpoint(hcat_endpoint);
             }
         }
 
         //set colo name:
-        clusterObject.setColo(readPropertiesFile(filename, prefix + "colo"));
+        clusterObject.setColo(Config.getProperty(prefix + "colo"));
         // properties in the cluster needed when secure mode is on
         if (MerlinConstants.IS_SECURE) {
             // get the properties object for the cluster
@@ -843,13 +826,13 @@ public class Util {
             // add the namenode principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
                 "dfs.namenode.kerberos.principal",
-                readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none")));
+                Config.getProperty(prefix + "namenode.kerberos.principal", "none")));
 
             // add the hive meta store principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
                 "hive.metastore.kerberos" +
                     ".principal",
-                readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
+                Config.getProperty(prefix + "hive.metastore.kerberos" +
                     ".principal", "none")
             ));
 

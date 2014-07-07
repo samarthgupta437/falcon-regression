@@ -22,6 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.KerberosHelper;
 import org.apache.falcon.regression.core.util.Util;
@@ -78,8 +79,7 @@ public class BaseTestClass {
 
     private static void prepareProperties() {
 
-        Properties merlinProp = Util.getPropertiesObj(MERLIN_PROPERTIES);
-        serverNames = merlinProp.getProperty("servers").split(",");
+        serverNames = Config.getProperty("servers").split(",");
         for (int i = 0; i < serverNames.length; i++)
             serverNames[i] = serverNames[i].trim();
     }
