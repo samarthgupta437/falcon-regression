@@ -1413,7 +1413,9 @@ public class InstanceUtil {
     }
 
     /**
-     * Waits till instances of specific job will be created
+     * Waits till instances of specific job will be created during specific time.
+     * Use this method directly in unusual test cases where timeouts are different from trivial.
+     * In other cases use waitTillInstancesAreCreated(ColoHelper,String,int)
      *
      * @param coloHelper colo helper of cluster job is running on
      * @param entity definition of entity which describes job
@@ -1423,15 +1425,15 @@ public class InstanceUtil {
      */
     public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
                                                    String entity,
-                                                   int bundleSeqNo
-    ) throws JAXBException, OozieClientException {
-        int sleep = INSTANCES_CREATED_TIMEOUT * 60 / 5;
+                                                   int bundleSeqNo,
+                                                   int totalMinutesToWait
+    ) throws OozieClientException, JAXBException {
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE type = Util.getEntityType(entity);
         String bundleID = getSequenceBundleID(coloHelper, entityName, type,
             bundleSeqNo);
         String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
+        for (int sleepCount = 0; sleepCount < totalMinutesToWait; sleepCount++) {
             CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient()
                 .getCoordJobInfo(coordID);
 
@@ -1446,6 +1448,24 @@ public class InstanceUtil {
                 logger.error(e.getMessage());
             }
         }
+    }
+
+    /**
+     * Waits till instances of specific job will be created during timeout.
+     * Timeout is common for most of usual test cases.
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param entity definition of entity which describes job
+     * @param bundleSeqNo
+     * @throws JAXBException
+     * @throws OozieClientException
+     */
+    public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
+                                                   String entity,
+                                                   int bundleSeqNo
+    ) throws JAXBException, OozieClientException {
+        int sleep = INSTANCES_CREATED_TIMEOUT * 60 / 5;
+        waitTillInstancesAreCreated(coloHelper, entity, bundleSeqNo, sleep);
     }
 
     public static String setFeedACL(String feed, String... ownerGroup) {
