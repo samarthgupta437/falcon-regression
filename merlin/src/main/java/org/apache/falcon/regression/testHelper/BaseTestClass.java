@@ -75,7 +75,7 @@ public class BaseTestClass {
 
     private static void prepareProperties() {
 
-        serverNames = Config.getProperty("servers").split(",");
+        serverNames = Config.getStringArray("servers");
         for (int i = 0; i < serverNames.length; i++)
             serverNames[i] = serverNames[i].trim();
     }

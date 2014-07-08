@@ -43,6 +43,10 @@ public class Config {
         return INSTANCE.confObj.getString(key);
     }
 
+    public static String[] getStringArray(String key) {
+        return INSTANCE.confObj.getStringArray(key);
+    }
+
     public static String getProperty(String key, String defaultValue) {
         return INSTANCE.confObj.getString(key, defaultValue);
     }
