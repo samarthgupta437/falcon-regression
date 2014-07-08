@@ -421,7 +421,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.readEntityName(bundles[0]
-            .getProcessData()), 1, Status.TIMEDOUT, 20, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 1, Status.TIMEDOUT, ENTITY_TYPE.PROCESS);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");

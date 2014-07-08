@@ -111,7 +111,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     @Test(enabled = true)
     public void rescheduleSucceeded() throws Exception {
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         checkNotFoundDefinition(bundles[0].getProcessData());
 
@@ -119,7 +119,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
     }
 
     /**
@@ -133,7 +133,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     @Test(enabled = false)
     public void rescheduleFailed() throws Exception {
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         checkNotFoundDefinition(bundles[0].getProcessData());
 
@@ -141,7 +141,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
     }
 
     /**
@@ -157,8 +157,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z");
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.DONEWITHERROR,
-                20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.DONEWITHERROR);
 
         //delete the process
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
@@ -168,7 +167,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
     }
 
     /**
@@ -179,14 +178,14 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
     public void rescheduleKilled() throws Exception {
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.KILLED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.KILLED);
         checkNotFoundDefinition(bundles[0].getProcessData());
 
         //submit and schedule process again
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getProcessData()));
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
     }
 
     /**

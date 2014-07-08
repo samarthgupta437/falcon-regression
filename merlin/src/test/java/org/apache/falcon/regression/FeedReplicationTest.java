@@ -70,7 +70,6 @@ public class FeedReplicationTest extends BaseTestClass {
     String feedDataLocation = baseTestDir + "/source" + dateTemplate;
     String targetPath = baseTestDir + "/target";
     String targetDataLocation = targetPath + dateTemplate;
-    int defaultTimeout = OSUtil.IS_WINDOWS ? 6 : 3;
     private static final Logger logger = Logger.getLogger(FeedReplicationTest.class);
 
     @BeforeMethod(alwaysRun = true)
@@ -148,7 +147,7 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if coordinator exists
-        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0);
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
@@ -156,7 +155,7 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -227,9 +226,9 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if all coordinators exist
-        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0);
 
-        InstanceUtil.waitTillInstancesAreCreated(cluster3, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, feed, 0);
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
@@ -239,11 +238,11 @@ public class FeedReplicationTest extends BaseTestClass {
                 "REPLICATION"), 1);
         //replication on cluster 2 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //replication on cluster 3 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -319,7 +318,7 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check while instance is got created
-        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0);
 
         //check if coordinator exists
         Assert.assertEquals(InstanceUtil
@@ -337,11 +336,11 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //check if instance become running
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.RUNNING, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.RUNNING, ENTITY_TYPE.FEED);
 
         //wait till instance succeed
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil

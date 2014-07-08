@@ -19,7 +19,7 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.entity.v0.cluster.Location;
 import org.apache.falcon.regression.core.enumsAndConstants.ClusterLocationTypes;

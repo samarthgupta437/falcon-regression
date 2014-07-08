@@ -41,7 +41,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.codehaus.jettison.json.JSONException;
 import org.openqa.selenium.Point;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -115,7 +114,7 @@ public class LineageGraphTest extends BaseUITestClass {
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
         /**get process instances*/
         Vertex processVertex = lineageHelper.getVerticesByName(processName).getResults().get(0);
         piVertices = lineageHelper.getVerticesByDirection(processVertex.get_id(),
@@ -182,8 +181,7 @@ public class LineageGraphTest extends BaseUITestClass {
      */
     @Test
     public void testVerticesInfo()
-        throws JAXBException, URISyntaxException, AuthenticationException,
-        JSONException, IOException {
+        throws JAXBException, URISyntaxException, AuthenticationException, IOException {
         String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();

@@ -115,7 +115,7 @@ public class InstanceSummaryTest extends BaseTestClass {
         processBundle.setProcessValidity(startTime, endTime);
         processBundle.submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster3,
-            processBundle.getProcessData(), 0, 10);
+            processBundle.getProcessData(), 0);
 
         // start only at start time
         InstancesSummaryResult r = prism.getProcessHelper()
@@ -124,7 +124,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(2),
             Util.readEntityName(processBundle.getProcessData()), 2,
-            Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+            Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
 
 
         //AssertUtil.assertSucceeded(r);
