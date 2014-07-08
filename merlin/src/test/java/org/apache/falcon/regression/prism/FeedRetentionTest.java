@@ -39,6 +39,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 
@@ -48,6 +49,8 @@ public class FeedRetentionTest extends BaseTestClass {
 
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
+    FileSystem cluster1FS = serverFS.get(0);
+    FileSystem cluster2FS = serverFS.get(1);
     String impressionrcWorkflowDir = baseHDFSDir + "/FeedRetentionTest/impressionrc/";
     String impressionrcWorkflowLibPath = impressionrcWorkflowDir + "lib";
     private static final Logger logger = Logger.getLogger(FeedRetentionTest.class);
@@ -96,16 +99,12 @@ public class FeedRetentionTest extends BaseTestClass {
         String outputPathTemplate = baseHDFSDir +
             "/testOutput/op%d/ivoryRetention0%d/%s/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
-        InstanceUtil.putFileInFolders(cluster1,
-            TimeUtil.createEmptyDirWithinDatesAndPrefix(cluster1,
-                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-5)),
-                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(10)),
-                inputPath, 1), OSUtil.RESOURCES + "thriftRRMar0602.gz");
-        InstanceUtil.putFileInFolders(cluster2,
-            TimeUtil.createEmptyDirWithinDatesAndPrefix(cluster2,
-                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-5)),
-                TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(10)),
-                inputPath, 1), OSUtil.RESOURCES + "thriftRRMar0602.gz");
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.getTimeWrtSystemTime(-5), TimeUtil.getTimeWrtSystemTime(10), 1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, OSUtil.RESOURCES + "thriftRRMar0602.gz",
+            inputPath, dataDates);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.RESOURCES + "thriftRRMar0602.gz",
+            inputPath, dataDates);
 
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));

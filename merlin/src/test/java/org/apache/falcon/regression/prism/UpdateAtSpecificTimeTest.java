@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
@@ -35,6 +36,7 @@ import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClientException;
@@ -65,6 +67,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     ColoHelper cluster_1 = servers.get(0);
     ColoHelper cluster_2 = servers.get(1);
     ColoHelper cluster_3 = servers.get(2);
+    FileSystem cluster2FS = serverFS.get(1);
 
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private final String baseTestDir = baseHDFSDir + "/UpdateAtSpecificTimeTest-data";
@@ -746,11 +749,10 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
         //create test data on cluster_2
-        TimeUtil.createDataWithinDatesAndPrefix(cluster_2,
-            TimeUtil.oozieDateToDate(startTimeCluster_source),
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(60)),
-            testDataDir, 1);
-
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeCluster_source,
+            TimeUtil.getTimeWrtSystemTime(60), 1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.SINGLE_FILE,
+            testDataDir + "/", dataDates);
         return feed;
     }
 
