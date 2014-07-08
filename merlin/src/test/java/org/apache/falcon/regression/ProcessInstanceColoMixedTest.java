@@ -128,14 +128,13 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
                 ClusterType.SOURCE, null);
 
-
         //set new feed input data
         feed01 = Util.setFeedPathValue(feed01, String.format(feedPath, 1));
         feed02 = Util.setFeedPathValue(feed02, String.format(feedPath, 2));
 
         //generate data in both the colos ua1 and ua3
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
-            TimeUtil.getTimeWrtSystemTime(-100), TimeUtil.getTimeWrtSystemTime(100), 1);
+            TimeUtil.getTimeWrtSystemTime(-35), TimeUtil.getTimeWrtSystemTime(25), 1);
 
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
@@ -151,25 +150,21 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
-                null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
-                null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //set clusters for feed02
         feed02 = InstanceUtil
             .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
-                null);
+                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feed02 = InstanceUtil
             .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                null);
+                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE, null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
@@ -191,8 +186,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         AssertUtil.assertSucceeded(r);
         r = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
         AssertUtil.assertSucceeded(r);
-        r = prism.getFeedHelper()
-            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, outputFeed);
+        r = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, outputFeed);
         AssertUtil.assertSucceeded(r);
 
         //create a process with 2 clusters
