@@ -23,7 +23,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.falcon</groupId>
+        <groupId>org.apache.falcon.regression</groupId>
         <artifactId>falcon-regression</artifactId>
         <version>0.5-incubating-SNAPSHOT</version>
     </parent>
@@ -87,26 +87,6 @@
                 <dependency>
                     <groupId>org.apache.hive.hcatalog</groupId>
                     <artifactId>hive-hcatalog-core</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-
-        <profile>
-            <id>hadoop-cdh4</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.hadoop</groupId>
-                    <artifactId>hadoop-client</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.glassfish</groupId>
-                            <artifactId>javax.servlet</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.hive.hcatalog</groupId>
-                    <artifactId>webhcat-java-client</artifactId>
                 </dependency>
             </dependencies>
         </profile>
