@@ -64,7 +64,6 @@ import org.apache.oozie.client.WorkflowJob;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;

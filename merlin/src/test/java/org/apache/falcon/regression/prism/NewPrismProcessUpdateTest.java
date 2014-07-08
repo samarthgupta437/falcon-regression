@@ -60,7 +60,6 @@ import org.testng.annotations.Test;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -1668,7 +1667,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         return b;
     }
 
-    private ExecutionType getRandomExecutionType(Bundle bundle) throws Exception {
+    private ExecutionType getRandomExecutionType(Bundle bundle) {
         ExecutionType current = bundle.getProcessObject().getOrder();
         Random r = new Random();
         ExecutionType[] values = ExecutionType.values();

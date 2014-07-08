@@ -19,6 +19,8 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Output;
@@ -28,12 +30,8 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.testng.Assert;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -131,33 +129,21 @@ public class BundleUtil {
         }
     }
 
-    public static String getInputFeedNameFromBundle(Bundle b) throws JAXBException {
+    public static String getInputFeedNameFromBundle(Bundle b) {
         String feedData = getInputFeedFromBundle(b);
-
-        JAXBContext processContext = JAXBContext.newInstance(Feed.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
-
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedData);
         return feedObject.getName();
     }
 
-    public static String getOutputFeedNameFromBundle(Bundle b) throws JAXBException {
+    public static String getOutputFeedNameFromBundle(Bundle b) {
         String feedData = getOutputFeedFromBundle(b);
-
-        JAXBContext processContext = JAXBContext.newInstance(Feed.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Feed feedObject = (Feed) unmarshaller.unmarshal(new StringReader(feedData));
-
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedData);
         return feedObject.getName();
     }
 
-    public static String getOutputFeedFromBundle(Bundle bundle) throws JAXBException {
+    public static String getOutputFeedFromBundle(Bundle bundle) {
         String processData = bundle.getProcessData();
-
-        JAXBContext processContext = JAXBContext.newInstance(
-            org.apache.falcon.entity.v0.process.Process.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
 
         for (Output output : processObject.getOutputs().getOutputs()) {
             for (String feed : bundle.getDataSets()) {
@@ -169,27 +155,18 @@ public class BundleUtil {
         return null;
     }
 
-    public static String getDatasetPath(Bundle bundle) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-
-        Unmarshaller u = jc.createUnmarshaller();
-        Feed dataElement = (Feed) u.unmarshal((new StringReader(bundle.dataSets.get(0))));
+    public static String getDatasetPath(Bundle bundle) {
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
         if (!dataElement.getName().contains("raaw-logs16")) {
-            dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
+            dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
         }
-
         return dataElement.getLocations().getLocations().get(0).getPath();
-
     }
 
     //needs to be rewritten to randomly pick an input feed
-    public static String getInputFeedFromBundle(Bundle bundle) throws JAXBException {
+    public static String getInputFeedFromBundle(Bundle bundle) {
         String processData = bundle.getProcessData();
-
-        JAXBContext processContext = JAXBContext.newInstance(Process.class);
-        Unmarshaller unmarshaller = processContext.createUnmarshaller();
-        Process processObject = (Process) unmarshaller.unmarshal(new StringReader(processData));
-
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (Input input : processObject.getInputs().getInputs()) {
             for (String feed : bundle.getDataSets()) {
                 if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {

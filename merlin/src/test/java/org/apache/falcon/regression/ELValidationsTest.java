@@ -94,7 +94,7 @@ public class ELValidationsTest extends BaseTestClass {
     }
 
     @DataProvider(name = "EL-DP")
-    public Object[][] getELData(Method m) throws Exception {
+    public Object[][] getELData(Method m) {
         return new Object[][]{
             {"now(-3,0)", "now(4,20)"},
             {"yesterday(22,0)", "now(4,20)"},
@@ -230,7 +230,7 @@ public class ELValidationsTest extends BaseTestClass {
 
     private List<String> getQADepedencyList(Calendar nominalTime, Date startRef,
                                             Date endRef, int frequency,
-                                            Bundle bundle) throws JAXBException {
+                                            Bundle bundle) {
         logger.info("start ref:" + startRef);
         logger.info("end ref:" + endRef);
         Calendar initialTime = Calendar.getInstance();

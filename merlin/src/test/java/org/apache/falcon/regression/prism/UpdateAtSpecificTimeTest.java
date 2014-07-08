@@ -52,7 +52,6 @@ import org.apache.log4j.Logger;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -80,7 +79,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
     @BeforeMethod(alwaysRun = true)
-    public void setup(Method method) throws IOException, JAXBException {
+    public void setup(Method method) throws IOException {
         logger.info("test name: " + method.getName());
         Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
         bundles[0] = new Bundle(bundle, cluster_1);
