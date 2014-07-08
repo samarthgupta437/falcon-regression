@@ -355,7 +355,8 @@ public class HadoopUtil {
             deleteDirIfExists(remotePathPrefix, fs);
         }
         logger.info("Creating data in folders: \n" + remoteLocations);
-        File[] files = new File(inputPath).listFiles();
+        File input = new File(inputPath);
+        File[] files = input.isDirectory() ? input.listFiles() : new File[]{input};
         List<Path> filePaths = new ArrayList<Path>();
         assert files != null;
         for (final File file : files) {
