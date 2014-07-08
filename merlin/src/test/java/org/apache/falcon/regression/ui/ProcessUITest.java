@@ -46,7 +46,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -57,7 +56,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -114,26 +112,21 @@ public class ProcessUITest extends BaseUITestClass {
         logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        List<String> dataPaths = new ArrayList<String>();
-        logger.info("Creating data in folders: \n" + dataDates);
-        prefix = prefix.substring(0, prefix.length()-1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
 
         // use 5 <= x < 10 input feeds
         final int numInputFeeds = 5 + new Random().nextInt(5);
         // use 5 <= x < 10 output feeds
         final int numOutputFeeds = 5 + new Random().nextInt(5);
 
-        for (String dataDate : dataDates) {
-            dataPaths.add(prefix + "/" + dataDate);
-            for (int k = 1; k <= numInputFeeds; k++) {
-                dataPaths.add(prefix + "_00" + k + "/" + dataDate);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
-            }
+        prefix = prefix.substring(0, prefix.length()-1);
+        for (int k = 1; k <= numInputFeeds; k++) {
+            HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT,
+                prefix + "_00" + k + "/", dataDates);
         }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataPaths);
 
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         FeedMerlin[] inputFeeds;
@@ -188,7 +181,7 @@ public class ProcessUITest extends BaseUITestClass {
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, 5, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
 
         softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
                 EntitiesPage.EntityStatus.RUNNING, "Process status should be RUNNING");
@@ -202,7 +195,7 @@ public class ProcessUITest extends BaseUITestClass {
         checkActions(actions, processPage);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
 
         processPage.refresh();
         actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, ENTITY_TYPE.PROCESS);

@@ -43,7 +43,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
-import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -52,7 +51,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,27 +79,17 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster);
 
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
+        String startDate = "2010-01-02T12:40Z";
+        String endDate = "2010-01-02T01:10Z";
 
         bundle.setInputFeedDataPath(pigTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
-        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-
         List<String> dataDates =
-            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
+            TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 20);
 
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -118,19 +106,9 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
             .setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "INPUT"));
         bundles[0].setProcessData(
             bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
-    }
-
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() {
-        removeBundles();
-    }
-
-    @Test(groups = {"singleCluster"})
-    public void getResumedProcessInstance() throws Exception {
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
+        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:10Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setProcessConcurrency(3);
 
         final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
         final Properties properties = new Properties();
@@ -141,9 +119,16 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
-
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() {
+        removeBundles();
+    }
+
+    @Test(groups = {"singleCluster"})
+    public void getResumedProcessInstance() throws Exception {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
@@ -163,22 +148,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getSuspendedProcessInstance() throws Exception {
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].setProcessConcurrency(3);
-
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
         Thread.sleep(10000);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
@@ -191,21 +160,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
-        bundles[0].setCLusterColo("ua2");
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
@@ -216,17 +170,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getKilledProcessInstance() throws Exception {
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
@@ -237,20 +180,6 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
 
     @Test(groups = {"singleCluster"})
     public void getSucceededProcessInstance() throws Exception {
-        bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
-        bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
-        final Properties properties = new Properties();
-        final Property property = new Property();
-        property.setName("queueName");
-        property.setValue("default");
-        properties.getProperties().add(property);
-        processElement.setProperties(properties);
-        processElement.getWorkflow().setEngine(EngineType.PIG);
-        InstanceUtil.writeProcessElement(bundles[0], processElement);
-
-        bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
@@ -258,15 +187,11 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
 
-        int counter = 50;
-        // increase the wait for windows
-        if (OSUtil.IS_WINDOWS) {
-            counter = 100;
-        }
+        int counter = OSUtil.IS_WINDOWS ? 100 : 50;
         InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
             .getProcessData()), Job.Status.SUCCEEDED, counter);
         r = prism.getProcessHelper()
-            .getRunningInstance(URLS.INSTANCE_STATUS,
+            .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
     }

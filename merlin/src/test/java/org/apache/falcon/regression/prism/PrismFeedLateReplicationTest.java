@@ -157,9 +157,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             InstanceUtil.getInputFoldersForInstanceForReplication(cluster1,
                 replicationCoordIDTarget.get(1), 1);
 
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
-
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
@@ -252,9 +249,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         List<String> inputFolderListForColo2 = InstanceUtil
             .getInputFoldersForInstanceForReplication(cluster1, replicationCoordIDTarget.get(1),
                 1);
-
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
@@ -457,9 +451,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
 
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
-
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
@@ -658,9 +649,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1, outPutBaseLocation, "_SUCCESS"));
 
         Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
-
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);

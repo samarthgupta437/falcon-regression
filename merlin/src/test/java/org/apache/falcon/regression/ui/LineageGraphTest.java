@@ -41,8 +41,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.codehaus.jettison.json.JSONException;
-import org.joda.time.DateTime;
 import org.openqa.selenium.Point;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -104,14 +102,9 @@ public class LineageGraphTest extends BaseUITestClass {
         logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime
-            (startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitBundle(prism);
 
@@ -121,7 +114,7 @@ public class LineageGraphTest extends BaseUITestClass {
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
         /**get process instances*/
         Vertex processVertex = lineageHelper.getVerticesByName(processName).getResults().get(0);
         piVertices = lineageHelper.getVerticesByDirection(processVertex.get_id(),
@@ -188,8 +181,7 @@ public class LineageGraphTest extends BaseUITestClass {
      */
     @Test
     public void testVerticesInfo()
-        throws JAXBException, URISyntaxException, AuthenticationException,
-        JSONException, IOException {
+        throws JAXBException, URISyntaxException, AuthenticationException, IOException {
         String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();

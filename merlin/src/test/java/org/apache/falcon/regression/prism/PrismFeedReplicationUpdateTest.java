@@ -309,9 +309,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         logger.info("Wait till process goes into running ");
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
-            Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, ENTITY_TYPE.PROCESS);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(2), Util.getProcessName(process), 1,
-            Status.RUNNING, 10, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, ENTITY_TYPE.PROCESS);
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
         logger.info("updated feed: " + Util.prettyPrintXml(feed01));

@@ -35,7 +35,6 @@ import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 
 public class AssertUtil {

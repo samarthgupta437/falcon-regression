@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -84,23 +83,12 @@ public class InstanceSummaryTest extends BaseTestClass {
                 (-20));
         endTime = TimeUtil.getTimeWrtSystemTime(60);
         String startTimeData = TimeUtil.addMinsToTime(startTime, -100);
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(TimeUtil
-                .oozieDateToDate(startTimeData), TimeUtil.oozieDateToDate(endTime),
-            20
-        );
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, Util.getPathPrefix(feedInputPath) + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
-        }
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTime, 20);
 
         for (FileSystem fs : serverFS) {
             HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
-            HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT, dataFolder);
+            HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT,
+                Util.getPathPrefix(feedInputPath), dataDates);
         }
     }
 
@@ -127,7 +115,7 @@ public class InstanceSummaryTest extends BaseTestClass {
         processBundle.setProcessValidity(startTime, endTime);
         processBundle.submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster3,
-            processBundle.getProcessData(), 0, 10);
+            processBundle.getProcessData(), 0);
 
         // start only at start time
         InstancesSummaryResult r = prism.getProcessHelper()
@@ -136,7 +124,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(2),
             Util.readEntityName(processBundle.getProcessData()), 2,
-            Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+            Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
 
 
         //AssertUtil.assertSucceeded(r);

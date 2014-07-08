@@ -19,7 +19,7 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.Cluster;
 import org.apache.falcon.entity.v0.feed.ClusterType;
@@ -67,7 +67,7 @@ public class FeedMerlin extends Feed {
      */
     public String getTargetCluster() {
         for (Cluster c : getClusters().getClusters()) {
-            if (c.getType().equals(ClusterType.TARGET))
+            if (c.getType() == ClusterType.TARGET)
                 return c.getName();
         }
         return "";

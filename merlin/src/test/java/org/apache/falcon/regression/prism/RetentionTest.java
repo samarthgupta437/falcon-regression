@@ -131,7 +131,7 @@ public class RetentionTest extends BaseTestClass {
 
         //set the value
         for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType().equals(LocationType.DATA)) {
+            if (location.getType() == LocationType.DATA) {
                 location.setPath(pathValue);
             }
         }
@@ -438,7 +438,7 @@ public class RetentionTest extends BaseTestClass {
         Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
 
         for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType().equals(LocationType.DATA)) {
+            if (location.getType() == LocationType.DATA) {
                 locationType = location.getPath();
             }
         }
