@@ -45,6 +45,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * Process instance mixed colo tests.
@@ -133,19 +134,16 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         feed02 = Util.setFeedPathValue(feed02, String.format(feedPath, 2));
 
         //generate data in both the colos ua1 and ua3
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.getTimeWrtSystemTime(-100), TimeUtil.getTimeWrtSystemTime(100), 1);
+
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        TimeUtil.createDataWithinDatesAndPrefix(cluster1,
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-100)),
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(100)), prefix,
-            1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, OSUtil.SINGLE_FILE, prefix, dataDates);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        TimeUtil.createDataWithinDatesAndPrefix(cluster2,
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-100)),
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(100)), prefix,
-            1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.SINGLE_FILE, prefix, dataDates);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-70);
 

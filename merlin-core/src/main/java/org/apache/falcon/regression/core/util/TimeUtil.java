@@ -77,6 +77,13 @@ public class TimeUtil {
         return getMinuteDatesOnEitherSide(startDate, endDate, minuteSkip, formatter);
     }
 
+    public static List<String> getMinuteDatesOnEitherSide(String startOozieDate, String endOozieDate,
+                                                          int minuteSkip,
+                                                          DateTimeFormatter formatter) {
+        return getMinuteDatesOnEitherSide(TimeUtil.oozieDateToDate(startOozieDate),
+            TimeUtil.oozieDateToDate(endOozieDate), minuteSkip, formatter);
+    }
+
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip,
                                                           DateTimeFormatter formatter) {
@@ -232,26 +239,6 @@ public class TimeUtil {
                 InstanceUtil.logger.error(e.getMessage());
             }
         }
-
-    }
-
-    public static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
-                                                      DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException {
-        List<String> dataDates =
-            getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        if (!prefix.endsWith("/"))
-            prefix = prefix + "/";
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.putDataInFolders(colo, dataFolder, "oneFile");
 
     }
 
