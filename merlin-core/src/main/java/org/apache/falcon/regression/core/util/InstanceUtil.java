@@ -681,8 +681,7 @@ public class InstanceUtil {
      * @return cluster definition in a form of Cluster object
      * @throws JAXBException
      */
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle)
-        throws JAXBException {
+    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle) {
         return (org.apache.falcon.entity.v0.cluster.Cluster)
             Entity.fromString(EntityType.CLUSTER, bundle.getClusters().get(0));
     }
@@ -1360,7 +1359,7 @@ public class InstanceUtil {
     public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
                                                    String entity,
                                                    int bundleSeqNo
-    ) throws JAXBException, OozieClientException {
+    ) throws OozieClientException {
         int sleep = INSTANCES_CREATED_TIMEOUT * 60 / 5;
         waitTillInstancesAreCreated(coloHelper, entity, bundleSeqNo, sleep);
     }
