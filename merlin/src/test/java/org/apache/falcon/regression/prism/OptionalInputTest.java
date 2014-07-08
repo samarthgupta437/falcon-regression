@@ -101,7 +101,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     /**
@@ -131,7 +131,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.WAITING, 5, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
@@ -145,7 +145,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     /**
@@ -174,7 +174,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate("2010-01-01T22:00Z"),
@@ -184,7 +184,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     /**
@@ -225,7 +225,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.SUCCEEDED, 10, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     /**
@@ -256,7 +256,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.KILLED, 20, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.KILLED, ENTITY_TYPE.PROCESS);
     }
 
     /**
@@ -287,7 +287,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
@@ -298,7 +298,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                1, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
 
         bundles[0].setProcessData(bundles[0]
             .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
@@ -313,7 +313,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
@@ -324,7 +324,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
     }
 
     /**
@@ -355,7 +355,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.WAITING, 3, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         TimeUtil.createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
@@ -365,7 +365,7 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                1, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
 
         bundles[0].setProcessData(bundles[0]
             .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 2, 1));
@@ -386,6 +386,6 @@ public class OptionalInputTest extends BaseTestClass {
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
                 Util.getProcessName(bundles[0].getProcessData()),
-                2, CoordinatorAction.Status.KILLED, 10, ENTITY_TYPE.PROCESS);
+                2, CoordinatorAction.Status.KILLED, ENTITY_TYPE.PROCESS);
     }
 }

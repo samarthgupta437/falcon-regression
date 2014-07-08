@@ -194,7 +194,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void getSucceededProcessInstance() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
-            .getProcessData()), Job.Status.SUCCEEDED, 20);
+            .getProcessData()), Job.Status.SUCCEEDED);
         ProcessInstancesResult result = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));

@@ -109,7 +109,7 @@ public class ProcessLibPathTest extends BaseTestClass {
         logger.info("processData: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
     }
 
     /**
@@ -127,6 +127,6 @@ public class ProcessLibPathTest extends BaseTestClass {
         logger.info("processData: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil
-            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED, 20);
+            .waitForBundleToReachState(cluster, bundles[0].getProcessName(), Status.SUCCEEDED);
     }
 }

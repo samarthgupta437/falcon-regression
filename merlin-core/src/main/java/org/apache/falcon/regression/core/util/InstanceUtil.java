@@ -55,6 +55,7 @@ import org.apache.http.HttpResponse;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.CoordinatorJob;
+import org.apache.oozie.client.Job;
 import org.apache.oozie.client.Job.Status;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
@@ -89,6 +90,7 @@ public class InstanceUtil {
         throws IOException, URISyntaxException, AuthenticationException {
         return hitUrl(url, Util.getMethodType(url), user);
     }
+    public static int INSTANCES_CREATED_TIMEOUT = OSUtil.IS_WINDOWS ? 20 : 10;
 
     public static APIResult hitUrl(String url,
                                    String method, String user) throws URISyntaxException,
@@ -180,9 +182,9 @@ public class InstanceUtil {
     /**
      * Checks if API response reflects success and if it's instances match to expected status.
      *
-     * @param r  - kind of response from API which should contain information about instances
-     * @param b  - bundle from which process instances are being analyzed
-     * @param ws - - expected status of instances
+     * @param r kind of response from API which should contain information about instances
+     * @param b bundle from which process instances are being analyzed
+     * @param ws expected status of instances
      * @throws JAXBException
      */
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
@@ -195,9 +197,9 @@ public class InstanceUtil {
     /**
      * Check the number of instances in response which have the same status as expected.
      *
-     * @param r  - kind of response from API which should contain information about instances
-     * @param ws - expected status of instances
-     * @return - number of instances which have expected status
+     * @param r kind of response from API which should contain information about instances
+     * @param ws expected status of instances
+     * @return number of instances which have expected status
      */
     public static int runningInstancesInResult(ProcessInstancesResult r,
                                                ProcessInstancesResult.WorkflowStatus ws) {
@@ -230,19 +232,14 @@ public class InstanceUtil {
 
     public static void writeProcessElement(Bundle bundle, Process processElement)
         throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(processElement, sw);
         //logger.info("modified process is: " + sw);
-        bundle.setProcessData(sw.toString());
+        bundle.setProcessData(processToString(processElement));
     }
 
     public static Process getProcessElement(Bundle bundle) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Process.class);
         Unmarshaller u = jc.createUnmarshaller();
         return (Process) u.unmarshal((new StringReader(bundle.getProcessData())));
-
     }
 
     public static Feed getFeedElement(Bundle bundle, String feedName) throws JAXBException {
@@ -258,12 +255,7 @@ public class InstanceUtil {
 
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
                                         String feedName) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(feedElement, sw);
-        //logger.info("feed to be written is: "+sw);
-        writeFeedElement(bundle, sw.toString(), feedName);
+        writeFeedElement(bundle, feedElementToString(feedElement), feedName);
     }
 
     public static void writeFeedElement(Bundle bundle, String feedString,
@@ -282,8 +274,8 @@ public class InstanceUtil {
      * Checks that API action succeed and the instance on which it has been performed on has
      * expected status.
      *
-     * @param r  - - kind of response from API which should contain information about instance
-     * @param ws - - expected status of instance
+     * @param r kind of response from API which should contain information about instance
+     * @param ws expected status of instance
      */
     public static void validateSuccessOnlyStart(ProcessInstancesResult r,
                                                 ProcessInstancesResult.WorkflowStatus ws) {
@@ -295,10 +287,9 @@ public class InstanceUtil {
      * Checks that actual number of instances with different statuses are equal to expected number
      * of instances with matching statuses.
      *
-     * @param r                  - - kind of response from API which should contain information
-     *                           about instances
-     *                           All parameters below reflect number of expected instances of
-     *                           some kind of status.
+     * @param r kind of response from API which should contain information about instances
+     *
+     * All parameters below reflect number of expected instances with some kind of status.
      * @param totalInstances
      * @param runningInstances
      * @param suspendedInstances
@@ -340,7 +331,6 @@ public class InstanceUtil {
                     Assert.fail("Unexpected status=" + pArray[instanceIndex].getStatus());
             }
         }
-
         Assert.assertEquals(actualRunningInstances, runningInstances, "Running Instances");
         Assert.assertEquals(actualSuspendedInstances, suspendedInstances, "Suspended Instances");
         Assert.assertEquals(actualWaitingInstances, waitingInstances, "Waiting Instances");
@@ -350,9 +340,8 @@ public class InstanceUtil {
     /**
      * Checks that expected number of failed instances matches actual number of failed ones.
      *
-     * @param r         - - kind of response from API which should contain information about
-     *                  instances
-     * @param failCount - number of instances which should be failed.
+     * @param r kind of response from API which should contain information about instances.
+     * @param failCount number of instances which should be failed.
      */
     public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
         AssertUtil.assertSucceeded(r);
@@ -394,7 +383,6 @@ public class InstanceUtil {
         return toBeReturned;
     }
 
-
     public static boolean isWorkflowRunning(OozieClient OC, String workflowID) throws
         OozieClientException {
         String status = OC.getJobInfo(workflowID).getStatus().toString();
@@ -432,7 +420,6 @@ public class InstanceUtil {
             Assert.assertEquals(actualKilledWorkflows, killedWorkflows);
         if (succeededWorkflows != -1)
             Assert.assertEquals(actualSucceededWorkflows, succeededWorkflows);
-
     }
 
     public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
@@ -470,12 +457,9 @@ public class InstanceUtil {
                 minString = coord.getId();
             }
         }
-
         logger.info("function getDefaultCoordIDFromBundle: minString: " + minString);
         return minString;
-
     }
-
 
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
@@ -485,33 +469,35 @@ public class InstanceUtil {
         List<CoordinatorAction> list = getProcessInstanceList(coloHelper, processName, entityType);
         int instanceCount = 0;
         for (CoordinatorAction aList : list) {
-
-            if (aList.getStatus() == status)
+            if (aList.getStatus().equals(status))
                 instanceCount++;
         }
         return instanceCount;
-
     }
-
 
     public static Status getDefaultCoordinatorStatus(ColoHelper colohelper, String processName,
                                                      int bundleNumber) throws OozieClientException {
-
         OozieClient oozieClient = colohelper.getProcessHelper().getOozieClient();
         String coordId =
             getDefaultCoordinatorFromProcessName(colohelper, processName, bundleNumber);
         return oozieClient.getCoordJobInfo(coordId).getStatus();
     }
 
-
     public static String getDefaultCoordinatorFromProcessName(
         ColoHelper coloHelper, String processName, int bundleNumber) throws OozieClientException {
-        //String bundleId = Util.getCoordID(Util.getOozieJobStatus(processName,"NONE").get(0));
         String bundleID =
             getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
         return getDefaultCoordIDFromBundle(coloHelper, bundleID);
     }
 
+    /**
+     * Retrieves all coordinators of bundle
+     *
+     * @param bundleID specific bundle ID
+     * @param helper entity helper which is related to job
+     * @return list of bundle coordinators
+     * @throws OozieClientException
+     */
     public static List<CoordinatorJob> getBundleCoordinators(String bundleID,
                                                              IEntityManagerHelper helper)
         throws OozieClientException {
@@ -520,13 +506,20 @@ public class InstanceUtil {
         return bundleInfo.getCoordinators();
     }
 
+    /**
+     * Retrieves the latest bundle ID
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param entityName name of entity job is related to
+     * @param entityType type of entity - feed or process expected
+     * @return latest bundle ID
+     * @throws OozieClientException
+     */
     public static String getLatestBundleID(ColoHelper coloHelper,
                                            String entityName, ENTITY_TYPE entityType)
         throws OozieClientException {
-
         List<String> bundleIds = OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(),
             entityName, entityType);
-
         String max = "0";
         int maxID = -1;
         for (String strID : bundleIds) {
@@ -561,11 +554,9 @@ public class InstanceUtil {
             int key = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
             bundleMap.put(key, strID);
         }
-
         for (Map.Entry<Integer, String> entry : bundleMap.entrySet()) {
             logger.info("Key = " + entry.getKey() + ", Value = " + entry.getValue());
         }
-
         int i = 0;
         for (Integer key : bundleMap.keySet()) {
             bundleID = bundleMap.get(key);
@@ -625,11 +616,9 @@ public class InstanceUtil {
     public static void putDataInFolders(ColoHelper colo,
                                         final List<String> inputFoldersForInstance,
                                         String type) throws IOException {
-
         for (String anInputFoldersForInstance : inputFoldersForInstance)
             putDataInFolder(colo.getClusterHelper().getHadoopFS(),
                 anInputFoldersForInstance, type);
-
     }
 
     /**
@@ -637,7 +626,7 @@ public class InstanceUtil {
      *
      * @param fs remote file system
      * @param remoteLocation remote location for copied data
-     * @param type
+     * @param type type of provided data
      * @throws IOException
      */
     public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type)
@@ -649,14 +638,11 @@ public class InstanceUtil {
         else if ((null !=type) && type.equals("oneFile")) {
              inputPath = OSUtil.SINGLE_FILE  ;
         }
-
         File[] files = new File(inputPath).listFiles();
         assert files != null;
-
         Path remotePath = new Path(remoteLocation);
         if (!fs.exists(remotePath))
             fs.mkdirs(remotePath);
-
         List<Path> localPaths = new ArrayList<Path>();
         for (final File file : files) {
             if (!file.isDirectory()) {
@@ -672,25 +658,27 @@ public class InstanceUtil {
     public static void createHDFSFolders(PrismHelper helper, List<String> folderList)
         throws IOException {
         logger.info("creating folders.....");
-
-
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
-
         final FileSystem fs = FileSystem.get(conf);
-
         for (final String folder : folderList) {
             fs.mkdirs(new Path(folder));
         }
         logger.info("created folders.....");
-
     }
 
-
+    /**
+     * Copies specific file(s) to each of remote folders
+     * Creates folders if they don't exist
+     *
+     * @param colo colohelper for remote cluster
+     * @param folderList list of remote folders
+     * @param fileName specific files
+     * @throws IOException
+     */
     public static void putFileInFolders(ColoHelper colo, List<String> folderList,
                                         final String... fileName) throws IOException {
         final FileSystem fs = colo.getClusterHelper().getHadoopFS();
-
         for (final String folder : folderList) {
             for (String aFileName : fileName) {
                 logger.info("copying  " + aFileName + " to " + folder);
@@ -702,17 +690,29 @@ public class InstanceUtil {
         }
     }
 
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
-        Bundle bundle)
+    /**
+     * Wraps bundle cluster in a Cluster object
+     *
+     * @param bundle target bundle
+     * @return cluster definition in a form of Cluster object
+     * @throws JAXBException
+     */
+    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle)
         throws JAXBException {
         JAXBContext jc = JAXBContext
             .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
         Unmarshaller u = jc.createUnmarshaller();
-
         return (org.apache.falcon.entity.v0.cluster.Cluster) u
             .unmarshal((new StringReader(bundle.getClusters().get(0))));
     }
 
+    /**
+     * Unwraps cluster element to string and writes it to bundle.
+     *
+     * @param bundle target bundle
+     * @param c Cluster object to be unwrapped and set into bundle
+     * @throws JAXBException
+     */
     public static void writeClusterElement(Bundle bundle,
                                            org.apache.falcon.entity.v0.cluster
                                                .Cluster c)
@@ -785,8 +785,6 @@ public class InstanceUtil {
         if (StringUtils.isNotEmpty(tableUri)) {
             cluster.setTable(getCatalogTable(tableUri));
         }
-
-
         Locations feedLocations = new Locations();
         if (ArrayUtils.isNotEmpty(locations)) {
             for (int i = 0; i < locations.length; i++) {
@@ -802,10 +800,8 @@ public class InstanceUtil {
                     oneLocation.setType(LocationType.TMP);
                 else
                     Assert.fail("unexpected value of locations: " + Arrays.toString(locations));
-
                 feedLocations.getLocations().add(oneLocation);
             }
-
             cluster.setLocations(feedLocations);
         }
         return cluster;
@@ -843,7 +839,6 @@ public class InstanceUtil {
             if (coord.getAppName().contains("FEED_REPLICATION"))
                 ReplicationCoordID.add(coord.getId());
         }
-
         return ReplicationCoordID;
     }
 
@@ -853,23 +848,19 @@ public class InstanceUtil {
      *
      * @param colo - servers on which action should be performed
      * @param user - whose credentials will be used for this action
-     * @return
+     * @return result from API
      */
-    public static APIResult createAndsendRequestProcessInstance(
+    public static APIResult createAndSendRequestProcessInstance(
         String url, String params, String colo, String user)
         throws IOException, URISyntaxException, AuthenticationException {
-
         if (params != null && !colo.equals("")) {
             url = url + params + "&" + colo.substring(1);
         } else if (params != null) {
             url = url + params;
         } else
             url = url + colo;
-
         return InstanceUtil.sendRequestProcessInstance(url, user);
-
     }
-
 
     /**
      * Retrieves prefix (main sub-folders) of feed data path.
@@ -894,24 +885,17 @@ public class InstanceUtil {
                                            String clusterName,
                                            org.apache.falcon.entity.v0.process
                                                .Validity validity) throws JAXBException {
-
-
         org.apache.falcon.entity.v0.process.Cluster c =
             new org.apache.falcon.entity.v0.process.Cluster();
-
         c.setName(clusterName);
         c.setValidity(validity);
-
         Process p = InstanceUtil.getProcessElement(process);
-
-
         if (clusterName == null)
             p.getClusters().getClusters().set(0, null);
         else {
             p.getClusters().getClusters().add(c);
         }
         return processToString(p);
-
     }
 
     /**
@@ -1003,29 +987,39 @@ public class InstanceUtil {
         return actionInfo.getRun();
     }
 
+    /**
+     * Puts late data in remote directories
+     *
+     * @param helper colo helper for cluster where remote directories are
+     * @param inputFolderList list of remote folders where data will be placed
+     * @param lateDataFolderNumber describes which specific data should be used
+     * @throws IOException
+     */
     public static void putLateDataInFolders(ColoHelper helper,
                                             List<String> inputFolderList,
                                             int lateDataFolderNumber) throws IOException {
-
         for (String anInputFolderList : inputFolderList)
             putLateDataInFolder(helper, anInputFolderList, lateDataFolderNumber);
     }
 
+    /**
+     * Puts specific data in a remote folder.
+     *
+     * @param helper colo helper for cluster where remote directory is
+     * @param remoteLocation remote location for copied data
+     * @param lateDataFolderNumber describes which specific data should be used
+     * @throws IOException
+     */
     public static void putLateDataInFolder(ColoHelper helper, final String remoteLocation,
                                            int lateDataFolderNumber)
         throws IOException {
-
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
-
-
         final FileSystem fs = FileSystem.get(conf);
-
         File[] files = new File(OSUtil.NORMAL_INPUT).listFiles();
         if (lateDataFolderNumber == 2) {
             files = new File(OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "2ndLateData").listFiles();
         }
-
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
@@ -1035,11 +1029,18 @@ public class InstanceUtil {
         }
     }
 
+    /**
+     * Sets new feed data path
+     *
+     * @param feed feed which is to be modified
+     * @param path new feed data path
+     * @return modified feed
+     * @throws JAXBException
+     */
     public static String setFeedFilePath(String feed, String path) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
         feedElement.getLocations().getLocations().get(0).setPath(path);
         return InstanceUtil.feedElementToString(feedElement);
-
     }
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
@@ -1068,60 +1069,61 @@ public class InstanceUtil {
         return numberOfCoord;
     }
 
-
+    /**
+     * Sets process frequency
+     * @return modified process definition
+     * @throws JAXBException
+     */
     public static String setProcessFrequency(String process,
                                              Frequency frequency) throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
-
         p.setFrequency(frequency);
-
         return InstanceUtil.processToString(p);
     }
 
+    /**
+     * Sets new process name
+     */
     public static String setProcessName(String process, String newName) throws JAXBException {
         Process p = InstanceUtil.getProcessElement(process);
-
         p.setName(newName);
-
         return InstanceUtil.processToString(p);
     }
 
-
+    /**
+     * Sets new process validity on all the process clusters
+     *
+     * @param process process entity to be modified
+     * @param startTime start of process validity
+     * @param endTime end of process validity
+     * @return modified process definition
+     * @throws JAXBException
+     */
     public static String setProcessValidity(String process,
                                             String startTime, String endTime) throws JAXBException {
-
         Process processElement = InstanceUtil.getProcessElement(process);
-
         for (int i = 0; i < processElement.getClusters().getClusters().size(); i++) {
             processElement.getClusters().getClusters().get(i).getValidity().setStart(
                 TimeUtil.oozieDateToDate(startTime).toDate());
             processElement.getClusters().getClusters().get(i).getValidity()
                 .setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
-
         }
-
         return InstanceUtil.processToString(processElement);
     }
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
         ColoHelper coloHelper, String processName, ENTITY_TYPE entityType)
         throws OozieClientException {
-
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-
         List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
-
         logger.info("bundle size for process is " +
             OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(), processName,
                 entityType).size());
-
         for (String bundleId : OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(),
             processName, entityType)) {
             BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
             List<CoordinatorJob> coords = bundleInfo.getCoordinators();
-
             logger.info("number of coords in bundle " + bundleId + "=" + coords.size());
-
             for (CoordinatorJob coord : coords) {
                 List<CoordinatorAction> actions =
                     oozieClient.getCoordJobInfo(coord.getId()).getActions();
@@ -1130,11 +1132,8 @@ public class InstanceUtil {
                 list.addAll(actions);
             }
         }
-
         String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
-        //String coordId = getDefaultCoordinatorFromProcessName(processName);
         logger.info("default coordID: " + coordId);
-
         return list;
     }
 
@@ -1144,21 +1143,17 @@ public class InstanceUtil {
         throws OozieClientException {
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
-
         return InstanceUtil.getReplicatedFolderFromInstanceRunConf(
             oozieClient.getJobInfo(coordInfo.getActions().get(instanceNumber).getExternalId())
-                .getConf()
-        );
+                .getConf());
     }
 
     private static String getReplicatedFolderFromInstanceRunConf(
         String runConf) {
-
         String inputPathExample =
             InstanceUtil.getReplicationFolderFromInstanceRunConf(runConf).get(0);
         String postFix = inputPathExample
             .substring(inputPathExample.length() - 7, inputPathExample.length());
-
         return getReplicatedFolderBaseFromInstanceRunConf(runConf) + postFix;
     }
 
@@ -1179,6 +1174,13 @@ public class InstanceUtil {
         return conf;
     }
 
+    /**
+     * Unwraps Cluster object to string
+     *
+     * @param c Cluster object to be unwrapped
+     * @return cluster definition
+     * @throws JAXBException
+     */
     public static String ClusterElementToString(
         org.apache.falcon.entity.v0.cluster.Cluster c)
         throws JAXBException {
@@ -1190,6 +1192,13 @@ public class InstanceUtil {
         return sw.toString();
     }
 
+    /**
+     * Wraps cluster definition into Cluster object
+     *
+     * @param clusterData cluster entity definition
+     * @return Cluster object
+     * @throws JAXBException
+     */
     public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
         String clusterData) throws JAXBException {
         JAXBContext jc = JAXBContext
@@ -1200,15 +1209,28 @@ public class InstanceUtil {
             .unmarshal((new StringReader(clusterData)));
     }
 
+    /**
+     * Waits till supplied number of instances of process/feed reach expected state during
+     * specific time.
+     *
+     *
+     * @param client oozie client to retrieve info about instances
+     * @param entityName name of feed or process
+     * @param numberOfInstance number of instances which status we are waiting for
+     * @param expectedStatus expected status we are waiting for
+     * @param entityType type of entity - feed or process expected
+     * @throws OozieClientException
+     * @throws InterruptedException
+     */
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
-                                                  org.apache.oozie.client.CoordinatorAction
-                                                      .Status expectedStatus,
-                                                  int totalMinutesToWait, ENTITY_TYPE entityType)
+                                                  CoordinatorAction.Status expectedStatus,
+                                                  ENTITY_TYPE entityType)
         throws InterruptedException, OozieClientException {
+        int totalMinutesToWait = getMinutesToWait(entityType, expectedStatus);
         String filter;
-        // get the bunlde ids
-        if (entityType == ENTITY_TYPE.FEED) {
+        // get the bundle ids
+        if (entityType.equals(ENTITY_TYPE.FEED)) {
             filter = "name=FALCON_FEED_" + entityName;
         } else {
             filter = "name=FALCON_PROCESS_" + entityName;
@@ -1280,27 +1302,46 @@ public class InstanceUtil {
         Assert.assertTrue(false, "expected state of instance was never reached");
     }
 
-    public static void waitForBundleToReachState(
-        ColoHelper coloHelper,
-        String processName,
-        org.apache.oozie.client.Job.Status expectedStatus,
-        int totalMinutesToWait) throws OozieClientException {
+    /**
+     * Waits till bundle job will reach expected status.
+     * Generates time according to expected status.
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param processName name of process which job is being analyzed
+     * @param expectedStatus job status we are waiting for
+     * @throws OozieClientException
+     */
+    public static void waitForBundleToReachState(ColoHelper coloHelper,
+                                                 String processName, Job.Status expectedStatus) throws
+        OozieClientException {
+        int totalMinutesToWait = getMinutesToWait(expectedStatus);
+        waitForBundleToReachState(coloHelper, processName, expectedStatus, totalMinutesToWait);
+    }
+
+    /**
+     * Waits till bundle job will reach expected status during specific time.
+     * Use it directly in test cases when timeouts are different from trivial, in other cases use
+     * waitForBundleToReachState(ColoHelper, String, Status)
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param processName name of process which job is being analyzed
+     * @param expectedStatus job status we are waiting for
+     * @param totalMinutesToWait specific time to wait expected state
+     * @throws OozieClientException
+     */
+    public static void waitForBundleToReachState(ColoHelper coloHelper,
+        String processName, Job.Status expectedStatus, int totalMinutesToWait) throws
+        OozieClientException {
 
         int sleep = totalMinutesToWait * 60 / 20;
-
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
-
             String BundleID =
                 InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
-
             OozieClient oozieClient =
                 coloHelper.getProcessHelper().getOozieClient();
-
             BundleJob j = oozieClient.getBundleJobInfo(BundleID);
-
             if (j.getStatus() == expectedStatus)
                 break;
-
             try {
                 Thread.sleep(20000);
             } catch (InterruptedException e) {
@@ -1309,25 +1350,90 @@ public class InstanceUtil {
         }
     }
 
+    /**
+     * Generates time which is presumably needed for process/feed instances to reach particular
+     * state.
+     * Feed instances are running faster then process, so feed timeouts are less then process.
+     *
+     * @param entityType type of entity which instances status we are waiting for
+     * @param expectedStatus expected status we are waiting for
+     * @return minutes to wait for expected status
+     */
+    private static int getMinutesToWait(ENTITY_TYPE entityType,
+                                        CoordinatorAction.Status expectedStatus){
+        switch (expectedStatus) {
+            case RUNNING:
+                if(entityType == ENTITY_TYPE.PROCESS) {
+                    return OSUtil.IS_WINDOWS ? 20 : 10;
+                } else if(entityType == ENTITY_TYPE.FEED) {
+                    return OSUtil.IS_WINDOWS ? 10 : 5;
+                }
+            case WAITING:
+                return OSUtil.IS_WINDOWS ? 6 : 3;
+            case SUCCEEDED:
+                if(entityType == ENTITY_TYPE.PROCESS) {
+                    return OSUtil.IS_WINDOWS ? 25 : 15;
+                } else if(entityType == ENTITY_TYPE.FEED) {
+                    return OSUtil.IS_WINDOWS ? 20 : 10;
+                }
+            case KILLED:
+            case TIMEDOUT:
+                return OSUtil.IS_WINDOWS ? 40 : 20;
+            default:
+                return OSUtil.IS_WINDOWS ? 30 : 15;
+        }
+    }
+
+    /**
+     * Generates time which is presumably needed for bundle job to reach particular state.
+     *
+     * @param expectedStatus status which we are expect to get from bundle job
+     * @return minutes to wait for expected status
+     */
+    private static int getMinutesToWait(Job.Status expectedStatus) {
+        switch (expectedStatus) {
+            case DONEWITHERROR:
+            case SUCCEEDED:
+                return OSUtil.IS_WINDOWS ? 40 : 20;
+            case KILLED:
+                return OSUtil.IS_WINDOWS ? 30 : 15;
+            default:
+                return OSUtil.IS_WINDOWS ? 60 : 30;
+        }
+    }
+
+    /**
+     * Sets feed frequency
+     * @return modified feed
+     */
     public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
         Feed feedElement = InstanceUtil.getFeedElement(feed);
         feedElement.setFrequency(f);
         return InstanceUtil.feedElementToString(feedElement);
     }
 
+    /**
+     * Waits till instances of specific job will be created during specific time.
+     * Use this method directly in unusual test cases where timeouts are different from trivial.
+     * In other cases use waitTillInstancesAreCreated(ColoHelper,String,int)
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param entity definition of entity which describes job
+     * @param bundleSeqNo
+     * @throws JAXBException
+     * @throws OozieClientException
+     */
     public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
                                                    String entity,
                                                    int bundleSeqNo,
                                                    int totalMinutesToWait
-    ) throws JAXBException, OozieClientException {
-        int sleep = totalMinutesToWait * 60 / 5;
+    ) throws OozieClientException, JAXBException {
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE type = Util.getEntityType(entity);
         String bundleID = getSequenceBundleID(coloHelper, entityName, type,
             bundleSeqNo);
         String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);
-
-        for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
+        for (int sleepCount = 0; sleepCount < totalMinutesToWait; sleepCount++) {
             CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient()
                 .getCoordJobInfo(coordID);
 
@@ -1341,9 +1447,25 @@ public class InstanceUtil {
             } catch (InterruptedException e) {
                 logger.error(e.getMessage());
             }
-
         }
+    }
 
+    /**
+     * Waits till instances of specific job will be created during timeout.
+     * Timeout is common for most of usual test cases.
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param entity definition of entity which describes job
+     * @param bundleSeqNo
+     * @throws JAXBException
+     * @throws OozieClientException
+     */
+    public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
+                                                   String entity,
+                                                   int bundleSeqNo
+    ) throws JAXBException, OozieClientException {
+        int sleep = INSTANCES_CREATED_TIMEOUT * 60 / 5;
+        waitTillInstancesAreCreated(coloHelper, entity, bundleSeqNo, sleep);
     }
 
     public static String setFeedACL(String feed, String... ownerGroup) {

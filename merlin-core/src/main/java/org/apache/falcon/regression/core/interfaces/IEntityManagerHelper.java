@@ -396,7 +396,7 @@ public abstract class IEntityManagerHelper {
         String url = createUrl(this.hostname + Util.URLS.INSTANCE_STATUS.getValue(),
             getEntityType(), entityName, "");
         return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
+            .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
     public ProcessInstancesResult getProcessInstanceSuspend(
@@ -411,7 +411,7 @@ public abstract class IEntityManagerHelper {
         String url = createUrl(this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue(),
             getEntityType(), entityName, "");
         return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
+            .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
     public ServiceResponse update(String oldEntity, String newEntity)
@@ -447,7 +447,7 @@ public abstract class IEntityManagerHelper {
         String url = createUrl(this.hostname + URLS.INSTANCE_KILL.getValue(), getEntityType(),
             entityName, "");
         return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
+            .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
     public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
@@ -461,7 +461,7 @@ public abstract class IEntityManagerHelper {
         String url = createUrl(this.hostname + URLS.INSTANCE_RERUN.getValue(), getEntityType(),
             entityName, "");
         return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
+            .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
     public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
@@ -475,7 +475,7 @@ public abstract class IEntityManagerHelper {
         String url = createUrl(this.hostname + Util.URLS.INSTANCE_RESUME.getValue(),
             getEntityType(), entityName, "");
         return (ProcessInstancesResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, user);
+            .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
     public InstancesSummaryResult getInstanceSummary(String entityName,
@@ -484,7 +484,7 @@ public abstract class IEntityManagerHelper {
         String url = createUrl(this.hostname + URLS.INSTANCE_SUMMARY.getValue(), getEntityType(),
             entityName, "");
         return (InstancesSummaryResult) InstanceUtil
-            .createAndsendRequestProcessInstance(url, params, allColo, null);
+            .createAndSendRequestProcessInstance(url, params, allColo, null);
     }
 
     public String list() {

@@ -98,7 +98,6 @@ public class HCatProcessTest extends BaseTestClass {
     private static final String hcatDir = OSUtil.getPath("src", "test", "resources", "hcat");
     private static final String localHCatData = OSUtil.getPath(hcatDir, "data");
     private static final String hiveScript = OSUtil.getPath(hcatDir, "hivescript");
-    private static final int defaultTimeOut = OSUtil.IS_WINDOWS ? 10 : 5;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
@@ -185,7 +184,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
@@ -272,7 +271,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         final ContentSummary inputContentSummary =
             clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -362,7 +361,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
@@ -466,7 +465,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         final ContentSummary inputContentSummary =
             clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -548,7 +547,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            ENTITY_TYPE.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/" + dataDates.get(0), clusterFS);
@@ -609,7 +608,6 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut,
             ENTITY_TYPE.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
