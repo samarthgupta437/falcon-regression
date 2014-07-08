@@ -411,7 +411,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.falcon</groupId>
+                <groupId>org.apache.falcon.regression</groupId>
                 <artifactId>falcon-merlin-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
