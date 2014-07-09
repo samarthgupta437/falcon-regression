@@ -26,6 +26,7 @@ import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Output;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.testng.Assert;
@@ -119,10 +120,10 @@ public class BundleUtil {
         return bundleSet.toArray(new Bundle[bundleSet.size()]);
     }
 
-    public static void submitAllClusters(Bundle... b)
+    public static void submitAllClusters(ColoHelper prismHelper, Bundle... b)
         throws IOException, URISyntaxException, AuthenticationException {
         for (Bundle aB : b) {
-            ServiceResponse r = Util.prismHelper.getClusterHelper()
+            ServiceResponse r = prismHelper.getClusterHelper()
                 .submitEntity(Util.URLS.SUBMIT_URL, aB.getClusters().get(0));
             Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 

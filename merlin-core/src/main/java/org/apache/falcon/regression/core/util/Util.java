@@ -96,11 +96,7 @@ import java.util.UUID;
 
 public class Util {
 
-
     static Logger logger = Logger.getLogger(Util.class);
-    static final String PRISM_PREFIX = "prism";
-
-    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {

@@ -94,7 +94,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
         }
-        BundleUtil.submitAllClusters(bundles[0], bundles[1], bundles[2]);
+        BundleUtil.submitAllClusters(prism, bundles[0], bundles[1], bundles[2]);
         feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),
