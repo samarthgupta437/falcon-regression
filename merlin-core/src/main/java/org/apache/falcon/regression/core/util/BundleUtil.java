@@ -61,10 +61,7 @@ public class BundleUtil {
     }
 
     public static Bundle[] getBundleData(String path) throws IOException {
-
-        List<Bundle> bundleSet = getDataFromFolder(path);
-
-        return bundleSet.toArray(new Bundle[bundleSet.size()]);
+        return readBundles(path)[0];
     }
 
     public static Bundle readHCatBundle() throws IOException {
