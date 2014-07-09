@@ -95,7 +95,7 @@ public class InstanceSummaryTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        processBundle = BundleUtil.readELBundles()[0][0];
+        processBundle = BundleUtil.readELBundle();
         processBundle = new Bundle(processBundle, cluster3);
         processBundle.generateUniqueBundle();
         processBundle.setInputFeedDataPath(feedInputPath);

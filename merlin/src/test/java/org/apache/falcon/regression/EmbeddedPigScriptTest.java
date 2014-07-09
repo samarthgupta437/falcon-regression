@@ -75,7 +75,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         //copy pig script
         HadoopUtil.uploadDir(clusterFS, pigScriptDir, OSUtil.RESOURCES + "pig");
 
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster);
 
@@ -95,7 +95,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(pigTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");

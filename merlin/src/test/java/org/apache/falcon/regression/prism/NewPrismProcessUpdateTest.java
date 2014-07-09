@@ -1529,7 +1529,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     public void
     updateProcessWorkflowXml() throws URISyntaxException, JAXBException,
         IOException, OozieClientException, AuthenticationException {
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         HadoopFileEditor hadoopFileEditor = null;
         try {
 

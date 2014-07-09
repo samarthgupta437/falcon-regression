@@ -90,7 +90,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         bundles[1].generateUniqueBundle();
         bundles[2].generateUniqueBundle();
 
-        processBundle = BundleUtil.readELBundles()[0][0];
+        processBundle = BundleUtil.readELBundle();
         processBundle = new Bundle(processBundle, cluster_1);
         processBundle.generateUniqueBundle();
         processBundle.setProcessWorkflow(aggregateWorkflowDir);

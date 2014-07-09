@@ -82,7 +82,7 @@ public class LineageGraphTest extends BaseUITestClass {
         throws IOException, JAXBException, URISyntaxException, AuthenticationException,
         OozieClientException {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
