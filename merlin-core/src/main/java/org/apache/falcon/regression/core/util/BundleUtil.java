@@ -29,6 +29,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 
 import java.io.File;
@@ -38,6 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BundleUtil {
+    private static Logger logger = Logger.getLogger(BundleUtil.class);
+
     public static Bundle[][] readBundles(String path) throws IOException {
 
         List<Bundle> bundleSet = getDataFromFolder(path);
@@ -76,7 +79,7 @@ public class BundleUtil {
         for (File file : files) {
 
             if (!file.getName().contains("svn") && !file.getName().startsWith(".DS")) {
-                Util.logger.info("Loading data from path: " + file.getAbsolutePath());
+                logger.info("Loading data from path: " + file.getAbsolutePath());
                 if (file.isDirectory()) {
                     bundleList.addAll(getDataFromFolder(file.getAbsolutePath()));
                 } else {
@@ -85,15 +88,15 @@ public class BundleUtil {
 
                     if (data.contains("uri:ivory:process:0.1") ||
                         data.contains("uri:falcon:process:0.1")) {
-                        Util.logger.info("data been added to process");
+                        logger.info("data been added to process");
                         processData = data;
                     } else if (data.contains("uri:ivory:cluster:0.1") ||
                         data.contains("uri:falcon:cluster:0.1")) {
-                        Util.logger.info("data been added to cluster");
+                        logger.info("data been added to cluster");
                         clusterData = data;
                     } else if (data.contains("uri:ivory:feed:0.1") ||
                         data.contains("uri:falcon:feed:0.1")) {
-                        Util.logger.info("data been added to feed");
+                        logger.info("data been added to feed");
                         data = InstanceUtil.setFeedACL(data);
                         dataSets.add(data);
                     }
