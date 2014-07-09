@@ -56,6 +56,17 @@ public class BundleUtil {
         return testData;
     }
 
+    public static Bundle[][] readELBundles() throws IOException {
+        return readBundles("ELbundle");
+    }
+
+    public static Bundle[] getBundleData(String path) throws IOException {
+
+        List<Bundle> bundleSet = getDataFromFolder(path);
+
+        return bundleSet.toArray(new Bundle[bundleSet.size()]);
+    }
+
     public static Bundle readHCatBundle() throws IOException {
         return readBundles("hcat")[0][0];
     }
@@ -99,17 +110,6 @@ public class BundleUtil {
         Assert.assertTrue(!dataSets.isEmpty(), "expecting feed data to be non-empty");
         bundleList.add(new Bundle(clusterData, dataSets, processData));
         return bundleList;
-    }
-
-    public static Bundle[][] readELBundles() throws IOException {
-        return readBundles("ELbundle");
-    }
-
-    public static Bundle[] getBundleData(String path) throws IOException {
-
-        List<Bundle> bundleSet = getDataFromFolder(path);
-
-        return bundleSet.toArray(new Bundle[bundleSet.size()]);
     }
 
     public static void submitAllClusters(ColoHelper prismHelper, Bundle... b)
