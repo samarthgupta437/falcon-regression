@@ -17,16 +17,13 @@
   limitations under the License.
   -->
 
-<process name="rm-coord" xmlns="uri:falcon:process:0.1" xmlns:ns2="uri:ivory:feed:0.1"
- xmlns:ns3="uri:ivory:cluster:0.1">
-  
-    
-             <clusters>
+<process name="rm-coord" xmlns="uri:falcon:process:0.1">
+    <clusters>
         <cluster name="corp">
-         <validity end="2012-01-31T00:00Z" start="2012-01-30T01:00Z" />  
+            <validity end="2012-01-31T00:00Z" start="2012-01-30T01:00Z"/>
         </cluster>
-      </clusters>
-    
+    </clusters>
+
     <parallel>1</parallel>
     <order>LIFO</order>
         <frequency>days(1)</frequency>
@@ -44,10 +41,10 @@
         <property name="partition" value="*"/>
     </properties>
     <workflow path="/user/rishu/apps/rm"/>
-    <retry policy="backoff" delay="minutes(10)" attempts="3" />
+    <retry policy="periodic" delay="minutes(10)" attempts="3" />
     
     <late-process policy="exp-backoff" delay="hours(1)">
-        <late-input feed="impression" workflow-path="hdfs://impression/late/workflow" />
-        <late-input feed="clicks" workflow-path="hdfs://clicks/late/workflow" />
+        <late-input input="impression" workflow-path="hdfs://impression/late/workflow" />
+        <late-input input="clicks" workflow-path="hdfs://clicks/late/workflow" />
     </late-process>
 </process>

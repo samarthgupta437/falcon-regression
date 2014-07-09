@@ -21,20 +21,20 @@
     <partitions/>
 <!--    <groups>online,bi</groups>-->
      <frequency>days(1)</frequency>
-    <late-arrival cut-off="hours(6)"></late-arrival>
     <timezone>UTC</timezone>
+    <late-arrival cut-off="hours(6)"/>
     <clusters>
         <cluster name="corp" type="source">
-            <validity start="2012-01-30T00:00Z" end="2099-12-31T23:59Z"></validity>
-            <retention limit="hours(6)" action="delete"></retention>
+            <validity start="2012-01-30T00:00Z" end="2099-12-31T23:59Z"/>
+            <retention limit="hours(6)" action="delete"/>
         </cluster>
     </clusters>
     <locations>
-        <location type="meta" path="/projects/ivory/clicksMetaData"></location>
-        <location type="stats" path="/projects/ivory/clicksStats"></location>
-        <location type="data" path="/projects/bi/rmc/daily/AdvInteractionSummary/${YEAR}-${MONTH}-${DAY}"></location>
+        <location type="meta" path="/projects/ivory/clicksMetaData"/>
+        <location type="stats" path="/projects/ivory/clicksStats"/>
+        <location type="data" path="/projects/bi/rmc/daily/AdvInteractionSummary/${YEAR}-${MONTH}-${DAY}"/>
     </locations>
-    <ACL owner="testuser" group="group" permission="0x755"></ACL>
-    <schema location="/schema/clicks" provider="protobuf"></schema>
+    <ACL owner="testuser" group="group" permission="0x755"/>
+    <schema location="/schema/clicks" provider="protobuf"/>
     <properties/>
 </feed>

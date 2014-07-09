@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.ui.pages;
 
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
@@ -39,7 +39,7 @@ public abstract class Page {
 
     private Logger logger = Logger.getLogger(Page.class);
 
-    Page(WebDriver driver, PrismHelper helper) {
+    Page(WebDriver driver, ColoHelper helper) {
         this.driver = driver;
         URL = helper.getClusterHelper().getHostname();
     }
