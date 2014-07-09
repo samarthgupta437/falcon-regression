@@ -62,26 +62,19 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-
         logger.info("in @BeforeClass");
-
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle b = BundleUtil.readELBundles()[0][0];
-
         b = new Bundle(b, cluster);
-
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
-
+        String startDate = "2010-01-02T00:40Z";
+        String endDate = "2010-01-02T01:20Z";
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 20);
-
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
     }
-
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
@@ -92,7 +85,6 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(feedInputPath);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
-
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) {
@@ -120,8 +112,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:16Z");
         InstanceUtil.validateResponse(r, 4, 0, 0, 0, 4);
         List<String> wfIDs =
-            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData()));
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
@@ -140,9 +131,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(5);
-
         logger.info("process: " + Util.prettyPrintXml(bundles[0].getProcessData()));
-
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster, bundles[0].getProcessData(), 0);
         ProcessInstancesResult r = prism.getProcessHelper()
@@ -150,14 +139,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         List<String> wfIDs =
-            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData()));
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
-        InstanceUtil
-            .areWorkflowsRunning(clusterOC, wfIDs, 3, 3, 0,
-                0);
+        InstanceUtil.areWorkflowsRunning(clusterOC, wfIDs, 3, 3, 0, 0);
     }
 
     /**
@@ -180,8 +166,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
         List<String> wfIDs =
-            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData()));
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
@@ -206,14 +191,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
         String wfID = InstanceUtil.getWorkflows(cluster,
-            Util.getProcessName(bundles[0].getProcessData()),
-            Status.KILLED)
-            .get(0);
+            Util.getProcessName(bundles[0].getProcessData()), Status.KILLED).get(0);
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
-        Assert.assertTrue(InstanceUtil.isWorkflowRunning(clusterOC,
-            wfID));
+        Assert.assertTrue(InstanceUtil.isWorkflowRunning(clusterOC, wfID));
     }
 
     /**
@@ -284,8 +266,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
             .getProcessData()), 2, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
         List<String> wfIDs =
-            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData
-                ()));
+            InstanceUtil.getWorkflows(cluster, Util.getProcessName(bundles[0].getProcessData()));
         prism.getProcessHelper()
             .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
@@ -308,7 +289,7 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
-        CoordinatorAction.Status s = null;
+        CoordinatorAction.Status s;
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.getProcessName(bundles[0]
             .getProcessData()), 1, CoordinatorAction.Status.TIMEDOUT, ENTITY_TYPE.PROCESS);
         prism.getProcessHelper()
@@ -320,13 +301,11 @@ public class ProcessInstanceRerunTest extends BaseTestClass {
             "instance should have been in WAITING state");
     }
 
-
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         logger.info("in @AfterClass");
         Bundle b = BundleUtil.readELBundles()[0][0];
         b = new Bundle(b, cluster);
-
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
