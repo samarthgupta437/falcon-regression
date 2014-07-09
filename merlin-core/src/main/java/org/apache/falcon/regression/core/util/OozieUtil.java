@@ -44,7 +44,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 public class OozieUtil {
 
@@ -228,14 +227,14 @@ public class OozieUtil {
 
     public static boolean verifyOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType, Job.Status expectedStatus)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         for (int seconds = 0; seconds < 100; seconds+=5) {
             Job.Status status = getOozieJobStatus(client, processName, entityType);
             logger.info("Current status: " + status);
             if (status == expectedStatus) {
                 return true;
             }
-            TimeUnit.SECONDS.sleep(5);
+            TimeUtil.sleepSeconds(5);
         }
         return false;
     }
@@ -347,12 +346,7 @@ public class OozieUtil {
             return true;
         }
 
-
-        try {
-            TimeUnit.SECONDS.sleep(20);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(20);
         return false;
     }
 

@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Test(groups = "distributed")
 public class PrismFeedDeleteTest extends BaseTestClass {
@@ -969,7 +968,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         r = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        TimeUnit.SECONDS.sleep(10);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         Util.shutDownService(cluster1.getFeedHelper());

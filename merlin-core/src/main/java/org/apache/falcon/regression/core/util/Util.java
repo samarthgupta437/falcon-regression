@@ -93,7 +93,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class Util {
 
@@ -635,11 +634,7 @@ public class Util {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
             helper.getPassword(), helper.getServiceStopCmd(),
             helper.getServiceUser(), helper.getIdentityFile());
-        try {
-            TimeUnit.SECONDS.sleep(10);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(10);
     }
 
     public static void startService(IEntityManagerHelper helper)
@@ -656,11 +651,7 @@ public class Util {
                 logger.info(e.getMessage());
             }
             if (statusCode == 200) return;
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(5);
         }
         throw new RuntimeException("Service on" + helper.getHostname() + " did not start!");
     }

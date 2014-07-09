@@ -534,7 +534,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             Util.parseResponse(response).getStatus() != APIResult.Status.SUCCEEDED; ++i) {
             response = prism.getProcessHelper()
                 .update(bundles[1].getProcessData(), bundles[1].getProcessData());
-            java.util.concurrent.TimeUnit.SECONDS.sleep(6);
+            TimeUtil.sleepSeconds(6);
         }
         Assert.assertEquals(Util.parseResponse(response).getStatus(),
             APIResult.Status.SUCCEEDED, "Process update did not succeed.");
