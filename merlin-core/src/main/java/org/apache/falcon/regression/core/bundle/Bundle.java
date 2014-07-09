@@ -192,7 +192,7 @@ public class Bundle {
         return processFilePath;
     }
 
-    public Bundle(List<String> dataSets, String processData, String clusterData) {
+    public Bundle(String clusterData, List<String> dataSets, String processData) {
         this.dataSets = dataSets;
         this.processData = processData;
         this.clusters = new ArrayList<String>();

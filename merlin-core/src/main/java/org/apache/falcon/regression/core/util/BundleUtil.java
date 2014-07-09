@@ -105,7 +105,7 @@ public class BundleUtil {
 
         }
         if (!clusterData.isEmpty() && !dataSets.isEmpty()) {
-            bundleList.add(new Bundle(dataSets, processData, clusterData));
+            bundleList.add(new Bundle(clusterData, dataSets, processData));
         }
 
         return bundleList;
