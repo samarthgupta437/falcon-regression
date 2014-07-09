@@ -1045,7 +1045,7 @@ public class InstanceUtil {
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
                                             String feedName, String coordType)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
@@ -1220,13 +1220,12 @@ public class InstanceUtil {
      * @param expectedStatus expected status we are waiting for
      * @param entityType type of entity - feed or process expected
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
                                                   CoordinatorAction.Status expectedStatus,
                                                   ENTITY_TYPE entityType)
-        throws InterruptedException, OozieClientException {
+        throws OozieClientException {
         int totalMinutesToWait = getMinutesToWait(entityType, expectedStatus);
         String filter;
         // get the bundle ids
@@ -1241,7 +1240,7 @@ public class InstanceUtil {
             if (bundleJobs.size() > 0) {
                 break;
             }
-            Thread.sleep(5000);
+            TimeUtil.sleepSeconds(5);
         }
         if (bundleJobs.size() == 0) {
             Assert.assertTrue(false, "Could not retrieve bundles");
@@ -1273,9 +1272,9 @@ public class InstanceUtil {
         }
         logger.info(String.format("Using coordinator id: %s", coordId));
         int maxTries = 50;
-        int totalSleepTime = totalMinutesToWait * 60 * 1000;
+        int totalSleepTime = totalMinutesToWait * 60;
         int sleepTime = totalSleepTime / maxTries;
-        logger.info(String.format("Sleep for %d seconds", sleepTime / 1000));
+        logger.info(String.format("Sleep for %d seconds", sleepTime));
         for (int i = 0; i < maxTries; i++) {
             logger.info(String.format("Try %d of %d", (i + 1), maxTries));
             int instanceWithStatus = 0;
@@ -1297,7 +1296,7 @@ public class InstanceUtil {
 
             if (instanceWithStatus >= numberOfInstance)
                 return;
-            Thread.sleep(sleepTime);
+            TimeUtil.sleepSeconds(sleepTime);
         }
         Assert.assertTrue(false, "expected state of instance was never reached");
     }
@@ -1342,11 +1341,7 @@ public class InstanceUtil {
             BundleJob j = oozieClient.getBundleJobInfo(BundleID);
             if (j.getStatus() == expectedStatus)
                 break;
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(20);
         }
     }
 
@@ -1442,11 +1437,7 @@ public class InstanceUtil {
             logger.info("Coord " + coordInfo.getId() + " still doesn't have " +
                 "instance created on oozie: " + coloHelper.getProcessHelper()
                 .getOozieClient().getOozieUrl());
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(5);
         }
     }
 

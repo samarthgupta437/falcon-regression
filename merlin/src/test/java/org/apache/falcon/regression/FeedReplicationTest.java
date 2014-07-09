@@ -99,7 +99,7 @@ public class FeedReplicationTest extends BaseTestClass {
     @Test
     public void replicate1Source1Target()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        InterruptedException, OozieClientException {
+        OozieClientException {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
@@ -325,7 +325,7 @@ public class FeedReplicationTest extends BaseTestClass {
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), feedName, "REPLICATION"), 1);
 
         //replication should not start even after time
-        Thread.sleep(60000);
+        TimeUtil.sleepSeconds(60);
         ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 1, 0, 0, 1, 0);

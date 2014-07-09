@@ -717,11 +717,7 @@ public class Util {
         OutputStream out = channel.getOutputStream();
         channel.setErrStream(System.err);
         channel.connect();
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(20);
         // only print the password if its not empty
         if (null != password && !password.isEmpty()) {
             out.write((password + "\n").getBytes());
@@ -752,11 +748,7 @@ public class Util {
                 logger.info("exit-status: " + channel.getExitStatus());
                 break;
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                logger.info(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(1);
         }
 
         in.close();

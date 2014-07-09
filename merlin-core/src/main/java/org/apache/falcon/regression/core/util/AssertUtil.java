@@ -230,11 +230,10 @@ public class AssertUtil {
      * @param expectedStatus expected Job.Status of entity
      * @throws JAXBException
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
                                    Job.Status expectedStatus)
-        throws JAXBException, OozieClientException, InterruptedException {
+        throws JAXBException, OozieClientException {
         String name = null;
         if (entityType == ENTITY_TYPE.FEED) {
             name = Util.readDatasetName(data);
@@ -256,11 +255,10 @@ public class AssertUtil {
      * @param expectedStatus expected Job.Status of entity
      * @throws JAXBException
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, Bundle bundle,
                                    Job.Status expectedStatus)
-        throws InterruptedException, OozieClientException, JAXBException {
+        throws OozieClientException, JAXBException {
         String data = null;
         if (entityType == ENTITY_TYPE.FEED) {
             data = bundle.getDataSets().get(0);

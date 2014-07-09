@@ -170,7 +170,7 @@ public class ProcessUITest extends BaseUITestClass {
     @Test
     public void testProcessUI()
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
-        OozieClientException, InterruptedException {
+        OozieClientException {
 
         //check Process statuses via UI
         EntitiesPage page = new EntitiesPage(DRIVER, cluster, ENTITY_TYPE.PROCESS);

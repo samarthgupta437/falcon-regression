@@ -107,13 +107,13 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void getResumedProcessInstance() throws Exception {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         AssertUtil.assertSucceeded(prism.getProcessHelper().resume(URLS.RESUME_URL,
             bundles[0].getProcessData()));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
@@ -132,7 +132,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        Thread.sleep(5000);
+        TimeUtil.sleepSeconds(5);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));

@@ -132,12 +132,12 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         ServiceResponse status =
             prism.getProcessHelper().getStatus(URLS.STATUS_URL, bundles[0].getProcessData());
         Assert.assertTrue(status.getMessage().contains("SUSPENDED"), "Process not suspended.");
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
@@ -149,7 +149,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void getSuspendedProcessInstance() throws Exception {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         ProcessInstancesResult r = prism.getProcessHelper()

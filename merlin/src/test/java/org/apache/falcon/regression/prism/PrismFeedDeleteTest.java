@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -852,7 +853,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
@@ -868,7 +869,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         Util.shutDownService(cluster1.getFeedHelper());
 
         r = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertPartial(r);
         Assert
             .assertTrue(r.getMessage().contains(cluster1Colo + "/org.apache.falcon.FalconException")
@@ -954,7 +955,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();

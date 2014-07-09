@@ -119,11 +119,10 @@ public class OozieUtil {
      * @param oozieClient
      * @return list of action ids of the succeeded retention workflow
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static List<String> waitForRetentionWorkflowToSucceed(String bundleID,
                                                                  OozieClient oozieClient)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         List<String> jobIds = new ArrayList<String>();
         logger.info("using bundleId:" + bundleID);
@@ -134,7 +133,7 @@ public class OozieUtil {
 
         for (int i = 0;
              i < 120 && oozieClient.getCoordJobInfo(coordinatorId).getActions().isEmpty(); ++i) {
-            Thread.sleep(4000);
+            TimeUtil.sleepSeconds(4);
         }
         Assert.assertFalse(oozieClient.getCoordJobInfo(coordinatorId).getActions().isEmpty(),
             "Coordinator actions should have got created by now.");
@@ -152,7 +151,7 @@ public class OozieUtil {
                     actionInfo.getStatus() == CoordinatorAction.Status.FAILED) {
                     break;
                 }
-                Thread.sleep(10000);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertEquals(
                 oozieClient.getCoordActionInfo(action.getId()).getStatus(),
@@ -171,11 +170,7 @@ public class OozieUtil {
         logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         for (int i = 0;
              i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                //ignore
-            }
+            TimeUtil.sleepSeconds(2);
         }
         Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
             "Coordinator job should have got created by now.");

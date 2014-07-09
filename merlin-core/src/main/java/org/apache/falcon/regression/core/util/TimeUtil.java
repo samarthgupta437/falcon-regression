@@ -255,11 +255,7 @@ public class TimeUtil {
             if (sysDate.compareTo(finalDate) > 0)
                 break;
 
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                InstanceUtil.logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(15);
         }
 
     }
