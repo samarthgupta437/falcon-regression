@@ -35,7 +35,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class FeedMerlin extends Feed {
 
-    private static Logger logger = Logger.getLogger(FeedMerlin.class);
+    private static final Logger logger = Logger.getLogger(FeedMerlin.class);
 
     public FeedMerlin(String feedData) {
         this((Feed) fromString(EntityType.FEED, feedData));

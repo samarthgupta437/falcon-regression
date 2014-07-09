@@ -59,7 +59,7 @@ import java.util.List;
 
 public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
-    static Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
+    private static final Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
 
     Bundle processBundle;
 

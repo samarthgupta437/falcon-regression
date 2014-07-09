@@ -38,7 +38,7 @@ public abstract class Page {
     protected String expectedElement;
     protected String notFoundMsg;
 
-    private Logger logger = Logger.getLogger(Page.class);
+    private static final Logger logger = Logger.getLogger(Page.class);
 
     Page(WebDriver driver, ColoHelper helper) {
         this.driver = driver;

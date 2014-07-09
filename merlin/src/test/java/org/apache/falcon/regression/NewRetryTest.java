@@ -65,7 +65,7 @@ import java.util.concurrent.TimeUnit;
 @Test(groups = "embedded")
 public class NewRetryTest extends BaseTestClass {
 
-    private Logger logger = Logger.getLogger(NewRetryTest.class);
+    private static final Logger logger = Logger.getLogger(NewRetryTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);

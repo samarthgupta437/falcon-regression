@@ -231,7 +231,7 @@ public class TimeUtil {
     public static String dateToOozieDate(Date dt) {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        InstanceUtil.logger.info("SystemTime: " + jodaTime);
+        logger.info("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         return fmt.print(jodaTime);
     }
@@ -243,7 +243,7 @@ public class TimeUtil {
         while (true) {
             DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
             sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            InstanceUtil.logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
+            logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
             if (sysDate.compareTo(finalDate) > 0)
                 break;
 

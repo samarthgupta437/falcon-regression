@@ -71,7 +71,7 @@ public class RetentionTest extends BaseTestClass {
     private static final String TEST_FOLDERS = "testFolders/";
     String baseTestHDFSDir = baseHDFSDir + "/RetentionTest/";
     String testHDFSDir = baseTestHDFSDir + TEST_FOLDERS;
-    static Logger logger = Logger.getLogger(RetentionTest.class);
+    private static final Logger logger = Logger.getLogger(RetentionTest.class);
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);

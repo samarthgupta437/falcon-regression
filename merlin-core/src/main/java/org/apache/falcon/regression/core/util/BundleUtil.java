@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BundleUtil {
-    private static Logger logger = Logger.getLogger(BundleUtil.class);
+    private static final Logger logger = Logger.getLogger(BundleUtil.class);
 
     public static Bundle[][] readBundles(String path) throws IOException {
 

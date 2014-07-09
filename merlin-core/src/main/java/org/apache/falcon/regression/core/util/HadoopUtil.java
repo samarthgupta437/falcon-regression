@@ -37,7 +37,7 @@ import java.util.List;
 
 public class HadoopUtil {
 
-    static Logger logger = Logger.getLogger(HadoopUtil.class);
+    private static final Logger logger = Logger.getLogger(HadoopUtil.class);
 
     public static Configuration getHadoopConfiguration(ColoHelper prismHelper) {
         Configuration conf = new Configuration();

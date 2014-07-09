@@ -79,7 +79,7 @@ import java.util.TreeMap;
 
 public class InstanceUtil {
 
-    static Logger logger = Logger.getLogger(InstanceUtil.class);
+    private static final Logger logger = Logger.getLogger(InstanceUtil.class);
     public static APIResult sendRequestProcessInstance(String
                                                            url, String user)
         throws IOException, URISyntaxException, AuthenticationException {

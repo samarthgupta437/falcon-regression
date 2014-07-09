@@ -43,7 +43,7 @@ public class Consumer extends Thread {
 
     String url;
     String subject;
-    Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger logger = Logger.getLogger(Consumer.class);
 
     List<HashMap<String, String>> messageData;
 

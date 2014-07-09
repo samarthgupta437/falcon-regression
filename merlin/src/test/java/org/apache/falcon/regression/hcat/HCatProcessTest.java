@@ -62,7 +62,7 @@ import java.util.Map;
 
 @Test(groups = "embedded")
 public class HCatProcessTest extends BaseTestClass {
-    private static Logger logger = Logger.getLogger(HCatProcessTest.class);
+    private static final Logger logger = Logger.getLogger(HCatProcessTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);

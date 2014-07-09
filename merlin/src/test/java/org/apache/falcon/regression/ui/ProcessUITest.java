@@ -67,7 +67,7 @@ public class ProcessUITest extends BaseUITestClass {
     private ColoHelper cluster = servers.get(0);
     private String baseTestDir = baseHDFSDir + "/TestProcessUI";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    private Logger logger = Logger.getLogger(ProcessUITest.class);
+    private static final Logger logger = Logger.getLogger(ProcessUITest.class);
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + "/input";
     final String feedOutputPath = baseTestDir + "/output";

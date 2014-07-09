@@ -62,7 +62,7 @@ import java.util.Map;
 
 public class HCatRetentionTest extends BaseTestClass {
 
-    static Logger logger = Logger.getLogger(HCatRetentionTest.class);
+    private static final Logger logger = Logger.getLogger(HCatRetentionTest.class);
 
     private Bundle bundle;
     public static HCatClient cli;

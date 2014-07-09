@@ -61,7 +61,7 @@ public class LineageGraphTest extends BaseUITestClass {
     private ColoHelper cluster = servers.get(0);
     private String baseTestDir = baseHDFSDir + "/LineageGraphTest";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    private Logger logger = Logger.getLogger(LineageGraphTest.class);
+    private static final Logger logger = Logger.getLogger(LineageGraphTest.class);
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + datePattern;
     private FileSystem clusterFS = serverFS.get(0);

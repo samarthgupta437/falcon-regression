@@ -96,7 +96,7 @@ import java.util.UUID;
 
 public class Util {
 
-    private static Logger logger = Logger.getLogger(Util.class);
+    private static final Logger logger = Logger.getLogger(Util.class);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {

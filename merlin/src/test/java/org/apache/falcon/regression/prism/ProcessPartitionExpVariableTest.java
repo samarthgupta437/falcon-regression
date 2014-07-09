@@ -49,7 +49,7 @@ import java.util.List;
 
 @Test(groups = "embedded")
 public class ProcessPartitionExpVariableTest extends BaseTestClass {
-    static Logger logger = Logger.getLogger(ProcessPartitionExpVariableTest.class);
+    private static final Logger logger = Logger.getLogger(ProcessPartitionExpVariableTest.class);
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
