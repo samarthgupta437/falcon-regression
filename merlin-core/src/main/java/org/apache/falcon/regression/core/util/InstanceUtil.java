@@ -23,6 +23,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.falcon.entity.v0.feed.ACL;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.Cluster;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.Locations;
@@ -39,7 +41,6 @@ import org.apache.falcon.entity.v0.feed.Retention;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
@@ -63,16 +64,10 @@ import org.apache.oozie.client.WorkflowJob;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
@@ -182,14 +177,12 @@ public class InstanceUtil {
     /**
      * Checks if API response reflects success and if it's instances match to expected status.
      *
-     * @param r kind of response from API which should contain information about instances
-     * @param b bundle from which process instances are being analyzed
-     * @param ws expected status of instances
-     * @throws JAXBException
+     * @param r  - kind of response from API which should contain information about instances
+     * @param b  - bundle from which process instances are being analyzed
+     * @param ws - - expected status of instances
      */
     public static void validateSuccess(ProcessInstancesResult r, Bundle b,
-                                       ProcessInstancesResult.WorkflowStatus ws)
-        throws JAXBException {
+                                       ProcessInstancesResult.WorkflowStatus ws) {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(runningInstancesInResult(r, ws), b.getProcessConcurrency());
     }
@@ -230,40 +223,31 @@ public class InstanceUtil {
             "Parameter start is empty should have the response");
     }
 
-    public static void writeProcessElement(Bundle bundle, Process processElement)
-        throws JAXBException {
-        //logger.info("modified process is: " + sw);
-        bundle.setProcessData(processToString(processElement));
+    public static void writeProcessElement(Bundle bundle, Process processElement) {
+        bundle.setProcessData(processElement.toString());
     }
 
-    public static Process getProcessElement(Bundle bundle) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        return (Process) u.unmarshal((new StringReader(bundle.getProcessData())));
+    public static Process getProcessElement(Bundle bundle) {
+        return (Process) Entity.fromString(EntityType.PROCESS, bundle.getProcessData());
     }
 
-    public static Feed getFeedElement(Bundle bundle, String feedName) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Feed feedElement = (Feed) u.unmarshal((new StringReader(bundle.dataSets.get(0))));
+    public static Feed getFeedElement(Bundle bundle, String feedName) {
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
         if (!feedElement.getName().contains(feedName)) {
-            feedElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(1)));
-
+            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
         }
         return feedElement;
     }
 
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
-                                        String feedName) throws JAXBException {
-        writeFeedElement(bundle, feedElementToString(feedElement), feedName);
+                                        String feedName) {
+        writeFeedElement(bundle, feedElement.toString(), feedName);
     }
 
     public static void writeFeedElement(Bundle bundle, String feedString,
-                                        String feedName) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
+                                        String feedName) {
         int index = 0;
-        Feed dataElement = (Feed) u.unmarshal(new StringReader(bundle.dataSets.get(0)));
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
         if (!dataElement.getName().contains(feedName)) {
             index = 1;
         }
@@ -354,7 +338,7 @@ public class InstanceUtil {
             "match expected number of failed instances.");
     }
 
-    public static List<String> getWorkflows(PrismHelper prismHelper, String processName,
+    public static List<String> getWorkflows(ColoHelper prismHelper, String processName,
                                             WorkflowJob.Status... ws) throws OozieClientException {
 
         String bundleID = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
@@ -540,7 +524,7 @@ public class InstanceUtil {
      * @return bundle ID
      * @throws OozieClientException
      */
-    public static String getSequenceBundleID(PrismHelper prismHelper, String entityName,
+    public static String getSequenceBundleID(ColoHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber)
         throws OozieClientException {
 
@@ -655,7 +639,7 @@ public class InstanceUtil {
             new Path(remoteLocation));
     }
 
-    public static void createHDFSFolders(PrismHelper helper, List<String> folderList)
+    public static void createHDFSFolders(ColoHelper helper, List<String> folderList)
         throws IOException {
         logger.info("creating folders.....");
         Configuration conf = new Configuration();
@@ -697,13 +681,9 @@ public class InstanceUtil {
      * @return cluster definition in a form of Cluster object
      * @throws JAXBException
      */
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle)
-        throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        return (org.apache.falcon.entity.v0.cluster.Cluster) u
-            .unmarshal((new StringReader(bundle.getClusters().get(0))));
+    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle) {
+        return (org.apache.falcon.entity.v0.cluster.Cluster)
+            Entity.fromString(EntityType.CLUSTER, bundle.getClusters().get(0));
     }
 
     /**
@@ -714,15 +694,8 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static void writeClusterElement(Bundle bundle,
-                                           org.apache.falcon.entity.v0.cluster
-                                               .Cluster c)
-        throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(c, sw);
-        bundle.setClusterData(sw.toString());
+                                           org.apache.falcon.entity.v0.cluster.Cluster c) {
+        bundle.setClusterData(c.toString());
     }
 
     /**
@@ -736,12 +709,11 @@ public class InstanceUtil {
      * @param partition - partition where data is available for feed
      * @param locations - location where data is picked
      * @return - string representation of the modified feed
-     * @throws JAXBException
      */
     public static String setFeedCluster(String feed, Validity feedValidity, Retention feedRetention,
                                         String clusterName,
                                         ClusterType clusterType, String partition,
-                                        String... locations) throws JAXBException {
+                                        String... locations) {
         return setFeedClusterWithTable(feed, feedValidity, feedRetention, clusterName, clusterType,
             partition, null, locations);
     }
@@ -749,9 +721,8 @@ public class InstanceUtil {
     public static String setFeedClusterWithTable(String feed, Validity feedValidity,
                                                  Retention feedRetention, String clusterName,
                                                  ClusterType clusterType, String partition,
-                                                 String tableUri, String... locations)
-        throws JAXBException {
-        Feed f = getFeedElement(feed);
+                                                 String tableUri, String... locations) {
+        Feed f = (Feed) Entity.fromString(EntityType.FEED, feed);
         if (clusterName == null) {
             f.getClusters().getClusters().clear();
         } else {
@@ -759,7 +730,7 @@ public class InstanceUtil {
                 clusterType, partition, tableUri, locations);
             f.getClusters().getClusters().add(feedCluster);
         }
-        return feedElementToString(f);
+        return f.toString();
     }
 
     private static CatalogTable getCatalogTable(String tableUri) {
@@ -808,26 +779,6 @@ public class InstanceUtil {
     }
 
     /**
-     * Converts string feed representation to XML form
-     */
-    public static Feed getFeedElement(String feed) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        return (Feed) u.unmarshal((new StringReader(feed)));
-    }
-
-    /**
-     * Converts XML feed representation to string form
-     */
-    public static String feedElementToString(Feed feedElement) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(feedElement, sw);
-        return sw.toString();
-    }
-
-    /**
      * Retrieves replication coordinatorID from bundle of coordinators
      */
     public static List<String> getReplicationCoordID(String bundlID,
@@ -865,8 +816,8 @@ public class InstanceUtil {
     /**
      * Retrieves prefix (main sub-folders) of feed data path.
      */
-    public static String getFeedPrefix(String feed) throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(feed);
+    public static String getFeedPrefix(String feed) {
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         String p = feedElement.getLocations().getLocations().get(0).getPath();
         p = p.substring(0, p.indexOf("$"));
         return p;
@@ -879,47 +830,23 @@ public class InstanceUtil {
      * @param clusterName - name of cluster
      * @param validity    - cluster validity
      * @return - string representation of modified process
-     * @throws JAXBException
      */
     public static String setProcessCluster(String process,
                                            String clusterName,
                                            org.apache.falcon.entity.v0.process
-                                               .Validity validity) throws JAXBException {
+                                               .Validity validity) {
         org.apache.falcon.entity.v0.process.Cluster c =
             new org.apache.falcon.entity.v0.process.Cluster();
         c.setName(clusterName);
         c.setValidity(validity);
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         if (clusterName == null)
             p.getClusters().getClusters().set(0, null);
         else {
             p.getClusters().getClusters().add(c);
         }
-        return processToString(p);
-    }
-
-    /**
-     * Represents process XML definition as string
-     *
-     * @param p - process XML definition which is to be converted
-     * @throws JAXBException
-     */
-    public static String processToString(Process p) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(p, sw);
-        return sw.toString();
-    }
-
-    /**
-     * Converts process string representation to XML
-     */
-    public static Process getProcessElement(String process) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        return (Process) u.unmarshal((new StringReader(process)));
+        return p.toString();
     }
 
     /**
@@ -928,11 +855,10 @@ public class InstanceUtil {
      * @param process - where input should be inserted
      * @param feed    - feed which will be used as input feed
      * @return - string representation of process definition
-     * @throws JAXBException
      */
     public static String addProcessInputFeed(String process, String feed,
-                                             String feedName) throws JAXBException {
-        Process processElement = InstanceUtil.getProcessElement(process);
+                                             String feedName) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, process);
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
         in2.setEnd(in1.getEnd());
@@ -941,7 +867,7 @@ public class InstanceUtil {
         in2.setPartition(in1.getPartition());
         in2.setStart(in1.getStart());
         processElement.getInputs().getInputs().add(in2);
-        return processToString(processElement);
+        return processElement.toString();
     }
 
     public static org.apache.oozie.client.WorkflowJob.Status getInstanceStatusFromCoord(
@@ -1037,15 +963,15 @@ public class InstanceUtil {
      * @return modified feed
      * @throws JAXBException
      */
-    public static String setFeedFilePath(String feed, String path) throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(feed);
+    public static String setFeedFilePath(String feed, String path) {
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedElement.getLocations().getLocations().get(0).setPath(path);
-        return InstanceUtil.feedElementToString(feedElement);
+        return feedElement.toString();
     }
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
                                             String feedName, String coordType)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
@@ -1075,19 +1001,23 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static String setProcessFrequency(String process,
-                                             Frequency frequency) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+                                             Frequency frequency) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         p.setFrequency(frequency);
-        return InstanceUtil.processToString(p);
+
+        return p.toString();
     }
 
     /**
      * Sets new process name
      */
-    public static String setProcessName(String process, String newName) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+    public static String setProcessName(String process, String newName) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         p.setName(newName);
-        return InstanceUtil.processToString(p);
+
+        return p.toString();
     }
 
     /**
@@ -1100,15 +1030,16 @@ public class InstanceUtil {
      * @throws JAXBException
      */
     public static String setProcessValidity(String process,
-                                            String startTime, String endTime) throws JAXBException {
-        Process processElement = InstanceUtil.getProcessElement(process);
+                                            String startTime, String endTime) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, process);
+
         for (int i = 0; i < processElement.getClusters().getClusters().size(); i++) {
             processElement.getClusters().getClusters().get(i).getValidity().setStart(
                 TimeUtil.oozieDateToDate(startTime).toDate());
             processElement.getClusters().getClusters().get(i).getValidity()
                 .setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
         }
-        return InstanceUtil.processToString(processElement);
+        return processElement.toString();
     }
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
@@ -1173,42 +1104,6 @@ public class InstanceUtil {
         conf = conf.substring(0, conf.indexOf("</value>"));
         return conf;
     }
-
-    /**
-     * Unwraps Cluster object to string
-     *
-     * @param c Cluster object to be unwrapped
-     * @return cluster definition
-     * @throws JAXBException
-     */
-    public static String ClusterElementToString(
-        org.apache.falcon.entity.v0.cluster.Cluster c)
-        throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(c, sw);
-        return sw.toString();
-    }
-
-    /**
-     * Wraps cluster definition into Cluster object
-     *
-     * @param clusterData cluster entity definition
-     * @return Cluster object
-     * @throws JAXBException
-     */
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(
-        String clusterData) throws JAXBException {
-        JAXBContext jc = JAXBContext
-            .newInstance(org.apache.falcon.entity.v0.cluster.Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        return (org.apache.falcon.entity.v0.cluster.Cluster) u
-            .unmarshal((new StringReader(clusterData)));
-    }
-
 
     /**
      * Waits till supplied number of instances of process/feed reach expected state during
@@ -1430,10 +1325,10 @@ public class InstanceUtil {
      * Sets feed frequency
      * @return modified feed
      */
-    public static String setFeedFrequency(String feed, Frequency f) throws JAXBException {
-        Feed feedElement = InstanceUtil.getFeedElement(feed);
+    public static String setFeedFrequency(String feed, Frequency f) {
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedElement.setFrequency(f);
-        return InstanceUtil.feedElementToString(feedElement);
+        return feedElement.toString();
     }
 
     /**
@@ -1451,7 +1346,7 @@ public class InstanceUtil {
                                                    String entity,
                                                    int bundleSeqNo,
                                                    int totalMinutesToWait
-    ) throws OozieClientException, JAXBException {
+    ) throws OozieClientException {
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE type = Util.getEntityType(entity);
         String bundleID = getSequenceBundleID(coloHelper, entityName, type,
@@ -1487,19 +1382,14 @@ public class InstanceUtil {
     public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
                                                    String entity,
                                                    int bundleSeqNo
-    ) throws JAXBException, OozieClientException {
+    ) throws OozieClientException {
         int sleep = INSTANCES_CREATED_TIMEOUT * 60 / 5;
         waitTillInstancesAreCreated(coloHelper, entity, bundleSeqNo, sleep);
     }
 
     public static String setFeedACL(String feed, String... ownerGroup) {
         FeedMerlin feedObject = null;
-        try {
-            feedObject = new FeedMerlin(feed);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-        }
+        feedObject = new FeedMerlin(feed);
         ACL acl = feedObject.getACL();
         acl.setOwner(MerlinConstants.aclOwner);
         acl.setGroup(MerlinConstants.aclGroup);

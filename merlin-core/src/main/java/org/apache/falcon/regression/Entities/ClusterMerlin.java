@@ -20,20 +20,21 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.entity.v0.cluster.Location;
 import org.apache.falcon.regression.core.enumsAndConstants.ClusterLocationTypes;
-import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 public class ClusterMerlin extends Cluster {
 
-    public ClusterMerlin(String clusterData) throws JAXBException {
-        Cluster element = InstanceUtil.getClusterElement(clusterData);
+    public ClusterMerlin(String clusterData) {
+        Cluster element = (Cluster) fromString(EntityType.CLUSTER, clusterData);
         Field[] fields = Cluster.class.getDeclaredFields();
         for (Field fld : fields) {
             try {
@@ -60,7 +61,9 @@ public class ClusterMerlin extends Cluster {
     @Override
     public String toString() {
         try {
-            return InstanceUtil.ClusterElementToString(this);
+            StringWriter sw = new StringWriter();
+            EntityType.CLUSTER.getMarshaller().marshal(this, sw);
+            return sw.toString();
         } catch (JAXBException e) {
             e.printStackTrace();
         }

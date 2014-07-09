@@ -25,7 +25,6 @@ import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.entity.v0.process.ExecutionType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
@@ -61,7 +60,6 @@ import org.testng.annotations.Test;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -1268,7 +1266,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
-    private void setBundleWFPath(Bundle... bundles) throws Exception {
+    private void setBundleWFPath(Bundle... bundles) {
         for (Bundle bundle : bundles) {
             bundle.setProcessWorkflow(WORKFLOW_PATH);
         }
@@ -1530,8 +1528,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
     @Test(timeOut = 1200000)
     public void
     updateProcessWorkflowXml() throws InterruptedException, URISyntaxException, JAXBException,
-        IOException, OozieClientException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException, AuthenticationException {
+        IOException, OozieClientException,
+        AuthenticationException {
         Bundle b = BundleUtil.readELBundles()[0][0];
         HadoopFileEditor hadoopFileEditor = null;
         try {
@@ -1596,7 +1594,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
      * be identical. If the definitions are identical then the definition from @param coloHelper1
      * is @return are response.
      */
-    private String dualComparison(PrismHelper coloHelper1, PrismHelper coloHelper2,
+    private String dualComparison(ColoHelper coloHelper1, ColoHelper coloHelper2,
                                   String processData) throws Exception {
         String colo1Response = getResponse(coloHelper1, processData, true);
         String colo2Response = getResponse(coloHelper2, processData, true);
@@ -1609,7 +1607,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
      * this method compares process xml definition from 2 falcon servers / prism and expects them to
      * be different.
      */
-    private void dualComparisonFailure(PrismHelper coloHelper1, PrismHelper coloHelper2,
+    private void dualComparisonFailure(ColoHelper coloHelper1, ColoHelper coloHelper2,
                                        String processData) throws Exception {
         Assert.assertFalse(XmlUtil.isIdentical(getResponse(coloHelper1, processData, true),
             getResponse(coloHelper2, processData, true)),
@@ -1617,7 +1615,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                 "identical");
     }
 
-    private String getResponse(PrismHelper prism, String processData, boolean bool)
+    private String getResponse(ColoHelper prism, String processData, boolean bool)
         throws Exception {
         ServiceResponse response = prism.getProcessHelper()
             .getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION, processData);
@@ -1656,7 +1654,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         }
     }
 
-    private Bundle usualGrind(PrismHelper prism, Bundle b) throws Exception {
+    private Bundle usualGrind(ColoHelper prism, Bundle b) throws Exception {
         b.setInputFeedDataPath(inputFeedPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
@@ -1669,7 +1667,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         return b;
     }
 
-    private ExecutionType getRandomExecutionType(Bundle bundle) throws Exception {
+    private ExecutionType getRandomExecutionType(Bundle bundle) {
         ExecutionType current = bundle.getProcessObject().getOrder();
         Random r = new Random();
         ExecutionType[] values = ExecutionType.values();

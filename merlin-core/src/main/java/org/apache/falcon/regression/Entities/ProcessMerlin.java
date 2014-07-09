@@ -20,6 +20,7 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.process.Properties;
@@ -32,6 +33,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.text.Format;
@@ -41,9 +43,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProcessMerlin extends Process {
-    public ProcessMerlin(String processData)
-        throws JAXBException {
-        this(InstanceUtil.getProcessElement(processData));
+    public ProcessMerlin(String processData) {
+        this((Process) fromString(EntityType.PROCESS, processData));
     }
 
     public ProcessMerlin(Process processObj) {
@@ -80,14 +81,16 @@ public class ProcessMerlin extends Process {
     @Override
     public String toString() {
         try {
-            return InstanceUtil.processToString(this);
+            StringWriter sw = new StringWriter();
+            EntityType.PROCESS.getMarshaller().marshal(this, sw);
+            return sw.toString();
         } catch (JAXBException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) throws Exception {
+    public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) {
         Date start = getClusters().getClusters().get(0).getValidity().getStart();
         Format formatter = new SimpleDateFormat("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
         String startDate = formatter.format(start);
@@ -105,7 +108,7 @@ public class ProcessMerlin extends Process {
         return b;
     }
 
-    public Map<String, FeedMerlin> getInputFeeds(Bundle b) throws Exception {
+    public Map<String, FeedMerlin> getInputFeeds(Bundle b) {
         Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
         for (Input input : getInputs().getInputs()) {
             for (String feed : b.getDataSets()) {

@@ -36,12 +36,11 @@
     <groups>online,bi</groups>-->
 
     <frequency>hours(1)</frequency>
-    <late-arrival cut-off="hours(6)" />
     <timezone>UTC</timezone>
+    <late-arrival cut-off="hours(6)" />
     <clusters>
         <cluster name="corp" type="source">
-            <validity start="2012-01-30T00:00Z" end="2099-03-31T23:59Z"
-                      />
+            <validity start="2012-01-30T00:00Z" end="2099-03-31T23:59Z"/>
             <retention limit="hours(10)" action="delete" /> <!-- Limit can be in Time or Instances 100, Action ENUM DELETE,ARCHIVE -->
         </cluster>
     </clusters>

@@ -228,13 +228,12 @@ public class AssertUtil {
      * @param entityType     FEED or PROCESS
      * @param data           feed or proceess XML
      * @param expectedStatus expected Job.Status of entity
-     * @throws JAXBException
      * @throws OozieClientException
      * @throws InterruptedException
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
                                    Job.Status expectedStatus)
-        throws JAXBException, OozieClientException, InterruptedException {
+        throws OozieClientException, InterruptedException {
         String name = null;
         if (entityType == ENTITY_TYPE.FEED) {
             name = Util.readDatasetName(data);
@@ -254,13 +253,12 @@ public class AssertUtil {
      * @param entityType     FEED or PROCESS
      * @param bundle         Bundle with feed or process data
      * @param expectedStatus expected Job.Status of entity
-     * @throws JAXBException
      * @throws OozieClientException
      * @throws InterruptedException
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, Bundle bundle,
                                    Job.Status expectedStatus)
-        throws InterruptedException, OozieClientException, JAXBException {
+        throws InterruptedException, OozieClientException {
         String data = null;
         if (entityType == ENTITY_TYPE.FEED) {
             data = bundle.getDataSets().get(0);
@@ -277,12 +275,11 @@ public class AssertUtil {
      * @param entityType     FEED or PROCESS
      * @param data           feed or proceess XML
      * @param expectedStatus expected Job.Status of entity
-     * @throws JAXBException
      * @throws OozieClientException
      */
     public static void checkNotStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
                                       Job.Status expectedStatus)
-        throws JAXBException, OozieClientException {
+        throws OozieClientException {
         String processName = null;
         if (entityType == ENTITY_TYPE.FEED) {
             processName = Util.readDatasetName(data);
@@ -300,12 +297,11 @@ public class AssertUtil {
      * @param entityType     FEED or PROCESS
      * @param bundle         Bundle with feed or process data
      * @param expectedStatus expected Job.Status of entity
-     * @throws JAXBException
      * @throws OozieClientException
      */
     public static void checkNotStatus(OozieClient oozieClient, ENTITY_TYPE entityType,
                                       Bundle bundle, Job.Status expectedStatus)
-        throws JAXBException, OozieClientException {
+        throws OozieClientException {
         String data = null;
         if (entityType == ENTITY_TYPE.FEED) {
             data = bundle.getDataSets().get(0);

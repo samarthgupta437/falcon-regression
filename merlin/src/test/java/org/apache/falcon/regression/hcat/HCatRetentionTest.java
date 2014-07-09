@@ -331,7 +331,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @DataProvider(name = "loopBelow")
-    public Object[][] getTestData(Method m) throws Exception {
+    public Object[][] getTestData(Method m) {
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS,
             RETENTION_UNITS.MONTHS};// "minutes","years",
         int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered

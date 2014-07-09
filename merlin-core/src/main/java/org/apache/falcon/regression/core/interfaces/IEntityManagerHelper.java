@@ -23,6 +23,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
+import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -39,11 +40,9 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.AuthOozieClient;
 import org.testng.Assert;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Properties;
 
 public abstract class IEntityManagerHelper {
 
@@ -56,7 +55,7 @@ public abstract class IEntityManagerHelper {
     protected String BASE_COMMAND = "java -jar " + CLIENT_LOCATION;
 
     private static boolean setAuthenticate() {
-        String value = Util.readPropertiesFile("Merlin.properties", "isAuthenticationSet");
+        String value = Config.getProperty("isAuthenticationSet");
         value = (null == value) ? "true" : value;
         return !value.equalsIgnoreCase("false");
     }
@@ -133,7 +132,6 @@ public abstract class IEntityManagerHelper {
     protected String activeMQ = "";
     protected String storeLocation = "";
     protected String hadoopGetCommand = "";
-    protected String envFileName;
     protected String colo;
     protected String allColo;
     protected String coloName;
@@ -192,10 +190,6 @@ public abstract class IEntityManagerHelper {
 
     protected String serviceUser;
 
-    public String getEnvFileName() {
-        return envFileName;
-    }
-
     public String getColo() {
         return colo;
     }
@@ -204,55 +198,52 @@ public abstract class IEntityManagerHelper {
         return coloName;
     }
 
-    public IEntityManagerHelper(String envFileName, String prefix) {
+    public IEntityManagerHelper(String prefix) {
         if ((null == prefix) || prefix.isEmpty()) {
             prefix = "";
         } else {
             prefix += ".";
         }
-        logger.info("envFileName: " + envFileName);
-        Properties prop = Util.getPropertiesObj(envFileName);
-        this.qaHost = prop.getProperty(prefix + "qa_host");
-        this.hostname = prop.getProperty(prefix + "ivory_hostname");
-        this.username = prop.getProperty(prefix + "username", System.getProperty("user.name"));
-        this.password = prop.getProperty(prefix + "password", "");
-        this.hadoopLocation = prop.getProperty(prefix + "hadoop_location");
-        this.hadoopURL = prop.getProperty(prefix + "hadoop_url");
-        this.hcatEndpoint = prop.getProperty(prefix + "hcat_endpoint");
-        this.clusterReadonly = prop.getProperty(prefix + "cluster_readonly");
-        this.clusterWrite = prop.getProperty(prefix + "cluster_write");
-        this.oozieURL = prop.getProperty(prefix + "oozie_url");
-        this.activeMQ = prop.getProperty(prefix + "activemq_url");
-        this.storeLocation = prop.getProperty(prefix + "storeLocation");
+        this.qaHost = Config.getProperty(prefix + "qa_host");
+        this.hostname = Config.getProperty(prefix + "ivory_hostname");
+        this.username = Config.getProperty(prefix + "username", System.getProperty("user.name"));
+        this.password = Config.getProperty(prefix + "password", "");
+        this.hadoopLocation = Config.getProperty(prefix + "hadoop_location");
+        this.hadoopURL = Config.getProperty(prefix + "hadoop_url");
+        this.hcatEndpoint = Config.getProperty(prefix + "hcat_endpoint");
+        this.clusterReadonly = Config.getProperty(prefix + "cluster_readonly");
+        this.clusterWrite = Config.getProperty(prefix + "cluster_write");
+        this.oozieURL = Config.getProperty(prefix + "oozie_url");
+        this.activeMQ = Config.getProperty(prefix + "activemq_url");
+        this.storeLocation = Config.getProperty(prefix + "storeLocation");
         this.hadoopGetCommand =
             hadoopLocation + "  fs -cat hdfs://" + hadoopURL +
                 "/projects/ivory/staging/ivory/workflows/process";
-        this.envFileName = envFileName;
-        this.allColo = "?colo=" + prop.getProperty(prefix + "colo", "*");
-        this.colo = (!prop.getProperty(prefix + "colo", "").isEmpty()) ? "?colo=" + prop
+        this.allColo = "?colo=" + Config.getProperty(prefix + "colo", "*");
+        this.colo = (!Config.getProperty(prefix + "colo", "").isEmpty()) ? "?colo=" + Config
             .getProperty(prefix + "colo") : "";
         this.coloName = this.colo.contains("=") ? this.colo.split("=")[1] : "";
         this.serviceStartCmd =
-            prop.getProperty(prefix + "service_start_cmd", "/etc/init.d/tomcat6 start");
-        this.serviceStopCmd = prop.getProperty(prefix + "service_stop_cmd",
+            Config.getProperty(prefix + "service_start_cmd", "/etc/init.d/tomcat6 start");
+        this.serviceStopCmd = Config.getProperty(prefix + "service_stop_cmd",
             "/etc/init.d/tomcat6 stop");
-        this.serviceUser = prop.getProperty(prefix + "service_user", null);
-        this.serviceStatusMsg = prop.getProperty(prefix + "service_status_msg",
+        this.serviceUser = Config.getProperty(prefix + "service_user", null);
+        this.serviceStatusMsg = Config.getProperty(prefix + "service_status_msg",
             "Tomcat servlet engine is running with pid");
         this.serviceStatusCmd =
-            prop.getProperty(prefix + "service_status_cmd", "/etc/init.d/tomcat6 status");
-        this.identityFile = prop.getProperty(prefix + "identityFile",
+            Config.getProperty(prefix + "service_status_cmd", "/etc/init.d/tomcat6 status");
+        this.identityFile = Config.getProperty(prefix + "identityFile",
             System.getProperty("user.home") + "/.ssh/id_rsa");
         this.hadoopFS = null;
         this.oozieClient = null;
-        this.namenodePrincipal = prop.getProperty(prefix + "namenode.kerberos.principal", "none");
-        this.hiveMetaStorePrincipal = prop.getProperty(prefix + "hive.metastore.kerberos" +
+        this.namenodePrincipal = Config.getProperty(prefix + "namenode.kerberos.principal", "none");
+        this.hiveMetaStorePrincipal = Config.getProperty(prefix + "hive.metastore.kerberos" +
             ".principal", "none");
     }
 
     public abstract String getEntityType();
 
-    public abstract String getEntityName(String entity) throws JAXBException;
+    public abstract String getEntityName(String entity);
 
     protected String createUrl(String... parts) {
         return StringUtils.join(parts, "/");
@@ -283,12 +274,12 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse schedule(URLS scheduleUrl, String processData)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return schedule(scheduleUrl, processData, null);
     }
 
     public ServiceResponse schedule(URLS scheduleUrl, String processData, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(createUrl(this.hostname + scheduleUrl.getValue(), getEntityType(),
             getEntityName(processData) + colo), "post", user);
     }
@@ -313,60 +304,60 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse delete(URLS deleteUrl, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return delete(deleteUrl, data, null);
     }
 
     public ServiceResponse delete(URLS deleteUrl, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + deleteUrl.getValue(), getEntityType(), getEntityName(data)),
             "delete", user);
     }
 
     public ServiceResponse suspend(URLS suspendUrl, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return suspend(suspendUrl, data, null);
     }
 
     public ServiceResponse suspend(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "post", user);
     }
 
     public ServiceResponse resume(URLS url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return resume(url, data, null);
     }
 
     public ServiceResponse resume(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "post", user);
     }
 
     public ServiceResponse getStatus(URLS url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return getStatus(url, data, null);
     }
 
     public ServiceResponse getStatus(Util.URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "get", user);
     }
 
     public ServiceResponse getEntityDefinition(URLS url, String data)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return getEntityDefinition(url, data, null);
     }
 
     public ServiceResponse getEntityDefinition(URLS url, String data, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return Util.sendRequest(
             createUrl(this.hostname + url.getValue(), getEntityType(), getEntityName(data)),
             "get", user);
@@ -415,12 +406,12 @@ public abstract class IEntityManagerHelper {
     }
 
     public ServiceResponse update(String oldEntity, String newEntity)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         return update(oldEntity, newEntity, null);
     }
 
     public ServiceResponse update(String oldEntity, String newEntity, String user)
-        throws JAXBException, IOException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + Util.URLS.UPDATE.getValue(), getEntityType(),
             getEntityName(oldEntity));
         return Util.sendRequest(url + colo, "post", newEntity, user);
@@ -428,7 +419,7 @@ public abstract class IEntityManagerHelper {
 
     public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
                                   String user)
-        throws IOException, JAXBException, URISyntaxException, AuthenticationException {
+        throws IOException, URISyntaxException, AuthenticationException {
         String url = this.hostname + URLS.UPDATE.getValue() + "/" + getEntityType() + "/" +
             Util.readEntityName(oldEntity);
         String urlPart = colo == null || colo.isEmpty() ? "?" : colo + "&";

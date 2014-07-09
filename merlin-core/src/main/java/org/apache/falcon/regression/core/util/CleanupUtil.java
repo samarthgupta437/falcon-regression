@@ -19,7 +19,7 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.EntitiesResult;
 import org.apache.falcon.regression.core.response.EntityResult;
@@ -39,17 +39,17 @@ import java.util.List;
 public class CleanupUtil {
     private static Logger logger = Logger.getLogger(CleanupUtil.class);
 
-    public static List<String> getAllProcesses(PrismHelper prism)
+    public static List<String> getAllProcesses(ColoHelper prism)
         throws IOException, URISyntaxException, AuthenticationException, JAXBException {
         return getAllEntitiesOfOneType(prism.getProcessHelper());
     }
 
-    public static List<String> getAllFeeds(PrismHelper prism)
+    public static List<String> getAllFeeds(ColoHelper prism)
         throws IOException, URISyntaxException, AuthenticationException, JAXBException {
         return getAllEntitiesOfOneType(prism.getFeedHelper());
     }
 
-    public static List<String> getAllClusters(PrismHelper prism)
+    public static List<String> getAllClusters(ColoHelper prism)
         throws IOException, URISyntaxException, AuthenticationException, JAXBException {
         return getAllEntitiesOfOneType(prism.getClusterHelper());
     }
@@ -75,7 +75,7 @@ public class CleanupUtil {
             new StringReader(clusterResponse.getMessage()));
     }
 
-    public static void cleanAllClustersQuietly(PrismHelper prism) {
+    public static void cleanAllClustersQuietly(ColoHelper prism) {
         try {
             final List<String> clusters = getAllClusters(prism);
             for (String cluster : clusters) {
@@ -91,7 +91,7 @@ public class CleanupUtil {
         }
     }
 
-    public static void cleanAllFeedsQuietly(PrismHelper prism) {
+    public static void cleanAllFeedsQuietly(ColoHelper prism) {
         try {
             final List<String> feeds = getAllFeeds(prism);
             for (String feed : feeds) {
@@ -107,7 +107,7 @@ public class CleanupUtil {
         }
     }
 
-    public static void cleanAllProcessesQuietly(PrismHelper prism,
+    public static void cleanAllProcessesQuietly(ColoHelper prism,
                                                 IEntityManagerHelper entityManagerHelper) {
         try {
             final List<String> processes = getAllProcesses(prism);
@@ -124,7 +124,7 @@ public class CleanupUtil {
         }
     }
 
-    public static void cleanAllEntities(PrismHelper prism) {
+    public static void cleanAllEntities(ColoHelper prism) {
         cleanAllProcessesQuietly(prism, prism.getProcessHelper());
         cleanAllFeedsQuietly(prism);
         cleanAllClustersQuietly(prism);

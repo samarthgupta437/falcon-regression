@@ -26,7 +26,6 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -36,15 +35,15 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     private static final String INVALID_ERR = "Not Valid for Cluster Entity";
     private static Logger logger = Logger.getLogger(ClusterEntityHelperImpl.class);
 
-    public ClusterEntityHelperImpl(String envFileName, String prefix) {
-        super(envFileName, prefix);
+    public ClusterEntityHelperImpl(String prefix) {
+        super(prefix);
     }
 
     public String getEntityType() {
         return "cluster";
     }
 
-    public String getEntityName(String entity) throws JAXBException {
+    public String getEntityName(String entity) {
         return Util.readClusterName(entity);
     }
 
@@ -93,7 +92,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
     @Override
     public ServiceResponse update(String oldEntity, String newEntity, String updateTime,
-                                  String user) throws IOException, JAXBException {
+                                  String user) throws IOException {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 

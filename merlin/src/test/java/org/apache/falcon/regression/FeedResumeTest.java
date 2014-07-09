@@ -84,9 +84,7 @@ public class FeedResumeTest extends BaseTestClass {
         AssertUtil.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
         AssertUtil.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
-
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
-
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
@@ -112,9 +110,7 @@ public class FeedResumeTest extends BaseTestClass {
     public void resumeDeletedFeed() throws Exception {
         AssertUtil
             .assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
         AssertUtil.assertSucceeded(feedHelper.delete(URLS.DELETE_URL, feed));
-
         AssertUtil.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
@@ -127,11 +123,8 @@ public class FeedResumeTest extends BaseTestClass {
     public void resumeScheduledFeed() throws Exception {
         AssertUtil
             .assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
         AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
         AssertUtil.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
-
-
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
