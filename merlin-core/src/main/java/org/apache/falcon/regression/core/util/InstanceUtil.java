@@ -1209,6 +1209,7 @@ public class InstanceUtil {
             .unmarshal((new StringReader(clusterData)));
     }
 
+
     /**
      * Waits till supplied number of instances of process/feed reach expected state during
      * specific time.
@@ -1219,15 +1220,15 @@ public class InstanceUtil {
      * @param numberOfInstance number of instances which status we are waiting for
      * @param expectedStatus expected status we are waiting for
      * @param entityType type of entity - feed or process expected
+     * @param totalMinutesToWait time in minutes for which instance state should be polled
      * @throws OozieClientException
      * @throws InterruptedException
      */
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
                                                   CoordinatorAction.Status expectedStatus,
-                                                  ENTITY_TYPE entityType)
+                                                  ENTITY_TYPE entityType, int totalMinutesToWait)
         throws InterruptedException, OozieClientException {
-        int totalMinutesToWait = getMinutesToWait(entityType, expectedStatus);
         String filter;
         // get the bundle ids
         if (entityType.equals(ENTITY_TYPE.FEED)) {
@@ -1252,7 +1253,7 @@ public class InstanceUtil {
         final String coordId;
         final Status bundleStatus = client.getBundleJobInfo(bundleId).getStatus();
         Assert.assertTrue(bundleStatus == Status.RUNNING || bundleStatus == Status.PREP ||
-            bundleStatus == Status.SUCCEEDED,
+                bundleStatus == Status.SUCCEEDED,
             String.format("Bundle job %s is should be prep/running but is %s", bundleId,
                 bundleStatus));
         OozieUtil.waitForCoordinatorJobCreation(client, bundleId);
@@ -1300,6 +1301,29 @@ public class InstanceUtil {
             Thread.sleep(sleepTime);
         }
         Assert.assertTrue(false, "expected state of instance was never reached");
+    }
+
+    /**
+     * Waits till supplied number of instances of process/feed reach expected state during
+     * specific time.
+     *
+     *
+     * @param client oozie client to retrieve info about instances
+     * @param entityName name of feed or process
+     * @param numberOfInstance number of instances which status we are waiting for
+     * @param expectedStatus expected status we are waiting for
+     * @param entityType type of entity - feed or process expected
+     * @throws OozieClientException
+     * @throws InterruptedException
+     */
+    public static void waitTillInstanceReachState(OozieClient client, String entityName,
+                                                  int numberOfInstance,
+                                                  CoordinatorAction.Status expectedStatus,
+                                                  ENTITY_TYPE entityType)
+        throws InterruptedException, OozieClientException {
+        int totalMinutesToWait = getMinutesToWait(entityType, expectedStatus);
+        waitTillInstanceReachState(client, entityName, numberOfInstance, expectedStatus,
+            entityType, totalMinutesToWait);
     }
 
     /**
