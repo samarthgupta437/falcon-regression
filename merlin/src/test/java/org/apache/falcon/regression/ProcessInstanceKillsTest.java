@@ -69,8 +69,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         b.generateUniqueBundle();
         b = new Bundle(b, cluster);
 
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
+        String startDate = "2010-01-01T23:20Z";
+        String endDate = "2010-01-02T01:21Z";
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
@@ -176,7 +176,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
          */
         String startTime = TimeUtil.getTimeWrtSystemTime(-20);
         String endTime = TimeUtil.getTimeWrtSystemTime(400);
-        String startTimeData = TimeUtil.getTimeWrtSystemTime(-150);
+        String startTimeData = TimeUtil.getTimeWrtSystemTime(-50);
         String endTimeData = TimeUtil.getTimeWrtSystemTime(50);
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTimeData, 1);
