@@ -56,8 +56,12 @@ public class BundleUtil {
         return testData;
     }
 
-    public static Bundle[] getBundleData(String path) throws IOException {
-        return readBundles(path)[0];
+    public static Bundle readRetryBundle() throws IOException {
+        return readBundles("RetryTests")[0][0];
+    }
+
+    public static Bundle readRetentionBundle() throws IOException {
+        return readBundles("RetentionBundles")[0][0];
     }
 
     public static Bundle readELBundle() throws IOException {
@@ -69,7 +73,7 @@ public class BundleUtil {
     }
 
     public static Bundle getHCat2Bundle() throws IOException {
-        return getBundleData("hcat_2")[0];
+        return readBundles("hcat")[0][0];
     }
 
     public static List<Bundle> getDataFromFolder(final String folderPath) throws IOException {

@@ -80,7 +80,7 @@ public class RetentionTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws IOException, JAXBException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.getBundleData("RetentionBundles")[0];
+        Bundle bundle = BundleUtil.readRetentionBundle();
         bundles[0] = new Bundle(bundle, cluster);
         bundles[0].setInputFeedDataPath(testHDFSDir);
         bundles[0].generateUniqueBundle();

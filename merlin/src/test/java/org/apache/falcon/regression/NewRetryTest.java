@@ -85,7 +85,7 @@ public class NewRetryTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        bundles[0] = new Bundle(BundleUtil.getBundleData("RetryTests")[0], cluster);
+        bundles[0] = new Bundle(BundleUtil.readRetryBundle(), cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         startDate = new DateTime(DateTimeZone.UTC).plusMinutes(1);
