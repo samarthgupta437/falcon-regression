@@ -56,12 +56,12 @@ public class BundleUtil {
         return testData;
     }
 
-    public static Bundle[][] readELBundles() throws IOException {
-        return readBundles("ELbundle");
-    }
-
     public static Bundle[] getBundleData(String path) throws IOException {
         return readBundles(path)[0];
+    }
+
+    public static Bundle[][] readELBundles() throws IOException {
+        return readBundles("ELbundle");
     }
 
     public static Bundle readHCatBundle() throws IOException {
