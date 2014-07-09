@@ -174,17 +174,6 @@ public class Util {
         }
     }
 
-    public static File[] getFiles(String directoryPath) throws URISyntaxException {
-        directoryPath = directoryPath.replaceFirst("^.*test-classes[\\\\/]", "");
-        logger.info("directoryPath: " + directoryPath);
-        URL url = Util.class.getResource("/" + directoryPath);
-        logger.info("url" + url);
-        File dir = new File(url.toURI());
-        File[] files = dir.listFiles();
-        if (files != null) Arrays.sort(files);
-        return files;
-    }
-
     public static String readEntityName(String data) {
         if (data.contains("uri:falcon:feed"))
             return Entity.fromString(EntityType.FEED, data).getName();

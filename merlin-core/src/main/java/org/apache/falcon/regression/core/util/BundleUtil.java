@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.falcon.entity.v0.Entity;
 import org.apache.falcon.entity.v0.EntityType;
@@ -36,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class BundleUtil {
@@ -62,54 +64,41 @@ public class BundleUtil {
         return getBundleData("hcat_2")[0];
     }
 
-    public static List<Bundle> getDataFromFolder(String folderPath) throws IOException {
-
-        List<Bundle> bundleList = new ArrayList<Bundle>();
-        File[] files;
+    public static List<Bundle> getDataFromFolder(final String folderPath) throws IOException {
+        final List<Bundle> bundleList = new ArrayList<Bundle>();
+        logger.info("Loading xmls from directory: " + folderPath);
+        File directory = null;
         try {
-            files = Util.getFiles(folderPath);
+            directory = new File(BundleUtil.class.getResource("/" + folderPath).toURI());
         } catch (URISyntaxException e) {
-            return bundleList;
+            Assert.fail("could not find dir: " + folderPath);
         }
-
-        List<String> dataSets = new ArrayList<String>();
-        String processData = "";
+        final Collection<File> files = FileUtils.listFiles(directory, new String[] {"xml"}, true);
         String clusterData = "";
+        final List<String> dataSets = new ArrayList<String>();
+        String processData = "";
 
         for (File file : files) {
+            logger.info("Loading data from path: " + file.getAbsolutePath());
+            final String data = IOUtils.toString(file.toURI());
 
-            if (!file.getName().contains("svn") && !file.getName().startsWith(".DS")) {
-                logger.info("Loading data from path: " + file.getAbsolutePath());
-                if (file.isDirectory()) {
-                    bundleList.addAll(getDataFromFolder(file.getAbsolutePath()));
-                } else {
-
-                    String data = IOUtils.toString(file.toURI());
-
-                    if (data.contains("uri:ivory:process:0.1") ||
-                        data.contains("uri:falcon:process:0.1")) {
-                        logger.info("data been added to process");
-                        processData = data;
-                    } else if (data.contains("uri:ivory:cluster:0.1") ||
-                        data.contains("uri:falcon:cluster:0.1")) {
-                        logger.info("data been added to cluster");
-                        clusterData = data;
-                    } else if (data.contains("uri:ivory:feed:0.1") ||
-                        data.contains("uri:falcon:feed:0.1")) {
-                        logger.info("data been added to feed");
-                        data = InstanceUtil.setFeedACL(data);
-                        dataSets.add(data);
-                    }
-                }
+            if (data.contains("uri:ivory:cluster:0.1") || data.contains("uri:falcon:cluster:0.1")) {
+                logger.info("data been added to cluster");
+                clusterData = data;
+            } else if (data.contains("uri:ivory:feed:0.1") ||
+                data.contains("uri:falcon:feed:0.1")) {
+                logger.info("data been added to feed");
+                dataSets.add(InstanceUtil.setFeedACL(data));
+            } else if (data.contains("uri:ivory:process:0.1") ||
+                data.contains("uri:falcon:process:0.1")) {
+                logger.info("data been added to process");
+                processData = data;
             }
-
         }
-        if (!clusterData.isEmpty() && !dataSets.isEmpty()) {
-            bundleList.add(new Bundle(clusterData, dataSets, processData));
-        }
-
+        Assert.assertNotNull(clusterData, "expecting cluster data to be non-empty");
+        Assert.assertTrue(!dataSets.isEmpty(), "expecting feed data to be non-empty");
+        bundleList.add(new Bundle(clusterData, dataSets, processData));
         return bundleList;
-
     }
 
     public static Bundle[][] readELBundles() throws IOException {
