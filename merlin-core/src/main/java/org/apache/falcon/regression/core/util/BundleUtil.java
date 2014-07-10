@@ -43,41 +43,32 @@ import java.util.List;
 public class BundleUtil {
     private static final Logger logger = Logger.getLogger(BundleUtil.class);
 
-    private static Bundle[][] readBundles(String path) throws IOException {
-
-        List<Bundle> bundleSet = getDataFromFolder(path);
-
-        Bundle[][] testData = new Bundle[bundleSet.size()][1];
-
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-
-        return testData;
+    private static Bundle readBundles(String path) throws IOException {
+        return getDataFromFolder(path).get(0);
     }
 
     public static Bundle readLateDataBundle() throws IOException {
-        return readBundles("LateDataBundles")[0][0];
+        return readBundles("LateDataBundles");
     }
 
     public static Bundle readRetryBundle() throws IOException {
-        return readBundles("RetryTests")[0][0];
+        return readBundles("RetryTests");
     }
 
     public static Bundle readRetentionBundle() throws IOException {
-        return readBundles("RetentionBundles")[0][0];
+        return readBundles("RetentionBundles");
     }
 
     public static Bundle readELBundle() throws IOException {
-        return readBundles("ELbundle")[0][0];
+        return readBundles("ELbundle");
     }
 
     public static Bundle readHCatBundle() throws IOException {
-        return readBundles("hcat")[0][0];
+        return readBundles("hcat");
     }
 
     public static Bundle getHCat2Bundle() throws IOException {
-        return readBundles("hcat")[0][0];
+        return readBundles("hcat");
     }
 
     public static List<Bundle> getDataFromFolder(final String folderPath) throws IOException {
