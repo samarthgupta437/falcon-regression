@@ -43,47 +43,43 @@ import java.util.List;
 public class BundleUtil {
     private static final Logger logger = Logger.getLogger(BundleUtil.class);
 
-    private static Bundle readBundles(String path) throws IOException {
-        return getDataFromFolder(path).get(0);
-    }
-
     public static Bundle readLateDataBundle() throws IOException {
-        return readBundles("LateDataBundles");
+        return readBundleFromFolder("LateDataBundles").get(0);
     }
 
     public static Bundle readRetryBundle() throws IOException {
-        return readBundles("RetryTests");
+        return readBundleFromFolder("RetryTests").get(0);
     }
 
     public static Bundle readRetentionBundle() throws IOException {
-        return readBundles("RetentionBundles");
+        return readBundleFromFolder("RetentionBundles").get(0);
     }
 
     public static Bundle readELBundle() throws IOException {
-        return readBundles("ELbundle");
+        return readBundleFromFolder("ELbundle").get(0);
     }
 
     public static Bundle readHCatBundle() throws IOException {
-        return readBundles("hcat");
+        return readBundleFromFolder("hcat").get(0);
     }
 
     public static Bundle readHCat2Bundle() throws IOException {
-        return readBundles("hcat_2");
+        return readBundleFromFolder("hcat_2").get(0);
     }
 
     public static Bundle readLocalDCBundle() throws IOException {
-        return readBundles("LocalDC_feedReplicaltion_BillingRC");
+        return readBundleFromFolder("LocalDC_feedReplicaltion_BillingRC").get(0);
     }
 
     public static Bundle readImpressionRCBundle() throws IOException {
-        return readBundles("impressionRC");
+        return readBundleFromFolder("impressionRC").get(0);
     }
 
     public static Bundle readUpdateBundle() throws IOException {
-        return readBundles("updateBundle");
+        return readBundleFromFolder("updateBundle").get(0);
     }
 
-    public static List<Bundle> getDataFromFolder(final String folderPath) throws IOException {
+    private static List<Bundle> readBundleFromFolder(final String folderPath) throws IOException {
         final List<Bundle> bundleList = new ArrayList<Bundle>();
         logger.info("Loading xmls from directory: " + folderPath);
         File directory = null;
