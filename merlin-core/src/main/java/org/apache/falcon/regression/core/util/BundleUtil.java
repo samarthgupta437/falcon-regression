@@ -71,6 +71,18 @@ public class BundleUtil {
         return readBundles("hcat");
     }
 
+    public static Bundle readLocalDCBundle() throws IOException {
+        return readBundles("LocalDC_feedReplicaltion_BillingRC");
+    }
+
+    public static Bundle readImpressionRCBundle() throws IOException {
+        return readBundles("impressionRC");
+    }
+
+    public static Bundle readUpdateBundle() throws IOException {
+        return readBundles("updateBundle");
+    }
+
     public static List<Bundle> getDataFromFolder(final String folderPath) throws IOException {
         final List<Bundle> bundleList = new ArrayList<Bundle>();
         logger.info("Loading xmls from directory: " + folderPath);

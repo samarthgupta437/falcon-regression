@@ -1233,19 +1233,6 @@ public class Bundle {
         return p.toString();
     }
 
-    public static Object[][] readBundle(String bundleLocation) throws IOException {
-        sBundleLocation = bundleLocation;
-
-        List<Bundle> bundleSet = BundleUtil.getDataFromFolder(bundleLocation);
-
-        Object[][] testData = new Object[bundleSet.size()][1];
-
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-        return testData;
-    }
-
     public String setProcessOutputNames(String process, String... names) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         Outputs outputs = p.getOutputs();
