@@ -67,8 +67,8 @@ public class BundleUtil {
         return readBundles("hcat");
     }
 
-    public static Bundle getHCat2Bundle() throws IOException {
-        return readBundles("hcat");
+    public static Bundle readHCat2Bundle() throws IOException {
+        return readBundles("hcat_2");
     }
 
     public static Bundle readLocalDCBundle() throws IOException {
