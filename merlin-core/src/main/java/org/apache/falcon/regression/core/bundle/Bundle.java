@@ -90,9 +90,9 @@ public class Bundle {
     static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
     private static final Logger logger = Logger.getLogger(Bundle.class);
 
-    public List<String> dataSets;
-    String processData;
-    String clusterData;
+    private List<String> dataSets;
+    private String processData;
+    private String clusterData;
 
     String processFilePath;
     List<String> clusters;

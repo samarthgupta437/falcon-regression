@@ -153,9 +153,9 @@ public class BundleUtil {
     }
 
     public static String getDatasetPath(Bundle bundle) {
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!dataElement.getName().contains("raaw-logs16")) {
-            dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
+            dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(1));
         }
         return dataElement.getLocations().getLocations().get(0).getPath();
     }

@@ -232,9 +232,9 @@ public class InstanceUtil {
     }
 
     public static Feed getFeedElement(Bundle bundle, String feedName) {
-        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!feedElement.getName().contains(feedName)) {
-            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
+            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(1));
         }
         return feedElement;
     }
@@ -247,7 +247,7 @@ public class InstanceUtil {
     public static void writeFeedElement(Bundle bundle, String feedString,
                                         String feedName) {
         int index = 0;
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!dataElement.getName().contains(feedName)) {
             index = 1;
         }
