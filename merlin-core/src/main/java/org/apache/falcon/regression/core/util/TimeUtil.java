@@ -43,14 +43,6 @@ public class TimeUtil {
 
     private static Logger logger = Logger.getLogger(TimeUtil.class);
 
-    public static void sleepSeconds(long seconds) {
-        try {
-            TimeUnit.SECONDS.sleep(seconds);
-        } catch (InterruptedException e) {
-            logger.info("Sleep was interrupted");
-        }
-    }
-    
     public static void sleepSeconds(double seconds) {
         long ms = (long) (seconds * 1000);
         try {
