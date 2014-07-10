@@ -80,8 +80,8 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster);
 
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
+        String startDate = "2010-01-01T23:40Z";
+        String endDate = "2010-01-02T02:40Z";
 
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();
