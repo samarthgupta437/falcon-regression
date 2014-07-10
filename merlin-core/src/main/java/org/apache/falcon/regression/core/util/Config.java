@@ -23,10 +23,6 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 public class Config {
     private static final Logger logger = Logger.getLogger(Config.class);
 
