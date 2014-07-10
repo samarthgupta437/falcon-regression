@@ -43,7 +43,7 @@ import java.util.List;
 public class BundleUtil {
     private static final Logger logger = Logger.getLogger(BundleUtil.class);
 
-    public static Bundle[][] readBundles(String path) throws IOException {
+    private static Bundle[][] readBundles(String path) throws IOException {
 
         List<Bundle> bundleSet = getDataFromFolder(path);
 
@@ -54,6 +54,10 @@ public class BundleUtil {
         }
 
         return testData;
+    }
+
+    public static Bundle readLateDataBundle() throws IOException {
+        return readBundles("LateDataBundles")[0][0];
     }
 
     public static Bundle readRetryBundle() throws IOException {
