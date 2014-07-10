@@ -86,16 +86,16 @@ import java.util.List;
  */
 public class Bundle {
 
-    public static final String PRISM_PREFIX = "prism";
-    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
+    private static final String PRISM_PREFIX = "prism";
+    private static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
     private static final Logger logger = Logger.getLogger(Bundle.class);
 
     private List<String> dataSets;
     private String processData;
     private String clusterData;
 
-    String processFilePath;
-    List<String> clusters;
+    private String processFilePath;
+    private List<String> clusters;
 
     private static String sBundleLocation;
 
