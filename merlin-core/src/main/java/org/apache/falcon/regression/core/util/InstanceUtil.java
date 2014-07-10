@@ -652,29 +652,6 @@ public class InstanceUtil {
     }
 
     /**
-     * Copies specific file(s) to each of remote folders
-     * Creates folders if they don't exist
-     *
-     * @param colo colohelper for remote cluster
-     * @param folderList list of remote folders
-     * @param fileName specific files
-     * @throws IOException
-     */
-    public static void putFileInFolders(ColoHelper colo, List<String> folderList,
-                                        final String... fileName) throws IOException {
-        final FileSystem fs = colo.getClusterHelper().getHadoopFS();
-        for (final String folder : folderList) {
-            for (String aFileName : fileName) {
-                logger.info("copying  " + aFileName + " to " + folder);
-                if (aFileName.equals("_SUCCESS"))
-                    fs.mkdirs(new Path(folder + "/_SUCCESS"));
-                else
-                    fs.copyFromLocalFile(new Path(aFileName), new Path(folder));
-            }
-        }
-    }
-
-    /**
      * Wraps bundle cluster in a Cluster object
      *
      * @param bundle target bundle
@@ -1372,8 +1349,7 @@ public class InstanceUtil {
     }
 
     public static String setFeedACL(String feed, String... ownerGroup) {
-        FeedMerlin feedObject = null;
-        feedObject = new FeedMerlin(feed);
+        FeedMerlin feedObject = new FeedMerlin(feed);
         ACL acl = feedObject.getACL();
         acl.setOwner(MerlinConstants.aclOwner);
         acl.setGroup(MerlinConstants.aclGroup);
