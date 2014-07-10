@@ -70,8 +70,8 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
         Bundle bundle = BundleUtil.readELBundle();
         bundle = new Bundle(bundle, cluster);
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
+        String startDate = "2010-01-01T23:40Z";
+        String endDate = "2010-01-02T01:40Z";
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
