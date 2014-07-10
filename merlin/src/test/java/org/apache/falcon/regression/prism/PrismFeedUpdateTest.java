@@ -18,26 +18,37 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
+import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.xml.bind.JAXBException;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -49,11 +60,14 @@ public class PrismFeedUpdateTest extends BaseTestClass {
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     FileSystem server1FS = serverFS.get(0);
+    OozieClient OC1 = serverOC.get(0);
     String baseTestDir = baseHDFSDir + "/PrismFeedUpdateTest";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
     public final String cluster1colo = cluster1.getClusterHelper().getColoName();
     public final String cluster2colo = cluster2.getClusterHelper().getColoName();
     private static final Logger logger = Logger.getLogger(PrismFeedUpdateTest.class);
+    String feedInputTimedOutPath =
+        baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
     @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
@@ -68,6 +82,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+            bundles[i].setInputFeedDataPath(feedInputTimedOutPath);
         }
     }
 
@@ -196,6 +211,34 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         //update feed first time
         prism.getFeedHelper().update(outputFeed, outputFeed);
+    }
+
+
+    /**
+     * schedules a feed and dependent process. Process start and end are in past
+     * Test for bug https://issues.apache.org/jira/browse/FALCON-500
+     */
+    @Test
+    public void dependentProcessSucceeded()
+        throws Exception {
+        bundles[0].setProcessValidity("2014-06-01T04:00Z","2014-06-01T04:02Z");
+        bundles[0].submitAndScheduleAllFeeds();
+        bundles[0].submitAndScheduleProcess();
+
+        InstanceUtil.waitTillInstancesAreCreated(cluster1, bundles[0].getProcessData(), 0);
+        OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS, bundles[0].getProcessName(),
+            0, 0);
+        InstanceUtil.waitForBundleToReachState(cluster1, bundles[0].getProcessName(),
+            Job.Status.SUCCEEDED, 20);
+
+        FeedMerlin feed = new FeedMerlin(bundles[0].getDataSets().get(0));
+        feed.addProperty("someProp","someVal");
+        AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed.toString(), feed.toString()));
+        //check for new feed bundle creation
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(prism, ENTITY_TYPE.FEED,
+            Util.readEntityName(feed
+                .toString()
+        )),2);
     }
 
 }

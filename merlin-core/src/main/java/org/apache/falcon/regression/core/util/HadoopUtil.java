@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
+import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -384,4 +385,24 @@ public class HadoopUtil {
         }
         return locations;
     }
+
+    public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
+                                                                  DateTime startDateJoda,
+                                                                  DateTime endDateJoda,
+                                                                  String prefix,
+                                                                  int interval) throws IOException {
+        List<String> dataDates =
+           TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
+
+        for (int i = 0; i < dataDates.size(); i++)
+            dataDates.set(i, prefix + dataDates.get(i));
+
+        List<String> dataFolder = new ArrayList<String>();
+
+        for (String dataDate : dataDates) dataFolder.add(dataDate);
+
+        InstanceUtil.createHDFSFolders(colo, dataFolder);
+        return dataFolder;
+    }
+
 }

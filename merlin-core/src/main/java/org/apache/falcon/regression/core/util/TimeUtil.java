@@ -242,25 +242,6 @@ public class TimeUtil {
 
     }
 
-    public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
-                                                                  DateTime startDateJoda,
-                                                                  DateTime endDateJoda,
-                                                                  String prefix,
-                                                                  int interval) throws IOException {
-        List<String> dataDates =
-            getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.createHDFSFolders(colo, dataFolder);
-        return dataFolder;
-    }
-
     public static Date getMinutes(String expression, Calendar time) {
         int hr;
         int mins;
