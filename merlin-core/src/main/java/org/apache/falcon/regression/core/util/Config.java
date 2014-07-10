@@ -23,6 +23,10 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 public class Config {
     private static final Logger logger = Logger.getLogger(Config.class);
 
@@ -33,7 +37,7 @@ public class Config {
     private Config(String propFileName) {
         try {
             logger.info("Going to read properties from: " + propFileName);
-            confObj = new PropertiesConfiguration(propFileName);
+            confObj = new PropertiesConfiguration(Util.class.getResource("/" + propFileName));
         } catch (ConfigurationException e) {
             Assert.fail("Could not read properties because of exception: " + e);
         }
