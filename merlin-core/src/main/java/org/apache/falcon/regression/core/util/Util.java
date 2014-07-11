@@ -29,6 +29,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.entity.v0.cluster.Interface;
@@ -40,7 +42,6 @@ import org.apache.falcon.entity.v0.feed.Property;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -65,7 +66,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.BufferedReader;
 import java.io.File;
@@ -98,10 +98,9 @@ public class Util {
 
 
     static Logger logger = Logger.getLogger(Util.class);
-    static final String MERLIN_PROPERTIES = "Merlin.properties";
     static final String PRISM_PREFIX = "prism";
 
-    static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
+    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -122,10 +121,8 @@ public class Util {
         return new ServiceResponse(response);
     }
 
-    public static String getProcessName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
+    public static String getProcessName(String data) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, data);
         return processElement.getName();
     }
 
@@ -192,33 +189,23 @@ public class Util {
         return files;
     }
 
-    public static String readEntityName(String data) throws JAXBException {
-
+    public static String readEntityName(String data) {
         if (data.contains("uri:falcon:feed"))
-            return InstanceUtil.getFeedElement(data).getName();
+            return Entity.fromString(EntityType.FEED, data).getName();
         else if (data.contains("uri:falcon:process"))
-            return InstanceUtil.getProcessElement(data).getName();
+            return Entity.fromString(EntityType.PROCESS, data).getName();
         else
-            return InstanceUtil.getClusterElement(data).getName();
+            return Entity.fromString(EntityType.CLUSTER, data).getName();
     }
 
-    public static String readClusterName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Cluster clusterElement = (Cluster) u.unmarshal(new StringReader(data));
-
-        return clusterElement.getName();
+    public static String readClusterName(String data) {
+        Cluster cluster = (Cluster) Entity.fromString(EntityType.CLUSTER, data);
+        return cluster.getName();
     }
 
-    public static String readDatasetName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Feed datasetElement = (Feed) u.unmarshal((new StringReader(data)));
-
+    public static String readDatasetName(String data) {
+        Feed datasetElement = (Feed) Entity.fromString(EntityType.FEED, data);
         return datasetElement.getName();
-
     }
 
     /**
@@ -226,17 +213,11 @@ public class Util {
      *
      * @param data process definition
      * @return process definition with unique name
-     * @throws JAXBException
      */
-    public static String generateUniqueProcessEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
-        processElement.setName(processElement.getName() + getUniqueString());
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(processElement, sw);
-        return sw.toString();
+    public static String generateUniqueProcessEntity(String data) {
+        Process process = (Process) Entity.fromString(EntityType.PROCESS, data);
+        process.setName(process.getName() + getUniqueString());
+        return process.toString();
     }
 
     /**
@@ -244,19 +225,11 @@ public class Util {
      *
      * @param data cluster definition
      * @return cluster definition with unique name
-     * @throws JAXBException
      */
-    public static String generateUniqueClusterEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Cluster clusterElement = (Cluster) u.unmarshal((new StringReader(data)));
-        clusterElement.setName(clusterElement.getName() + getUniqueString());
-
-        //lets marshall it back and return
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(clusterElement, sw);
-        return sw.toString();
+    public static String generateUniqueClusterEntity(String data) {
+        Cluster cluster = (Cluster) Entity.fromString(EntityType.CLUSTER, data);
+        cluster.setName(cluster.getName() + getUniqueString());
+        return cluster.toString();
     }
 
     /**
@@ -264,39 +237,19 @@ public class Util {
      *
      * @param data feed definition
      * @return feed definition with unique name
-     * @throws JAXBException
      */
-    public static String generateUniqueDataEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
-        dataElement.setName(dataElement.getName() + getUniqueString());
-        return InstanceUtil.feedElementToString(dataElement);
+    public static String generateUniqueDataEntity(String data) {
+        Feed feed = (Feed) Entity.fromString(EntityType.FEED, data);
+        feed.setName(feed.getName() + getUniqueString());
+        return feed.toString();
     }
 
     private static String getUniqueString() {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
-    public static String readPropertiesFile(String filename, String property) {
-        return readPropertiesFile(filename, property, null);
-    }
-
-    public static String readPropertiesFile(String filename, String property, String defaultValue) {
-        String desired_property;
-
-        try {
-            Properties properties = getPropertiesObj(filename);
-            desired_property = properties.getProperty(property, defaultValue);
-            return desired_property;
-        } catch (Exception e) {
-            logger.info(e.getStackTrace());
-        }
-        return null;
-    }
-
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
-        throws JAXBException, IOException {
+        throws IOException {
         List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
@@ -324,10 +277,9 @@ public class Util {
         return executeCommand(command).getOutput();
     }
 
-    public static String setFeedProperty(String feed, String propertyName, String propertyValue)
-        throws JAXBException {
+    public static String setFeedProperty(String feed, String propertyName, String propertyValue) {
 
-        Feed feedObject = InstanceUtil.getFeedElement(feed);
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
 
         boolean found = false;
         for (Property prop : feedObject.getProperties().getProperties()) {
@@ -347,16 +299,13 @@ public class Util {
         }
 
 
-        return InstanceUtil.feedElementToString(feedObject);
+        return feedObject.toString();
 
     }
 
 
-    public static String getFeedPath(String feed) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
+    public static String getFeedPath(String feed) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType() == LocationType.DATA) {
                 return location.getPath();
@@ -400,23 +349,13 @@ public class Util {
         return null;
     }
 
-    public static String insertLateFeedValue(String feed, Frequency frequency)
-        throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
+    public static String insertLateFeedValue(String feed, Frequency frequency) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedObject.getLateArrival().setCutOff(frequency);
-
-        Marshaller m = context.createMarshaller();
-        StringWriter sw = new StringWriter();
-
-        m.marshal(feedObject, sw);
-
-        return sw.toString();
+        return feedObject.toString();
     }
 
-    public static void createLateDataFoldersWithRandom(PrismHelper prismHelper, String folderPrefix,
+    public static void createLateDataFoldersWithRandom(ColoHelper prismHelper, String folderPrefix,
                                                        List<String> folderList)
         throws IOException {
         logger.info("creating late data folders.....");
@@ -434,7 +373,7 @@ public class Util {
         logger.info("created all late data folders.....");
     }
 
-    public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
+    public static void copyDataToFolders(ColoHelper prismHelper, List<String> folderList,
                                          String directory, String folderPrefix)
         throws IOException {
         logger.info("copying data into folders....");
@@ -449,7 +388,7 @@ public class Util {
             fileLocations.toArray(new String[fileLocations.size()]));
     }
 
-    public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
+    public static void copyDataToFolders(ColoHelper prismHelper, final String folderPrefix,
                                          List<String> folderList,
                                          String... fileLocations)
         throws IOException {
@@ -489,20 +428,14 @@ public class Util {
     }
 
 
-    public static String setFeedPathValue(String feed, String pathValue) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
-
-        //set the value
+    public static String setFeedPathValue(String feed, String pathValue) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType() == LocationType.DATA) {
                 location.setPath(pathValue);
             }
         }
-
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString();
+        return feedObject.toString();
     }
 
 
@@ -519,7 +452,7 @@ public class Util {
         return null;
     }
 
-    public static void lateDataReplenish(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenish(ColoHelper prismHelper, int interval,
                                          int minuteSkip, String folderPrefix) throws IOException {
         List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
@@ -528,7 +461,7 @@ public class Util {
             OSUtil.NORMAL_INPUT, folderPrefix);
     }
 
-    public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
+    public static void createLateDataFolders(ColoHelper prismHelper, List<String> folderList,
                                              final String FolderPrefix)
         throws IOException {
         Configuration conf = new Configuration();
@@ -541,7 +474,7 @@ public class Util {
         }
     }
 
-    public static void injectMoreData(PrismHelper prismHelper, final String remoteLocation,
+    public static void injectMoreData(ColoHelper prismHelper, final String remoteLocation,
                                       String localLocation)
         throws IOException {
         Configuration conf = new Configuration();
@@ -562,35 +495,21 @@ public class Util {
 
     }
 
-    public static String setFeedName(String feedString, String newName) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject =
-            (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
-
-        //set the value
+    public static String setFeedName(String feedString, String newName) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedString);
         feedObject.setName(newName);
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString().trim();
+        return feedObject.toString().trim();
     }
 
     public static String setClusterNameInFeed(String feedString, String clusterName,
-                                              int clusterIndex) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject =
-            (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
-        //set the value
+                                              int clusterIndex) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedString);
         feedObject.getClusters().getClusters().get(clusterIndex).setName(clusterName);
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString().trim();
+        return feedObject.toString().trim();
     }
 
-    public static Cluster getClusterObject(
-        String clusterXML) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (Cluster) um.unmarshal(new StringReader(clusterXML));
+    public static Cluster getClusterObject(String clusterXML) {
+        return (Cluster) Entity.fromString(EntityType.CLUSTER, clusterXML);
     }
 
     public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
@@ -749,10 +668,8 @@ public class Util {
         return data;
     }
 
-    public static Process getProcessObject(String processData) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Process.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (Process) um.unmarshal(new StringReader(processData));
+    public static Process getProcessObject(String processData) {
+        return (Process) Entity.fromString(EntityType.PROCESS, processData);
     }
 
     /**
@@ -760,10 +677,8 @@ public class Util {
      *
      * @param clusterData list of cluster definitions to be modified
      * @return list of unique cluster definitions
-     * @throws JAXBException
      */
-    public static List<String> generateUniqueClusterEntity(List<String> clusterData)
-        throws JAXBException {
+    public static List<String> generateUniqueClusterEntity(List<String> clusterData) {
         List<String> newList = new ArrayList<String>();
         for (String cluster : clusterData) {
             newList.add(generateUniqueClusterEntity(cluster));
@@ -783,7 +698,7 @@ public class Util {
         }
     }
 
-    public static void lateDataReplenish(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenish(ColoHelper prismHelper, int interval,
                                          int minuteSkip,
                                          String folderPrefix, String postFix)
         throws IOException {
@@ -801,7 +716,7 @@ public class Util {
             OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-    public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenishWithout_Success(ColoHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
                                                         String postFix)
         throws IOException {
@@ -819,7 +734,7 @@ public class Util {
     }
 
 
-    public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
+    public static void putFileInFolderHDFS(ColoHelper prismHelper, int interval, int minuteSkip,
                                            String folderPrefix, String fileToBePut)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
@@ -855,8 +770,7 @@ public class Util {
     }
 
 
-    public static String getEnvClusterXML(String filename, String cluster, String prefix)
-        throws JAXBException {
+    public static String getEnvClusterXML(String cluster, String prefix) {
 
         Cluster clusterObject =
             getClusterObject(cluster);
@@ -864,27 +778,27 @@ public class Util {
             prefix = "";
         else prefix = prefix + ".";
 
-        String hcat_endpoint = readPropertiesFile(filename, prefix + "hcat_endpoint");
+        String hcat_endpoint = Config.getProperty(prefix + "hcat_endpoint");
 
         //now read and set relevant values
         for (Interface iface : clusterObject.getInterfaces().getInterfaces()) {
             if (iface.getType() == Interfacetype.READONLY) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_readonly"));
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_readonly"));
             } else if (iface.getType() == Interfacetype.WRITE) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_write"));
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_write"));
             } else if (iface.getType() == Interfacetype.EXECUTE) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_execute"));
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_execute"));
             } else if (iface.getType() == Interfacetype.WORKFLOW) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
+                iface.setEndpoint(Config.getProperty(prefix + "oozie_url"));
             } else if (iface.getType() == Interfacetype.MESSAGING) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
+                iface.setEndpoint(Config.getProperty(prefix + "activemq_url"));
             } else if (iface.getType() == Interfacetype.REGISTRY) {
                 iface.setEndpoint(hcat_endpoint);
             }
         }
 
         //set colo name:
-        clusterObject.setColo(readPropertiesFile(filename, prefix + "colo"));
+        clusterObject.setColo(Config.getProperty(prefix + "colo"));
         // properties in the cluster needed when secure mode is on
         if (MerlinConstants.IS_SECURE) {
             // get the properties object for the cluster
@@ -893,13 +807,13 @@ public class Util {
             // add the namenode principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
                 "dfs.namenode.kerberos.principal",
-                readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none")));
+                Config.getProperty(prefix + "namenode.kerberos.principal", "none")));
 
             // add the hive meta store principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
                 "hive.metastore.kerberos" +
                     ".principal",
-                readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
+                Config.getProperty(prefix + "hive.metastore.kerberos" +
                     ".principal", "none")
             ));
 
@@ -916,14 +830,7 @@ public class Util {
                     .add(getFalconClusterPropertyObject("hive.metastore.uris", hcat_endpoint));
             }
         }
-
-
-        JAXBContext context = JAXBContext.newInstance(Cluster.class);
-        Marshaller m = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-
-        m.marshal(clusterObject, writer);
-        return writer.toString();
+        return clusterObject.toString();
     }
 
     public static org.apache.falcon.entity.v0.cluster.Property
@@ -950,7 +857,7 @@ public class Util {
         return null;
     }
 
-    public static boolean isDefinitionSame(PrismHelper server1, PrismHelper server2,
+    public static boolean isDefinitionSame(ColoHelper server1, ColoHelper server2,
                                            String entity)
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
         SAXException {
@@ -1107,7 +1014,7 @@ public class Util {
         return str;
     }
 
-    public static String getEntityDefinition(PrismHelper cluster,
+    public static String getEntityDefinition(ColoHelper cluster,
                                              String entity,
                                              boolean shouldReturn) throws
         JAXBException,

@@ -40,7 +40,6 @@ import org.apache.falcon.regression.core.util.Generator;
 import org.apache.falcon.regression.core.util.GraphAssert;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -50,10 +49,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.internal.collections.Pair;
 
-import javax.xml.bind.JAXBException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Random;
 
@@ -80,7 +75,7 @@ public class LineageApiTest extends BaseTestClass {
     FeedMerlin[] outputFeeds;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() {
         lineageHelper = new LineageHelper(prism);
     }
 
@@ -122,9 +117,7 @@ public class LineageApiTest extends BaseTestClass {
     public static FeedMerlin[] generateFeeds(final int numInputFeeds,
                                              final FeedMerlin originalFeedMerlin,
                                              final Generator nameGenerator,
-                                             final Generator pathGenerator)
-        throws JAXBException, NoSuchMethodException, InvocationTargetException,
-        IllegalAccessException, IOException, URISyntaxException, AuthenticationException {
+                                             final Generator pathGenerator) {
         FeedMerlin[] inputFeeds = new FeedMerlin[numInputFeeds];
         //submit all input feeds
         for(int count = 0; count < numInputFeeds; ++count) {

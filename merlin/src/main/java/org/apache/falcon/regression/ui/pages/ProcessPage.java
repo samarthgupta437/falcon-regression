@@ -20,7 +20,7 @@ package org.apache.falcon.regression.ui.pages;
 
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
@@ -42,7 +42,7 @@ public class ProcessPage extends EntityPage<Process> {
     private final static String LINEAGE_LINK_TEMPLATE =
         "//a[@class='lineage-href' and @data-instance-name='%s']";
 
-    public ProcessPage(WebDriver driver, PrismHelper helper, String entityName) {
+    public ProcessPage(WebDriver driver, ColoHelper helper, String entityName) {
         super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
     }
 

@@ -67,7 +67,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster);
 
-        String startDate = "2010-01-02T12:40Z";
+        String startDate = "2010-01-02T00:40Z";
         String endDate = "2010-01-02T01:11Z";
 
         bundle.setInputFeedDataPath(feedInputPath);

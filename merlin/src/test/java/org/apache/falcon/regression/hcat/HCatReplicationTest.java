@@ -95,17 +95,17 @@ public class HCatReplicationTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         Bundle bundle = BundleUtil.readHCatBundle();
-        bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster.getPrefix());
         bundles[0].generateUniqueBundle();
         bundles[0].setClusterInterface(Interfacetype.REGISTRY,
             cluster.getClusterHelper().getHCatEndpoint());
 
-        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[1] = new Bundle(bundle, cluster2.getPrefix());
         bundles[1].generateUniqueBundle();
         bundles[1].setClusterInterface(Interfacetype.REGISTRY, cluster2.getClusterHelper()
             .getHCatEndpoint());
 
-        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
+        bundles[2] = new Bundle(bundle, cluster3.getPrefix());
         bundles[2].generateUniqueBundle();
         bundles[2].setClusterInterface(Interfacetype.REGISTRY, cluster3.getClusterHelper()
             .getHCatEndpoint());

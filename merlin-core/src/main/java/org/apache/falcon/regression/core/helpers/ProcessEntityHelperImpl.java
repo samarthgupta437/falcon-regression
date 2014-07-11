@@ -22,21 +22,19 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBException;
-
 public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
     private static Logger logger = Logger.getLogger(ProcessEntityHelperImpl.class);
 
-    public ProcessEntityHelperImpl(String envFileName, String prefix) {
-        super(envFileName, prefix);
+    public ProcessEntityHelperImpl(String prefix) {
+        super(prefix);
     }
 
     public String getEntityType() {
         return "process";
     }
 
-    public String getEntityName(String entity) throws JAXBException {
+    public String getEntityName(String entity) {
         return Util.getProcessName(entity);
     }
 

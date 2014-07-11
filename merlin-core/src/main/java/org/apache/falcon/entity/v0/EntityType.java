@@ -82,7 +82,7 @@ public enum EntityType {
 
     public Unmarshaller getUnmarshaller() throws JAXBException {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        unmarshaller.setSchema(schema);
+        //unmarshaller.setSchema(schema);
         unmarshaller.setEventHandler(new EventHandler());
         return unmarshaller;
     }

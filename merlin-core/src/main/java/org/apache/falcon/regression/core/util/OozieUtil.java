@@ -20,7 +20,6 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.oozie.client.AuthOozieClient;
 import org.apache.oozie.client.BundleJob;
 import org.apache.oozie.client.CoordinatorAction;
@@ -36,7 +35,6 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 
-import javax.xml.bind.JAXBException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -194,7 +192,7 @@ public class OozieUtil {
         return getBundleIds(client, filter, 0, 10);
     }
 
-    public static List<DateTime> getStartTimeForRunningCoordinators(PrismHelper prismHelper,
+    public static List<DateTime> getStartTimeForRunningCoordinators(ColoHelper prismHelper,
                                                                     String bundleID)
         throws OozieClientException {
         List<DateTime> startTimes = new ArrayList<DateTime>();
@@ -239,7 +237,7 @@ public class OozieUtil {
         return false;
     }
 
-    public static List<String> getMissingDependencies(PrismHelper helper, String bundleID)
+    public static List<String> getMissingDependencies(ColoHelper helper, String bundleID)
         throws OozieClientException {
         BundleJob bundleJob = helper.getClusterHelper().getOozieClient().getBundleJobInfo(bundleID);
         CoordinatorJob jobInfo =
@@ -256,7 +254,7 @@ public class OozieUtil {
         return new ArrayList<String>(Arrays.asList(missingDependencies));
     }
 
-    public static List<String> getCoordinatorJobs(PrismHelper prismHelper, String bundleID)
+    public static List<String> getCoordinatorJobs(ColoHelper prismHelper, String bundleID)
         throws OozieClientException {
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
         waitForCoordinatorJobCreation(oozieClient, bundleID);
@@ -274,7 +272,7 @@ public class OozieUtil {
 
     }
 
-    public static Date getNominalTime(PrismHelper prismHelper, String bundleID)
+    public static Date getNominalTime(ColoHelper prismHelper, String bundleID)
         throws OozieClientException {
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
         BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
@@ -286,7 +284,7 @@ public class OozieUtil {
 
     }
 
-    public static CoordinatorJob getDefaultOozieCoord(PrismHelper prismHelper, String bundleId,
+    public static CoordinatorJob getDefaultOozieCoord(ColoHelper prismHelper, String bundleId,
                                                       ENTITY_TYPE type)
         throws OozieClientException {
         XOozieClient client = prismHelper.getClusterHelper().getOozieClient();
@@ -304,13 +302,13 @@ public class OozieUtil {
         return null;
     }
 
-    public static int getNumberOfWorkflowInstances(PrismHelper prismHelper, String bundleId)
+    public static int getNumberOfWorkflowInstances(ColoHelper prismHelper, String bundleId)
         throws OozieClientException {
         return getDefaultOozieCoord(prismHelper, bundleId,
             ENTITY_TYPE.PROCESS).getActions().size();
     }
 
-    public static List<String> getActionsNominalTime(PrismHelper prismHelper,
+    public static List<String> getActionsNominalTime(ColoHelper prismHelper,
                                                      String bundleId,
                                                      ENTITY_TYPE type)
         throws OozieClientException {
@@ -322,7 +320,7 @@ public class OozieUtil {
         return nominalTime;
     }
 
-    public static Map<Date, CoordinatorAction.Status> getActionsNominalTimeAndStatus(PrismHelper prismHelper, String bundleId,
+    public static Map<Date, CoordinatorAction.Status> getActionsNominalTimeAndStatus(ColoHelper prismHelper, String bundleId,
                                                                        ENTITY_TYPE type) throws OozieClientException {
         Map<Date, CoordinatorAction.Status> result = new TreeMap<Date, CoordinatorAction.Status>();
         List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
@@ -357,8 +355,7 @@ public class OozieUtil {
                                                String entity,
                                                boolean shouldBeCreated,
 
-                                               boolean matchInstances) throws OozieClientException,
-        JAXBException {
+                                               boolean matchInstances) throws OozieClientException {
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE entityType = Util.getEntityType(entity);
         String newBundleId = InstanceUtil.getLatestBundleID(cluster, entityName,
@@ -414,7 +411,7 @@ public class OozieUtil {
 
     public static String getCoordStartTime(ColoHelper colo, String entity,
                                            int bundleNo)
-        throws JAXBException, OozieClientException {
+        throws OozieClientException {
         String bundleID = InstanceUtil.getSequenceBundleID(colo,
             Util.readEntityName(entity), Util.getEntityType(entity), bundleNo);
 

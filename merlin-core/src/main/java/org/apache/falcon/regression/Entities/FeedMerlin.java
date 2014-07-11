@@ -20,17 +20,18 @@ package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.Cluster;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
-import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
@@ -38,8 +39,8 @@ public class FeedMerlin extends Feed {
 
     private static Logger logger = Logger.getLogger(FeedMerlin.class);
 
-    public FeedMerlin(String entity) throws JAXBException {
-        this(InstanceUtil.getFeedElement(entity));
+    public FeedMerlin(String entity) {
+        this((Feed) fromString(EntityType.FEED, entity));
     }
 
     public FeedMerlin(Feed element) {
@@ -94,7 +95,9 @@ public class FeedMerlin extends Feed {
     @Override
     public String toString() {
         try {
-            return InstanceUtil.feedElementToString(this);
+            StringWriter sw = new StringWriter();
+            EntityType.FEED.getMarshaller().marshal(this, sw);
+            return sw.toString();
         } catch (JAXBException e) {
             e.printStackTrace();
         }

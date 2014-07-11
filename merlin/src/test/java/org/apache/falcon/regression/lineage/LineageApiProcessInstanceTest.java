@@ -70,7 +70,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
 
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() {
         lineageHelper = new LineageHelper(prism);
     }
 

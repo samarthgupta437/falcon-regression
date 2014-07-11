@@ -21,7 +21,6 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -96,7 +95,7 @@ public class ELValidationsTest extends BaseTestClass {
     }
 
     @DataProvider(name = "EL-DP")
-    public Object[][] getELData(Method m) throws Exception {
+    public Object[][] getELData(Method m) {
         return new Object[][]{
             {"now(-3,0)", "now(4,20)"},
             {"yesterday(22,0)", "now(4,20)"},
@@ -123,7 +122,7 @@ public class ELValidationsTest extends BaseTestClass {
         Assert.fail("Response is not valid");
     }
 
-    private String testWith(PrismHelper prismHelper, ColoHelper server, String feedStart,
+    private String testWith(ColoHelper prismHelper, ColoHelper server, String feedStart,
                             String feedEnd, String processStart,
                             String processEnd,
                             String startInstance, String endInstance, boolean isMatch)
@@ -131,7 +130,7 @@ public class ELValidationsTest extends BaseTestClass {
         HadoopUtil.uploadDir(server.getClusterHelper().getHadoopFS(),
             aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = BundleUtil.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server.getEnvFileName(), server.getPrefix());
+        bundle = new Bundle(bundle, server.getPrefix());
         bundle.generateUniqueBundle();
         bundle.setProcessWorkflow(aggregateWorkflowDir);
         if (feedStart != null && feedEnd != null) {
@@ -160,7 +159,7 @@ public class ELValidationsTest extends BaseTestClass {
         }
     }
 
-    private void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle) {
+    private void getAndMatchDependencies(ColoHelper prismHelper, Bundle bundle) {
         try {
             List<String> bundles = null;
             for (int i = 0; i < 10; ++i) {
@@ -231,7 +230,7 @@ public class ELValidationsTest extends BaseTestClass {
 
     private List<String> getQADepedencyList(Calendar nominalTime, Date startRef,
                                             Date endRef, int frequency,
-                                            Bundle bundle) throws JAXBException {
+                                            Bundle bundle) {
         logger.info("start ref:" + startRef);
         logger.info("end ref:" + endRef);
         Calendar initialTime = Calendar.getInstance();

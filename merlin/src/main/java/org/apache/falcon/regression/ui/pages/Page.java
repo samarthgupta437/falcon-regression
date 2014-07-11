@@ -18,8 +18,9 @@
 
 package org.apache.falcon.regression.ui.pages;
 
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.TimeUtil;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.TimeoutException;
@@ -37,7 +38,9 @@ public abstract class Page {
     protected String expectedElement;
     protected String notFoundMsg;
 
-    Page(WebDriver driver, PrismHelper helper) {
+    private Logger logger = Logger.getLogger(Page.class);
+
+    Page(WebDriver driver, ColoHelper helper) {
         this.driver = driver;
         URL = helper.getClusterHelper().getHostname();
     }

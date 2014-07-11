@@ -21,10 +21,9 @@ package org.apache.falcon.regression.testHelper;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.KerberosHelper;
-import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.OozieClient;
@@ -32,7 +31,6 @@ import org.apache.oozie.client.OozieClient;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 public class BaseTestClass {
     private static String[] serverNames;
@@ -47,12 +45,11 @@ public class BaseTestClass {
         }
     }
 
-    public PrismHelper prism;
+    public ColoHelper prism;
     public List<ColoHelper> servers;
     public List<FileSystem> serverFS;
     public List<OozieClient> serverOC;
     public String baseHDFSDir = "/tmp/falcon-regression";
-    public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public static final String PRISM_PREFIX = "prism";
     protected Bundle[] bundles;
 
@@ -60,7 +57,7 @@ public class BaseTestClass {
     public BaseTestClass() {
         // loginFromKeytab as the current user
         KerberosHelper.loginFromKeytab(MerlinConstants.CURRENT_USER_NAME);
-        prism = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
+        prism = new ColoHelper(PRISM_PREFIX);
         servers = getServers();
         serverFS = new ArrayList<FileSystem>();
         serverOC = new ArrayList<OozieClient>();
@@ -78,8 +75,7 @@ public class BaseTestClass {
 
     private static void prepareProperties() {
 
-        Properties merlinProp = Util.getPropertiesObj(MERLIN_PROPERTIES);
-        serverNames = merlinProp.getProperty("servers").split(",");
+        serverNames = Config.getStringArray("servers");
         for (int i = 0; i < serverNames.length; i++)
             serverNames[i] = serverNames[i].trim();
     }
@@ -87,7 +83,7 @@ public class BaseTestClass {
     private List<ColoHelper> getServers() {
         ArrayList<ColoHelper> returnList = new ArrayList<ColoHelper>();
         for (String serverName : serverNames) {
-            returnList.add(new ColoHelper(MERLIN_PROPERTIES, serverName));
+            returnList.add(new ColoHelper(serverName));
         }
         return returnList;
     }

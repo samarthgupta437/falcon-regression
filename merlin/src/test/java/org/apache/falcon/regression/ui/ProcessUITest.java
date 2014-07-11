@@ -106,7 +106,7 @@ public class ProcessUITest extends BaseUITestClass {
         inputs.getInputs().add(input);
         process.setInputs(inputs);
 
-        bundles[0].setProcessData(InstanceUtil.processToString(process));
+        bundles[0].setProcessData(process.toString());
 
         //provide necessary data for first 3 instances to run
         logger.info("Creating necessary data...");

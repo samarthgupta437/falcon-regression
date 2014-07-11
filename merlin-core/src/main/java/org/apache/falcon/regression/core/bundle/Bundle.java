@@ -19,14 +19,13 @@
 package org.apache.falcon.regression.core.bundle;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.falcon.regression.Entities.ClusterMerlin;
-import org.apache.falcon.regression.Entities.FeedMerlin;
-import org.apache.falcon.regression.Entities.ProcessMerlin;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
+import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.entity.v0.cluster.Interface;
 import org.apache.falcon.entity.v0.cluster.Interfaces;
 import org.apache.falcon.entity.v0.cluster.Interfacetype;
-import org.apache.falcon.entity.v0.Frequency;
-import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.CatalogTable;
 import org.apache.falcon.entity.v0.feed.ClusterType;
@@ -50,12 +49,14 @@ import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.entity.v0.process.Retry;
 import org.apache.falcon.entity.v0.process.Workflow;
+import org.apache.falcon.regression.Entities.ClusterMerlin;
+import org.apache.falcon.regression.Entities.FeedMerlin;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -65,21 +66,15 @@ import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
-import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -91,9 +86,8 @@ import java.util.List;
  */
 public class Bundle {
 
-    public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public static final String PRISM_PREFIX = "prism";
-    static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
+    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
     private static final Logger logger = Logger.getLogger(Bundle.class);
 
     public List<String> dataSets;
@@ -205,44 +199,44 @@ public class Bundle {
         this.clusters.add(clusterData);
     }
 
-    public Bundle(Bundle bundle, String envFileName, String prefix) throws JAXBException {
+    public Bundle(Bundle bundle, String prefix) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
-        colohelper = new ColoHelper(envFileName, prefix);
+        colohelper = new ColoHelper(prefix);
         for (String cluster : bundle.getClusters()) {
-            this.clusters.add(Util.getEnvClusterXML(envFileName, cluster, prefix));
+            this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
         }
 
         if (null == bundle.getClusterHelper()) {
             this.clusterHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, envFileName, prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, prefix);
         } else {
             this.clusterHelper = bundle.getClusterHelper();
         }
 
         if (null == bundle.getProcessHelper()) {
             this.processHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, envFileName, prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, prefix);
         } else {
             this.processHelper = bundle.getProcessHelper();
         }
 
         if (null == bundle.getFeedHelper()) {
             this.feedHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, envFileName, prefix);
+                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, prefix);
         } else {
             this.feedHelper = bundle.getFeedHelper();
         }
     }
 
-    public Bundle(Bundle bundle, PrismHelper prismHelper) throws JAXBException {
+    public Bundle(Bundle bundle, ColoHelper prismHelper) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
         for (String cluster : bundle.getClusters()) {
             this.clusters
-                .add(Util.getEnvClusterXML(prismHelper.getEnvFileName(), cluster,
+                .add(Util.getEnvClusterXML(cluster,
                     prismHelper.getPrefix()));
         }
         this.clusterHelper = prismHelper.getClusterHelper();
@@ -254,7 +248,7 @@ public class Bundle {
         this.clusters = new ArrayList<String>(clusters);
     }
 
-    public List<String> getClusterNames() throws JAXBException {
+    public List<String> getClusterNames() {
         List<String> clusterNames = new ArrayList<String>();
         for (String cluster : clusters) {
             final org.apache.falcon.entity.v0.cluster.Cluster clusterObject =
@@ -287,10 +281,8 @@ public class Bundle {
     /**
      * Generates unique entities within a bundle changing their names and names of dependant items
      * to unique.
-     *
-     * @throws JAXBException
      */
-    public void generateUniqueBundle() throws JAXBException {
+    public void generateUniqueBundle() {
 
         this.oldClusters = new ArrayList<String>(this.clusters);
         this.clusters = Util.generateUniqueClusterEntity(clusters);
@@ -332,13 +324,9 @@ public class Bundle {
         }
     }
 
-    private String injectLateDataBasedOnInputs(String processData) throws JAXBException {
+    private String injectLateDataBasedOnInputs(String processData) {
 
-
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
 
         if (processElement.getLateProcess() != null) {
 
@@ -355,15 +343,9 @@ public class Bundle {
             processElement.getLateProcess().getLateInputs().clear();
             processElement.getLateProcess().getLateInputs().addAll(lateInput);
 
+            logger.info("process after late input set: " + processElement.toString());
 
-            java.io.StringWriter sw = new StringWriter();
-
-            Marshaller marshaller = jc.createMarshaller();
-            marshaller.marshal(processElement, sw);
-
-            logger.info("process after late input set: " + sw.toString());
-
-            return sw.toString();
+            return processElement.toString();
         }
 
         return processData;
@@ -376,23 +358,16 @@ public class Bundle {
      * @param uniqueCluster new cluster name
      * @param oldCluster old cluster name
      * @return feed definition with new cluster name
-     * @throws JAXBException
      */
-    private String injectNewDataIntoFeed(String dataSet, String uniqueCluster, String oldCluster)
-        throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller uc = jc.createUnmarshaller();
-        Feed feedElement = (Feed) uc.unmarshal(new StringReader(dataSet));
+    private String injectNewDataIntoFeed(String dataSet, String uniqueCluster, String oldCluster) {
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, dataSet);
         for (org.apache.falcon.entity.v0.feed.Cluster cluster : feedElement
             .getClusters().getClusters()) {
             if (cluster.getName().equalsIgnoreCase(oldCluster)) {
                 cluster.setName(uniqueCluster);
             }
         }
-        StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(feedElement, sw);
-        return sw.toString();
+        return feedElement.toString();
     }
 
     /**
@@ -406,17 +381,13 @@ public class Bundle {
      * @param uniqueCluster new cluster name
      * @param oldCluster old cluster name
      * @return modified process definition
-     * @throws JAXBException
      */
     private String injectNewDataIntoProcess(String processData, String oldDataName,
                                             String newDataName,
-                                            String uniqueCluster, String oldCluster)
-        throws JAXBException {
+                                            String uniqueCluster, String oldCluster) {
         if (processData.equals(""))
             return "";
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
         if (processElement.getInputs() != null)
             for (Input input : processElement.getInputs().getInputs()) {
                 if (input.getFeed().equals(oldDataName)) {
@@ -436,14 +407,11 @@ public class Bundle {
         }
 
         //now just wrap the process back!
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(processElement, sw);
-        return sw.toString();
+        return processElement.toString();
     }
 
 
-    public ServiceResponse submitBundle(PrismHelper prismHelper)
+    public ServiceResponse submitBundle(ColoHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
         submitClusters(prismHelper);
@@ -454,7 +422,7 @@ public class Bundle {
         return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public void updateWorkFlowFile() throws IOException, JAXBException {
+    public void updateWorkFlowFile() throws IOException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
         File wfFile = new File(sBundleLocation + "/workflow/workflow.xml");
@@ -488,7 +456,7 @@ public class Bundle {
      * @throws URISyntaxException
      * @throws AuthenticationException
      */
-    public String submitAndScheduleBundle(PrismHelper prismHelper)
+    public String submitAndScheduleBundle(ColoHelper prismHelper)
         throws IOException, JAXBException, URISyntaxException,
         AuthenticationException {
         if (colohelper != null) {
@@ -513,9 +481,8 @@ public class Bundle {
      * @param startEl its start in terms of EL expression
      * @param endEl its end in terms of EL expression
      * @return modified process
-     * @throws JAXBException
      */
-    public void setProcessInput(String startEl, String endEl) throws JAXBException {
+    public void setProcessInput(String startEl, String endEl) {
         Process process = InstanceUtil.getProcessElement(this);
         Inputs inputs = new Inputs();
         Input input = new Input();
@@ -525,19 +492,14 @@ public class Bundle {
         input.setName("inputData");
         inputs.getInputs().add(input);
         process.setInputs(inputs);
-        this.setProcessData(InstanceUtil.processToString(process));
+        this.setProcessData(process.toString());
     }
 
-    public void setInvalidData() throws JAXBException {
-
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-
-        Unmarshaller u = jc.createUnmarshaller();
-
+    public void setInvalidData() {
         int index = 0;
-        Feed dataElement = (Feed) u.unmarshal(new StringReader(dataSets.get(0)));
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(0));
         if (!dataElement.getName().contains("raaw-logs16")) {
-            dataElement = (Feed) u.unmarshal(new StringReader(dataSets.get(1)));
+            dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(1));
             index = 1;
         }
 
@@ -548,21 +510,11 @@ public class Bundle {
             oldLocation.substring(0, oldLocation.indexOf('$')) + "invalid/" +
                 oldLocation.substring(oldLocation.indexOf('$')));
         logger.info("new location: " + dataElement.getLocations().getLocations().get(0).getPath());
-
-        //lets marshall it back and return
-        java.io.StringWriter sw = new StringWriter();
-
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(dataElement, sw);
-
-        dataSets.set(index, sw.toString());
-
+        dataSets.set(index, dataElement.toString());
     }
 
 
-    public void setFeedValidity(String feedStart, String feedEnd, String feedName) throws
-        JAXBException {
+    public void setFeedValidity(String feedStart, String feedEnd, String feedName) {
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getClusters().getClusters().get(0).getValidity()
             .setStart(TimeUtil.oozieDateToDate(feedStart).toDate());
@@ -571,25 +523,23 @@ public class Bundle {
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
-    public int getInitialDatasetFrequency() throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Feed dataElement = (Feed) u.unmarshal((new StringReader(dataSets.get(0))));
+    public int getInitialDatasetFrequency() {
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(0));
         if (!dataElement.getName().contains("raaw-logs16")) {
-            dataElement = (Feed) u.unmarshal(new StringReader(dataSets.get(1)));
+            dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(1));
         }
         if (dataElement.getFrequency().getTimeUnit() == TimeUnit.hours)
             return (Integer.parseInt(dataElement.getFrequency().getFrequency())) * 60;
         else return (Integer.parseInt(dataElement.getFrequency().getFrequency()));
     }
 
-    public Date getStartInstanceProcess(Calendar time) throws JAXBException {
+    public Date getStartInstanceProcess(Calendar time) {
         Process processElement = InstanceUtil.getProcessElement(this);
         logger.info("start instance: " + processElement.getInputs().getInputs().get(0).getStart());
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getStart(), time);
     }
 
-    public Date getEndInstanceProcess(Calendar time) throws JAXBException {
+    public Date getEndInstanceProcess(Calendar time) {
         Process processElement = InstanceUtil.getProcessElement(this);
         logger.info("end instance: " + processElement.getInputs().getInputs().get(0).getEnd());
         logger.info("timezone in getendinstance: " + time.getTimeZone().toString());
@@ -597,21 +547,21 @@ public class Bundle {
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getEnd(), time);
     }
 
-    public void setDatasetInstances(String startInstance, String endInstance) throws JAXBException {
+    public void setDatasetInstances(String startInstance, String endInstance) {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.getInputs().getInputs().get(0).setStart(startInstance);
         processElement.getInputs().getInputs().get(0).setEnd(endInstance);
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
+    public void setProcessPeriodicity(int frequency, TimeUnit periodicity) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Frequency frq = new Frequency("" + frequency, periodicity);
         processElement.setFrequency(frq);
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessInputStartEnd(String start, String end) throws JAXBException {
+    public void setProcessInputStartEnd(String start, String end) {
         Process processElement = InstanceUtil.getProcessElement(this);
         for (Input input : processElement.getInputs().getInputs()) {
             input.setStart(start);
@@ -620,10 +570,8 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setOutputFeedPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+    public void setOutputFeedPeriodicity(int frequency, TimeUnit periodicity) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
         String outputDataset = null;
         int datasetIndex;
         for (datasetIndex = 0; datasetIndex < dataSets.size(); datasetIndex++) {
@@ -633,27 +581,19 @@ public class Bundle {
             }
         }
 
-        jc = JAXBContext.newInstance(Feed.class);
-        u = jc.createUnmarshaller();
-        Feed feedElement = (Feed) u.unmarshal((new StringReader(outputDataset)));
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, outputDataset);
 
         feedElement.setFrequency(new Frequency("" + frequency, periodicity));
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(feedElement, sw);
-        dataSets.set(datasetIndex, sw.toString());
+        dataSets.set(datasetIndex, feedElement.toString());
         logger.info("modified o/p dataSet is: " + dataSets.get(datasetIndex));
     }
 
-    public int getProcessConcurrency() throws JAXBException {
+    public int getProcessConcurrency() {
         return InstanceUtil.getProcessElement(this).getParallel();
     }
 
-    public void setOutputFeedLocationData(String path) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+    public void setOutputFeedLocationData(String path) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
         String outputDataset = null;
         int datasetIndex;
         for (datasetIndex = 0; datasetIndex < dataSets.size(); datasetIndex++) {
@@ -663,37 +603,30 @@ public class Bundle {
             }
         }
 
-        jc = JAXBContext.newInstance(Feed.class);
-        u = jc.createUnmarshaller();
-        Feed feedElement = (Feed) u.unmarshal((new StringReader(outputDataset)));
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, outputDataset);
         Location l = new Location();
         l.setPath(path);
         l.setType(LocationType.DATA);
         feedElement.getLocations().getLocations().set(0, l);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(feedElement, sw);
-        dataSets.set(datasetIndex, sw.toString());
+        dataSets.set(datasetIndex, feedElement.toString());
         logger.info("modified location path dataSet is: " + dataSets.get(datasetIndex));
     }
 
-    public void setProcessConcurrency(int concurrency) throws JAXBException {
+    public void setProcessConcurrency(int concurrency) {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.setParallel((concurrency));
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessWorkflow(String wfPath) throws JAXBException {
+    public void setProcessWorkflow(String wfPath) {
         setProcessWorkflow(wfPath, null);
     }
 
-    public void setProcessWorkflow(String wfPath, EngineType engineType) throws JAXBException {
+    public void setProcessWorkflow(String wfPath, EngineType engineType) {
         setProcessWorkflow(wfPath, null, engineType);
     }
 
-    public void setProcessWorkflow(String wfPath, String libPath, EngineType engineType)
-        throws JAXBException {
+    public void setProcessWorkflow(String wfPath, String libPath, EngineType engineType) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow w = processElement.getWorkflow();
         if (engineType != null) {
@@ -707,14 +640,12 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public Process getProcessObject() throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Process.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (Process) um.unmarshal(new StringReader(getProcessData()));
+    public Process getProcessObject() {
+        return (Process) Entity.fromString(EntityType.PROCESS, getProcessData());
     }
 
 
-    public String getFeed(String feedName) throws JAXBException {
+    public String getFeed(String feedName) {
         for (String feed : getDataSets()) {
             if (Util.readDatasetName(feed).contains(feedName)) {
                 return feed;
@@ -724,7 +655,7 @@ public class Bundle {
         return null;
     }
 
-    public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) throws JAXBException {
+    public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         Frequency frq = new Frequency("" + frequency, periodicity);
@@ -733,44 +664,38 @@ public class Bundle {
 
     }
 
-    public void setInputFeedValidity(String startInstance, String endInstance)
-        throws JAXBException {
+    public void setInputFeedValidity(String startInstance, String endInstance) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
-    public void setOutputFeedValidity(String startInstance, String endInstance)
-        throws JAXBException {
+    public void setOutputFeedValidity(String startInstance, String endInstance) {
         String feedName = BundleUtil.getOutputFeedNameFromBundle(this);
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
-    public void setInputFeedDataPath(String path) throws JAXBException {
+    public void setInputFeedDataPath(String path) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.getLocations().getLocations().get(0).setPath(path);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
-    public String getFeedDataPathPrefix() throws JAXBException {
+    public String getFeedDataPathPrefix() {
         Feed feedElement =
             InstanceUtil.getFeedElement(this, BundleUtil.getInputFeedNameFromBundle(this));
         return Util.getPathPrefix(feedElement.getLocations().getLocations().get(0)
             .getPath());
     }
 
-    public void setProcessValidity(DateTime startDate, DateTime endDate) throws JAXBException {
-
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
+    public void setProcessValidity(DateTime startDate, DateTime endDate) {
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd/HH:mm");
 
         String start = formatter.print(startDate).replace("/", "T") + "Z";
         String end = formatter.print(endDate).replace("/", "T") + "Z";
 
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
 
         for (Cluster cluster : processElement.getClusters().getClusters()) {
 
@@ -782,25 +707,13 @@ public class Bundle {
 
         }
 
-
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-        processData = sw.toString();
+        processData = processElement.toString();
     }
 
-    public void setProcessValidity(String startDate, String endDate) throws JAXBException {
-
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-
-
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+    public void setProcessValidity(String startDate, String endDate) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
 
         for (Cluster cluster : processElement.getClusters().getClusters()) {
-
             org.apache.falcon.entity.v0.process.Validity validity =
                 new org.apache.falcon.entity.v0.process.Validity();
             validity.setStart(TimeUtil.oozieDateToDate(startDate).toDate());
@@ -809,30 +722,17 @@ public class Bundle {
 
         }
 
-
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-        processData = sw.toString();
+        processData = processElement.toString();
     }
 
-    public void setProcessLatePolicy(LateProcess lateProcess) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Process processElement = (Process) u.unmarshal((new StringReader(processData)));
+    public void setProcessLatePolicy(LateProcess lateProcess) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
         processElement.setLateProcess(lateProcess);
-
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processElement, sw);
-        processData = sw.toString();
+        processData = processElement.toString();
     }
 
 
-    public void verifyDependencyListing() throws JAXBException {
+    public void verifyDependencyListing() {
         //display dependencies of process:
         String dependencies = processHelper.getDependencies(Util.readEntityName(getProcessData()));
 
@@ -853,7 +753,7 @@ public class Bundle {
 
     }
 
-    public void addProcessInput(String feed, String feedName) throws JAXBException {
+    public void addProcessInput(String feed, String feedName) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
@@ -866,33 +766,29 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
-    public void setProcessName(String newName) throws JAXBException {
+    public void setProcessName(String newName) {
         Process processElement = InstanceUtil.getProcessElement(this);
         processElement.setName(newName);
         InstanceUtil.writeProcessElement(this, processElement);
 
     }
 
-    public void setRetry(Retry retry) throws JAXBException {
+    public void setRetry(Retry retry) {
         logger.info("old process: " + Util.prettyPrintXml(processData));
         Process processObject = getProcessObject();
         processObject.setRetry(retry);
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = JAXBContext.newInstance(Process.class).createMarshaller();
-        marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
-        marshaller.marshal(processObject, sw);
-        processData = sw.toString();
+        processData = processObject.toString();
         logger.info("updated process: " + Util.prettyPrintXml(processData));
     }
 
-    public void setInputFeedAvailabilityFlag(String flag) throws JAXBException {
+    public void setInputFeedAvailabilityFlag(String flag) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
         feedElement.setAvailabilityFlag(flag);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
-    public void setCLusterColo(String colo) throws JAXBException {
+    public void setCLusterColo(String colo) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
             InstanceUtil.getClusterElement(this);
         c.setColo(colo);
@@ -900,8 +796,7 @@ public class Bundle {
 
     }
 
-    public void setClusterInterface(Interfacetype interfacetype, String value)
-        throws JAXBException {
+    public void setClusterInterface(Interfacetype interfacetype, String value) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
             InstanceUtil.getClusterElement(this);
         final Interfaces interfaces = c.getInterfaces();
@@ -915,28 +810,29 @@ public class Bundle {
         clusters.set(0, clusterData);
     }
 
-    public void setInputFeedTableUri(String tableUri) throws JAXBException {
+    public void setInputFeedTableUri(String tableUri) {
         final String feedStr = BundleUtil.getInputFeedFromBundle(this);
-        Feed feed = InstanceUtil.getFeedElement(feedStr);
+        Feed feed = (Feed) Entity.fromString(EntityType.FEED, feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
         InstanceUtil.writeFeedElement(this, feed, feed.getName());
     }
 
-    public void setOutputFeedTableUri(String tableUri) throws JAXBException {
+    public void setOutputFeedTableUri(String tableUri) {
         final String feedStr = BundleUtil.getOutputFeedFromBundle(this);
-        Feed feed = InstanceUtil.getFeedElement(feedStr);
+        Feed feed = (Feed) Entity.fromString(EntityType.FEED, feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
         InstanceUtil.writeFeedElement(this, feed, feed.getName());
     }
 
-    public void setCLusterWorkingPath(String clusterData, String path) throws JAXBException {
+    public void setCLusterWorkingPath(String clusterData, String path) {
 
         org.apache.falcon.entity.v0.cluster.Cluster c =
-            InstanceUtil.getClusterElement(clusterData);
+            (org.apache.falcon.entity.v0.cluster.Cluster)
+                Entity.fromString(EntityType.CLUSTER, clusterData);
 
         for (int i = 0; i < c.getLocations().getLocations().size(); i++) {
             if (c.getLocations().getLocations().get(i).getName().contains("working"))
@@ -948,12 +844,12 @@ public class Bundle {
     }
 
 
-    public void submitClusters(PrismHelper prismHelper)
+    public void submitClusters(ColoHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         submitClusters(prismHelper, null);
     }
 
-    public void submitClusters(PrismHelper prismHelper, String user)
+    public void submitClusters(ColoHelper prismHelper, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String cluster : this.clusters) {
             AssertUtil.assertSucceeded(
@@ -961,7 +857,7 @@ public class Bundle {
         }
     }
 
-    public void submitFeeds(PrismHelper prismHelper)
+    public void submitFeeds(ColoHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String feed : this.dataSets) {
             AssertUtil.assertSucceeded(
@@ -971,7 +867,7 @@ public class Bundle {
 
     public void addClusterToBundle(String clusterData, ClusterType type,
                                    String startTime, String endTime
-    ) throws JAXBException {
+    ) {
 
         clusterData = setNewClusterName(clusterData);
 
@@ -1008,13 +904,13 @@ public class Bundle {
 
     }
 
-    private String setNewClusterName(String clusterData) throws JAXBException {
+    private String setNewClusterName(String clusterData) {
         ClusterMerlin clusterObj = new ClusterMerlin(clusterData);
         clusterObj.setName(clusterObj.getName() + this.clusters.size() + 1);
         return clusterObj.toString();
     }
 
-    public void deleteBundle(PrismHelper prismHelper) {
+    public void deleteBundle(ColoHelper prismHelper) {
 
         try {
             prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
@@ -1038,12 +934,12 @@ public class Bundle {
 
     }
 
-    public String getProcessName() throws JAXBException {
+    public String getProcessName() {
 
         return Util.getProcessName(this.getProcessData());
     }
 
-    public void setProcessLibPath(String libPath) throws JAXBException {
+    public void setProcessLibPath(String libPath) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
         wf.setLib(libPath);
@@ -1052,7 +948,7 @@ public class Bundle {
 
     }
 
-    public void setProcessTimeOut(int magnitude, TimeUnit unit) throws JAXBException {
+    public void setProcessTimeOut(int magnitude, TimeUnit unit) {
         Process processElement = InstanceUtil.getProcessElement(this);
         Frequency frq = new Frequency("" + magnitude, unit);
         processElement.setTimeout(frq);
@@ -1085,23 +981,24 @@ public class Bundle {
      * @param startTime start of feeds and process validity on every cluster
      * @param endTime end of feeds and process validity on every cluster
      * @return modified bundle
-     * @throws JAXBException
      */
     public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
                                     String inputBasePaths, int numberOfOutputs, String startTime,
-                                    String endTime) throws JAXBException {
+                                    String endTime) {
 
         //generate and set clusters
-        org.apache.falcon.entity.v0.cluster.Cluster c = InstanceUtil
-            .getClusterElement(Util.generateUniqueClusterEntity(b.getClusters().get(0)));
+        org.apache.falcon.entity.v0.cluster.Cluster c =
+            (org.apache.falcon.entity.v0.cluster.Cluster)
+                Entity.fromString(EntityType.CLUSTER,
+                    Util.generateUniqueClusterEntity(b.getClusters().get(0)));
         List<String> newClusters = new ArrayList<String>();
         List<String> newDataSets = new ArrayList<String>();
 
         for (int i = 0; i < numberOfClusters; i++) {
             String clusterName = c.getName() + i;
             c.setName(clusterName);
-            newClusters.add(i, InstanceUtil.ClusterElementToString(c));
+            newClusters.add(i, c.toString());
         }
         b.setClusterData(newClusters);
 
@@ -1143,13 +1040,12 @@ public class Bundle {
      * @param numberOfOptionalInput how many inputs should be optional
      * @param numberOfOutputs number of outputs
      * @return modified process
-     * @throws JAXBException
      */
     public String setProcessFeeds(String process, List<String> newDataSets,
                                   int numberOfInputs, int numberOfOptionalInput,
-                                  int numberOfOutputs) throws JAXBException {
+                                  int numberOfOutputs) {
 
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         int numberOfOptionalSet = 0;
         boolean isFirst = true;
 
@@ -1189,7 +1085,7 @@ public class Bundle {
         }
         p.setOutputs(os);
         p.setLateProcess(null);
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1201,12 +1097,11 @@ public class Bundle {
      * @param startTime start of process validity on every cluster
      * @param endTime end of process validity on every cluster
      * @return modified process definition
-     * @throws JAXBException
      */
     public String setProcessClusters(String process, List<String> newClusters, String startTime,
-                                     String endTime) throws JAXBException {
+                                     String endTime) {
 
-        Process p = InstanceUtil.getProcessElement(process);
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         org.apache.falcon.entity.v0.process.Clusters cs =
             new org.apache.falcon.entity.v0.process.Clusters();
         for (String newCluster : newClusters) {
@@ -1220,7 +1115,7 @@ public class Bundle {
             cs.getClusters().add(c);
         }
         p.setClusters(cs);
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1232,13 +1127,12 @@ public class Bundle {
      * @param startTime start of feed validity on every cluster
      * @param endTime end of feed validity on every cluster
      * @return modified feed definition
-     * @throws JAXBException
      */
     public String setFeedClusters(String referenceFeed,
                                   List<String> newClusters, String location, String startTime,
-                                  String endTime) throws JAXBException {
+                                  String endTime) {
 
-        Feed f = InstanceUtil.getFeedElement(referenceFeed);
+        Feed f = (Feed) Entity.fromString(EntityType.FEED, referenceFeed);
         Clusters cs = new Clusters();
         f.setFrequency(new Frequency("" + 5, TimeUnit.minutes));
 
@@ -1267,10 +1161,10 @@ public class Bundle {
             cs.getClusters().add(c);
         }
         f.setClusters(cs);
-        return InstanceUtil.feedElementToString(f);
+        return f.toString();
     }
 
-    public void submitAndScheduleBundle(Bundle b, PrismHelper prismHelper,
+    public void submitAndScheduleBundle(Bundle b, ColoHelper prismHelper,
                                         boolean checkSuccess)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 
@@ -1300,14 +1194,13 @@ public class Bundle {
      * @param process process definition to be modified
      * @param names desired names of inputs
      * @return modified process definition
-     * @throws JAXBException
      */
-    public String setProcessInputNames(String process, String... names) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+    public String setProcessInputNames(String process, String... names) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (int i = 0; i < names.length; i++) {
             p.getInputs().getInputs().get(i).setName(names[i]);
         }
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1316,14 +1209,13 @@ public class Bundle {
      * @param process process definition to be modified
      * @param properties desired properties to be added
      * @return modified process definition
-     * @throws JAXBException
      */
-    public String addProcessProperty(String process, Property... properties) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+    public String addProcessProperty(String process, Property... properties) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (Property property : properties) {
             p.getProperties().getProperties().add(property);
         }
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     /**
@@ -1332,15 +1224,13 @@ public class Bundle {
      * @param process process definition to be modified
      * @param partition partitions to be set
      * @return modified process definition
-     * @throws JAXBException
      */
-    public String setProcessInputPartition(String process, String... partition)
-        throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+    public String setProcessInputPartition(String process, String... partition) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         for (int i = 0; i < partition.length; i++) {
             p.getInputs().getInputs().get(i).setPartition(partition[i]);
         }
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
     public static Object[][] readBundle(String bundleLocation) throws IOException {
@@ -1356,8 +1246,8 @@ public class Bundle {
         return testData;
     }
 
-    public String setProcessOutputNames(String process, String... names) throws JAXBException {
-        Process p = InstanceUtil.getProcessElement(process);
+    public String setProcessOutputNames(String process, String... names) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         Outputs outputs = p.getOutputs();
         if (outputs.getOutputs().size() != names.length) {
             logger.info("Number of output names not equal to output in processdef");
@@ -1367,16 +1257,15 @@ public class Bundle {
             outputs.getOutputs().get(i).setName(names[i]);
         }
         p.setOutputs(outputs);
-        return InstanceUtil.processToString(p);
+        return p.toString();
     }
 
-    public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx)
-        throws JAXBException {
+    public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) {
         this.getDataSets().add(feed);
         String feedName = Util.readEntityName(feed);
         String processData = getProcessData();
 
-        Process processObject = InstanceUtil.getProcessElement(processData);
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
         final List<Input> processInputs = processObject.getInputs().getInputs();
         Input templateInput = processInputs.get(templateInputIdx);
         Input newInput = new Input();
@@ -1390,8 +1279,7 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processObject);
     }
 
-    public void addOutputFeedToBundle(String feedRefName, String feed, int templateOutputIdx)
-        throws JAXBException {
+    public void addOutputFeedToBundle(String feedRefName, String feed, int templateOutputIdx) {
         this.getDataSets().add(feed);
         String feedName = Util.readEntityName(feed);
         Process processObject = getProcessObject();
@@ -1405,9 +1293,7 @@ public class Bundle {
         InstanceUtil.writeProcessElement(this, processObject);
     }
 
-    public void setProcessProperty(String property, String value)
-        throws JAXBException, IllegalAccessException, NoSuchMethodException,
-        InvocationTargetException {
+    public void setProcessProperty(String property, String value) {
 
         ProcessMerlin process = new ProcessMerlin(this.getProcessData());
         process.setProperty(property, value);

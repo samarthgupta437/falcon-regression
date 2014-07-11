@@ -19,15 +19,17 @@
 package org.apache.falcon.regression.prism;
 
 
-import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -39,6 +41,7 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
+import org.apache.log4j.Logger;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
@@ -52,15 +55,9 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.apache.log4j.Logger;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -125,20 +122,14 @@ public class RetentionTest extends BaseTestClass {
         }
     }
 
-    private String setFeedPathValue(String feed, String pathValue) throws Exception {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
-
-        //set the value
+    private String setFeedPathValue(String feed, String pathValue) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType() == LocationType.DATA) {
                 location.setPath(pathValue);
             }
         }
-
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString();
+        return feedObject.toString();
     }
 
     private void replenishData(String dataType, boolean gap,
@@ -175,8 +166,7 @@ public class RetentionTest extends BaseTestClass {
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
                                              String interval)
-        throws JAXBException, OozieClientException, IOException, URISyntaxException,
-        AuthenticationException {
+        throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
             Util.getHadoopDataFromDir(cluster, inputFeed,
@@ -310,11 +300,8 @@ public class RetentionTest extends BaseTestClass {
                 "not same!");
     }
 
-    private static String insertRetentionValueInFeed(String feed, String retentionValue)
-        throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
+    private static String insertRetentionValueInFeed(String feed, String retentionValue) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
 
         //insert retentionclause
         feedObject.getClusters().getClusters().get(0).getRetention()
@@ -325,16 +312,12 @@ public class RetentionTest extends BaseTestClass {
             cluster.getRetention().setLimit(new Frequency(retentionValue));
         }
 
-        StringWriter writer = new StringWriter();
-        Marshaller m = context.createMarshaller();
-        m.marshal(feedObject, writer);
-
-        return writer.toString();
+        return feedObject.toString();
 
     }
 
     private void verifyFeedDeletion(String feed)
-        throws JAXBException, IOException {
+        throws IOException {
         String directory = "/projects/ivory/staging/" + cluster.getFeedHelper().getServiceUser()
             + "/workflows/feed/" + Util.readDatasetName(feed);
         //make sure feed bundle is not there
@@ -426,7 +409,7 @@ public class RetentionTest extends BaseTestClass {
 
     private List<String> filterDataOnRetention(String feed, int time, String interval,
                                                DateTime endDate,
-                                               List<String> inputData) throws JAXBException {
+                                               List<String> inputData) {
         String locationType = "";
         String appender = "";
 
@@ -434,15 +417,13 @@ public class RetentionTest extends BaseTestClass {
         List<String> finalData = new ArrayList<String>();
 
         //determine what kind of data is there in the feed!
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
 
         for (Location location : feedObject.getLocations().getLocations()) {
             if (location.getType() == LocationType.DATA) {
                 locationType = location.getPath();
             }
         }
-
 
         if (locationType.equalsIgnoreCase("") || locationType.equalsIgnoreCase(null)) {
             throw new TestNGException("location type was not mentioned in your feed!");
