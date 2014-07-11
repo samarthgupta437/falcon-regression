@@ -42,7 +42,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 public class OozieUtil {
 
@@ -117,11 +116,10 @@ public class OozieUtil {
      * @param oozieClient
      * @return list of action ids of the succeeded retention workflow
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static List<String> waitForRetentionWorkflowToSucceed(String bundleID,
                                                                  OozieClient oozieClient)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         List<String> jobIds = new ArrayList<String>();
         logger.info("using bundleId:" + bundleID);
@@ -132,7 +130,7 @@ public class OozieUtil {
 
         for (int i = 0;
              i < 120 && oozieClient.getCoordJobInfo(coordinatorId).getActions().isEmpty(); ++i) {
-            Thread.sleep(4000);
+            TimeUtil.sleepSeconds(4);
         }
         Assert.assertFalse(oozieClient.getCoordJobInfo(coordinatorId).getActions().isEmpty(),
             "Coordinator actions should have got created by now.");
@@ -150,7 +148,7 @@ public class OozieUtil {
                     actionInfo.getStatus() == CoordinatorAction.Status.FAILED) {
                     break;
                 }
-                Thread.sleep(10000);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertEquals(
                 oozieClient.getCoordActionInfo(action.getId()).getStatus(),
@@ -169,11 +167,7 @@ public class OozieUtil {
         logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         for (int i = 0;
              i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                //ignore
-            }
+            TimeUtil.sleepSeconds(2);
         }
         Assert.assertFalse(oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(),
             "Coordinator job should have got created by now.");
@@ -231,14 +225,14 @@ public class OozieUtil {
 
     public static boolean verifyOozieJobStatus(OozieClient client, String processName,
                                                ENTITY_TYPE entityType, Job.Status expectedStatus)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         for (int seconds = 0; seconds < 100; seconds+=5) {
             Job.Status status = getOozieJobStatus(client, processName, entityType);
             logger.info("Current status: " + status);
             if (status == expectedStatus) {
                 return true;
             }
-            TimeUnit.SECONDS.sleep(5);
+            TimeUtil.sleepSeconds(5);
         }
         return false;
     }
@@ -350,12 +344,7 @@ public class OozieUtil {
             return true;
         }
 
-
-        try {
-            TimeUnit.SECONDS.sleep(20);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(20);
         return false;
     }
 

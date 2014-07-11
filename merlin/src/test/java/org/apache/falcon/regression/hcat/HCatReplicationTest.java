@@ -184,7 +184,7 @@ public class HCatReplicationTest extends BaseTestClass {
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed)
         );
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
@@ -279,7 +279,7 @@ public class HCatReplicationTest extends BaseTestClass {
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed)
         );
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),

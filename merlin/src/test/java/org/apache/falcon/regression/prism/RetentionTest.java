@@ -166,8 +166,7 @@ public class RetentionTest extends BaseTestClass {
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
                                              String interval)
-        throws OozieClientException, IOException, URISyntaxException,
-        InterruptedException, AuthenticationException {
+        throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
             Util.getHadoopDataFromDir(cluster, inputFeed,

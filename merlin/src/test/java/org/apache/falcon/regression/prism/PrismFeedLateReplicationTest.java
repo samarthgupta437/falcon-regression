@@ -127,7 +127,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         String bundleId =
             InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
@@ -145,10 +145,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 == WorkflowJob.Status.SUCCEEDED) {
                 break;
             }
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         List<String> inputFolderListForColo1 =
             InstanceUtil.getInputFoldersForInstanceForReplication(cluster1,
@@ -200,7 +200,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         String postFix = "/US/" + cluster2.getClusterHelper().getColoName();
         String prefix = bundles[0].getFeedDataPathPrefix();
@@ -212,7 +212,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
-        Thread.sleep(60000);
+        TimeUtil.sleepSeconds(60);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId = InstanceUtil
@@ -231,7 +231,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
@@ -241,7 +241,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0),
             WorkflowJob.Status.SUCCEEDED);
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         List<String> inputFolderListForColo1 = InstanceUtil
             .getInputFoldersForInstanceForReplication(cluster1, replicationCoordIDTarget.get(0),
@@ -277,7 +277,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
                 replicationCoordIDTarget.get(0), 0),
@@ -286,7 +286,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0),
             WorkflowJob.Status.SUCCEEDED);
 
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         //put data for the second time
         InstanceUtil.putLateDataInFolders(cluster2,
@@ -393,7 +393,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
@@ -412,7 +412,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
@@ -422,7 +422,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0), WorkflowJob.Status.SUCCEEDED,
             "Replication job should have succeeded.");
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
         // be present. both of them should have _success
@@ -479,11 +479,11 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
 
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         //put data for the second time
         InstanceUtil.putLateDataInFolders(cluster2, inputFolderListForColo1, 2);
@@ -586,13 +586,13 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         //put _SUCCESS in parent folder of UA3
         Util.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //submit and schedule feed
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
@@ -612,7 +612,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             }
 
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
@@ -622,7 +622,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0), WorkflowJob.Status.SUCCEEDED,
             "Replication job did not succeed");
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         /* check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
            be present. both of

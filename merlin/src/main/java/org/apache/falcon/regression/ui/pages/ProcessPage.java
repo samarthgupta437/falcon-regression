@@ -21,6 +21,7 @@ package org.apache.falcon.regression.ui.pages;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -159,11 +160,7 @@ public class ProcessPage extends EntityPage<Process> {
                 particularBlock + CIRCLE_XPATH));
             Actions builder = new Actions(driver);
             builder.click(circle).build().perform();
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                logger.info("Sleep was interrupted");
-            }
+            TimeUtil.sleepSeconds(0.5);
         }
     }
 

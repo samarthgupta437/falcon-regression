@@ -25,6 +25,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
@@ -125,8 +126,7 @@ public class ELValidationsTest extends BaseTestClass {
                             String feedEnd, String processStart,
                             String processEnd,
                             String startInstance, String endInstance, boolean isMatch)
-        throws IOException, JAXBException, ParseException, URISyntaxException,
-        InterruptedException {
+        throws IOException, JAXBException, ParseException, URISyntaxException {
         HadoopUtil.uploadDir(server.getClusterHelper().getHadoopFS(),
             aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle bundle = BundleUtil.readELBundles()[0][0];
@@ -146,7 +146,7 @@ public class ELValidationsTest extends BaseTestClass {
             bundle.setDatasetInstances(startInstance, endInstance);
             String submitResponse = bundle.submitAndScheduleBundle(prismHelper);
             logger.info("processData in try is: " + Util.prettyPrintXml(bundle.getProcessData()));
-            Thread.sleep(45000);
+            TimeUtil.sleepSeconds(45);
             if (isMatch)
                 getAndMatchDependencies(server, bundle);
             return submitResponse;
@@ -168,7 +168,7 @@ public class ELValidationsTest extends BaseTestClass {
                 if (bundles.size() > 0) {
                     break;
                 }
-                Thread.sleep(30000);
+                TimeUtil.sleepSeconds(30);
             }
             Assert.assertTrue(bundles != null && bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
@@ -176,7 +176,7 @@ public class ELValidationsTest extends BaseTestClass {
             List<String> missingDependencies =
                 OozieUtil.getMissingDependencies(prismHelper, coordID);
             for (int i = 0; i < 10 && missingDependencies == null; ++i) {
-                Thread.sleep(30000);
+                TimeUtil.sleepSeconds(30);
                 missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);
             }
             Assert.assertNotNull(missingDependencies, "Missing dependencies not found.");

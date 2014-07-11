@@ -471,11 +471,7 @@ public class Bundle {
             prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, getProcessData());
         logger.info("process schedule result=" + scheduleResult.getMessage());
         AssertUtil.assertSucceeded(scheduleResult);
-        try {
-            Thread.sleep(7000);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(7);
         return scheduleResult.getMessage();
     }
 

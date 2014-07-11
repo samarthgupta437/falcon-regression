@@ -456,7 +456,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void U1KillSomeU2RerunAllProcessInstances()
-        throws IOException, JAXBException, InterruptedException,
+        throws IOException, JAXBException,
         AuthenticationException, URISyntaxException, OozieClientException {
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);

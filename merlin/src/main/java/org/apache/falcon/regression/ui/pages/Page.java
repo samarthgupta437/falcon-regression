@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.ui.pages;
 
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
@@ -102,11 +103,7 @@ public abstract class Page {
         WebElement element = driver.findElement(By.xpath(xpath));
         for (int i = 0; i < timeoutSeconds * 10; i++) {
             if (element.isDisplayed()) return;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                logger.info("Sleep was interrupted");
-            }
+            TimeUtil.sleepSeconds(0.1);
         }
         throw new TimeoutException(errMessage);
     }

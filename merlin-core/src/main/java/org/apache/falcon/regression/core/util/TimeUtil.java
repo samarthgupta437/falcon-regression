@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /*
@@ -38,6 +40,18 @@ instanceUtil to here , pending item.
  */
 
 public class TimeUtil {
+
+    private static Logger logger = Logger.getLogger(TimeUtil.class);
+
+    public static void sleepSeconds(double seconds) {
+        long ms = (long) (seconds * 1000);
+        try {
+            TimeUnit.MILLISECONDS.sleep(ms);
+        } catch (InterruptedException e) {
+            logger.info("Sleep was interrupted");
+        }
+    }
+
     public static String get20roundedTime(String oozieBaseTime) {
         DateTime startTime =
             new DateTime(oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
@@ -233,11 +247,7 @@ public class TimeUtil {
             if (sysDate.compareTo(finalDate) > 0)
                 break;
 
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                InstanceUtil.logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(15);
         }
 
     }

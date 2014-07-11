@@ -250,7 +250,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
@@ -317,7 +317,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
