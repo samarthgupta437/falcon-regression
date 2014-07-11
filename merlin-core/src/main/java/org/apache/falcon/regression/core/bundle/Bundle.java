@@ -99,6 +99,14 @@ public class Bundle {
 
     private static String sBundleLocation;
 
+    List<String> oldClusters;
+
+    IEntityManagerHelper clusterHelper;
+    IEntityManagerHelper processHelper;
+    IEntityManagerHelper feedHelper;
+
+    private ColoHelper colohelper;
+
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
 
@@ -167,14 +175,6 @@ public class Bundle {
     public List<String> getClusters() {
         return clusters;
     }
-
-    List<String> oldClusters;
-
-    IEntityManagerHelper clusterHelper;
-    IEntityManagerHelper processHelper;
-    IEntityManagerHelper feedHelper;
-
-    private ColoHelper colohelper;
 
     public IEntityManagerHelper getClusterHelper() {
         return clusterHelper;
