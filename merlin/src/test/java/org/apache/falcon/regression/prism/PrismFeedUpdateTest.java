@@ -236,9 +236,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed.toString(), feed.toString()));
         //check for new feed bundle creation
         Assert.assertEquals(OozieUtil.getNumberOfBundle(prism, ENTITY_TYPE.FEED,
-            Util.readEntityName(feed
-                .toString()
-        )),2);
+            feed.getName()),2);
     }
 
 }

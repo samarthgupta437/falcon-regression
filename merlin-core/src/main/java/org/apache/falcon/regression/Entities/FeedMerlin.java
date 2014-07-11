@@ -28,7 +28,6 @@ import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.entity.v0.feed.Property;
-import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 

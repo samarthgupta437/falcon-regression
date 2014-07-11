@@ -455,14 +455,14 @@ public class OozieUtil {
             instanceNumber));
         }
 
-    private static List<String> getMissingDependenciesForInstance(OozieClient OC,
+    private static List<String> getMissingDependenciesForInstance(OozieClient oozieClient,
                                                                   List<CoordinatorJob> coords,
                                                           int instanceNumber)
         throws OozieClientException {
         ArrayList<String> missingPaths = new ArrayList<String>();
         for (CoordinatorJob coord : coords) {
 
-            CoordinatorJob temp = OC.getCoordJobInfo(coord.getId());
+            CoordinatorJob temp = oozieClient.getCoordJobInfo(coord.getId());
             CoordinatorAction instance = temp.getActions().get(instanceNumber);
             missingPaths.addAll(Arrays.asList(instance.getMissingDependencies().split("#")));
           }
