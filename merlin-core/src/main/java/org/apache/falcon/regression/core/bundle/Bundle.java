@@ -126,7 +126,7 @@ public class Bundle {
 
         for (String feed : dataSets) {
             AssertUtil.assertSucceeded(
-                prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, feed));
+                prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         }
     }
 

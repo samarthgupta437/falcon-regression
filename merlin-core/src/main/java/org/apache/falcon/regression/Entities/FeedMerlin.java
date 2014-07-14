@@ -27,6 +27,7 @@ import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.entity.v0.feed.Property;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
@@ -121,4 +122,12 @@ public class FeedMerlin extends Feed {
             }
         }
     }
+
+    public void addProperty(String someProp, String someVal) {
+            Property property = new Property();
+            property.setName(someProp);
+            property.setValue(someVal);
+            this.getProperties().getProperties().add(property);
+    }
+
 }

@@ -35,6 +35,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -424,5 +425,37 @@ public class OozieUtil {
 
     public static DateTimeFormatter getOozieDateTimeFormatter() {
         return DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
+    }
+
+    public static int getNumberOfBundle(ColoHelper helper, ENTITY_TYPE type, String entityName)
+        throws OozieClientException {
+        return OozieUtil.getBundles(helper.getFeedHelper().getOozieClient(),
+            entityName, type).size();
+    }
+
+    public static void createMissingDependencies(ColoHelper helper, ENTITY_TYPE type,
+                                                 String entityName, int bundleNumber,
+                                                 int instanceNumber)
+        throws OozieClientException, IOException {
+        String bundleID = InstanceUtil.getSequenceBundleID(helper, entityName, type, bundleNumber);
+        OozieClient OC = helper.getClusterHelper().getOozieClient();
+        List<CoordinatorJob> coords = OC.getBundleJobInfo(bundleID).getCoordinators();
+        InstanceUtil.createHDFSFolders(helper, getMissingDependenciesForInstance(OC, coords,
+            instanceNumber));
+        }
+
+    private static List<String> getMissingDependenciesForInstance(OozieClient oozieClient,
+                                                                  List<CoordinatorJob> coords,
+                                                          int instanceNumber)
+        throws OozieClientException {
+        ArrayList<String> missingPaths = new ArrayList<String>();
+        for (CoordinatorJob coord : coords) {
+
+            CoordinatorJob temp = oozieClient.getCoordJobInfo(coord.getId());
+            CoordinatorAction instance = temp.getActions().get(instanceNumber);
+            missingPaths.addAll(Arrays.asList(instance.getMissingDependencies().split("#")));
+          }
+
+        return missingPaths;
     }
 }

@@ -33,7 +33,7 @@ public class Config {
     private Config(String propFileName) {
         try {
             logger.info("Going to read properties from: " + propFileName);
-            confObj = new PropertiesConfiguration(propFileName);
+            confObj = new PropertiesConfiguration(Config.class.getResource("/" + propFileName));
         } catch (ConfigurationException e) {
             Assert.fail("Could not read properties because of exception: " + e);
         }
