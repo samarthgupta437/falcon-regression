@@ -191,8 +191,8 @@ public class PrismProcessSnSTest extends BaseTestClass {
     @Test(groups = {"prism", "0.2", "embedded"})
     public void testSnSDeletedProcessOnBothColos() throws Exception {
         //schedule both bundles
-        final String cluster1Running = bundles[0].getClusterHelper().getColoName() + "/RUNNING";
-        final String cluster2Running = bundles[1].getClusterHelper().getColoName() + "/RUNNING";
+        final String cluster1Running = cluster1.getClusterHelper().getColoName() + "/RUNNING";
+        final String cluster2Running = cluster2.getClusterHelper().getColoName() + "/RUNNING";
         bundles[0].submitAndScheduleProcess();
 
         Assert.assertEquals(Util.parseResponse(

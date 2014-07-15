@@ -100,7 +100,6 @@ public class Bundle {
 
     private List<String> oldClusters;
 
-    private IEntityManagerHelper clusterHelper;
     private IEntityManagerHelper processHelper;
     private IEntityManagerHelper feedHelper;
 
@@ -175,10 +174,6 @@ public class Bundle {
         return clusters;
     }
 
-    public IEntityManagerHelper getClusterHelper() {
-        return clusterHelper;
-    }
-
     public IEntityManagerHelper getFeedHelper() {
         return feedHelper;
     }
@@ -201,13 +196,6 @@ public class Bundle {
         colohelper = new ColoHelper(prefix);
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
-        }
-
-        if (null == bundle.getClusterHelper()) {
-            this.clusterHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, prefix);
-        } else {
-            this.clusterHelper = bundle.getClusterHelper();
         }
 
         if (null == bundle.getProcessHelper()) {
@@ -234,7 +222,6 @@ public class Bundle {
                 .add(Util.getEnvClusterXML(cluster,
                     prismHelper.getPrefix()));
         }
-        this.clusterHelper = prismHelper.getClusterHelper();
         this.processHelper = prismHelper.getProcessHelper();
         this.feedHelper = prismHelper.getFeedHelper();
     }

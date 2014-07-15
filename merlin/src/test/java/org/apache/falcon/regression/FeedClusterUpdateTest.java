@@ -73,10 +73,10 @@ public class FeedClusterUpdateTest extends BaseTestClass {
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
         }
         try {
-            String postFix = "/US/" + bundles[1].getClusterHelper().getColoName();
+            String postFix = "/US/" + servers.get(1).getClusterHelper().getColoName();
             HadoopUtil.deleteDirIfExists(baseTestDir, cluster2FS);
             Util.lateDataReplenish(cluster2, 80, 1, baseTestDir, postFix);
-            postFix = "/UK/" + bundles[2].getClusterHelper().getColoName();
+            postFix = "/UK/" + servers.get(2).getClusterHelper().getColoName();
             HadoopUtil.deleteDirIfExists(baseTestDir, cluster3FS);
             Util.lateDataReplenish(cluster3, 80, 1, baseTestDir, postFix);
         } finally {
