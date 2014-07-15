@@ -93,7 +93,7 @@ public class Bundle {
 
     private List<String> clusters;
 
-    private static String sBundleLocation;
+    private String bundleLocation;
 
     private List<String> oldClusters;
 
@@ -168,17 +168,20 @@ public class Bundle {
         return clusters;
     }
 
-    public Bundle(String clusterData, List<String> dataSets, String processData) {
+    public Bundle(String clusterData, List<String> dataSets, String processData,
+                  String bundleLocation) {
         this.dataSets = dataSets;
         this.processData = processData;
         this.clusters = new ArrayList<String>();
         this.clusters.add(clusterData);
+        this.bundleLocation = bundleLocation;
     }
 
     public Bundle(Bundle bundle, String prefix) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
+        this.bundleLocation = bundle.bundleLocation;
         colohelper = new ColoHelper(prefix);
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
@@ -186,14 +189,7 @@ public class Bundle {
     }
 
     public Bundle(Bundle bundle, ColoHelper prismHelper) {
-        this.dataSets = new ArrayList<String>(bundle.getDataSets());
-        this.processData = bundle.getProcessData();
-        this.clusters = new ArrayList<String>();
-        for (String cluster : bundle.getClusters()) {
-            this.clusters
-                .add(Util.getEnvClusterXML(cluster,
-                    prismHelper.getPrefix()));
-        }
+        this(bundle, prismHelper.getPrefix());
     }
 
     public void setClusterData(List<String> clusters) {
@@ -377,7 +373,7 @@ public class Bundle {
     public void updateWorkFlowFile() throws IOException {
         Process processElement = InstanceUtil.getProcessElement(this);
         Workflow wf = processElement.getWorkflow();
-        File wfFile = new File(sBundleLocation + "/workflow/workflow.xml");
+        File wfFile = new File(bundleLocation + "/workflow/workflow.xml");
         if (!wfFile.exists()) {
             logger.info("workflow not provided along with process and feed xmls");
             return;
