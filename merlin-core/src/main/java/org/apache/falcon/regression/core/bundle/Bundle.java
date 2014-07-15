@@ -99,11 +99,11 @@ public class Bundle {
 
     private static String sBundleLocation;
 
-    List<String> oldClusters;
+    private List<String> oldClusters;
 
-    IEntityManagerHelper clusterHelper;
-    IEntityManagerHelper processHelper;
-    IEntityManagerHelper feedHelper;
+    private IEntityManagerHelper clusterHelper;
+    private IEntityManagerHelper processHelper;
+    private IEntityManagerHelper feedHelper;
 
     private ColoHelper colohelper;
 
