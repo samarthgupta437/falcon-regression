@@ -22,40 +22,25 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.cluster.Cluster;
-import org.apache.falcon.entity.v0.cluster.Location;
-import org.apache.falcon.regression.core.enumsAndConstants.ClusterLocationTypes;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 public class ClusterMerlin extends Cluster {
 
     public ClusterMerlin(String clusterData) {
-        Cluster element = (Cluster) fromString(EntityType.CLUSTER, clusterData);
-        Field[] fields = Cluster.class.getDeclaredFields();
-        for (Field fld : fields) {
-            try {
-                PropertyUtils.setProperty(this, fld.getName(),
-                    PropertyUtils.getProperty(element, fld.getName()));
-            } catch (IllegalAccessException e) {
-                Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
-            } catch (InvocationTargetException e) {
-                Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
-            } catch (NoSuchMethodException e) {
-                Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
-            }
+        final Cluster cluster = (Cluster) fromString(EntityType.CLUSTER, clusterData);
+        try {
+            PropertyUtils.copyProperties(this, cluster);
+        } catch (IllegalAccessException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+        } catch (InvocationTargetException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+        } catch (NoSuchMethodException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
         }
-    }
-
-    public String getLocation(ClusterLocationTypes locationType) {
-        for (Location l : getLocations().getLocations()) {
-            if (locationType.getValue().equals(l.getName()))
-                return l.getPath();
-        }
-        return null;
     }
 
     @Override
@@ -65,8 +50,7 @@ public class ClusterMerlin extends Cluster {
             EntityType.CLUSTER.getMarshaller().marshal(this, sw);
             return sw.toString();
         } catch (JAXBException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
     }
 }

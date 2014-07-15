@@ -79,7 +79,7 @@ import java.util.TreeMap;
 
 public class InstanceUtil {
 
-    static Logger logger = Logger.getLogger(InstanceUtil.class);
+    private static final Logger logger = Logger.getLogger(InstanceUtil.class);
     public static APIResult sendRequestProcessInstance(String
                                                            url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -232,9 +232,9 @@ public class InstanceUtil {
     }
 
     public static Feed getFeedElement(Bundle bundle, String feedName) {
-        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!feedElement.getName().contains(feedName)) {
-            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
+            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(1));
         }
         return feedElement;
     }
@@ -247,7 +247,7 @@ public class InstanceUtil {
     public static void writeFeedElement(Bundle bundle, String feedString,
                                         String feedName) {
         int index = 0;
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!dataElement.getName().contains(feedName)) {
             index = 1;
         }
@@ -649,29 +649,6 @@ public class InstanceUtil {
             fs.mkdirs(new Path(folder));
         }
         logger.info("created folders.....");
-    }
-
-    /**
-     * Copies specific file(s) to each of remote folders
-     * Creates folders if they don't exist
-     *
-     * @param colo colohelper for remote cluster
-     * @param folderList list of remote folders
-     * @param fileName specific files
-     * @throws IOException
-     */
-    public static void putFileInFolders(ColoHelper colo, List<String> folderList,
-                                        final String... fileName) throws IOException {
-        final FileSystem fs = colo.getClusterHelper().getHadoopFS();
-        for (final String folder : folderList) {
-            for (String aFileName : fileName) {
-                logger.info("copying  " + aFileName + " to " + folder);
-                if (aFileName.equals("_SUCCESS"))
-                    fs.mkdirs(new Path(folder + "/_SUCCESS"));
-                else
-                    fs.copyFromLocalFile(new Path(aFileName), new Path(folder));
-            }
-        }
     }
 
     /**
@@ -1372,8 +1349,7 @@ public class InstanceUtil {
     }
 
     public static String setFeedACL(String feed, String... ownerGroup) {
-        FeedMerlin feedObject = null;
-        feedObject = new FeedMerlin(feed);
+        FeedMerlin feedObject = new FeedMerlin(feed);
         ACL acl = feedObject.getACL();
         acl.setOwner(MerlinConstants.aclOwner);
         acl.setGroup(MerlinConstants.aclGroup);

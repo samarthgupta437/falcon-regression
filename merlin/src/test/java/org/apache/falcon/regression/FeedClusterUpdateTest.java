@@ -66,7 +66,7 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -88,13 +88,13 @@ public class FeedClusterUpdateTest extends BaseTestClass {
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
 
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
         }
-        BundleUtil.submitAllClusters(bundles[0], bundles[1], bundles[2]);
+        BundleUtil.submitAllClusters(prism, bundles[0], bundles[1], bundles[2]);
         feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2009-02-01T00:00Z", "2012-01-01T00:00Z"),

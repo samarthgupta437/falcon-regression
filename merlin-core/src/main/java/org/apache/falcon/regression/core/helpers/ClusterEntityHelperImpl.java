@@ -33,7 +33,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
 
 
     private static final String INVALID_ERR = "Not Valid for Cluster Entity";
-    private static Logger logger = Logger.getLogger(ClusterEntityHelperImpl.class);
+    private static final Logger logger = Logger.getLogger(ClusterEntityHelperImpl.class);
 
     public ClusterEntityHelperImpl(String prefix) {
         super(prefix);

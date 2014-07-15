@@ -59,7 +59,7 @@ import java.util.List;
 
 public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
-    static Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
+    private static final Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
 
     Bundle processBundle;
 
@@ -81,7 +81,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws IOException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+        Bundle bundle = BundleUtil.readLocalDCBundle();
         bundles[0] = new Bundle(bundle, cluster_1);
         bundles[1] = new Bundle(bundle, cluster_2);
         bundles[2] = new Bundle(bundle, cluster_3);
@@ -90,7 +90,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         bundles[1].generateUniqueBundle();
         bundles[2].generateUniqueBundle();
 
-        processBundle = BundleUtil.readELBundles()[0][0];
+        processBundle = BundleUtil.readELBundle();
         processBundle = new Bundle(processBundle, cluster_1);
         processBundle.generateUniqueBundle();
         processBundle.setProcessWorkflow(aggregateWorkflowDir);

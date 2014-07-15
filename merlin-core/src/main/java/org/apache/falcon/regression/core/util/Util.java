@@ -96,11 +96,7 @@ import java.util.UUID;
 
 public class Util {
 
-
-    static Logger logger = Logger.getLogger(Util.class);
-    static final String PRISM_PREFIX = "prism";
-
-    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
+    private static final Logger logger = Logger.getLogger(Util.class);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -176,17 +172,6 @@ public class Util {
                 helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
                 helper.getUsername(), helper.getIdentityFile());
         }
-    }
-
-    public static File[] getFiles(String directoryPath) throws URISyntaxException {
-        directoryPath = directoryPath.replaceFirst("^.*test-classes[\\\\/]", "");
-        logger.info("directoryPath: " + directoryPath);
-        URL url = Util.class.getResource("/" + directoryPath);
-        logger.info("url" + url);
-        File dir = new File(url.toURI());
-        File[] files = dir.listFiles();
-        if (files != null) Arrays.sort(files);
-        return files;
     }
 
     public static String readEntityName(String data) {

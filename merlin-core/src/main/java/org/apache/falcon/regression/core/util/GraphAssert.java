@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
 import org.testng.Assert;
 
 public class GraphAssert {
-    private static Logger logger = Logger.getLogger(GraphAssert.class);
+    private static final Logger logger = Logger.getLogger(GraphAssert.class);
 
     /**
      * Check that the result has certain minimum number of vertices

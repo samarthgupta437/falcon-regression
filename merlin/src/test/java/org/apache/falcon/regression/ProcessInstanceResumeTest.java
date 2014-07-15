@@ -62,7 +62,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     public void createTestData() throws Exception {
         logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
         b = new Bundle(b, cluster);
         String startDate = "2010-01-01T23:20Z";
@@ -78,7 +78,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("setup " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(feedInputPath);
@@ -353,7 +353,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     public void deleteData() throws Exception {
         logger.info("in @AfterClass");
 
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();

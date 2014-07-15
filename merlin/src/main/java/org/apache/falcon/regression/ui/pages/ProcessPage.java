@@ -35,7 +35,7 @@ import java.util.List;
 
 public class ProcessPage extends EntityPage<Process> {
 
-    private Logger logger = Logger.getLogger(ProcessPage.class);
+    private static final Logger logger = Logger.getLogger(ProcessPage.class);
     private final static String INSTANCES_PANEL = "//div[@id='panel-instance']//span";
     private final static String INSTANCE_STATUS_TEMPLATE =
         "//div[@id='panel-instance']//span[contains(..,'%s')]";

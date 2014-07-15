@@ -53,7 +53,7 @@ public class PrismFeedScheduleTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws IOException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readBundles("LateDataBundles")[0][0];
+        Bundle bundle = BundleUtil.readLateDataBundle();
 
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));

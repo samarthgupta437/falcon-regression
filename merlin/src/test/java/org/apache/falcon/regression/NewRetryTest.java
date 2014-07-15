@@ -65,7 +65,7 @@ import java.util.concurrent.TimeUnit;
 @Test(groups = "embedded")
 public class NewRetryTest extends BaseTestClass {
 
-    private Logger logger = Logger.getLogger(NewRetryTest.class);
+    private static final Logger logger = Logger.getLogger(NewRetryTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
@@ -85,7 +85,7 @@ public class NewRetryTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        bundles[0] = new Bundle(BundleUtil.getBundleData("RetryTests")[0], cluster);
+        bundles[0] = new Bundle(BundleUtil.readRetryBundle(), cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         startDate = new DateTime(DateTimeZone.UTC).plusMinutes(1);

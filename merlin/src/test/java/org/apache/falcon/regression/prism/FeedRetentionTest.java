@@ -23,6 +23,7 @@ import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -70,12 +71,12 @@ public class FeedRetentionTest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         //getImpressionRC bundle
-        bundles[0] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
+        bundles[0] = BundleUtil.readImpressionRCBundle();
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster1);
         bundles[0].setProcessWorkflow(impressionrcWorkflowDir);
 
-        bundles[1] = (Bundle) Bundle.readBundle("impressionRC")[0][0];
+        bundles[1] = BundleUtil.readImpressionRCBundle();
         bundles[1].generateUniqueBundle();
         bundles[1] = new Bundle(bundles[1], cluster2);
         bundles[1].setProcessWorkflow(impressionrcWorkflowDir);

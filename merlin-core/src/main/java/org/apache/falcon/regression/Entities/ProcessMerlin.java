@@ -34,7 +34,6 @@ import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.StringWriter;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -47,47 +46,16 @@ public class ProcessMerlin extends Process {
         this((Process) fromString(EntityType.PROCESS, processData));
     }
 
-    public ProcessMerlin(Process processObj) {
-        Field[] fields = Process.class.getDeclaredFields();
-        for (Field fld : fields) {
-            try {
-                PropertyUtils.setProperty(this, fld.getName(),
-                    PropertyUtils.getProperty(processObj, fld.getName()));
-            } catch (IllegalAccessException e) {
-                Assert.fail("Can't create ProcessMerlin: " + ExceptionUtils.getStackTrace(e));
-            } catch (InvocationTargetException e) {
-                Assert.fail("Can't create ProcessMerlin: " + ExceptionUtils.getStackTrace(e));
-            } catch (NoSuchMethodException e) {
-                Assert.fail("Can't create ProcessMerlin: " + ExceptionUtils.getStackTrace(e));
-            }
-        }
-    }
-
-    public final void setProperty(String name, String value) {
-        Property p = new Property();
-        p.setName(name);
-        p.setValue(value);
-        if (null == getProperties() || null == getProperties()
-            .getProperties() || getProperties().getProperties().size()
-            <= 0) {
-            Properties props = new Properties();
-            props.getProperties().add(p);
-            setProperties(props);
-        } else {
-            getProperties().getProperties().add(p);
-        }
-    }
-
-    @Override
-    public String toString() {
+    public ProcessMerlin(final Process process) {
         try {
-            StringWriter sw = new StringWriter();
-            EntityType.PROCESS.getMarshaller().marshal(this, sw);
-            return sw.toString();
-        } catch (JAXBException e) {
-            e.printStackTrace();
+            PropertyUtils.copyProperties(this, process);
+        } catch (IllegalAccessException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+        } catch (InvocationTargetException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+        } catch (NoSuchMethodException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
         }
-        return null;
     }
 
     public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) {
@@ -122,6 +90,31 @@ public class ProcessMerlin extends Process {
         return inpFeeds;
     }
 
+    public final void setProperty(String name, String value) {
+        Property p = new Property();
+        p.setName(name);
+        p.setValue(value);
+        if (null == getProperties() || null == getProperties()
+            .getProperties() || getProperties().getProperties().size()
+            <= 0) {
+            Properties props = new Properties();
+            props.getProperties().add(p);
+            setProperties(props);
+        } else {
+            getProperties().getProperties().add(p);
+        }
+    }
+
+    @Override
+    public String toString() {
+        try {
+            StringWriter sw = new StringWriter();
+            EntityType.PROCESS.getMarshaller().marshal(this, sw);
+            return sw.toString();
+        } catch (JAXBException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
 
 

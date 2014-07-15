@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import java.util.HashMap;
 
 public class MerlinConstants {
-    private static Logger logger = Logger.getLogger(MerlinConstants.class);
+    private static final Logger logger = Logger.getLogger(MerlinConstants.class);
 
     public final static boolean IS_SECURE =
         "kerberos".equals(new Configuration().get("hadoop.security.authentication", "simple"));

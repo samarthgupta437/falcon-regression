@@ -41,7 +41,7 @@ instanceUtil to here , pending item.
 
 public class TimeUtil {
 
-    private static Logger logger = Logger.getLogger(TimeUtil.class);
+    private static final Logger logger = Logger.getLogger(TimeUtil.class);
 
     public static void sleepSeconds(double seconds) {
         long ms = (long) (seconds * 1000);
@@ -68,7 +68,7 @@ public class TimeUtil {
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
         DateTime today = new DateTime(DateTimeZone.UTC);
-        Util.logger.info("today is: " + today.toString());
+        logger.info("today is: " + today.toString());
 
         return getMinuteDatesOnEitherSide(today.minusMinutes(interval),
             today.plusMinutes(interval), minuteSkip);
@@ -101,7 +101,7 @@ public class TimeUtil {
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip,
                                                           DateTimeFormatter formatter) {
-        Util.logger.info("generating data between " + formatter.print(startDate) + " and " +
+        logger.info("generating data between " + formatter.print(startDate) + " and " +
             formatter.print(endDate));
         if (minuteSkip == 0) {
             minuteSkip = 1;
@@ -231,7 +231,7 @@ public class TimeUtil {
     public static String dateToOozieDate(Date dt) {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        InstanceUtil.logger.info("SystemTime: " + jodaTime);
+        logger.info("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         return fmt.print(jodaTime);
     }
@@ -243,7 +243,7 @@ public class TimeUtil {
         while (true) {
             DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
             sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            InstanceUtil.logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
+            logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
             if (sysDate.compareTo(finalDate) > 0)
                 break;
 

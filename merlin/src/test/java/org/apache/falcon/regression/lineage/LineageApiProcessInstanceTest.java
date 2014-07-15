@@ -79,7 +79,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(baseTestHDFSDir, clusterFS);
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        bundles[0] = new Bundle(BundleUtil.readELBundles()[0][0], cluster);
+        bundles[0] = new Bundle(BundleUtil.readELBundle(), cluster);
         bundles[0].generateUniqueBundle();
 
         bundles[0].setInputFeedDataPath(feedInputPath);

@@ -62,7 +62,7 @@ import java.util.Map;
 
 @Test(groups = "embedded")
 public class HCatProcessTest extends BaseTestClass {
-    private static Logger logger = Logger.getLogger(HCatProcessTest.class);
+    private static final Logger logger = Logger.getLogger(HCatProcessTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
@@ -526,7 +526,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedValidity(startDate, endDate);
 
         //
-        String nonHCatFeed = BundleUtil.getOutputFeedFromBundle(BundleUtil.readELBundles()[0][0]);
+        String nonHCatFeed = BundleUtil.getOutputFeedFromBundle(BundleUtil.readELBundle());
         final String outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
         nonHCatFeed = Util.setFeedName(nonHCatFeed, outputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();
@@ -580,7 +580,7 @@ public class HCatProcessTest extends BaseTestClass {
             .location(outputHDFSDir)
             .build());
 
-        String nonHCatFeed = BundleUtil.getInputFeedFromBundle(BundleUtil.readELBundles()[0][0]);
+        String nonHCatFeed = BundleUtil.getInputFeedFromBundle(BundleUtil.readELBundle());
         final String inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
         nonHCatFeed = Util.setFeedName(nonHCatFeed, inputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();

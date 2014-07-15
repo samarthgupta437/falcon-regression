@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 
 public class ProcessEntityHelperImpl extends IEntityManagerHelper {
 
-    private static Logger logger = Logger.getLogger(ProcessEntityHelperImpl.class);
+    private static final Logger logger = Logger.getLogger(ProcessEntityHelperImpl.class);
 
     public ProcessEntityHelperImpl(String prefix) {
         super(prefix);

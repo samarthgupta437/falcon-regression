@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 
 public class KerberosHelper {
 
-    private static Logger logger = Logger.getLogger(KerberosHelper.class);
+    private static final Logger logger = Logger.getLogger(KerberosHelper.class);
 
     public static void loginFromKeytab(String user) {
         if (!MerlinConstants.IS_SECURE) {
