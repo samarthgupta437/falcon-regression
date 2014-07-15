@@ -56,7 +56,7 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
     private static final String SVG_XPATH = "//*[name() = 'svg']";
     private static final String G_XPATH = "//*[name()='g']";
-    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH +
+    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH + G_XPATH +
         G_XPATH + "[not(@class='lineage-link')]";
     private static final String VERTICES_TEXT_XPATH = VERTICES_BLOCKS_XPATH +
         "//div[@class='lineage-node-text']";
