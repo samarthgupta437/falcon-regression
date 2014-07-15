@@ -559,7 +559,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         }
 
 
-        bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+        bundles[1].verifyDependencyListing(cluster2);
 
         dualComparison(prism, cluster3, bundles[1].getProcessData());
         waitingForBundleFinish(cluster3, oldBundleId);
@@ -982,7 +982,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 1);
 
 
-        bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+        bundles[1].verifyDependencyListing(cluster2);
 
         dualComparison(prism, cluster3, bundles[1].getProcessData());
         //ensure that the running process has new coordinators created; while the submitted
@@ -1042,7 +1042,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(cluster3.getProcessHelper()
             .resume(URLS.RESUME_URL, bundles[1].getProcessData()));
 
-        bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+        bundles[1].verifyDependencyListing(cluster2);
 
         dualComparison(prism, cluster3, bundles[1].getProcessData());
         //ensure that the running process has new coordinators created; while the submitted
@@ -1097,7 +1097,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
                     .update(updatedProcess, updatedProcess));
 
             Util.startService(cluster3.getProcessHelper());
-            bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+            bundles[1].verifyDependencyListing(cluster2);
 
             dualComparison(prism, cluster3, bundles[1].getProcessData());
             Assert.assertFalse(Util.isDefinitionSame(cluster2, prism, originalProcess));
@@ -1122,7 +1122,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             }
             dualComparison(prism, cluster3, bundles[1].getProcessData());
             Assert.assertTrue(Util.isDefinitionSame(cluster2, prism, originalProcess));
-            bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+            bundles[1].verifyDependencyListing(cluster2);
             OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
                 updatedProcess, true, false);
             waitingForBundleFinish(cluster3, oldBundleId);
@@ -1179,7 +1179,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             bundles[1].getProcessData(), false, true);
 
 
-        bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+        bundles[1].verifyDependencyListing(cluster2);
 
         dualComparison(prism, cluster3, bundles[1].getProcessData());
         waitingForBundleFinish(cluster3, oldBundleId);
@@ -1410,7 +1410,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
             bundles[1].getProcessData(), true, true);
-        bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+        bundles[1].verifyDependencyListing(cluster2);
         dualComparison(prism, cluster3, bundles[1].getProcessData());
     }
 
@@ -1455,7 +1455,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         dualComparison(prism, cluster2, bundles[1].getProcessData());
 
-        bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+        bundles[1].verifyDependencyListing(cluster2);
 
         dualComparison(prism, cluster3, bundles[1].getProcessData());
         //ensure that the running process has new coordinators created; while the submitted
@@ -1516,7 +1516,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         OozieUtil.verifyNewBundleCreation(cluster3, oldBundleId, oldNominalTimes,
             bundles[1].getProcessData(), true, false);
 
-        bundles[1].verifyDependencyListing(cluster2.getProcessHelper());
+        bundles[1].verifyDependencyListing(cluster2);
 
         dualComparison(prism, cluster3, bundles[1].getProcessData());
         waitingForBundleFinish(cluster3, oldBundleId);

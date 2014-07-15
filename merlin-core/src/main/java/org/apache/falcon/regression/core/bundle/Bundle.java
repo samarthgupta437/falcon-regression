@@ -52,10 +52,7 @@ import org.apache.falcon.entity.v0.process.Workflow;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.Entities.ProcessMerlin;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
-import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -99,8 +96,6 @@ public class Bundle {
     private static String sBundleLocation;
 
     private List<String> oldClusters;
-
-    private IEntityManagerHelper feedHelper;
 
     private ColoHelper colohelper;
 
@@ -173,10 +168,6 @@ public class Bundle {
         return clusters;
     }
 
-    public IEntityManagerHelper getFeedHelper() {
-        return feedHelper;
-    }
-
     public Bundle(String clusterData, List<String> dataSets, String processData) {
         this.dataSets = dataSets;
         this.processData = processData;
@@ -192,13 +183,6 @@ public class Bundle {
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
         }
-
-        if (null == bundle.getFeedHelper()) {
-            this.feedHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, prefix);
-        } else {
-            this.feedHelper = bundle.getFeedHelper();
-        }
     }
 
     public Bundle(Bundle bundle, ColoHelper prismHelper) {
@@ -210,7 +194,6 @@ public class Bundle {
                 .add(Util.getEnvClusterXML(cluster,
                     prismHelper.getPrefix()));
         }
-        this.feedHelper = prismHelper.getFeedHelper();
     }
 
     public void setClusterData(List<String> clusters) {
@@ -701,9 +684,10 @@ public class Bundle {
     }
 
 
-    public void verifyDependencyListing(IEntityManagerHelper processHelper) {
+    public void verifyDependencyListing(ColoHelper coloHelper) {
         //display dependencies of process:
-        String dependencies = processHelper.getDependencies(Util.readEntityName(getProcessData()));
+        String dependencies = coloHelper.getProcessHelper().getDependencies(
+            Util.readEntityName(getProcessData()));
 
         //verify presence
         for (String cluster : clusters) {
@@ -712,10 +696,12 @@ public class Bundle {
         for (String feed : getDataSets()) {
             Assert.assertTrue(dependencies.contains("(feed) " + Util.readDatasetName(feed)));
             for (String cluster : clusters) {
-                Assert.assertTrue(feedHelper.getDependencies(Util.readDatasetName(feed))
+                Assert.assertTrue(coloHelper.getFeedHelper().getDependencies(
+                    Util.readDatasetName(feed))
                     .contains("(cluster) " + Util.readClusterName(cluster)));
             }
-            Assert.assertFalse(feedHelper.getDependencies(Util.readDatasetName(feed))
+            Assert.assertFalse(coloHelper.getFeedHelper().getDependencies(
+                Util.readDatasetName(feed))
                 .contains("(process)" + Util.readEntityName(getProcessData())));
         }
 
