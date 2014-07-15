@@ -56,12 +56,10 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -70,7 +68,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -96,8 +93,6 @@ public class Bundle {
     private String bundleLocation;
 
     private List<String> oldClusters;
-
-    private ColoHelper colohelper;
 
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
@@ -182,7 +177,6 @@ public class Bundle {
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
         this.bundleLocation = bundle.bundleLocation;
-        colohelper = new ColoHelper(prefix);
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
         }
@@ -370,30 +364,6 @@ public class Bundle {
         return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public void updateWorkFlowFile() throws IOException {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        Workflow wf = processElement.getWorkflow();
-        File wfFile = new File(bundleLocation + "/workflow/workflow.xml");
-        if (!wfFile.exists()) {
-            logger.info("workflow not provided along with process and feed xmls");
-            return;
-        }
-        //is folder present
-        if (!HadoopUtil.isDirPresent(colohelper.getClusterHelper().getHadoopFS(), wf.getPath())) {
-            logger.info("workflowPath does not exists: creating path: " + wf.getPath());
-            HadoopUtil.createDir(wf.getPath(), colohelper.getClusterHelper().getHadoopFS());
-        }
-
-        // If File is present in hdfs check for contents and replace if found different
-        if (HadoopUtil.isFilePresentHDFS(colohelper, wf.getPath(), "workflow.xml")) {
-
-            HadoopUtil.deleteFile(colohelper, new Path(wf.getPath() + "/workflow.xml"));
-        }
-        // If there is no file in hdfs , replace it anyways
-        HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getPath() + "/workflow.xml"),
-            wfFile.getAbsolutePath());
-    }
-
     /**
      * Submits bundle and schedules process.
      *
@@ -407,9 +377,6 @@ public class Bundle {
     public String submitAndScheduleBundle(ColoHelper prismHelper)
         throws IOException, JAXBException, URISyntaxException,
         AuthenticationException {
-        if (colohelper != null) {
-            updateWorkFlowFile();
-        }
         ServiceResponse submitResponse = submitBundle(prismHelper);
         if (submitResponse.getCode() == 400)
             return submitResponse.getMessage();
