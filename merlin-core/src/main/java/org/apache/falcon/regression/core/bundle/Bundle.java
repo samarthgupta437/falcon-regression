@@ -92,8 +92,6 @@ public class Bundle {
 
     private String bundleLocation;
 
-    private List<String> oldClusters;
-
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
 
@@ -226,7 +224,7 @@ public class Bundle {
      */
     public void generateUniqueBundle() {
 
-        this.oldClusters = new ArrayList<String>(this.clusters);
+        List<String> oldClusters = new ArrayList<String>(this.clusters);
         this.clusters = Util.generateUniqueClusterEntity(clusters);
 
         List<String> newDataSet = new ArrayList<String>();
