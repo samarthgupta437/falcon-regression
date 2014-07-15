@@ -100,7 +100,6 @@ public class Bundle {
 
     private List<String> oldClusters;
 
-    private IEntityManagerHelper processHelper;
     private IEntityManagerHelper feedHelper;
 
     private ColoHelper colohelper;
@@ -178,10 +177,6 @@ public class Bundle {
         return feedHelper;
     }
 
-    public IEntityManagerHelper getProcessHelper() {
-        return processHelper;
-    }
-
     public Bundle(String clusterData, List<String> dataSets, String processData) {
         this.dataSets = dataSets;
         this.processData = processData;
@@ -196,13 +191,6 @@ public class Bundle {
         colohelper = new ColoHelper(prefix);
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
-        }
-
-        if (null == bundle.getProcessHelper()) {
-            this.processHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, prefix);
-        } else {
-            this.processHelper = bundle.getProcessHelper();
         }
 
         if (null == bundle.getFeedHelper()) {
@@ -222,7 +210,6 @@ public class Bundle {
                 .add(Util.getEnvClusterXML(cluster,
                     prismHelper.getPrefix()));
         }
-        this.processHelper = prismHelper.getProcessHelper();
         this.feedHelper = prismHelper.getFeedHelper();
     }
 
@@ -714,7 +701,7 @@ public class Bundle {
     }
 
 
-    public void verifyDependencyListing() {
+    public void verifyDependencyListing(IEntityManagerHelper processHelper) {
         //display dependencies of process:
         String dependencies = processHelper.getDependencies(Util.readEntityName(getProcessData()));
 

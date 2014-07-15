@@ -283,7 +283,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
         throws Exception {
         try {
             bundles[0].submitAndScheduleProcess();
-            AssertUtil.assertSucceeded(bundles[0].getProcessHelper()
+            AssertUtil.assertSucceeded(cluster1.getProcessHelper()
                 .suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
             AssertUtil
                 .checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
