@@ -688,7 +688,7 @@
                     <!--debug>true</debug -->
                     <xmlOutput>true</xmlOutput>
                     <excludeFilterFile>
-                        ${basedir}/../build-tools/src/main/resources/falcon/findbugs-exclude.xml
+                        ${project.basedir}/../checkstyle/src/main/resources/falcon/findbugs-exclude.xml
                     </excludeFilterFile>
                     <failOnError>true</failOnError>
                     <skip>${skipCheck}</skip>
