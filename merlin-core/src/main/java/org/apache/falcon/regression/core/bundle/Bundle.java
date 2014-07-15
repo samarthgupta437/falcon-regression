@@ -94,7 +94,6 @@ public class Bundle {
     private String processData;
     private String clusterData;
 
-    private String processFilePath;
     private List<String> clusters;
 
     private static String sBundleLocation;
@@ -186,10 +185,6 @@ public class Bundle {
 
     public IEntityManagerHelper getProcessHelper() {
         return processHelper;
-    }
-
-    public String getProcessFilePath() {
-        return processFilePath;
     }
 
     public Bundle(String clusterData, List<String> dataSets, String processData) {
