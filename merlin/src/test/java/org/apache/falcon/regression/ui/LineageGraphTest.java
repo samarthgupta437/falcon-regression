@@ -235,7 +235,7 @@ public class LineageGraphTest extends BaseUITestClass {
             /* check the main lineage title */
             Assert.assertEquals(processPage.getLineageTitle(), "Lineage information");
             /* check legends title */
-            Assert.assertEquals(processPage.getLegendsTitile(), "Legends");
+            Assert.assertEquals(processPage.getLegendsTitle(), "Legends");
             /* check that all legends are present and match to expected*/
             HashMap<String, String> legends = processPage.getLegends();
             for (Map.Entry<String, String> entry : legends.entrySet()) {
