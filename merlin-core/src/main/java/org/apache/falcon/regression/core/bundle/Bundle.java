@@ -84,11 +84,9 @@ public class Bundle {
     private static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
     private static final Logger logger = Logger.getLogger(Bundle.class);
 
+    private List<String> clusters;
     private List<String> dataSets;
     private String processData;
-
-    private List<String> clusters;
-
     private String bundleLocation;
 
     public void submitFeed() throws Exception {
