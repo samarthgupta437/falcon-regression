@@ -86,7 +86,6 @@ public class Bundle {
 
     private List<String> dataSets;
     private String processData;
-    private String clusterData;
 
     private List<String> clusters;
 
@@ -196,10 +195,6 @@ public class Bundle {
             clusterNames.add(clusterObject.getName());
         }
         return clusterNames;
-    }
-
-    public void setClusterData(String clusterData) {
-        this.clusterData = clusterData;
     }
 
     public List<String> getDataSets() {
@@ -723,7 +718,6 @@ public class Bundle {
             }
         }
         InstanceUtil.writeClusterElement(this, c);
-        clusters.set(0, clusterData);
     }
 
     public void setInputFeedTableUri(String tableUri) {
