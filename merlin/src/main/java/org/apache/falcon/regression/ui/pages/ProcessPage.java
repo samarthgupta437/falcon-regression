@@ -51,15 +51,13 @@ public class ProcessPage extends EntityPage<Process> {
         "//body[@class='modal-open']//button[contains(., 'Close')]";
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
     private static final String SVG_ELEMENT = "//*[name() = 'svg']/*[name()='g']/*[name()='g']";
-    private static final String VERTICES_BLOCKS_XPATH = SVG_ELEMENT + "[not(@class='lineage-link')]";
-    private static final String VERTICES_TEXT_XPATH = VERTICES_BLOCKS_XPATH +
+    private static final String VERTICES_BLOCKS = SVG_ELEMENT + "[not(@class='lineage-link')]";
+    private static final String VERTICES_TEXT = VERTICES_BLOCKS +
         "//div[@class='lineage-node-text']";
-    private static final String EDGE_XPATH = SVG_ELEMENT + "[@class='lineage-link']" +
-        "//*[name()='path']";
-    private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
+    private static final String EDGE = SVG_ELEMENT + "[@class='lineage-link']//*[name()='path']";
+    private static final String CIRCLE = "//*[name() = 'circle']";
     private static final String LINEAGE_INFO_PANEL = "//div[@id='lineage-info-panel']";
-    private static final String LINEAGE_TITLE = LINEAGE_MODAL +
-        "//div[@class='modal-header']/h4";
+    private static final String LINEAGE_TITLE = LINEAGE_MODAL + "//div[@class='modal-header']/h4";
     private static final String LINEAGE_LEGENDS_BLOCK = LINEAGE_MODAL +
         "//div[@class='modal-body']/div[ul[@class='lineage-legend']]";
 
@@ -74,7 +72,7 @@ public class ProcessPage extends EntityPage<Process> {
             driver.findElement(By.xpath(String.format(LINEAGE_LINK_TEMPLATE, nominalTime)));
         logger.info("Opening lineage...");
         lineage.click();
-        waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, DEFAULT_TIMEOUT,
+        waitForElement(VERTICES_BLOCKS + CIRCLE, DEFAULT_TIMEOUT,
             "Circles not found");
         waitForDisplayed(LINEAGE_TITLE, DEFAULT_TIMEOUT, "Lineage title not found");
         isLineageOpened = true;
@@ -102,9 +100,9 @@ public class ProcessPage extends EntityPage<Process> {
     public HashMap<String, List<String>> getAllVertices() {
         HashMap<String, List<String>> map = null;
         if (isLineageOpened) {
-            waitForElement(VERTICES_TEXT_XPATH, DEFAULT_TIMEOUT,
+            waitForElement(VERTICES_TEXT, DEFAULT_TIMEOUT,
                 "Vertices blocks with names not found");
-            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_TEXT_XPATH));
+            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_TEXT));
             map = new HashMap<String, List<String>>();
             for (WebElement block : blocks) {
                 waitForElement(block, ".[contains(.,'/')]", DEFAULT_TIMEOUT,
@@ -133,9 +131,9 @@ public class ProcessPage extends EntityPage<Process> {
         if (isLineageOpened) {
             waitForElement(CLOSE_LINEAGE_LINK_TEMPLATE, DEFAULT_TIMEOUT,
                 "Close Lineage button not found");
-            waitForElement(VERTICES_BLOCKS_XPATH, DEFAULT_TIMEOUT,
+            waitForElement(VERTICES_BLOCKS, DEFAULT_TIMEOUT,
                 "Vertices not found");
-            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH));
+            List<WebElement> blocks = driver.findElements(By.xpath(VERTICES_BLOCKS));
             for (WebElement block : blocks) {
                 list.add(block.getText());
             }
@@ -150,8 +148,8 @@ public class ProcessPage extends EntityPage<Process> {
         if (isLineageOpened) {
             String particularBlock =
                 String.format("[contains(., '%s/%s')]", entityName, nominalTime);
-            WebElement circle = driver.findElement(By.xpath(VERTICES_BLOCKS_XPATH +
-                particularBlock + CIRCLE_XPATH));
+            WebElement circle = driver.findElement(By.xpath(VERTICES_BLOCKS +
+                particularBlock + CIRCLE));
             Actions builder = new Actions(driver);
             builder.click(circle).build().perform();
             TimeUtil.sleepSeconds(0.5);
@@ -223,7 +221,7 @@ public class ProcessPage extends EntityPage<Process> {
         List<Point[]> pathsEndpoints = null;
         if (isLineageOpened) {
             pathsEndpoints = new ArrayList<Point[]>();
-            List<WebElement> paths = driver.findElements(By.xpath(EDGE_XPATH));
+            List<WebElement> paths = driver.findElements(By.xpath(EDGE));
             for (WebElement path : paths) {
                 String d = path.getAttribute("d");
                 d = d.replaceAll("[MLC]", ",");
@@ -252,7 +250,7 @@ public class ProcessPage extends EntityPage<Process> {
      * @return common value for radius of every vertex (circle) on the graph
      */
     public int getCircleRadius() {
-        WebElement circle = driver.findElements(By.xpath(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH))
+        WebElement circle = driver.findElements(By.xpath(VERTICES_BLOCKS + CIRCLE))
             .get(0);
         return Integer.parseInt(circle.getAttribute("r"));
     }
@@ -264,7 +262,7 @@ public class ProcessPage extends EntityPage<Process> {
      */
     public Point getVertexEndpoint(String vertex) {
         /** get circle of start vertex */
-        String particularVertexBlock = VERTICES_BLOCKS_XPATH + String.format("[contains(" +
+        String particularVertexBlock = VERTICES_BLOCKS + String.format("[contains(" +
             "., '%s')]", vertex);
         WebElement block = driver.findElement(By.xpath(particularVertexBlock));
         String attribute = block.getAttribute("transform");
@@ -303,10 +301,10 @@ public class ProcessPage extends EntityPage<Process> {
     public boolean isTerminal(String vertexName) {
         String particularBlock =
             String.format("[contains(., '%s')]", vertexName);
-        waitForElement(VERTICES_BLOCKS_XPATH + particularBlock + CIRCLE_XPATH, DEFAULT_TIMEOUT,
+        waitForElement(VERTICES_BLOCKS + particularBlock + CIRCLE, DEFAULT_TIMEOUT,
             "Vertex not found");
-        WebElement vertex = driver.findElement(By.xpath(VERTICES_BLOCKS_XPATH +
-            particularBlock + CIRCLE_XPATH));
+        WebElement vertex = driver.findElement(By.xpath(VERTICES_BLOCKS +
+            particularBlock + CIRCLE));
         String vertexClass = vertex.getAttribute("class");
         return vertexClass.contains("lineage-node-terminal");
     }
