@@ -220,29 +220,22 @@ public class Bundle {
         for (String dataSet : getDataSets()) {
             String uniqueDataEntity = Util.generateUniqueDataEntity(dataSet);
             for (int i = 0; i < clusters.size(); i++) {
-                String oldCluster = oldClusters.get(i);
-                String uniqueCluster = clusters.get(i);
-
+                final String uniqueClusterName = Util.readClusterName(clusters.get(i));
+                final String oldClusterName = Util.readClusterName(oldClusters.get(i));
                 uniqueDataEntity =
-                    injectNewDataIntoFeed(uniqueDataEntity, Util.readClusterName(uniqueCluster),
-                        Util.readClusterName(oldCluster));
-                this.processData =
-                    injectNewDataIntoProcess(getProcessData(), Util.readDatasetName(dataSet),
-                        Util.readDatasetName(uniqueDataEntity),
-                        Util.readClusterName(uniqueCluster),
-                        Util.readClusterName(oldCluster));
+                    injectNewDataIntoFeed(uniqueDataEntity, uniqueClusterName, oldClusterName);
+                this.processData = injectNewDataIntoProcess(processData,
+                    Util.readDatasetName(dataSet), Util.readDatasetName(uniqueDataEntity),
+                    uniqueClusterName, oldClusterName);
             }
             newDataSet.add(uniqueDataEntity);
         }
         if (getDataSets().size() == 0) {
-
             for (int i = 0; i < clusters.size(); i++) {
-                String oldCluster = oldClusters.get(i);
-                String uniqueCluster = clusters.get(i);
-                this.processData =
-                    injectNewDataIntoProcess(getProcessData(), null, null,
-                        Util.readClusterName(uniqueCluster),
-                        Util.readClusterName(oldCluster));
+                final String uniqueClusterName = Util.readClusterName(clusters.get(i));
+                final String oldClusterName = Util.readClusterName(oldClusters.get(i));
+                this.processData = injectNewDataIntoProcess(processData, null, null,
+                    uniqueClusterName, oldClusterName);
             }
         }
         this.dataSets = newDataSet;
@@ -1001,7 +994,7 @@ public class Bundle {
      * @param endTime end of process validity on every cluster
      * @return modified process definition
      */
-    public String setProcessClusters(String process, List<String> newClusters, String startTime,
+    private String setProcessClusters(String process, List<String> newClusters, String startTime,
                                      String endTime) {
 
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
@@ -1031,7 +1024,7 @@ public class Bundle {
      * @param endTime end of feed validity on every cluster
      * @return modified feed definition
      */
-    public String setFeedClusters(String referenceFeed,
+    private String setFeedClusters(String referenceFeed,
                                   List<String> newClusters, String location, String startTime,
                                   String endTime) {
 
