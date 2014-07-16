@@ -230,14 +230,6 @@ public class Bundle {
             }
             newDataSet.add(uniqueDataEntity);
         }
-        if (getDataSets().size() == 0) {
-            for (int i = 0; i < clusters.size(); i++) {
-                final String uniqueClusterName = Util.readClusterName(clusters.get(i));
-                final String oldClusterName = Util.readClusterName(oldClusters.get(i));
-                this.processData = injectNewDataIntoProcess(processData, null, null,
-                    uniqueClusterName, oldClusterName);
-            }
-        }
         this.dataSets = newDataSet;
 
         if (!processData.equals("")) {
