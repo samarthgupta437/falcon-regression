@@ -211,7 +211,7 @@ public class ProcessPage extends EntityPage<Process> {
     /**
      * @return the name of legends block
      */
-    public String getLegendsTitile() {
+    public String getLegendsTitle() {
         if (isLineageOpened) {
             return driver.findElement(By.xpath(LINEAGE_LEGENDS_TITLE)).getText();
         } else return null;
