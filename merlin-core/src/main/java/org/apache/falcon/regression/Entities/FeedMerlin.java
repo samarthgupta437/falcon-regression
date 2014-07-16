@@ -19,19 +19,26 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.Cluster;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.entity.v0.feed.Property;
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FeedMerlin extends Feed {
 
@@ -51,6 +58,14 @@ public class FeedMerlin extends Feed {
         } catch (NoSuchMethodException e) {
             Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
         }
+    }
+
+    public static List<FeedMerlin> fromString(List<String> feedStrings) {
+        List <FeedMerlin> feeds = new ArrayList<FeedMerlin>();
+        for (String feedString : feedStrings) {
+            feeds.add(new FeedMerlin(feedString));
+        }
+        return feeds;
     }
 
     public void insertRetentionValueInFeed(String retentionValue) {
@@ -89,4 +104,26 @@ public class FeedMerlin extends Feed {
             this.getProperties().getProperties().add(property);
     }
 
+    /**
+     * Sets unique names for the cluster
+     * @return mapping of old name to new name
+     */
+    public Map<? extends String, ? extends String> setUniqueName() {
+        final String oldName = getName();
+        final String newName =  oldName + Util.getUniqueString();
+        setName(newName);
+        final HashMap<String, String> nameMap = new HashMap<String, String>(1);
+        nameMap.put(oldName, newName);
+        return nameMap;
+    }
+
+    public void renameClusters(Map<String, String> clusterNameMap) {
+        for (Cluster cluster : getClusters().getClusters()) {
+            final String oldName = cluster.getName();
+            final String newName = clusterNameMap.get(oldName);
+            if(!StringUtils.isEmpty(newName)) {
+                cluster.setName(newName);
+            }
+        }
+    }
 }

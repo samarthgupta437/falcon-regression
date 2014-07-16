@@ -22,11 +22,16 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.cluster.Cluster;
+import org.apache.falcon.regression.core.util.Util;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ClusterMerlin extends Cluster {
 
@@ -43,6 +48,14 @@ public class ClusterMerlin extends Cluster {
         }
     }
 
+    public static List<ClusterMerlin> fromString(List<String> clusterStrings) {
+        List <ClusterMerlin> clusters = new ArrayList<ClusterMerlin>();
+        for (String clusterString : clusterStrings) {
+            clusters.add(new ClusterMerlin(clusterString));
+        }
+        return clusters;
+    }
+
     @Override
     public String toString() {
         try {
@@ -52,5 +65,18 @@ public class ClusterMerlin extends Cluster {
         } catch (JAXBException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Sets unique names for the cluster
+     * @return mapping of old name to new name
+     */
+    public Map<? extends String, ? extends String> setUniqueName() {
+        final String oldName = getName();
+        final String newName =  oldName + Util.getUniqueString();
+        setName(newName);
+        final HashMap<String, String> nameMap = new HashMap<String, String>(1);
+        nameMap.put(oldName, newName);
+        return nameMap;
     }
 }

@@ -227,7 +227,7 @@ public class Util {
         return feed.toString();
     }
 
-    private static String getUniqueString() {
+    public static String getUniqueString() {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
@@ -653,20 +653,6 @@ public class Util {
 
     public static Process getProcessObject(String processData) {
         return (Process) Entity.fromString(EntityType.PROCESS, processData);
-    }
-
-    /**
-     * Sets unique names for each cluster entity in supplied list.
-     *
-     * @param clusterData list of cluster definitions to be modified
-     * @return list of unique cluster definitions
-     */
-    public static List<String> generateUniqueClusterEntity(List<String> clusterData) {
-        List<String> newList = new ArrayList<String>();
-        for (String cluster : clusterData) {
-            newList.add(generateUniqueClusterEntity(cluster));
-        }
-        return newList;
     }
 
     public static void dumpConsumerData(Consumer consumer) {

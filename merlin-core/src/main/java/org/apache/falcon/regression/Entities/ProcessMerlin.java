@@ -19,9 +19,12 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.EntityType;
+import org.apache.falcon.entity.v0.process.Cluster;
 import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.entity.v0.process.Output;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.process.Properties;
 import org.apache.falcon.entity.v0.process.Property;
@@ -113,6 +116,33 @@ public class ProcessMerlin extends Process {
             return sw.toString();
         } catch (JAXBException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void renameClusters(Map<String, String> clusterNameMap) {
+        for (Cluster cluster : getClusters().getClusters()) {
+            final String oldName = cluster.getName();
+            final String newName = clusterNameMap.get(oldName);
+            if (!StringUtils.isEmpty(newName)) {
+                cluster.setName(newName);
+            }
+        }
+    }
+
+    public void renameFeeds(Map<String, String> feedNameMap) {
+        for(Input input : getInputs().getInputs()) {
+            final String oldName = input.getFeed();
+            final String newName = feedNameMap.get(oldName);
+            if (!StringUtils.isEmpty(newName)) {
+                input.setFeed(newName);
+            }
+        }
+        for(Output output : getOutputs().getOutputs()) {
+            final String oldName = output.getFeed();
+            final String newName = feedNameMap.get(oldName);
+            if (!StringUtils.isEmpty(newName)) {
+                output.setFeed(newName);
+            }
         }
     }
 }

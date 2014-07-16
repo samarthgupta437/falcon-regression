@@ -73,7 +73,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A bundle abstraction.
@@ -212,118 +214,39 @@ public class Bundle {
      * to unique.
      */
     public void generateUniqueBundle() {
-
-        List<String> oldClusters = new ArrayList<String>(this.clusters);
-        this.clusters = Util.generateUniqueClusterEntity(clusters);
-
-        List<String> newDataSet = new ArrayList<String>();
-        for (String dataSet : getDataSets()) {
-            String uniqueDataEntity = Util.generateUniqueDataEntity(dataSet);
-            for (int i = 0; i < clusters.size(); i++) {
-                final String uniqueClusterName = Util.readClusterName(clusters.get(i));
-                final String oldClusterName = Util.readClusterName(oldClusters.get(i));
-                uniqueDataEntity =
-                    injectNewDataIntoFeed(uniqueDataEntity, uniqueClusterName, oldClusterName);
-                this.processData = injectNewDataIntoProcess(processData,
-                    Util.readDatasetName(dataSet), Util.readDatasetName(uniqueDataEntity),
-                    uniqueClusterName, oldClusterName);
-            }
-            newDataSet.add(uniqueDataEntity);
+        /* creating new names */
+        List<ClusterMerlin> clusterMerlinList = ClusterMerlin.fromString(clusters);
+        Map<String, String> clusterNameMap = new HashMap<String, String>();
+        for (ClusterMerlin clusterMerlin : clusterMerlinList) {
+            clusterNameMap.putAll(clusterMerlin.setUniqueName());
         }
-        this.dataSets = newDataSet;
 
-        if (!processData.equals("")) {
-            this.processData = Util.generateUniqueProcessEntity(processData);
-            this.processData = injectLateDataBasedOnInputs(processData);
+        List<FeedMerlin> feedMerlinList = FeedMerlin.fromString(dataSets);
+        Map<String, String> feedNameMap = new HashMap<String, String>();
+        for (FeedMerlin feedMerlin : feedMerlinList) {
+            feedNameMap.putAll(feedMerlin.setUniqueName());
         }
+
+        ProcessMerlin processMerlin = new ProcessMerlin(processData);
+
+        /* setting new names in feeds and process */
+        for (FeedMerlin feedMerlin : feedMerlinList) {
+            feedMerlin.renameClusters(clusterNameMap);
+        }
+        processMerlin.renameClusters(clusterNameMap);
+        processMerlin.renameFeeds(feedNameMap);
+
+        /* setting variables */
+        clusters.clear();
+        for (ClusterMerlin clusterMerlin : clusterMerlinList) {
+            clusters.add(clusterMerlin.toString());
+        }
+        dataSets.clear();
+        for (FeedMerlin feedMerlin : feedMerlinList) {
+            dataSets.add(feedMerlin.toString());
+        }
+        processData = processMerlin.toString();
     }
-
-    private String injectLateDataBasedOnInputs(String processData) {
-
-        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
-
-        if (processElement.getLateProcess() != null) {
-
-            ArrayList<LateInput> lateInput = new ArrayList<LateInput>();
-
-            for (Input input : processElement.getInputs().getInputs()) {
-                LateInput temp = new LateInput();
-                temp.setInput(input.getName());
-                temp.setWorkflowPath(processElement.getWorkflow().getPath());
-                lateInput.add(temp);
-            }
-
-
-            processElement.getLateProcess().getLateInputs().clear();
-            processElement.getLateProcess().getLateInputs().addAll(lateInput);
-
-            logger.info("process after late input set: " + processElement.toString());
-
-            return processElement.toString();
-        }
-
-        return processData;
-    }
-
-    /**
-     * Renames feed cluster with matching name
-     *
-     * @param dataSet feed definition to be modified
-     * @param uniqueCluster new cluster name
-     * @param oldCluster old cluster name
-     * @return feed definition with new cluster name
-     */
-    private String injectNewDataIntoFeed(String dataSet, String uniqueCluster, String oldCluster) {
-        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, dataSet);
-        for (org.apache.falcon.entity.v0.feed.Cluster cluster : feedElement
-            .getClusters().getClusters()) {
-            if (cluster.getName().equalsIgnoreCase(oldCluster)) {
-                cluster.setName(uniqueCluster);
-            }
-        }
-        return feedElement.toString();
-    }
-
-    /**
-     * Injects new data source into process: input or output.
-     * Replaces old process input/output feed name with new one as well as an appropriate process
-     * cluster.
-     *
-     * @param processData process definition to be modified
-     * @param oldDataName old feed name
-     * @param newDataName new feed name
-     * @param uniqueCluster new cluster name
-     * @param oldCluster old cluster name
-     * @return modified process definition
-     */
-    private String injectNewDataIntoProcess(String processData, String oldDataName,
-                                            String newDataName,
-                                            String uniqueCluster, String oldCluster) {
-        if (processData.equals(""))
-            return "";
-        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, processData);
-        if (processElement.getInputs() != null)
-            for (Input input : processElement.getInputs().getInputs()) {
-                if (input.getFeed().equals(oldDataName)) {
-                    input.setFeed(newDataName);
-                }
-            }
-        if (processElement.getOutputs() != null)
-            for (Output output : processElement.getOutputs().getOutputs()) {
-                if (output.getFeed().equalsIgnoreCase(oldDataName)) {
-                    output.setFeed(newDataName);
-                }
-            }
-        for (Cluster cluster : processElement.getClusters().getClusters()) {
-            if (cluster.getName().equalsIgnoreCase(oldCluster)) {
-                cluster.setName(uniqueCluster);
-            }
-        }
-
-        //now just wrap the process back!
-        return processElement.toString();
-    }
-
 
     public ServiceResponse submitBundle(ColoHelper prismHelper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
