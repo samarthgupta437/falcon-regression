@@ -112,7 +112,7 @@ public class BundleUtil {
         }
         Assert.assertNotNull(clusterData, "expecting cluster data to be non-empty");
         Assert.assertTrue(!dataSets.isEmpty(), "expecting feed data to be non-empty");
-        bundleList.add(new Bundle(clusterData, dataSets, processData, directory.getAbsolutePath()));
+        bundleList.add(new Bundle(clusterData, dataSets, processData));
         return bundleList;
     }
 

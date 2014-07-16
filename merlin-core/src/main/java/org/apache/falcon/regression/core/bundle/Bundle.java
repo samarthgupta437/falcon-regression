@@ -87,7 +87,6 @@ public class Bundle {
     private List<String> clusters;
     private List<String> dataSets;
     private String processData;
-    private String bundleLocation;
 
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
@@ -158,20 +157,17 @@ public class Bundle {
         return clusters;
     }
 
-    public Bundle(String clusterData, List<String> dataSets, String processData,
-                  String bundleLocation) {
+    public Bundle(String clusterData, List<String> dataSets, String processData) {
         this.dataSets = dataSets;
         this.processData = processData;
         this.clusters = new ArrayList<String>();
         this.clusters.add(clusterData);
-        this.bundleLocation = bundleLocation;
     }
 
     public Bundle(Bundle bundle, String prefix) {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
-        this.bundleLocation = bundle.bundleLocation;
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
         }
