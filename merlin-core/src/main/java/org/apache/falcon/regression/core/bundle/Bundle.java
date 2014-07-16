@@ -386,7 +386,6 @@ public class Bundle {
      *
      * @param startEl its start in terms of EL expression
      * @param endEl its end in terms of EL expression
-     * @return modified process
      */
     public void setProcessInput(String startEl, String endEl) {
         Process process = InstanceUtil.getProcessElement(this);
