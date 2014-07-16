@@ -37,8 +37,7 @@ public class ProcessPage extends EntityPage<Process> {
 
     private static final Logger logger = Logger.getLogger(ProcessPage.class);
     private final static String INSTANCES_PANEL = "//div[@id='panel-instance']//span";
-    private final static String INSTANCE_STATUS_TEMPLATE =
-        "//div[@id='panel-instance']//span[contains(..,'%s')]";
+    private final static String INSTANCE_STATUS_TEMPLATE = INSTANCES_PANEL + "[contains(..,'%s')]";
     private final static String LINEAGE_LINK_TEMPLATE =
         "//a[@class='lineage-href' and @data-instance-name='%s']";
 
@@ -48,19 +47,14 @@ public class ProcessPage extends EntityPage<Process> {
 
     private boolean isLineageOpened = false;
 
-    private static final String LINE_AGE_BUTTON_XPATH =
-        "//div[@id='panel-instance']//table/tbody/tr/td[contains(.., " +
-            "'%s')]/a[contains(., 'Lineage')]";
-    private static final String CLOSE_LINE_AGE_BUTTON_XPATH =
+    private static final String CLOSE_LINEAGE_LINK_TEMPLATE =
         "//body[@class='modal-open']//button[contains(., 'Close')]";
     private static final String LINEAGE_MODAL = "//div[@id='lineage-modal']";
-    private static final String SVG_XPATH = "//*[name() = 'svg']";
-    private static final String G_XPATH = "//*[name()='g']";
-    private static final String VERTICES_BLOCKS_XPATH = SVG_XPATH + G_XPATH +
-        G_XPATH + "[not(@class='lineage-link')]";
+    private static final String SVG_ELEMENT = "//*[name() = 'svg']/*[name()='g']/*[name()='g']";
+    private static final String VERTICES_BLOCKS_XPATH = SVG_ELEMENT + "[not(@class='lineage-link')]";
     private static final String VERTICES_TEXT_XPATH = VERTICES_BLOCKS_XPATH +
         "//div[@class='lineage-node-text']";
-    private static final String EDGE_XPATH = SVG_XPATH + G_XPATH + "[@class='lineage-link']" +
+    private static final String EDGE_XPATH = SVG_ELEMENT + "[@class='lineage-link']" +
         "//*[name()='path']";
     private static final String CIRCLE_XPATH = "//*[name() = 'circle']";
     private static final String LINEAGE_INFO_PANEL = "//div[@id='lineage-info-panel']";
@@ -73,11 +67,11 @@ public class ProcessPage extends EntityPage<Process> {
      * @param nominalTime particular instance of process, defined by it's start time
      */
     public void openLineage(String nominalTime) {
-        waitForElement(String.format(LINE_AGE_BUTTON_XPATH, nominalTime), DEFAULT_TIMEOUT,
+        waitForElement(String.format(LINEAGE_LINK_TEMPLATE, nominalTime), DEFAULT_TIMEOUT,
             "Lineage button didn't appear");
         logger.info("Working with instance: " + nominalTime);
         WebElement lineage =
-            driver.findElement(By.xpath(String.format(LINE_AGE_BUTTON_XPATH, nominalTime)));
+            driver.findElement(By.xpath(String.format(LINEAGE_LINK_TEMPLATE, nominalTime)));
         logger.info("Opening lineage...");
         lineage.click();
         waitForElement(VERTICES_BLOCKS_XPATH + CIRCLE_XPATH, DEFAULT_TIMEOUT,
@@ -88,10 +82,10 @@ public class ProcessPage extends EntityPage<Process> {
 
     public void closeLineage() {
         if (isLineageOpened) {
-            WebElement close = driver.findElement(By.xpath(CLOSE_LINE_AGE_BUTTON_XPATH));
+            WebElement close = driver.findElement(By.xpath(CLOSE_LINEAGE_LINK_TEMPLATE));
             close.click();
             isLineageOpened = false;
-            waitForDisappear(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
+            waitForDisappear(CLOSE_LINEAGE_LINK_TEMPLATE, DEFAULT_TIMEOUT,
                 "Lineage didn't disappear");
         }
     }
@@ -137,7 +131,7 @@ public class ProcessPage extends EntityPage<Process> {
     public List<String> getAllVerticesNames() {
         List<String> list = new ArrayList<String>();
         if (isLineageOpened) {
-            waitForElement(CLOSE_LINE_AGE_BUTTON_XPATH, DEFAULT_TIMEOUT,
+            waitForElement(CLOSE_LINEAGE_LINK_TEMPLATE, DEFAULT_TIMEOUT,
                 "Close Lineage button not found");
             waitForElement(VERTICES_BLOCKS_XPATH, DEFAULT_TIMEOUT,
                 "Vertices not found");
