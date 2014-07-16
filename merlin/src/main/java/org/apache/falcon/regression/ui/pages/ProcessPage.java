@@ -36,16 +36,13 @@ import java.util.List;
 public class ProcessPage extends EntityPage<Process> {
 
     private static final Logger logger = Logger.getLogger(ProcessPage.class);
+    private boolean isLineageOpened = false;
+
     private final static String INSTANCES_PANEL = "//div[@id='panel-instance']//span";
     private final static String INSTANCE_STATUS_TEMPLATE = INSTANCES_PANEL + "[contains(..,'%s')]";
     private final static String LINEAGE_LINK_TEMPLATE =
         "//a[@class='lineage-href' and @data-instance-name='%s']";
 
-    public ProcessPage(WebDriver driver, ColoHelper helper, String entityName) {
-        super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
-    }
-
-    private boolean isLineageOpened = false;
 
     private static final String CLOSE_LINEAGE_LINK_TEMPLATE =
         "//body[@class='modal-open']//button[contains(., 'Close')]";
@@ -60,6 +57,10 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String LINEAGE_TITLE = LINEAGE_MODAL + "//div[@class='modal-header']/h4";
     private static final String LINEAGE_LEGENDS_BLOCK = LINEAGE_MODAL +
         "//div[@class='modal-body']/div[ul[@class='lineage-legend']]";
+
+    public ProcessPage(WebDriver driver, ColoHelper helper, String entityName) {
+        super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
+    }
 
     /**
      * @param nominalTime particular instance of process, defined by it's start time
