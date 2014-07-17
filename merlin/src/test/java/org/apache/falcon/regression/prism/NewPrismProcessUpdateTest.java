@@ -105,9 +105,9 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             aggregator1Path}) {
             uploadDirToClusters(wfPath, OSUtil.RESOURCES_OOZIE);
         }
-    //    Util.restartService(cluster3.getClusterHelper());
-    //    Util.restartService(cluster1.getClusterHelper());
-    //    Util.restartService(cluster2.getClusterHelper());
+        Util.restartService(cluster3.getClusterHelper());
+        Util.restartService(cluster1.getClusterHelper());
+        Util.restartService(cluster2.getClusterHelper());
     }
 
     @AfterMethod(alwaysRun = true)
