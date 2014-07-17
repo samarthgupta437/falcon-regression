@@ -52,19 +52,14 @@ import org.apache.falcon.entity.v0.process.Workflow;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.Entities.ProcessMerlin;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
-import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
@@ -73,7 +68,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -90,22 +84,9 @@ public class Bundle {
     private static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
     private static final Logger logger = Logger.getLogger(Bundle.class);
 
+    private List<String> clusters;
     private List<String> dataSets;
     private String processData;
-    private String clusterData;
-
-    private String processFilePath;
-    private List<String> clusters;
-
-    private static String sBundleLocation;
-
-    List<String> oldClusters;
-
-    IEntityManagerHelper clusterHelper;
-    IEntityManagerHelper processHelper;
-    IEntityManagerHelper feedHelper;
-
-    private ColoHelper colohelper;
 
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
@@ -176,22 +157,6 @@ public class Bundle {
         return clusters;
     }
 
-    public IEntityManagerHelper getClusterHelper() {
-        return clusterHelper;
-    }
-
-    public IEntityManagerHelper getFeedHelper() {
-        return feedHelper;
-    }
-
-    public IEntityManagerHelper getProcessHelper() {
-        return processHelper;
-    }
-
-    public String getProcessFilePath() {
-        return processFilePath;
-    }
-
     public Bundle(String clusterData, List<String> dataSets, String processData) {
         this.dataSets = dataSets;
         this.processData = processData;
@@ -203,45 +168,13 @@ public class Bundle {
         this.dataSets = new ArrayList<String>(bundle.getDataSets());
         this.processData = bundle.getProcessData();
         this.clusters = new ArrayList<String>();
-        colohelper = new ColoHelper(prefix);
         for (String cluster : bundle.getClusters()) {
             this.clusters.add(Util.getEnvClusterXML(cluster, prefix));
-        }
-
-        if (null == bundle.getClusterHelper()) {
-            this.clusterHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER, prefix);
-        } else {
-            this.clusterHelper = bundle.getClusterHelper();
-        }
-
-        if (null == bundle.getProcessHelper()) {
-            this.processHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.PROCESS, prefix);
-        } else {
-            this.processHelper = bundle.getProcessHelper();
-        }
-
-        if (null == bundle.getFeedHelper()) {
-            this.feedHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, prefix);
-        } else {
-            this.feedHelper = bundle.getFeedHelper();
         }
     }
 
     public Bundle(Bundle bundle, ColoHelper prismHelper) {
-        this.dataSets = new ArrayList<String>(bundle.getDataSets());
-        this.processData = bundle.getProcessData();
-        this.clusters = new ArrayList<String>();
-        for (String cluster : bundle.getClusters()) {
-            this.clusters
-                .add(Util.getEnvClusterXML(cluster,
-                    prismHelper.getPrefix()));
-        }
-        this.clusterHelper = prismHelper.getClusterHelper();
-        this.processHelper = prismHelper.getProcessHelper();
-        this.feedHelper = prismHelper.getFeedHelper();
+        this(bundle, prismHelper.getPrefix());
     }
 
     public void setClusterData(List<String> clusters) {
@@ -256,10 +189,6 @@ public class Bundle {
             clusterNames.add(clusterObject.getName());
         }
         return clusterNames;
-    }
-
-    public void setClusterData(String clusterData) {
-        this.clusterData = clusterData;
     }
 
     public List<String> getDataSets() {
@@ -284,7 +213,7 @@ public class Bundle {
      */
     public void generateUniqueBundle() {
 
-        this.oldClusters = new ArrayList<String>(this.clusters);
+        List<String> oldClusters = new ArrayList<String>(this.clusters);
         this.clusters = Util.generateUniqueClusterEntity(clusters);
 
         List<String> newDataSet = new ArrayList<String>();
@@ -422,30 +351,6 @@ public class Bundle {
         return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
-    public void updateWorkFlowFile() throws IOException {
-        Process processElement = InstanceUtil.getProcessElement(this);
-        Workflow wf = processElement.getWorkflow();
-        File wfFile = new File(sBundleLocation + "/workflow/workflow.xml");
-        if (!wfFile.exists()) {
-            logger.info("workflow not provided along with process and feed xmls");
-            return;
-        }
-        //is folder present
-        if (!HadoopUtil.isDirPresent(colohelper.getClusterHelper().getHadoopFS(), wf.getPath())) {
-            logger.info("workflowPath does not exists: creating path: " + wf.getPath());
-            HadoopUtil.createDir(wf.getPath(), colohelper.getClusterHelper().getHadoopFS());
-        }
-
-        // If File is present in hdfs check for contents and replace if found different
-        if (HadoopUtil.isFilePresentHDFS(colohelper, wf.getPath(), "workflow.xml")) {
-
-            HadoopUtil.deleteFile(colohelper, new Path(wf.getPath() + "/workflow.xml"));
-        }
-        // If there is no file in hdfs , replace it anyways
-        HadoopUtil.copyDataToFolder(colohelper, new Path(wf.getPath() + "/workflow.xml"),
-            wfFile.getAbsolutePath());
-    }
-
     /**
      * Submits bundle and schedules process.
      *
@@ -459,9 +364,6 @@ public class Bundle {
     public String submitAndScheduleBundle(ColoHelper prismHelper)
         throws IOException, JAXBException, URISyntaxException,
         AuthenticationException {
-        if (colohelper != null) {
-            updateWorkFlowFile();
-        }
         ServiceResponse submitResponse = submitBundle(prismHelper);
         if (submitResponse.getCode() == 400)
             return submitResponse.getMessage();
@@ -480,7 +382,6 @@ public class Bundle {
      *
      * @param startEl its start in terms of EL expression
      * @param endEl its end in terms of EL expression
-     * @return modified process
      */
     public void setProcessInput(String startEl, String endEl) {
         Process process = InstanceUtil.getProcessElement(this);
@@ -732,9 +633,10 @@ public class Bundle {
     }
 
 
-    public void verifyDependencyListing() {
+    public void verifyDependencyListing(ColoHelper coloHelper) {
         //display dependencies of process:
-        String dependencies = processHelper.getDependencies(Util.readEntityName(getProcessData()));
+        String dependencies = coloHelper.getProcessHelper().getDependencies(
+            Util.readEntityName(getProcessData()));
 
         //verify presence
         for (String cluster : clusters) {
@@ -743,10 +645,12 @@ public class Bundle {
         for (String feed : getDataSets()) {
             Assert.assertTrue(dependencies.contains("(feed) " + Util.readDatasetName(feed)));
             for (String cluster : clusters) {
-                Assert.assertTrue(feedHelper.getDependencies(Util.readDatasetName(feed))
+                Assert.assertTrue(coloHelper.getFeedHelper().getDependencies(
+                    Util.readDatasetName(feed))
                     .contains("(cluster) " + Util.readClusterName(cluster)));
             }
-            Assert.assertFalse(feedHelper.getDependencies(Util.readDatasetName(feed))
+            Assert.assertFalse(coloHelper.getFeedHelper().getDependencies(
+                Util.readDatasetName(feed))
                 .contains("(process)" + Util.readEntityName(getProcessData())));
         }
 
@@ -807,7 +711,6 @@ public class Bundle {
             }
         }
         InstanceUtil.writeClusterElement(this, c);
-        clusters.set(0, clusterData);
     }
 
     public void setInputFeedTableUri(String tableUri) {

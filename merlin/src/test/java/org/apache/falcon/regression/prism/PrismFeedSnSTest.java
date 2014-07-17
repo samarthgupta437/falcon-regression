@@ -421,7 +421,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
         throws Exception {
         bundles[0].submitAndScheduleFeed();
         AssertUtil.assertSucceeded(
-            bundles[0].getFeedHelper().suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
+            cluster1.getFeedHelper().suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
 
         bundles[1].submitAndScheduleFeed();

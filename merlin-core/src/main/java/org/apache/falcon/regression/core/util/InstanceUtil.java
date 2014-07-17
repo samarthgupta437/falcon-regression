@@ -671,7 +671,9 @@ public class InstanceUtil {
      */
     public static void writeClusterElement(Bundle bundle,
                                            org.apache.falcon.entity.v0.cluster.Cluster c) {
-        bundle.setClusterData(c.toString());
+        final ArrayList<String> clusters = new ArrayList<String>();
+        clusters.add(c.toString());
+        bundle.setClusterData(clusters);
     }
 
     /**
