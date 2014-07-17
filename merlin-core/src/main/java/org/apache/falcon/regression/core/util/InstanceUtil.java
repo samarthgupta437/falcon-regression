@@ -646,7 +646,8 @@ public class InstanceUtil {
         conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
         final FileSystem fs = FileSystem.get(conf);
         for (final String folder : folderList) {
-            fs.mkdirs(new Path(folder));
+            if(StringUtils.isNotEmpty(folder))
+                fs.mkdirs(new Path(folder));
         }
         logger.info("created folders.....");
     }

@@ -469,4 +469,22 @@ public class OozieUtil {
 
         return missingPaths;
     }
+
+    public static void createMissingDependencies(ColoHelper helper, ENTITY_TYPE type,
+                                                 String entityName, int bundleNumber)
+        throws OozieClientException, IOException {
+        String bundleID = InstanceUtil.getSequenceBundleID(helper, entityName, type, bundleNumber);
+        OozieClient oozieClient = helper.getClusterHelper().getOozieClient();
+        List<CoordinatorJob> coords = oozieClient.getBundleJobInfo(bundleID).getCoordinators();
+        for (CoordinatorJob coord : coords) {
+
+            CoordinatorJob temp = oozieClient.getCoordJobInfo(coord.getId());
+            for (int instanceNumber = 0 ; instanceNumber < temp.getActions().size() ;
+                 instanceNumber++) {
+                CoordinatorAction instance = temp.getActions().get(instanceNumber);
+                InstanceUtil.createHDFSFolders(helper,
+                    Arrays.asList(instance.getMissingDependencies().split("#")));
+            }
+        }
+    }
 }

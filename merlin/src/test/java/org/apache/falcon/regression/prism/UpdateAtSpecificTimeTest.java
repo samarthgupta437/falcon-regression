@@ -598,7 +598,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
         //set start end process time for 3 clusters
         String startTime_cluster1 = TimeUtil.getTimeWrtSystemTime(-40);
-        String endTime_cluster1 = TimeUtil.getTimeWrtSystemTime(6);
+        String endTime_cluster1 = TimeUtil.getTimeWrtSystemTime(3);
         String startTime_cluster2 = TimeUtil.getTimeWrtSystemTime(120);
         String endTime_cluster2 = TimeUtil.getTimeWrtSystemTime(240);
         String startTime_cluster3 = TimeUtil.getTimeWrtSystemTime(-30);
@@ -639,7 +639,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
 
         //update process
-        String updateTime = TimeUtil.addMinsToTime(endTime_cluster1, 4);
+        String updateTime = TimeUtil.addMinsToTime(endTime_cluster1, 3);
         processBundle.setProcessProperty("someProp", "someVal");
         ServiceResponse r = prism.getProcessHelper().update(processBundle.getProcessData(),
             processBundle.getProcessData(), updateTime, null);
