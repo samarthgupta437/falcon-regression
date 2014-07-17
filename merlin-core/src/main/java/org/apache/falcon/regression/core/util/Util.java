@@ -194,18 +194,6 @@ public class Util {
     }
 
     /**
-     * Sets unique name for cluster.
-     *
-     * @param data cluster definition
-     * @return cluster definition with unique name
-     */
-    public static String generateUniqueClusterEntity(String data) {
-        Cluster cluster = (Cluster) Entity.fromString(EntityType.CLUSTER, data);
-        cluster.setName(cluster.getName() + getUniqueString());
-        return cluster.toString();
-    }
-
-    /**
      * Sets unique name for feed.
      *
      * @param data feed definition

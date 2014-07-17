@@ -799,10 +799,8 @@ public class Bundle {
                                     String endTime) {
 
         //generate and set clusters
-        org.apache.falcon.entity.v0.cluster.Cluster c =
-            (org.apache.falcon.entity.v0.cluster.Cluster)
-                Entity.fromString(EntityType.CLUSTER,
-                    Util.generateUniqueClusterEntity(b.getClusters().get(0)));
+        ClusterMerlin c = new ClusterMerlin(b.getClusters().get(0));
+        c.setUniqueName();
         List<String> newClusters = new ArrayList<String>();
         List<String> newDataSets = new ArrayList<String>();
 
