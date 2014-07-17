@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HadoopFileEditor {
-    static Logger logger = Logger.getLogger(HadoopFileEditor.class);
+    private static final Logger logger = Logger.getLogger(HadoopFileEditor.class);
     FileSystem fs;
     List<String> paths;
     List<String> files;

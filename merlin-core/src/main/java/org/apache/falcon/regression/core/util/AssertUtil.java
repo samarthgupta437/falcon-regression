@@ -229,11 +229,10 @@ public class AssertUtil {
      * @param data           feed or proceess XML
      * @param expectedStatus expected Job.Status of entity
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
                                    Job.Status expectedStatus)
-        throws OozieClientException, InterruptedException {
+        throws OozieClientException {
         String name = null;
         if (entityType == ENTITY_TYPE.FEED) {
             name = Util.readDatasetName(data);
@@ -254,11 +253,10 @@ public class AssertUtil {
      * @param bundle         Bundle with feed or process data
      * @param expectedStatus expected Job.Status of entity
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, Bundle bundle,
                                    Job.Status expectedStatus)
-        throws InterruptedException, OozieClientException {
+        throws OozieClientException {
         String data = null;
         if (entityType == ENTITY_TYPE.FEED) {
             data = bundle.getDataSets().get(0);

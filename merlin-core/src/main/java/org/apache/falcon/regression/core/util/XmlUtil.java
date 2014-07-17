@@ -31,7 +31,7 @@ import java.io.IOException;
 
 public class XmlUtil {
 
-    static Logger logger = Logger.getLogger(XmlUtil.class);
+    private static final Logger logger = Logger.getLogger(XmlUtil.class);
 
     public static Validity createValidity(String start, String end) {
         Validity v = new Validity();

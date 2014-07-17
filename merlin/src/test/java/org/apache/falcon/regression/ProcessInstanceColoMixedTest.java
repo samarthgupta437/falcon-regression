@@ -75,9 +75,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         logger.info("test name: " + method.getName());
 
         //get 3 unique bundles
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0].generateUniqueBundle();
-        bundles[1] = BundleUtil.readELBundles()[0][0];
+        bundles[1] = BundleUtil.readELBundle();
         bundles[1].generateUniqueBundle();
 
         //generate bundles according to config files

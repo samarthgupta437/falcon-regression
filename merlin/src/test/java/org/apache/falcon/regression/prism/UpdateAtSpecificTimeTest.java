@@ -59,7 +59,7 @@ import java.util.List;
 
 public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
-    static Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
+    private static final Logger logger = Logger.getLogger(UpdateAtSpecificTimeTest.class);
 
     Bundle processBundle;
 
@@ -81,7 +81,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws IOException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+        Bundle bundle = BundleUtil.readLocalDCBundle();
         bundles[0] = new Bundle(bundle, cluster_1);
         bundles[1] = new Bundle(bundle, cluster_2);
         bundles[2] = new Bundle(bundle, cluster_3);
@@ -90,7 +90,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         bundles[1].generateUniqueBundle();
         bundles[2].generateUniqueBundle();
 
-        processBundle = BundleUtil.readELBundles()[0][0];
+        processBundle = BundleUtil.readELBundle();
         processBundle = new Bundle(processBundle, cluster_1);
         processBundle.generateUniqueBundle();
         processBundle.setProcessWorkflow(aggregateWorkflowDir);
@@ -143,8 +143,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         enabled = true)
     public void updateTimeInPast_Process()
         throws JAXBException, IOException, URISyntaxException,
-        OozieClientException,
-        AuthenticationException {
+        OozieClientException, AuthenticationException {
 
         processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
                 TimeUtil.getTimeWrtSystemTime(20));
@@ -186,7 +185,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         enabled = true)
 
     public void updateTimeInPast_Feed()
-        throws InterruptedException, JAXBException, IOException, OozieClientException,
+        throws JAXBException, IOException, OozieClientException,
         URISyntaxException, AuthenticationException {
 
 
@@ -200,7 +199,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         //submit and schedule feed
         ServiceResponse r =
             prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         InstanceUtil.waitTillInstancesAreCreated(cluster_1, feed, 0);
@@ -236,9 +235,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
         enabled = true)
     public void inNextFewMinutesUpdate_RollForward_Process()
-        throws JAXBException, IOException, URISyntaxException, InterruptedException, JSchException,
-        OozieClientException, SAXException,
-        AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, JSchException,
+        OozieClientException, SAXException, AuthenticationException {
     /*
     submit process on 3 clusters. Schedule on 2 clusters. Bring down one of
     the scheduled cluster. Update with time 5 minutes from now. On running
@@ -318,7 +316,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
             //start the stopped cluster_2
             Util.startService(cluster_2.getProcessHelper());
-            Thread.sleep(40000);
+            TimeUtil.sleepSeconds(40);
 
             String newBundleID_cluster1 = InstanceUtil
                 .getLatestBundleID(cluster_1,
@@ -362,9 +360,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
     @Test(groups = {"MultiCluster", "0.3.1"}, timeOut = 1200000,
         enabled = true)
     public void inNextFewMinutesUpdate_RollForward_Feed()
-        throws JAXBException,
-        IOException, URISyntaxException, JSchException, OozieClientException, SAXException,
-        AuthenticationException {
+        throws JAXBException, IOException, URISyntaxException, JSchException, 
+        OozieClientException, SAXException, AuthenticationException {
         try {
             String startTimeCluster_source = TimeUtil.getTimeWrtSystemTime(-18);
 
@@ -449,8 +446,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         enabled = true)
     public void updateTimeAfterEndTime_Process()
         throws JAXBException, InterruptedException, IOException, URISyntaxException,
-        OozieClientException,
-        AuthenticationException {
+        OozieClientException, AuthenticationException {
 
     /*
       submit and schedule process with end time after 60 mins. Set update time
@@ -461,7 +457,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         String endTime = TimeUtil.getTimeWrtSystemTime(60);
         processBundle.setProcessValidity(startTime, endTime);
         processBundle.submitAndScheduleBundle(prism);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0),
             Util.readEntityName(processBundle.getProcessData()), 0,
@@ -557,9 +553,8 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
     @Test(groups = {"multiCluster", "0.3.1"}, timeOut = 1200000,
         enabled = true)
-    public void updateTimeBeforeStartTime_Process() throws JAXBException,
-        InterruptedException, IOException, URISyntaxException, OozieClientException,
-        AuthenticationException {
+    public void updateTimeBeforeStartTime_Process() throws JAXBException, IOException,
+        URISyntaxException, OozieClientException, AuthenticationException {
 
     /*
       submit and schedule process with start time +10 mins from now. Update
@@ -583,7 +578,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         ServiceResponse r = prism.getProcessHelper().update(oldProcess,
             processBundle.getProcessData(), updateTime, null);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         //verify new bundle creation
         OozieUtil.verifyNewBundleCreation(cluster_1, oldBundleID, oldNominalTimes,
             oldProcess, true, false);

@@ -48,7 +48,7 @@ public abstract class IEntityManagerHelper {
 
     public static boolean AUTHENTICATE = setAuthenticate();
 
-    private Logger logger = Logger.getLogger(IEntityManagerHelper.class);
+    private static final Logger logger = Logger.getLogger(IEntityManagerHelper.class);
 
     protected String CLIENT_LOCATION = OSUtil.RESOURCES
         + OSUtil.getPath("IvoryClient", "IvoryCLI.jar");

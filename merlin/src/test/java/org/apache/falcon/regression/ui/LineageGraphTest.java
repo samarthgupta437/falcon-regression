@@ -61,7 +61,7 @@ public class LineageGraphTest extends BaseUITestClass {
     private ColoHelper cluster = servers.get(0);
     private String baseTestDir = baseHDFSDir + "/LineageGraphTest";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    private Logger logger = Logger.getLogger(LineageGraphTest.class);
+    private static final Logger logger = Logger.getLogger(LineageGraphTest.class);
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + datePattern;
     private FileSystem clusterFS = serverFS.get(0);
@@ -80,9 +80,9 @@ public class LineageGraphTest extends BaseUITestClass {
     @BeforeClass
     public void setUp()
         throws IOException, JAXBException, URISyntaxException, AuthenticationException,
-        OozieClientException, InterruptedException {
+        OozieClientException {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -235,7 +235,7 @@ public class LineageGraphTest extends BaseUITestClass {
             /* check the main lineage title */
             Assert.assertEquals(processPage.getLineageTitle(), "Lineage information");
             /* check legends title */
-            Assert.assertEquals(processPage.getLegendsTitile(), "Legends");
+            Assert.assertEquals(processPage.getLegendsTitle(), "Legends");
             /* check that all legends are present and match to expected*/
             HashMap<String, String> legends = processPage.getLegends();
             for (Map.Entry<String, String> entry : legends.entrySet()) {

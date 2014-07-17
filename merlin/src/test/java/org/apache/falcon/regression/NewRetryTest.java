@@ -33,6 +33,7 @@ import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -64,7 +65,7 @@ import java.util.concurrent.TimeUnit;
 @Test(groups = "embedded")
 public class NewRetryTest extends BaseTestClass {
 
-    private Logger logger = Logger.getLogger(NewRetryTest.class);
+    private static final Logger logger = Logger.getLogger(NewRetryTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
@@ -84,7 +85,7 @@ public class NewRetryTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        bundles[0] = new Bundle(BundleUtil.getBundleData("RetryTests")[0], cluster);
+        bundles[0] = new Bundle(BundleUtil.readRetryBundle(), cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         startDate = new DateTime(DateTimeZone.UTC).plusMinutes(1);
@@ -185,7 +186,7 @@ public class NewRetryTest extends BaseTestClass {
 
             for (int attempt = 0;
                  attempt < 20 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1),
                 "Failure Retry validation failed");
@@ -243,7 +244,7 @@ public class NewRetryTest extends BaseTestClass {
                 Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS).get(0);
 
             for (int i = 0; i < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++i) {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1),
                 "Failure Retry validation failed");
@@ -297,7 +298,7 @@ public class NewRetryTest extends BaseTestClass {
 
             for (int attempt = 0;
                  attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 2); ++attempt) {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 2),
                 "Failure Retry validation failed");
@@ -598,7 +599,7 @@ public class NewRetryTest extends BaseTestClass {
 
             for (int attempt = 0;
                  attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1),
                 "Failure Retry validation failed");
@@ -706,7 +707,7 @@ public class NewRetryTest extends BaseTestClass {
 
             for (int i = 0; i < 10 && dates == null; ++i) {
                 dates = OozieUtil.getStartTimeForRunningCoordinators(cluster, bundleId);
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertNotNull(dates, String
                 .format("Start time for running coordinators of bundle: %s should not be null.",
@@ -717,7 +718,7 @@ public class NewRetryTest extends BaseTestClass {
 
             for (int attempt = 0;
                  attempt < 10 && !validateFailureRetries(clusterOC, bundleId, 1); ++attempt) {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertTrue(validateFailureRetries(clusterOC, bundleId, 1),
                 "Failure Retry validation failed");
@@ -806,7 +807,7 @@ public class NewRetryTest extends BaseTestClass {
 
             for (int i = 0; i < 10 && dates == null; ++i) {
                 dates = OozieUtil.getStartTimeForRunningCoordinators(cluster, bundleId);
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertNotNull(dates, String
                 .format("Start time for running coordinators of bundle: %s should not be null.",
@@ -825,7 +826,7 @@ public class NewRetryTest extends BaseTestClass {
             for (int attempt = 0; attempt < 10 && !validateFailureRetries(
                 clusterOC, bundleId, bundles[0].getProcessObject().getRetry().getAttempts());
                  ++attempt) {
-                TimeUnit.SECONDS.sleep(10);
+                TimeUtil.sleepSeconds(10);
             }
             Assert.assertTrue(
                 validateFailureRetries(clusterOC, bundleId,
@@ -910,7 +911,7 @@ public class NewRetryTest extends BaseTestClass {
         throws Exception {
         //validate that all failed processes were retried the specified number of times.
         for (int i = 0; i < 60 && getDefaultOozieCoordinator(oozieClient, bundleId) == null; ++i) {
-            TimeUnit.SECONDS.sleep(10);
+            TimeUtil.sleepSeconds(10);
         }
         final CoordinatorJob defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         Assert.assertNotNull(defaultCoordinator, "Unexpected value of defaultCoordinator");
@@ -918,7 +919,7 @@ public class NewRetryTest extends BaseTestClass {
         for (int i = 0;
              i < 60 && !validateFailureRetries(oozieClient, bundleId, maxNumberOfRetries); ++i) {
             logger.info("desired state not reached, attempt number: " + i);
-            TimeUnit.SECONDS.sleep(10);
+            TimeUtil.sleepSeconds(10);
         }
         Assert.assertTrue(validateFailureRetries(oozieClient, bundleId, maxNumberOfRetries),
             "all retries were not attempted correctly!");
@@ -1028,7 +1029,7 @@ public class NewRetryTest extends BaseTestClass {
         // make sure default coordinator is not null before we proceed
         for (int i = 0; i < 120 && (defaultCoordinator == null || defaultCoordinator.getStatus()
             == CoordinatorJob.Status.PREP); ++i) {
-            TimeUnit.SECONDS.sleep(10);
+            TimeUtil.sleepSeconds(10);
             defaultCoordinator = getDefaultOozieCoordinator(oozieClient, bundleId);
         }
         Assert.assertNotNull(defaultCoordinator, "default coordinator is null");
@@ -1049,7 +1050,7 @@ public class NewRetryTest extends BaseTestClass {
             if (doneBynow >= percentageConversion) {
                 break;
             }
-            TimeUnit.SECONDS.sleep(10);
+            TimeUtil.sleepSeconds(10);
         }
     }
 

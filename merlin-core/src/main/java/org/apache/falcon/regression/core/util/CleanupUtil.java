@@ -37,7 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CleanupUtil {
-    private static Logger logger = Logger.getLogger(CleanupUtil.class);
+    private static final Logger logger = Logger.getLogger(CleanupUtil.class);
 
     public static List<String> getAllProcesses(ColoHelper prism)
         throws IOException, URISyntaxException, AuthenticationException, JAXBException {

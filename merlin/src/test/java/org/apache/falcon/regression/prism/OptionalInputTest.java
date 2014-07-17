@@ -60,7 +60,7 @@ public class OptionalInputTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -79,7 +79,7 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_1optional_1compulsary() throws Exception {
+    public void optionalTest_1optional_1compulsory() throws Exception {
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
@@ -90,12 +90,14 @@ public class OptionalInputTest extends BaseTestClass {
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
+        bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
+        bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-02T00:00Z",
-            "2010-01-02T01:15Z", 1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-02T00:50Z",
+            "2010-01-02T01:10Z", 5);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
             inputPath + "/input1/", dataDates);
 
@@ -113,7 +115,7 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_1optional_2compulsary() throws Exception {
+    public void optionalTest_1optional_2compulsory() throws Exception {
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
@@ -124,6 +126,8 @@ public class OptionalInputTest extends BaseTestClass {
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
+        bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
+        bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
@@ -134,8 +138,8 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-01T22:00Z",
-            "2010-01-02T03:00Z", 1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-02T00:50Z",
+            "2010-01-02T01:10Z", 5);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
             inputPath + "/input1/", dataDates);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
@@ -155,7 +159,7 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_2optional_1compulsary() throws Exception {
+    public void optionalTest_2optional_1compulsory() throws Exception {
         bundles[0] =
             bundles[0].getRequiredBundle(bundles[0], 1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
                 "2010-01-02T01:12Z");
@@ -166,6 +170,8 @@ public class OptionalInputTest extends BaseTestClass {
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
+        bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
+        bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
@@ -175,8 +181,8 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-01T22:00Z",
-            "2010-01-02T04:00Z", 1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-02T00:50Z",
+            "2010-01-02T01:10Z", 5);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
             inputPath + "/input2/", dataDates);
 
@@ -206,17 +212,18 @@ public class OptionalInputTest extends BaseTestClass {
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
+        bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
+        bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
-            TimeUtil.addMinsToTime(startTime, -25), TimeUtil.addMinsToTime(endTime, 25), 1);
+            TimeUtil.addMinsToTime(startTime, -10), endTime, 5);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
             inputPath + "/input1/", dataDates);
         HadoopUtil.createEmptyDirWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
-            inputPath + "/input0/",
-            1);
+            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -10)),
+            TimeUtil.oozieDateToDate(endTime),
+            inputPath + "/input0/", 5);
 
         bundles[0].submitAndScheduleBundle(prism);
 
@@ -266,7 +273,7 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_updateProcessMakeOptionalCompulsury() throws Exception {
+    public void optionalTest_updateProcessMakeOptionalCompulsory() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
         bundles[0] =
@@ -278,6 +285,8 @@ public class OptionalInputTest extends BaseTestClass {
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
+        bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
+        bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
@@ -288,7 +297,7 @@ public class OptionalInputTest extends BaseTestClass {
                 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
-            TimeUtil.addMinsToTime(startTime, -25), TimeUtil.addMinsToTime(endTime, 25), 1);
+            TimeUtil.addMinsToTime(startTime, -10), endTime, 5);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
             inputPath + "/input1/", dataDates);
 
@@ -299,12 +308,11 @@ public class OptionalInputTest extends BaseTestClass {
 
         bundles[0].setProcessData(bundles[0]
             .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
-
+        bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
 
         prism.getProcessHelper().update(bundles[0].getProcessData(), bundles[0].getProcessData());
 
-        logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
         //from now on ... it should wait of input0 also
 
         InstanceUtil
@@ -330,7 +338,7 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_updateProcessMakeCompulsuryOptional() throws Exception {
+    public void optionalTest_updateProcessMakeCompulsoryOptional() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
         bundles[0] =
@@ -342,6 +350,8 @@ public class OptionalInputTest extends BaseTestClass {
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
+        bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
+        bundles[0].setProcessConcurrency(4);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
         bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
@@ -352,7 +362,7 @@ public class OptionalInputTest extends BaseTestClass {
                 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
-            TimeUtil.addMinsToTime(startTime, -25), TimeUtil.addMinsToTime(endTime, 25), 1);
+            TimeUtil.addMinsToTime(startTime, -10), TimeUtil.addMinsToTime(endTime, 10), 5);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
             inputPath + "/input1/", dataDates);
         InstanceUtil

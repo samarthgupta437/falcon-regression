@@ -68,10 +68,10 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         bundle = new Bundle(bundle, cluster);
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
+        String startDate = "2010-01-01T23:40Z";
+        String endDate = "2010-01-02T01:40Z";
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
@@ -83,7 +83,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(feedInputPath);
@@ -308,7 +308,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
         logger.info("in @AfterClass");
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         bundle = new Bundle(bundle, cluster);
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();

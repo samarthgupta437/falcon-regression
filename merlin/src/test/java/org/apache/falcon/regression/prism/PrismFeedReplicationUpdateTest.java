@@ -37,6 +37,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
 import org.apache.oozie.client.Job;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -75,7 +77,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
 
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -225,11 +227,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(cluster1, 70, 1, prefix, null);
+        Util.lateDataReplenish(cluster1, 20, 1, prefix, null);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 70, 1, prefix, null);
+        Util.lateDataReplenish(cluster3, 20, 1, prefix, null);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 

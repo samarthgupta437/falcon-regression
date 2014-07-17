@@ -34,7 +34,7 @@ import java.util.List;
 
 public class BaseTestClass {
     private static String[] serverNames;
-    private static Logger logger = Logger.getLogger(BaseTestClass.class);
+    private static final Logger logger = Logger.getLogger(BaseTestClass.class);
 
     static {
         try {

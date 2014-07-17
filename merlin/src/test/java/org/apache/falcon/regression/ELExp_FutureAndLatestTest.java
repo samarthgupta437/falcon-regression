@@ -60,7 +60,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
         logger.info("in @BeforeClass");
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         b.generateUniqueBundle();
         b = new Bundle(b, cluster);
 
@@ -81,7 +81,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(

@@ -24,7 +24,7 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.log4j.Logger;
 
 public class ColoHelper {
-    private static Logger logger = Logger.getLogger(ColoHelper.class);
+    private static final Logger logger = Logger.getLogger(ColoHelper.class);
     protected IEntityManagerHelper clusterHelper;
     protected IEntityManagerHelper processHelper;
     protected IEntityManagerHelper feedHelper;

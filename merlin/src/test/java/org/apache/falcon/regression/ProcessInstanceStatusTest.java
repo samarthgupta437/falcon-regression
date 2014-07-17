@@ -76,12 +76,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
 
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         bundle.generateUniqueBundle();
         bundle = new Bundle(bundle, cluster);
 
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
+        String startDate = "2010-01-01T23:40Z";
+        String endDate = "2010-01-02T02:40Z";
 
         bundle.setInputFeedDataPath(feedInputPath);
         String prefix = bundle.getFeedDataPathPrefix();
@@ -96,7 +96,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(feedInputPath);
@@ -250,7 +250,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
@@ -317,7 +317,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()

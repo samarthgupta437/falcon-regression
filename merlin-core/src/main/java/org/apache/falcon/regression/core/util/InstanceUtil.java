@@ -79,7 +79,7 @@ import java.util.TreeMap;
 
 public class InstanceUtil {
 
-    static Logger logger = Logger.getLogger(InstanceUtil.class);
+    private static final Logger logger = Logger.getLogger(InstanceUtil.class);
     public static APIResult sendRequestProcessInstance(String
                                                            url, String user)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -232,9 +232,9 @@ public class InstanceUtil {
     }
 
     public static Feed getFeedElement(Bundle bundle, String feedName) {
-        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
+        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!feedElement.getName().contains(feedName)) {
-            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(1));
+            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(1));
         }
         return feedElement;
     }
@@ -247,7 +247,7 @@ public class InstanceUtil {
     public static void writeFeedElement(Bundle bundle, String feedString,
                                         String feedName) {
         int index = 0;
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.dataSets.get(0));
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!dataElement.getName().contains(feedName)) {
             index = 1;
         }
@@ -653,34 +653,10 @@ public class InstanceUtil {
     }
 
     /**
-     * Copies specific file(s) to each of remote folders
-     * Creates folders if they don't exist
-     *
-     * @param colo colohelper for remote cluster
-     * @param folderList list of remote folders
-     * @param fileName specific files
-     * @throws IOException
-     */
-    public static void putFileInFolders(ColoHelper colo, List<String> folderList,
-                                        final String... fileName) throws IOException {
-        final FileSystem fs = colo.getClusterHelper().getHadoopFS();
-        for (final String folder : folderList) {
-            for (String aFileName : fileName) {
-                logger.info("copying  " + aFileName + " to " + folder);
-                if (aFileName.equals("_SUCCESS"))
-                    fs.mkdirs(new Path(folder + "/_SUCCESS"));
-                else
-                    fs.copyFromLocalFile(new Path(aFileName), new Path(folder));
-            }
-        }
-    }
-
-    /**
      * Wraps bundle cluster in a Cluster object
      *
      * @param bundle target bundle
      * @return cluster definition in a form of Cluster object
-     * @throws JAXBException
      */
     public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle) {
         return (org.apache.falcon.entity.v0.cluster.Cluster)
@@ -692,7 +668,6 @@ public class InstanceUtil {
      *
      * @param bundle target bundle
      * @param c Cluster object to be unwrapped and set into bundle
-     * @throws JAXBException
      */
     public static void writeClusterElement(Bundle bundle,
                                            org.apache.falcon.entity.v0.cluster.Cluster c) {
@@ -962,7 +937,6 @@ public class InstanceUtil {
      * @param feed feed which is to be modified
      * @param path new feed data path
      * @return modified feed
-     * @throws JAXBException
      */
     public static String setFeedFilePath(String feed, String path) {
         Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
@@ -999,7 +973,6 @@ public class InstanceUtil {
     /**
      * Sets process frequency
      * @return modified process definition
-     * @throws JAXBException
      */
     public static String setProcessFrequency(String process,
                                              Frequency frequency) {
@@ -1028,7 +1001,6 @@ public class InstanceUtil {
      * @param startTime start of process validity
      * @param endTime end of process validity
      * @return modified process definition
-     * @throws JAXBException
      */
     public static String setProcessValidity(String process,
                                             String startTime, String endTime) {
@@ -1118,13 +1090,12 @@ public class InstanceUtil {
      * @param entityType type of entity - feed or process expected
      * @param totalMinutesToWait time in minutes for which instance state should be polled
      * @throws OozieClientException
-     * @throws InterruptedException
      */
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
                                                   CoordinatorAction.Status expectedStatus,
                                                   ENTITY_TYPE entityType, int totalMinutesToWait)
-        throws InterruptedException, OozieClientException {
+        throws OozieClientException {
         String filter;
         // get the bundle ids
         if (entityType.equals(ENTITY_TYPE.FEED)) {
@@ -1138,7 +1109,7 @@ public class InstanceUtil {
             if (bundleJobs.size() > 0) {
                 break;
             }
-            Thread.sleep(5000);
+            TimeUtil.sleepSeconds(5);
         }
         if (bundleJobs.size() == 0) {
             Assert.assertTrue(false, "Could not retrieve bundles");
@@ -1170,9 +1141,9 @@ public class InstanceUtil {
         }
         logger.info(String.format("Using coordinator id: %s", coordId));
         int maxTries = 50;
-        int totalSleepTime = totalMinutesToWait * 60 * 1000;
+        int totalSleepTime = totalMinutesToWait * 60;
         int sleepTime = totalSleepTime / maxTries;
-        logger.info(String.format("Sleep for %d seconds", sleepTime / 1000));
+        logger.info(String.format("Sleep for %d seconds", sleepTime));
         for (int i = 0; i < maxTries; i++) {
             logger.info(String.format("Try %d of %d", (i + 1), maxTries));
             int instanceWithStatus = 0;
@@ -1194,7 +1165,7 @@ public class InstanceUtil {
 
             if (instanceWithStatus >= numberOfInstance)
                 return;
-            Thread.sleep(sleepTime);
+            TimeUtil.sleepSeconds(sleepTime);
         }
         Assert.assertTrue(false, "expected state of instance was never reached");
     }
@@ -1216,7 +1187,7 @@ public class InstanceUtil {
                                                   int numberOfInstance,
                                                   CoordinatorAction.Status expectedStatus,
                                                   ENTITY_TYPE entityType)
-        throws InterruptedException, OozieClientException {
+        throws OozieClientException {
         int totalMinutesToWait = getMinutesToWait(entityType, expectedStatus);
         waitTillInstanceReachState(client, entityName, numberOfInstance, expectedStatus,
             entityType, totalMinutesToWait);
@@ -1262,11 +1233,7 @@ public class InstanceUtil {
             BundleJob j = oozieClient.getBundleJobInfo(BundleID);
             if (j.getStatus() == expectedStatus)
                 break;
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(20);
         }
     }
 
@@ -1340,7 +1307,6 @@ public class InstanceUtil {
      * @param coloHelper colo helper of cluster job is running on
      * @param entity definition of entity which describes job
      * @param bundleSeqNo
-     * @throws JAXBException
      * @throws OozieClientException
      */
     public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
@@ -1362,11 +1328,7 @@ public class InstanceUtil {
             logger.info("Coord " + coordInfo.getId() + " still doesn't have " +
                 "instance created on oozie: " + coloHelper.getProcessHelper()
                 .getOozieClient().getOozieUrl());
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(5);
         }
     }
 
@@ -1377,7 +1339,6 @@ public class InstanceUtil {
      * @param coloHelper colo helper of cluster job is running on
      * @param entity definition of entity which describes job
      * @param bundleSeqNo
-     * @throws JAXBException
      * @throws OozieClientException
      */
     public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
@@ -1389,8 +1350,7 @@ public class InstanceUtil {
     }
 
     public static String setFeedACL(String feed, String... ownerGroup) {
-        FeedMerlin feedObject = null;
-        feedObject = new FeedMerlin(feed);
+        FeedMerlin feedObject = new FeedMerlin(feed);
         ACL acl = feedObject.getACL();
         acl.setOwner(MerlinConstants.aclOwner);
         acl.setGroup(MerlinConstants.aclGroup);

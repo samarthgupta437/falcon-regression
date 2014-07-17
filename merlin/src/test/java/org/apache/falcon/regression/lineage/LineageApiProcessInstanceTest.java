@@ -47,7 +47,6 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Test(groups = "lineage-rest")
 public class LineageApiProcessInstanceTest extends BaseTestClass {
@@ -80,7 +79,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(baseTestHDFSDir, clusterFS);
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        bundles[0] = new Bundle(BundleUtil.readELBundles()[0][0], cluster);
+        bundles[0] = new Bundle(BundleUtil.readELBundle(), cluster);
         bundles[0].generateUniqueBundle();
 
         bundles[0].setInputFeedDataPath(feedInputPath);
@@ -109,7 +108,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED || status == Job.Status.KILLED)
                 break;
-            TimeUnit.SECONDS.sleep(30);
+            TimeUtil.sleepSeconds(30);
         }
         Assert.assertNotNull(status);
         Assert.assertEquals(status, Job.Status.SUCCEEDED,

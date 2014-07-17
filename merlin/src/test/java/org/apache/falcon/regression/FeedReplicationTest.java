@@ -26,6 +26,7 @@ import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -75,7 +76,7 @@ public class FeedReplicationTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws JAXBException, IOException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+        Bundle bundle = BundleUtil.readLocalDCBundle();
 
         bundles[0] = new Bundle(bundle, cluster1);
         bundles[1] = new Bundle(bundle, cluster2);
@@ -99,7 +100,7 @@ public class FeedReplicationTest extends BaseTestClass {
     @Test
     public void replicate1Source1Target()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        InterruptedException, OozieClientException {
+        OozieClientException {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
@@ -325,7 +326,7 @@ public class FeedReplicationTest extends BaseTestClass {
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), feedName, "REPLICATION"), 1);
 
         //replication should not start even after time
-        Thread.sleep(60000);
+        TimeUtil.sleepSeconds(60);
         ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 1, 0, 0, 1, 0);

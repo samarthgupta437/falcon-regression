@@ -32,7 +32,7 @@ public class Brother extends Thread {
     String data;
     URLS url;
     ServiceResponse output;
-    private Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger logger = Logger.getLogger(Brother.class);
 
     public ServiceResponse getOutput() {
         return output;

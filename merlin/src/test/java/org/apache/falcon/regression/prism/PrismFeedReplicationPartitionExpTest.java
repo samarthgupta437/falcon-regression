@@ -25,9 +25,11 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -172,7 +174,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+        Bundle bundle = BundleUtil.readLocalDCBundle();
 
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -229,7 +231,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertFailed(r, "submit of feed should have failed as the partition in source " +
             "is blank");
     }
@@ -277,12 +279,12 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         HadoopUtil.createDir(testDirWithDate + "00/ua3/", cluster3FS);
         HadoopUtil.createDir(testDirWithDate + "05/ua3/", cluster3FS);
@@ -375,7 +377,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
         ServiceResponse r =
             prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
@@ -469,11 +471,11 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
             CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED, 20);
@@ -630,11 +632,11 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
             CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED, 20);
@@ -737,12 +739,12 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
             CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED,20);
@@ -820,11 +822,11 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
             CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED, 20);
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
@@ -914,7 +916,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertFailed(r, "is defined more than once for feed");
         Assert.assertTrue(r.getMessage().contains("is defined more than once for feed"));
     }

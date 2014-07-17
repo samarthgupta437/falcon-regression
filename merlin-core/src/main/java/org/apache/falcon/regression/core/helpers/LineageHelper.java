@@ -43,7 +43,7 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 
 public class LineageHelper {
-    private static Logger logger = Logger.getLogger(LineageHelper.class);
+    private static final Logger logger = Logger.getLogger(LineageHelper.class);
     private final String hostname;
 
     /**

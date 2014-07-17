@@ -62,7 +62,7 @@ import java.util.Map;
 
 public class HCatRetentionTest extends BaseTestClass {
 
-    static Logger logger = Logger.getLogger(HCatRetentionTest.class);
+    private static final Logger logger = Logger.getLogger(HCatRetentionTest.class);
 
     private Bundle bundle;
     public static HCatClient cli;
@@ -78,7 +78,7 @@ public class HCatRetentionTest extends BaseTestClass {
     public void setUp() throws Exception {
         HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
         cli = cluster.getClusterHelper().getHCatClient();
-        bundle = new Bundle(BundleUtil.getHCat2Bundle(), cluster);
+        bundle = new Bundle(BundleUtil.readHCat2Bundle(), cluster);
         bundle.generateUniqueBundle();
         bundle.submitClusters(prism);
     }

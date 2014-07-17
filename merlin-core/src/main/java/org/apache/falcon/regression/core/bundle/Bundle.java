@@ -86,18 +86,26 @@ import java.util.List;
  */
 public class Bundle {
 
-    public static final String PRISM_PREFIX = "prism";
-    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
+    private static final String PRISM_PREFIX = "prism";
+    private static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
     private static final Logger logger = Logger.getLogger(Bundle.class);
 
-    public List<String> dataSets;
-    String processData;
-    String clusterData;
+    private List<String> dataSets;
+    private String processData;
+    private String clusterData;
 
-    String processFilePath;
-    List<String> clusters;
+    private String processFilePath;
+    private List<String> clusters;
 
     private static String sBundleLocation;
+
+    List<String> oldClusters;
+
+    IEntityManagerHelper clusterHelper;
+    IEntityManagerHelper processHelper;
+    IEntityManagerHelper feedHelper;
+
+    private ColoHelper colohelper;
 
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
@@ -168,14 +176,6 @@ public class Bundle {
         return clusters;
     }
 
-    List<String> oldClusters;
-
-    IEntityManagerHelper clusterHelper;
-    IEntityManagerHelper processHelper;
-    IEntityManagerHelper feedHelper;
-
-    private ColoHelper colohelper;
-
     public IEntityManagerHelper getClusterHelper() {
         return clusterHelper;
     }
@@ -192,7 +192,7 @@ public class Bundle {
         return processFilePath;
     }
 
-    public Bundle(List<String> dataSets, String processData, String clusterData) {
+    public Bundle(String clusterData, List<String> dataSets, String processData) {
         this.dataSets = dataSets;
         this.processData = processData;
         this.clusters = new ArrayList<String>();
@@ -471,11 +471,7 @@ public class Bundle {
             prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, getProcessData());
         logger.info("process schedule result=" + scheduleResult.getMessage());
         AssertUtil.assertSucceeded(scheduleResult);
-        try {
-            Thread.sleep(7000);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(7);
         return scheduleResult.getMessage();
     }
 
@@ -1235,19 +1231,6 @@ public class Bundle {
             p.getInputs().getInputs().get(i).setPartition(partition[i]);
         }
         return p.toString();
-    }
-
-    public static Object[][] readBundle(String bundleLocation) throws IOException {
-        sBundleLocation = bundleLocation;
-
-        List<Bundle> bundleSet = BundleUtil.getDataFromFolder(bundleLocation);
-
-        Object[][] testData = new Object[bundleSet.size()][1];
-
-        for (int i = 0; i < bundleSet.size(); i++) {
-            testData[i][0] = bundleSet.get(i);
-        }
-        return testData;
     }
 
     public String setProcessOutputNames(String process, String... names) {

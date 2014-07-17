@@ -62,7 +62,7 @@ import java.util.Map;
 @Test(groups = "embedded")
 public class HCatReplicationTest extends BaseTestClass {
 
-    private static Logger logger = Logger.getLogger(HCatReplicationTest.class);
+    private static final Logger logger = Logger.getLogger(HCatReplicationTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     HCatClient clusterHC;
@@ -184,7 +184,7 @@ public class HCatReplicationTest extends BaseTestClass {
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed)
         );
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
@@ -279,7 +279,7 @@ public class HCatReplicationTest extends BaseTestClass {
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed)
         );
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),

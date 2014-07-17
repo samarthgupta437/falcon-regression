@@ -62,7 +62,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     public void createTestData() throws Exception {
         logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
         b = new Bundle(b, cluster);
         String startDate = "2010-01-01T23:20Z";
@@ -78,7 +78,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
         logger.info("setup " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setInputFeedDataPath(feedInputPath);
@@ -132,11 +132,11 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         ProcessInstancesResult result = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:26Z");
@@ -353,7 +353,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
     public void deleteData() throws Exception {
         logger.info("in @AfterClass");
 
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();

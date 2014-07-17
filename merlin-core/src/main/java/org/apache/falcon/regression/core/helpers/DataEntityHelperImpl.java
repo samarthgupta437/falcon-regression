@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 
 public class DataEntityHelperImpl extends IEntityManagerHelper {
 
-    private static Logger logger = Logger.getLogger(DataEntityHelperImpl.class);
+    private static final Logger logger = Logger.getLogger(DataEntityHelperImpl.class);
 
     public DataEntityHelperImpl(String prefix) {
         super(prefix);

@@ -30,6 +30,7 @@ import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -46,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Test(groups = "distributed")
 public class PrismFeedDeleteTest extends BaseTestClass {
@@ -68,7 +68,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         restartRequired = false;
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundle, cluster1);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -852,7 +852,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
@@ -868,7 +868,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         Util.shutDownService(cluster1.getFeedHelper());
 
         r = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertPartial(r);
         Assert
             .assertTrue(r.getMessage().contains(cluster1Colo + "/org.apache.falcon.FalconException")
@@ -954,7 +954,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //fetch the initial store and archive state for prism
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();
@@ -968,7 +968,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         List<String> initialServer2ArchiveStore = cluster2.getFeedHelper().getArchiveInfo();
 
         r = prism.getFeedHelper().suspend(URLS.SUSPEND_URL, feed);
-        TimeUnit.SECONDS.sleep(10);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         Util.shutDownService(cluster1.getFeedHelper());

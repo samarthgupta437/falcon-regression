@@ -20,6 +20,7 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /*
@@ -38,6 +40,18 @@ instanceUtil to here , pending item.
  */
 
 public class TimeUtil {
+
+    private static final Logger logger = Logger.getLogger(TimeUtil.class);
+
+    public static void sleepSeconds(double seconds) {
+        long ms = (long) (seconds * 1000);
+        try {
+            TimeUnit.MILLISECONDS.sleep(ms);
+        } catch (InterruptedException e) {
+            logger.info("Sleep was interrupted");
+        }
+    }
+
     public static String get20roundedTime(String oozieBaseTime) {
         DateTime startTime =
             new DateTime(oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
@@ -54,7 +68,7 @@ public class TimeUtil {
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
         DateTime today = new DateTime(DateTimeZone.UTC);
-        Util.logger.info("today is: " + today.toString());
+        logger.info("today is: " + today.toString());
 
         return getMinuteDatesOnEitherSide(today.minusMinutes(interval),
             today.plusMinutes(interval), minuteSkip);
@@ -87,7 +101,7 @@ public class TimeUtil {
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip,
                                                           DateTimeFormatter formatter) {
-        Util.logger.info("generating data between " + formatter.print(startDate) + " and " +
+        logger.info("generating data between " + formatter.print(startDate) + " and " +
             formatter.print(endDate));
         if (minuteSkip == 0) {
             minuteSkip = 1;
@@ -217,7 +231,7 @@ public class TimeUtil {
     public static String dateToOozieDate(Date dt) {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        InstanceUtil.logger.info("SystemTime: " + jodaTime);
+        logger.info("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         return fmt.print(jodaTime);
     }
@@ -229,15 +243,11 @@ public class TimeUtil {
         while (true) {
             DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
             sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            InstanceUtil.logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
+            logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
             if (sysDate.compareTo(finalDate) > 0)
                 break;
 
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                InstanceUtil.logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(15);
         }
 
     }

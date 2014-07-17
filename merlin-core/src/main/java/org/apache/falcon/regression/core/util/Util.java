@@ -93,15 +93,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class Util {
 
-
-    static Logger logger = Logger.getLogger(Util.class);
-    static final String PRISM_PREFIX = "prism";
-
-    static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
+    private static final Logger logger = Logger.getLogger(Util.class);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -177,17 +172,6 @@ public class Util {
                 helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
                 helper.getUsername(), helper.getIdentityFile());
         }
-    }
-
-    public static File[] getFiles(String directoryPath) throws URISyntaxException {
-        directoryPath = directoryPath.replaceFirst("^.*test-classes[\\\\/]", "");
-        logger.info("directoryPath: " + directoryPath);
-        URL url = Util.class.getResource("/" + directoryPath);
-        logger.info("url" + url);
-        File dir = new File(url.toURI());
-        File[] files = dir.listFiles();
-        if (files != null) Arrays.sort(files);
-        return files;
     }
 
     public static String readEntityName(String data) {
@@ -554,11 +538,7 @@ public class Util {
         runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
             helper.getPassword(), helper.getServiceStopCmd(),
             helper.getServiceUser(), helper.getIdentityFile());
-        try {
-            TimeUnit.SECONDS.sleep(10);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(10);
     }
 
     public static void startService(IEntityManagerHelper helper)
@@ -575,11 +555,7 @@ public class Util {
                 logger.info(e.getMessage());
             }
             if (statusCode == 200) return;
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(5);
         }
         throw new RuntimeException("Service on" + helper.getHostname() + " did not start!");
     }
@@ -636,11 +612,7 @@ public class Util {
         OutputStream out = channel.getOutputStream();
         channel.setErrStream(System.err);
         channel.connect();
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(20);
         // only print the password if its not empty
         if (null != password && !password.isEmpty()) {
             out.write((password + "\n").getBytes());
@@ -671,11 +643,7 @@ public class Util {
                 logger.info("exit-status: " + channel.getExitStatus());
                 break;
             }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                logger.info(e.getMessage());
-            }
+            TimeUtil.sleepSeconds(1);
         }
 
         in.close();
