@@ -360,7 +360,7 @@ public class NewRetryTest extends BaseTestClass {
             logger.info("going to update process at:" + DateTime.now(DateTimeZone.UTC));
             Assert.assertTrue(prism.getProcessHelper()
                 .update(Util.readEntityName(bundles[0].getProcessData()),
-                    bundles[0].getProcessFilePath()).getMessage()
+                    null).getMessage()
                 .contains("updated successfully"), "process was not updated successfully");
             String newBundleId = InstanceUtil.getLatestBundleID(cluster,
                 Util.readEntityName(bundles[0].getProcessData()), ENTITY_TYPE.PROCESS);
