@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -209,24 +210,24 @@ public class HCatRetentionTest extends BaseTestClass {
 
         //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
 
-        cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
-        cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
+        cols.add(HCatUtil.getStringSchema("id", "id comment"));
+        cols.add(HCatUtil.getStringSchema("value", "value comment"));
 
         switch (dataType) {
             case MINUTELY:
                 ptnCols.add(
-                    new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+                    HCatUtil.getStringSchema("minute", "min prt"));
             case HOURLY:
                 ptnCols.add(
-                    new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
+                    HCatUtil.getStringSchema("hour", "hour prt"));
             case DAILY:
-                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
+                ptnCols.add(HCatUtil.getStringSchema("day", "day prt"));
             case MONTHLY:
                 ptnCols.add(
-                    new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
+                    HCatUtil.getStringSchema("month", "month prt"));
             case YEARLY:
                 ptnCols.add(
-                    new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+                    HCatUtil.getStringSchema("year", "year prt"));
             default:
                 break;
         }

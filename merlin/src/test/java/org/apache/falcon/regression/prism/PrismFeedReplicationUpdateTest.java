@@ -36,9 +36,6 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction.Status;
-import org.apache.oozie.client.Job;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -145,9 +142,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
-        prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
+        AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
 
         //change feed location path
         feed = InstanceUtil.setFeedFilePath(feed, alternativeInputPath);
@@ -227,11 +223,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(cluster1, 20, 1, prefix, null);
+        Util.lateDataReplenish(cluster1, 23, 1, prefix, null);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 20, 1, prefix, null);
+        Util.lateDataReplenish(cluster3, 23, 1, prefix, null);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 
@@ -287,7 +283,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         String process = bundles[0].getProcessData();
 
         //add clusters to process
-        String processStartTime = TimeUtil.getTimeWrtSystemTime(-11);
+        String processStartTime = TimeUtil.getTimeWrtSystemTime(-6);
         String processEndTime = TimeUtil.getTimeWrtSystemTime(70);
 
         process = InstanceUtil.setProcessCluster(process, null,
@@ -306,7 +302,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //submit and schedule process
         logger.info("process: " + Util.prettyPrintXml(process));
 
-        prism.getProcessHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
+        AssertUtil.assertSucceeded(prism.getProcessHelper().submitAndSchedule(URLS
+            .SUBMIT_AND_SCHEDULE_URL, process));
 
         logger.info("Wait till process goes into running ");
 
@@ -317,6 +314,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
         logger.info("updated feed: " + Util.prettyPrintXml(feed01));
-        prism.getFeedHelper().update(feed01, feed01);
+        AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed01, feed01));
     }
 }
