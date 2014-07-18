@@ -822,9 +822,9 @@ public class Bundle {
         //add clusters and feed to process
         ProcessMerlin processMerlin = new ProcessMerlin(b.getProcessData());
         processMerlin.setUniqueName();
-        String process = setProcessClusters(processMerlin.toString(), newClusters, startTime, endTime);
-        process = setProcessFeeds(process, newDataSets, numberOfInputs, numberOfOptionalInput,
-            numberOfOutputs);
+        processMerlin.setProcessClusters(newClusters, startTime, endTime);
+        String process = setProcessFeeds(processMerlin.toString(), newDataSets, numberOfInputs,
+            numberOfOptionalInput, numberOfOutputs);
         b.setProcessData(process);
         return b;
     }
@@ -885,37 +885,6 @@ public class Bundle {
         }
         p.setOutputs(os);
         p.setLateProcess(null);
-        return p.toString();
-    }
-
-    /**
-     * Method sets a number of clusters to process definition
-     *
-     * @param process process definition to be modified
-     * @param newClusters list of definitions of clusters which are to be set to process
-     *                    (clusters on which process should run)
-     * @param startTime start of process validity on every cluster
-     * @param endTime end of process validity on every cluster
-     * @return modified process definition
-     */
-    private static String setProcessClusters(String process, List<String> newClusters,
-                                          String startTime,
-                                     String endTime) {
-
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
-        org.apache.falcon.entity.v0.process.Clusters cs =
-            new org.apache.falcon.entity.v0.process.Clusters();
-        for (String newCluster : newClusters) {
-            Cluster c = new Cluster();
-            c.setName(Util.readClusterName(newCluster));
-            org.apache.falcon.entity.v0.process.Validity v =
-                new org.apache.falcon.entity.v0.process.Validity();
-            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
-            c.setValidity(v);
-            cs.getClusters().add(c);
-        }
-        p.setClusters(cs);
         return p.toString();
     }
 

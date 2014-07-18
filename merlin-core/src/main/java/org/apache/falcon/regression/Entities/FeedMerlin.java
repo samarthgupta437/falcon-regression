@@ -82,7 +82,6 @@ public class FeedMerlin extends Feed {
      * @param location location of data on every cluster
      * @param startTime start of feed validity on every cluster
      * @param endTime end of feed validity on every cluster
-     * @return modified feed definition
      */
     public void setFeedClusters(List<String> newClusters, String location, String startTime,
                                 String endTime) {

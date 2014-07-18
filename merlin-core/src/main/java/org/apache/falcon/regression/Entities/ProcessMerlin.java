@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.process.Cluster;
+import org.apache.falcon.entity.v0.process.Clusters;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Output;
 import org.apache.falcon.entity.v0.process.Process;
@@ -42,6 +43,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ProcessMerlin extends Process {
@@ -59,6 +61,29 @@ public class ProcessMerlin extends Process {
         } catch (NoSuchMethodException e) {
             Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
         }
+    }
+
+    /**
+     * Method sets a number of clusters to process definition
+     *
+     * @param newClusters list of definitions of clusters which are to be set to process
+     *                    (clusters on which process should run)
+     * @param startTime start of process validity on every cluster
+     * @param endTime end of process validity on every cluster
+     */
+    public void setProcessClusters(List<String> newClusters, String startTime, String endTime) {
+        Clusters cs =  new Clusters();
+        for (String newCluster : newClusters) {
+            Cluster c = new Cluster();
+            c.setName(new ClusterMerlin(newCluster).getName());
+            org.apache.falcon.entity.v0.process.Validity v =
+                new org.apache.falcon.entity.v0.process.Validity();
+            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
+            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
+            c.setValidity(v);
+            cs.getClusters().add(c);
+        }
+        setClusters(cs);
     }
 
     public Bundle setFeedsToGenerateData(FileSystem fs, Bundle b) {
