@@ -26,17 +26,11 @@ import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.entity.v0.cluster.Interface;
 import org.apache.falcon.entity.v0.cluster.Interfaces;
 import org.apache.falcon.entity.v0.cluster.Interfacetype;
-import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.CatalogTable;
 import org.apache.falcon.entity.v0.feed.ClusterType;
-import org.apache.falcon.entity.v0.feed.Clusters;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
-import org.apache.falcon.entity.v0.feed.Locations;
-import org.apache.falcon.entity.v0.feed.Retention;
-import org.apache.falcon.entity.v0.feed.RetentionType;
-import org.apache.falcon.entity.v0.feed.Validity;
 import org.apache.falcon.entity.v0.process.Cluster;
 import org.apache.falcon.entity.v0.process.EngineType;
 import org.apache.falcon.entity.v0.process.Input;
@@ -813,18 +807,14 @@ public class Bundle {
         for (int i = 0; i < numberOfInputs; i++) {
             final FeedMerlin feed = new FeedMerlin(b.getDataSets().get(0));
             feed.setUniqueName();
-            String referenceFeed = setFeedClusters(feed,
-                newClusters, inputBasePaths + "/input" + i,
-                    startTime, endTime);
-            newDataSets.add(referenceFeed);
+            feed.setFeedClusters(newClusters, inputBasePaths + "/input" + i, startTime, endTime);
+            newDataSets.add(feed.toString());
         }
         for (int i = 0; i < numberOfOutputs; i++) {
             final FeedMerlin feed = new FeedMerlin(b.getDataSets().get(0));
             feed.setUniqueName();
-            String referenceFeed = setFeedClusters(feed,
-                newClusters, inputBasePaths + "/output" + i,
-                    startTime, endTime);
-            newDataSets.add(referenceFeed);
+            feed.setFeedClusters(newClusters, inputBasePaths + "/output" + i,  startTime, endTime);
+            newDataSets.add(feed.toString());
         }
         b.setDataSets(newDataSets);
 
@@ -925,50 +915,6 @@ public class Bundle {
         }
         p.setClusters(cs);
         return p.toString();
-    }
-
-    /**
-     * Method sets a number of clusters to feed definition
-     *
-     * @param referenceFeed feed definition to be changed
-     * @param newClusters list of definitions of clusters which are to be set to feed
-     * @param location location of data on every cluster
-     * @param startTime start of feed validity on every cluster
-     * @param endTime end of feed validity on every cluster
-     * @return modified feed definition
-     */
-    private static String setFeedClusters(FeedMerlin f, List<String> newClusters, String location,
-                                          String startTime,
-                                          String endTime) {
-        Clusters cs = new Clusters();
-        f.setFrequency(new Frequency("" + 5, TimeUnit.minutes));
-
-        for (String newCluster : newClusters) {
-            org.apache.falcon.entity.v0.feed.Cluster c =
-                new org.apache.falcon.entity.v0.feed.Cluster();
-            c.setName(Util.readClusterName(newCluster));
-            Location l = new Location();
-            l.setType(LocationType.DATA);
-            l.setPath(location + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            Locations ls = new Locations();
-            ls.getLocations().add(l);
-            c.setLocations(ls);
-            Validity v = new Validity();
-            startTime = TimeUtil.addMinsToTime(startTime, -180);
-            endTime = TimeUtil.addMinsToTime(endTime, 180);
-            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
-            c.setValidity(v);
-            Retention r = new Retention();
-            r.setAction(ActionType.DELETE);
-            Frequency f1 = new Frequency("" + 20, TimeUnit.hours);
-            r.setLimit(f1);
-            r.setType(RetentionType.INSTANCE);
-            c.setRetention(r);
-            cs.getClusters().add(c);
-        }
-        f.setClusters(cs);
-        return f.toString();
     }
 
     public void submitAndScheduleBundle(Bundle b, ColoHelper prismHelper,

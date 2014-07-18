@@ -23,11 +23,18 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.Cluster;
+import org.apache.falcon.entity.v0.feed.Clusters;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.entity.v0.feed.Locations;
 import org.apache.falcon.entity.v0.feed.Property;
+import org.apache.falcon.entity.v0.feed.Retention;
+import org.apache.falcon.entity.v0.feed.RetentionType;
+import org.apache.falcon.entity.v0.feed.Validity;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -66,6 +73,47 @@ public class FeedMerlin extends Feed {
             feeds.add(new FeedMerlin(feedString));
         }
         return feeds;
+    }
+
+    /**
+     * Method sets a number of clusters to feed definition
+     *
+     * @param referenceFeed feed definition to be changed
+     * @param newClusters list of definitions of clusters which are to be set to feed
+     * @param location location of data on every cluster
+     * @param startTime start of feed validity on every cluster
+     * @param endTime end of feed validity on every cluster
+     * @return modified feed definition
+     */
+    public void setFeedClusters(List<String> newClusters, String location, String startTime,
+                                String endTime) {
+        Clusters cs = new Clusters();
+        setFrequency(new Frequency("" + 5, Frequency.TimeUnit.minutes));
+
+        for (String newCluster : newClusters) {
+            Cluster c = new Cluster();
+            c.setName(new ClusterMerlin(newCluster).getName());
+            Location l = new Location();
+            l.setType(LocationType.DATA);
+            l.setPath(location + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+            Locations ls = new Locations();
+            ls.getLocations().add(l);
+            c.setLocations(ls);
+            Validity v = new Validity();
+            startTime = TimeUtil.addMinsToTime(startTime, -180);
+            endTime = TimeUtil.addMinsToTime(endTime, 180);
+            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
+            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
+            c.setValidity(v);
+            Retention r = new Retention();
+            r.setAction(ActionType.DELETE);
+            Frequency f1 = new Frequency("" + 20, Frequency.TimeUnit.hours);
+            r.setLimit(f1);
+            r.setType(RetentionType.INSTANCE);
+            c.setRetention(r);
+            cs.getClusters().add(c);
+        }
+        setClusters(cs);
     }
 
     public void insertRetentionValueInFeed(String retentionValue) {
