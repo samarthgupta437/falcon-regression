@@ -35,12 +35,13 @@ import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
-import org.testng.internal.collections.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class LineageHelper {
     private static final Logger logger = Logger.getLogger(LineageHelper.class);
@@ -139,22 +140,33 @@ public class LineageHelper {
      * @param paramPairs parameters to be passed
      * @return url string
      */
-    public String getUrl(final URL url, final String urlPath, final Pair<String,
-        String>... paramPairs) {
+    public String getUrl(final URL url, final String urlPath, final Map<String,
+        String> paramPairs) {
         Assert.assertNotNull(hostname, "Hostname can't be null.");
         String hostAndPath = hostname + url.getValue();
         if(urlPath != null) {
             hostAndPath += "/" + urlPath;
         }
-        if(paramPairs.length > 0) {
-            String[] params = new String[paramPairs.length];
-            for (int i = 0; i < paramPairs.length; ++i) {
-                params[i] = StringUtils.join(new String[] {paramPairs[i].first(),
-                    paramPairs[i].second()}, "=");
+        if(paramPairs != null && paramPairs.size() > 0) {
+            String[] params = new String[paramPairs.size()];
+            int i = 0;
+            for (String key : paramPairs.keySet()) {
+                params[i] = key + '=' + paramPairs.get(key);
+                i++;
             }
             return hostAndPath + "/?" + StringUtils.join(params, "&");
         }
         return hostAndPath;
+    }
+
+    /**
+     * Create a full url for the given lineage endpoint, urlPath and parameter
+     * @param url lineage endpoint
+     * @param urlPath url path to be added to lineage endpoint
+     * @return url string
+     */
+    public String getUrl(final URL url, final String urlPath) {
+        return getUrl(url, urlPath, null);
     }
 
     /**
@@ -163,8 +175,17 @@ public class LineageHelper {
      * @param paramPairs parameters to be passed
      * @return url string
      */
-    public String getUrl(final URL url, final Pair<String, String>... paramPairs) {
+    public String getUrl(final URL url, final Map<String, String> paramPairs) {
         return getUrl(url, null, paramPairs);
+    }
+
+    /**
+     * Create a full url for the given lineage endpoint and parameter
+     * @param url lineage endpoint
+     * @return url string
+     */
+    public String getUrl(final URL url) {
+        return getUrl(url, null, null);
     }
 
     /**
@@ -241,9 +262,10 @@ public class LineageHelper {
     }
 
     public VerticesResult getVertices(Vertex.FilterKey key, String value) {
-        return getVerticesResult(getUrl(URL.VERTICES,
-            new Pair<String, String>("key", key.toString()),
-            new Pair<String, String>("value", value)));
+        Map<String, String> params = new TreeMap<String, String>();
+        params.put("key", key.toString());
+        params.put("value", value);
+        return getVerticesResult(getUrl(URL.VERTICES, params));
     }
 
     public VertexResult getVertexById(int vertexId) {
