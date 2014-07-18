@@ -193,18 +193,6 @@ public class Util {
         return process.toString();
     }
 
-    /**
-     * Sets unique name for feed.
-     *
-     * @param data feed definition
-     * @return feed definition with unique name
-     */
-    public static String generateUniqueDataEntity(String data) {
-        Feed feed = (Feed) Entity.fromString(EntityType.FEED, data);
-        feed.setName(feed.getName() + getUniqueString());
-        return feed.toString();
-    }
-
     public static String getUniqueString() {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }

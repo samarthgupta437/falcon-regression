@@ -78,7 +78,6 @@ public class FeedMerlin extends Feed {
     /**
      * Method sets a number of clusters to feed definition
      *
-     * @param referenceFeed feed definition to be changed
      * @param newClusters list of definitions of clusters which are to be set to feed
      * @param location location of data on every cluster
      * @param startTime start of feed validity on every cluster
