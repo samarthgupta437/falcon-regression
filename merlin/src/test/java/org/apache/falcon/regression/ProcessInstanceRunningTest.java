@@ -21,8 +21,8 @@ package org.apache.falcon.regression;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.InstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -114,7 +114,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper().resume(URLS.RESUME_URL,
             bundles[0].getProcessData()));
         TimeUtil.sleepSeconds(15);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
@@ -133,7 +133,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
         TimeUtil.sleepSeconds(5);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(r);
@@ -148,7 +148,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void getRunningProcessInstance() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
@@ -161,7 +161,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
      */
     @Test(groups = {"singleCluster"})
     public void getNonExistenceProcessInstance() throws Exception {
-        ProcessInstancesResult r =
+        InstancesResult r =
             prism.getProcessHelper()
                 .getRunningInstance(URLS.INSTANCE_RUNNING, "invalidName");
         Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
@@ -177,7 +177,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
     public void getKilledProcessInstance() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         Assert.assertEquals(r.getStatusCode(), ResponseKeys.PROCESS_NOT_FOUND,
@@ -195,7 +195,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitForBundleToReachState(cluster, Util.getProcessName(bundles[0]
             .getProcessData()), Job.Status.SUCCEEDED);
-        ProcessInstancesResult result = prism.getProcessHelper()
+        InstancesResult result = prism.getProcessHelper()
             .getRunningInstance(URLS.INSTANCE_RUNNING,
                 Util.readEntityName(bundles[0].getProcessData()));
         InstanceUtil.validateSuccessWOInstances(result);

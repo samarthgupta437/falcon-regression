@@ -24,7 +24,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -312,7 +312,7 @@ public class AuthorizationTest extends BaseTestClass {
             .getProcessData()), 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
@@ -375,7 +375,7 @@ public class AuthorizationTest extends BaseTestClass {
             .getProcessData()), 3, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
@@ -428,7 +428,7 @@ public class AuthorizationTest extends BaseTestClass {
             .getProcessData()), 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
@@ -488,7 +488,7 @@ public class AuthorizationTest extends BaseTestClass {
             .getProcessData()), 4, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
 
         //4 instances should be running , 1 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 4, 0, 1, 0);

@@ -20,7 +20,7 @@ package org.apache.falcon.regression.core.helpers;
 
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -68,19 +68,19 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ProcessInstancesResult getRunningInstance(
+    public InstancesResult getRunningInstance(
         URLS processRunningInstance, String name, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
-    public ProcessInstancesResult getProcessInstanceStatus(
+    public InstancesResult getProcessInstanceStatus(
         String readEntityName, String params, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
 
-    public ProcessInstancesResult getProcessInstanceSuspend(
+    public InstancesResult getProcessInstanceSuspend(
         String readEntityName, String params, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
@@ -97,19 +97,19 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     @Override
-    public ProcessInstancesResult getProcessInstanceKill(String readEntityName,
+    public InstancesResult getProcessInstanceKill(String readEntityName,
                                                          String string, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
-    public ProcessInstancesResult getProcessInstanceRerun(
+    public InstancesResult getProcessInstanceRerun(
         String readEntityName, String string, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }
 
     @Override
-    public ProcessInstancesResult getProcessInstanceResume(
+    public InstancesResult getProcessInstanceResume(
         String readEntityName, String string, String user) {
         throw new UnsupportedOperationException(INVALID_ERR);
     }

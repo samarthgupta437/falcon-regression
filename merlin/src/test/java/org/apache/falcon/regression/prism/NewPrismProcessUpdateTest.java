@@ -1477,6 +1477,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         int finalNumberOfInstances =
             InstanceUtil.getProcessInstanceListFromAllBundles(cluster3,
                 Util.getProcessName(bundles[1].getProcessData()), ENTITY_TYPE.PROCESS).size();
+        TimeUtil.sleepSeconds(90);
         Assert.assertEquals(finalNumberOfInstances,
             getExpectedNumberOfWorkflowInstances(oldStartTime,
                 bundles[1].getProcessObject().getClusters().getClusters().get(0)

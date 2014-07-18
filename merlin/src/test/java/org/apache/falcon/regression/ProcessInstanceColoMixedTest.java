@@ -23,7 +23,7 @@ import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -227,7 +227,7 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             Status.RUNNING, ENTITY_TYPE.PROCESS);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(1), Util.getProcessName(process), 1,
             Status.RUNNING, ENTITY_TYPE.PROCESS);
-        ProcessInstancesResult responseInstance = prism.getProcessHelper()
+        InstancesResult responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + processStartTime + "&end=" + TimeUtil
                     .addMinsToTime(processStartTime, 45));

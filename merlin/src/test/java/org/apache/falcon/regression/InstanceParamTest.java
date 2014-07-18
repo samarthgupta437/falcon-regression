@@ -20,16 +20,24 @@ package org.apache.falcon.regression;
 
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
+import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
+import org.apache.oozie.client.CoordinatorAction;
+import org.apache.oozie.client.OozieClient;
+import org.apache.oozie.client.OozieClientException;
+import org.apache.oozie.client.WorkflowJob;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -55,6 +63,7 @@ public class InstanceParamTest extends BaseTestClass {
     String endTime;
 
     ColoHelper cluster1 = servers.get(0);
+    OozieClient oC1 = serverOC.get(0);
     Bundle processBundle;
     private static final Logger logger = Logger.getLogger(InstanceParamTest.class);
 
@@ -66,14 +75,6 @@ public class InstanceParamTest extends BaseTestClass {
             .getTimeWrtSystemTime
                 (-20));
         endTime = TimeUtil.getTimeWrtSystemTime(60);
-        String startTimeData = TimeUtil.addMinsToTime(startTime, -100);
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTime, 20);
-
-        for (FileSystem fs : serverFS) {
-            HadoopUtil.deleteDirIfExists(Util.getPathPrefix(feedInputPath), fs);
-            HadoopUtil.flattenAndPutDataInFolder(fs, OSUtil.NORMAL_INPUT,
-                Util.getPathPrefix(feedInputPath), dataDates);
-        }
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -84,23 +85,91 @@ public class InstanceParamTest extends BaseTestClass {
         processBundle.generateUniqueBundle();
         processBundle.setInputFeedDataPath(feedInputPath);
         processBundle.setProcessWorkflow(aggregateWorkflowDir);
-
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(processBundle, servers.get(i));
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
         }
     }
-    @Test(timeOut = 1200000)
-    public void getParamsValidRequest()
-        throws URISyntaxException, JAXBException, AuthenticationException, IOException {
+    @Test(timeOut = 1200000, enabled = false)
+    public void getParamsValidRequest_instanceWaiting()
+        throws URISyntaxException, JAXBException, AuthenticationException, IOException,
+        OozieClientException {
         processBundle.setProcessValidity(startTime, endTime);
         processBundle.addClusterToBundle(bundles[1].getClusters().get(0),
             ClusterType.SOURCE, null, null);
         processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
             ClusterType.SOURCE, null, null);
         processBundle.submitAndScheduleBundle(prism);
+        InstanceUtil.waitTillInstancesAreCreated(cluster1, processBundle.getProcessData(), 0);
+        InstancesResult r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r.getMessage();
+    }
 
+    @Test(timeOut = 1200000, enabled = true)
+    public void getParamsValidRequest_instanceSucceeded()
+        throws URISyntaxException, JAXBException, AuthenticationException, IOException,
+        OozieClientException {
+        processBundle.setProcessValidity(startTime, endTime);
+        processBundle.addClusterToBundle(bundles[1].getClusters().get(0),
+            ClusterType.SOURCE, null, null);
+        processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
+            ClusterType.SOURCE, null, null);
+        processBundle.submitAndScheduleBundle(prism);
+        InstanceUtil.waitTillInstancesAreCreated(cluster1, processBundle.getProcessData(), 0);
+        OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS,
+            processBundle.getProcessName(), 0);
+        InstanceUtil.waitTillInstanceReachState(oC1, processBundle.getProcessName(), 0,
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+        InstancesResult r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r.getMessage();
+
+    }
+
+    @Test(timeOut = 1200000, enabled = false)
+    public void getParamsValidRequest_instanceKilled()
+        throws URISyntaxException, JAXBException, AuthenticationException, IOException,
+        OozieClientException {
+        processBundle.setProcessValidity(startTime, endTime);
+        processBundle.addClusterToBundle(bundles[1].getClusters().get(0),
+            ClusterType.SOURCE, null, null);
+        processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
+            ClusterType.SOURCE, null, null);
+        processBundle.submitAndScheduleBundle(prism);
+        InstanceUtil.waitTillInstancesAreCreated(cluster1, processBundle.getProcessData(), 0);
+        OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS,
+            processBundle.getProcessName(), 0);
+        InstanceUtil.waitTillInstanceReachState(oC1, processBundle.getProcessName(), 0,
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+        InstancesResult r = prism.getProcessHelper()
+            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
+                "?start="+startTime);
+        r.getMessage();
 
     }
 

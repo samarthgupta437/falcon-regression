@@ -24,7 +24,7 @@ import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -327,7 +327,7 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //replication should not start even after time
         TimeUtil.sleepSeconds(60);
-        ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
+        InstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 1, 0, 0, 1, 0);
         logger.info("Replication didn't start.");

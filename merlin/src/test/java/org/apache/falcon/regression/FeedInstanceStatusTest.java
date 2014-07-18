@@ -22,7 +22,7 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -275,7 +275,7 @@ public class FeedInstanceStatusTest extends BaseTestClass {
 
         //kill feed
         prism.getFeedHelper().delete(URLS.DELETE_URL, feed);
-        ProcessInstancesResult responseInstance = prism.getFeedHelper()
+        InstancesResult responseInstance = prism.getFeedHelper()
             .getProcessInstanceStatus(Util.readDatasetName(feed),
                 "?start=" + startTime + "&end=" + TimeUtil
                     .addMinsToTime(startTime, 110));

@@ -44,7 +44,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.request.BaseRequest;
@@ -116,26 +116,26 @@ public class InstanceUtil {
                 }
             } else {
                 //Order is not guaranteed in the getDeclaredConstructors() call
-                Constructor<?> constructors[] = ProcessInstancesResult.class
+                Constructor<?> constructors[] = InstancesResult.class
                     .getDeclaredConstructors();
                 for (Constructor<?> constructor : constructors) {
                     //we want to invoke the constructor that has no parameters
                     if (constructor.getParameterTypes().length == 0) {
                         constructor.setAccessible(true);
-                        r = (ProcessInstancesResult) constructor.newInstance();
+                        r = (InstancesResult) constructor.newInstance();
                         break;
                     }
                 }
             }
         } catch (IllegalAccessException e) {
             Assert.fail("Could not create InstancesSummaryResult or " +
-                "ProcessInstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
+                "InstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
         } catch (InstantiationException e) {
             Assert.fail("Could not create InstancesSummaryResult or " +
-                "ProcessInstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
+                "InstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
         } catch (InvocationTargetException e) {
             Assert.fail("Could not create InstancesSummaryResult or " +
-                "ProcessInstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
+                "InstancesResult constructor\n" + ExceptionUtils.getStackTrace(e));
         }
         Assert.assertNotNull(r, "APIResult is null");
         if (jsonString.contains("(PROCESS) not found")) {
@@ -166,7 +166,7 @@ public class InstanceUtil {
                 .fromJson(jsonString, InstancesSummaryResult.class);
         else
             r = new GsonBuilder().setPrettyPrinting().create()
-                .fromJson(jsonString, ProcessInstancesResult.class);
+                .fromJson(jsonString, InstancesResult.class);
 
         logger.info("r.getMessage(): " + r.getMessage());
         logger.info("r.getStatusCode(): " + r.getStatusCode());
@@ -181,8 +181,8 @@ public class InstanceUtil {
      * @param b  - bundle from which process instances are being analyzed
      * @param ws - - expected status of instances
      */
-    public static void validateSuccess(ProcessInstancesResult r, Bundle b,
-                                       ProcessInstancesResult.WorkflowStatus ws) {
+    public static void validateSuccess(InstancesResult r, Bundle b,
+                                       InstancesResult.WorkflowStatus ws) {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(runningInstancesInResult(r, ws), b.getProcessConcurrency());
     }
@@ -194,9 +194,9 @@ public class InstanceUtil {
      * @param ws expected status of instances
      * @return number of instances which have expected status
      */
-    public static int runningInstancesInResult(ProcessInstancesResult r,
-                                               ProcessInstancesResult.WorkflowStatus ws) {
-        ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
+    public static int runningInstancesInResult(InstancesResult r,
+                                               InstancesResult.WorkflowStatus ws) {
+        InstancesResult.Instance[] pArray = r.getInstances();
         int runningCount = 0;
         logger.info("pArray: " + Arrays.toString(pArray));
         for (int instanceIndex = 0; instanceIndex < pArray.length; instanceIndex++) {
@@ -212,12 +212,12 @@ public class InstanceUtil {
         return runningCount;
     }
 
-    public static void validateSuccessWOInstances(ProcessInstancesResult r) {
+    public static void validateSuccessWOInstances(InstancesResult r) {
         AssertUtil.assertSucceeded(r);
         Assert.assertNull(r.getInstances(), "Unexpected :" + Arrays.toString(r.getInstances()));
     }
 
-    public static void validateSuccessWithStatusCode(ProcessInstancesResult r,
+    public static void validateSuccessWithStatusCode(InstancesResult r,
                                                      int expectedErrorCode) {
         Assert.assertEquals(r.getStatusCode(), expectedErrorCode,
             "Parameter start is empty should have the response");
@@ -261,8 +261,8 @@ public class InstanceUtil {
      * @param r kind of response from API which should contain information about instance
      * @param ws expected status of instance
      */
-    public static void validateSuccessOnlyStart(ProcessInstancesResult r,
-                                                ProcessInstancesResult.WorkflowStatus ws) {
+    public static void validateSuccessOnlyStart(InstancesResult r,
+                                                InstancesResult.WorkflowStatus ws) {
         Assert.assertEquals(r.getStatus(), APIResult.Status.SUCCEEDED);
         Assert.assertEquals(1, runningInstancesInResult(r, ws));
     }
@@ -280,7 +280,7 @@ public class InstanceUtil {
      * @param waitingInstances
      * @param killedInstances
      */
-    public static void validateResponse(ProcessInstancesResult r, int totalInstances,
+    public static void validateResponse(InstancesResult r, int totalInstances,
                                         int runningInstances,
                                         int suspendedInstances, int waitingInstances,
                                         int killedInstances) {
@@ -289,7 +289,7 @@ public class InstanceUtil {
         int actualSuspendedInstances = 0;
         int actualWaitingInstances = 0;
         int actualKilledInstances = 0;
-        ProcessInstancesResult.ProcessInstance[] pArray = r.getInstances();
+        InstancesResult.Instance[] pArray = r.getInstances();
         logger.info("pArray: " + Arrays.toString(pArray));
         Assert.assertNotNull(pArray, "pArray should be not null");
         Assert.assertEquals(pArray.length, totalInstances, "Total Instances");
@@ -327,11 +327,11 @@ public class InstanceUtil {
      * @param r kind of response from API which should contain information about instances.
      * @param failCount number of instances which should be failed.
      */
-    public static void validateFailedInstances(ProcessInstancesResult r, int failCount) {
+    public static void validateFailedInstances(InstancesResult r, int failCount) {
         AssertUtil.assertSucceeded(r);
         int counter = 0;
-        for (ProcessInstancesResult.ProcessInstance processInstance : r.getInstances()) {
-            if (processInstance.getStatus() == ProcessInstancesResult.WorkflowStatus.FAILED)
+        for (InstancesResult.Instance processInstance : r.getInstances()) {
+            if (processInstance.getStatus() == InstancesResult.WorkflowStatus.FAILED)
                 counter++;
         }
         Assert.assertEquals(counter, failCount, "Actual number of failed instances does not " +
@@ -527,9 +527,25 @@ public class InstanceUtil {
     public static String getSequenceBundleID(ColoHelper prismHelper, String entityName,
                                              ENTITY_TYPE entityType, int bundleNumber)
         throws OozieClientException {
+        return getSequenceBundleID(prismHelper.getClusterHelper().getOozieClient(), entityName,
+             entityType, bundleNumber);
+      }
+
+    /**
+     * Retrieves ID of bundle related to some process/feed using its ordinal number.
+     *
+     * @param entityName   - name of entity bundle is related to
+     * @param entityType   - feed or process
+     * @param bundleNumber - ordinal number of bundle
+     * @return bundle ID
+     * @throws OozieClientException
+     */
+    public static String getSequenceBundleID(OozieClient oozieClient, String entityName,
+                                             ENTITY_TYPE entityType, int bundleNumber)
+        throws OozieClientException {
 
         //sequence start from 0
-        List<String> bundleIds = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
+        List<String> bundleIds = OozieUtil.getBundles(oozieClient,
             entityName, entityType);
         Map<Integer, String> bundleMap = new TreeMap<Integer, String>();
         String bundleID;

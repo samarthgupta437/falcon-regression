@@ -21,7 +21,7 @@ package org.apache.falcon.regression.core.util;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.response.APIResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.hadoop.fs.ContentSummary;
@@ -159,7 +159,7 @@ public class AssertUtil {
      *
      * @param response ProcessInstancesResult
      */
-    public static void assertSucceeded(ProcessInstancesResult response) {
+    public static void assertSucceeded(InstancesResult response) {
         Assert.assertNotNull(response.getMessage());
         Assert.assertEquals(response.getStatus(), APIResult.Status.SUCCEEDED,
             "Status should be SUCCEEDED");

@@ -21,7 +21,7 @@ package org.apache.falcon.regression.core.interfaces;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.regression.core.util.HCatUtil;
@@ -364,45 +364,45 @@ public abstract class IEntityManagerHelper {
             "get", user);
     }
 
-    public ProcessInstancesResult getRunningInstance(URLS processRunningInstance, String name)
+    public InstancesResult getRunningInstance(URLS processRunningInstance, String name)
         throws IOException, URISyntaxException, AuthenticationException {
         return getRunningInstance(processRunningInstance, name, null);
     }
 
-    public ProcessInstancesResult getRunningInstance(
+    public InstancesResult getRunningInstance(
         URLS processRunningInstance, String name, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + processRunningInstance.getValue(), getEntityType(),
             name + allColo);
-        return (ProcessInstancesResult) InstanceUtil.sendRequestProcessInstance(url, user);
+        return (InstancesResult) InstanceUtil.sendRequestProcessInstance(url, user);
     }
 
-    public ProcessInstancesResult getProcessInstanceStatus(String entityName, String params)
+    public InstancesResult getProcessInstanceStatus(String entityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceStatus(entityName, params, null);
     }
 
-    public ProcessInstancesResult getProcessInstanceStatus(
+    public InstancesResult getProcessInstanceStatus(
         String entityName, String params, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + Util.URLS.INSTANCE_STATUS.getValue(),
             getEntityType(), entityName, "");
-        return (ProcessInstancesResult) InstanceUtil
+        return (InstancesResult) InstanceUtil
             .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public ProcessInstancesResult getProcessInstanceSuspend(
+    public InstancesResult getProcessInstanceSuspend(
         String readEntityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceSuspend(readEntityName, params, null);
     }
 
-    public ProcessInstancesResult getProcessInstanceSuspend(
+    public InstancesResult getProcessInstanceSuspend(
         String entityName, String params, String user)
         throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + Util.URLS.INSTANCE_SUSPEND.getValue(),
             getEntityType(), entityName, "");
-        return (ProcessInstancesResult) InstanceUtil
+        return (InstancesResult) InstanceUtil
             .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
@@ -428,45 +428,45 @@ public abstract class IEntityManagerHelper {
             newEntity, user);
     }
 
-    public ProcessInstancesResult getProcessInstanceKill(String readEntityName, String params)
+    public InstancesResult getProcessInstanceKill(String readEntityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceKill(readEntityName, params, null);
     }
 
-    public ProcessInstancesResult getProcessInstanceKill(String entityName, String params,
+    public InstancesResult getProcessInstanceKill(String entityName, String params,
                                                          String user)
         throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + URLS.INSTANCE_KILL.getValue(), getEntityType(),
             entityName, "");
-        return (ProcessInstancesResult) InstanceUtil
+        return (InstancesResult) InstanceUtil
             .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public ProcessInstancesResult getProcessInstanceRerun(String EntityName, String params)
+    public InstancesResult getProcessInstanceRerun(String EntityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceRerun(EntityName, params, null);
     }
 
-    public ProcessInstancesResult getProcessInstanceRerun(String entityName, String params,
+    public InstancesResult getProcessInstanceRerun(String entityName, String params,
                                                           String user)
         throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + URLS.INSTANCE_RERUN.getValue(), getEntityType(),
             entityName, "");
-        return (ProcessInstancesResult) InstanceUtil
+        return (InstancesResult) InstanceUtil
             .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
-    public ProcessInstancesResult getProcessInstanceResume(String EntityName, String params)
+    public InstancesResult getProcessInstanceResume(String EntityName, String params)
         throws IOException, URISyntaxException, AuthenticationException {
         return getProcessInstanceResume(EntityName, params, null);
     }
 
-    public ProcessInstancesResult getProcessInstanceResume(String entityName, String params,
+    public InstancesResult getProcessInstanceResume(String entityName, String params,
                                                            String user)
         throws IOException, URISyntaxException, AuthenticationException {
         String url = createUrl(this.hostname + Util.URLS.INSTANCE_RESUME.getValue(),
             getEntityType(), entityName, "");
-        return (ProcessInstancesResult) InstanceUtil
+        return (InstancesResult) InstanceUtil
             .createAndSendRequestProcessInstance(url, params, allColo, user);
     }
 
@@ -496,5 +496,13 @@ public abstract class IEntityManagerHelper {
 
     public List<String> getStoreInfo() throws IOException, JSchException {
         return Util.getStoreInfo(this, "/" + getEntityType().toUpperCase());
+    }
+
+    public InstancesResult getInstanceParams(String entityName, String params)
+        throws AuthenticationException, IOException, URISyntaxException {
+        String url = createUrl(this.hostname + Util.URLS.INSTANCE_PARAMS.getValue(),
+            getEntityType(), entityName, "");
+        return (InstancesResult) InstanceUtil
+            .createAndSendRequestProcessInstance(url, params, allColo, null);
     }
 }

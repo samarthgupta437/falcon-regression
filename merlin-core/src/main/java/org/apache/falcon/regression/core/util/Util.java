@@ -868,7 +868,8 @@ public class Util {
         INSTANCE_RESUME("/api/instance/resume"),
         INSTANCE_SUSPEND("/api/instance/suspend"),
         INSTANCE_RERUN("/api/instance/rerun"),
-        INSTANCE_SUMMARY("/api/instance/summary");
+        INSTANCE_SUMMARY("/api/instance/summary"),
+        INSTANCE_PARAMS("/api/instance/params");
         private final String url;
 
         URLS(String url) {
