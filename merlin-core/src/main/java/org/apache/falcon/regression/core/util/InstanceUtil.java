@@ -19,6 +19,8 @@
 package org.apache.falcon.regression.core.util;
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -164,9 +166,11 @@ public class InstanceUtil {
         if (url.contains("/summary/"))
             r = new GsonBuilder().setPrettyPrinting().create()
                 .fromJson(jsonString, InstancesSummaryResult.class);
-        else
-            r = new GsonBuilder().setPrettyPrinting().create()
+        else {
+
+            r = new GsonBuilder().create()
                 .fromJson(jsonString, InstancesResult.class);
+        }
 
         logger.info("r.getMessage(): " + r.getMessage());
         logger.info("r.getStatusCode(): " + r.getStatusCode());
@@ -412,23 +416,22 @@ public class InstanceUtil {
         throws OozieClientException {
 
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
-        String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
+        String coordId = getLatestCoordinatorID(oozieClient, processName, entityType);
         //String coordId = getDefaultCoordinatorFromProcessName(processName);
         logger.info("default coordID: " + coordId);
         return oozieClient.getCoordJobInfo(coordId).getActions();
     }
 
-    public static String getLatestCoordinatorID(ColoHelper coloHelper, String processName,
+    public static String getLatestCoordinatorID(OozieClient oozieClient, String processName,
                                                 ENTITY_TYPE entityType)
         throws OozieClientException {
-        return getDefaultCoordIDFromBundle(coloHelper,
-            getLatestBundleID(coloHelper, processName, entityType));
+        return getDefaultCoordIDFromBundle(oozieClient,
+            getLatestBundleID(oozieClient, processName, entityType));
     }
 
-    public static String getDefaultCoordIDFromBundle(ColoHelper coloHelper, String bundleId)
+    public static String getDefaultCoordIDFromBundle(OozieClient oozieClient, String bundleId)
         throws OozieClientException {
 
-        OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         OozieUtil.waitForCoordinatorJobCreation(oozieClient, bundleId);
         BundleJob bundleInfo = oozieClient.getBundleJobInfo(bundleId);
         List<CoordinatorJob> coords = bundleInfo.getCoordinators();
@@ -471,7 +474,7 @@ public class InstanceUtil {
         ColoHelper coloHelper, String processName, int bundleNumber) throws OozieClientException {
         String bundleID =
             getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
-        return getDefaultCoordIDFromBundle(coloHelper, bundleID);
+        return getDefaultCoordIDFromBundle(coloHelper.getClusterHelper().getOozieClient(), bundleID);
     }
 
     /**
@@ -502,7 +505,23 @@ public class InstanceUtil {
     public static String getLatestBundleID(ColoHelper coloHelper,
                                            String entityName, ENTITY_TYPE entityType)
         throws OozieClientException {
-        List<String> bundleIds = OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(),
+        return getLatestBundleID(coloHelper.getFeedHelper().getOozieClient(),
+            entityName, entityType);
+    }
+
+    /**
+     * Retrieves the latest bundle ID
+     *
+     * @param oozieClient where job is running
+     * @param entityName name of entity job is related to
+     * @param entityType type of entity - feed or process expected
+     * @return latest bundle ID
+     * @throws OozieClientException
+     */
+    public static String getLatestBundleID(OozieClient oozieClient,
+                                           String entityName, ENTITY_TYPE entityType)
+        throws OozieClientException {
+        List<String> bundleIds = OozieUtil.getBundles(oozieClient,
             entityName, entityType);
         String max = "0";
         int maxID = -1;
@@ -587,7 +606,8 @@ public class InstanceUtil {
         if (StringUtils.isEmpty(bundleID)) {
             return null;
         }
-        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper, bundleID);
+        String coordID = InstanceUtil.getDefaultCoordIDFromBundle(coloHelper.getClusterHelper().getOozieClient(),
+            bundleID);
         if (StringUtils.isEmpty(coordID)) {
             return null;
         }
@@ -1054,7 +1074,8 @@ public class InstanceUtil {
                 list.addAll(actions);
             }
         }
-        String coordId = getLatestCoordinatorID(coloHelper, processName, entityType);
+        String coordId = getLatestCoordinatorID(coloHelper.getClusterHelper().getOozieClient(), processName,
+            entityType);
         logger.info("default coordID: " + coordId);
         return list;
     }
@@ -1103,14 +1124,14 @@ public class InstanceUtil {
      *
      * @param client oozie client to retrieve info about instances
      * @param entityName name of feed or process
-     * @param numberOfInstance number of instances which status we are waiting for
+     * @param instanceNumber instance number for which we wait to reach the required status
      * @param expectedStatus expected status we are waiting for
      * @param entityType type of entity - feed or process expected
      * @param totalMinutesToWait time in minutes for which instance state should be polled
      * @throws OozieClientException
      */
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
-                                                  int numberOfInstance,
+                                                  int instanceNumber,
                                                   CoordinatorAction.Status expectedStatus,
                                                   ENTITY_TYPE entityType, int totalMinutesToWait)
         throws OozieClientException {
@@ -1164,7 +1185,6 @@ public class InstanceUtil {
         logger.info(String.format("Sleep for %d seconds", sleepTime));
         for (int i = 0; i < maxTries; i++) {
             logger.info(String.format("Try %d of %d", (i + 1), maxTries));
-            int instanceWithStatus = 0;
             CoordinatorJob coordinatorJob = client.getCoordJobInfo(coordId);
             final Status coordinatorStatus = coordinatorJob.getStatus();
             Assert.assertTrue(
@@ -1173,17 +1193,8 @@ public class InstanceUtil {
                 String.format("Coordinator %s should be running/prep but is %s.", coordId,
                     coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
-            for (CoordinatorAction coordinatorAction : coordinatorActions) {
-                logger.info(String.format("Coordinator Action %s status is %s on oozie %s",
-                    coordinatorAction.getId(), coordinatorAction.getStatus(), client.getOozieUrl()));
-                if (expectedStatus == coordinatorAction.getStatus()) {
-                    instanceWithStatus++;
-                }
-            }
-
-            if (instanceWithStatus >= numberOfInstance)
-                return;
-            TimeUtil.sleepSeconds(sleepTime);
+            if(!(expectedStatus == coordinatorActions.get(instanceNumber).getStatus()))
+                TimeUtil.sleepSeconds(sleepTime);
         }
         Assert.assertTrue(false, "expected state of instance was never reached");
     }
@@ -1334,9 +1345,29 @@ public class InstanceUtil {
     ) throws OozieClientException {
         String entityName = Util.readEntityName(entity);
         ENTITY_TYPE type = Util.getEntityType(entity);
-        String bundleID = getSequenceBundleID(coloHelper, entityName, type,
+        waitTillInstancesAreCreated(coloHelper, entityName, type, bundleSeqNo, totalMinutesToWait);
+    }
+
+    /**
+     * Waits till instances of specific job will be created during specific time.
+     * Use this method directly in unusual test cases where timeouts are different from trivial.
+     * In other cases use waitTillInstancesAreCreated(ColoHelper,String,int)
+     *
+     * @param coloHelper colo helper of cluster job is running on
+     * @param entityName name of entity job is related to
+     * @param type type of entity
+     * @param bundleSeqNo
+     * @throws OozieClientException
+     */
+    public static void waitTillInstancesAreCreated(ColoHelper coloHelper,
+                                                   String entityName,
+                                                   ENTITY_TYPE type,
+                                                   int bundleSeqNo,
+                                                   int totalMinutesToWait
+    ) throws OozieClientException {
+            String bundleID = getSequenceBundleID(coloHelper, entityName, type,
             bundleSeqNo);
-        String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);
+        String coordID = getDefaultCoordIDFromBundle(coloHelper.getClusterHelper().getOozieClient(), bundleID);
         for (int sleepCount = 0; sleepCount < totalMinutesToWait; sleepCount++) {
             CoordinatorJob coordInfo = coloHelper.getProcessHelper().getOozieClient()
                 .getCoordJobInfo(coordID);
