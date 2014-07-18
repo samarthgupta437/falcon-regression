@@ -47,10 +47,11 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.internal.collections.Pair;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 @Test(groups = "lineage-rest")
 public class LineageApiTest extends BaseTestClass {
@@ -372,10 +373,11 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testVerticesFilterBlankValue() throws Exception {
+        Map<String, String> params = new TreeMap<String, String>();
+        params.put("key", Vertex.FilterKey.name.toString());
+        params.put("value", "");
         HttpResponse response = lineageHelper
-            .runGetRequest(lineageHelper.getUrl(LineageHelper.URL.VERTICES,
-                new Pair<String, String>("key", Vertex.FilterKey.name.toString()),
-                new Pair<String, String>("value", "")));
+            .runGetRequest(lineageHelper.getUrl(LineageHelper.URL.VERTICES, params));
         String responseString = lineageHelper.getResponseString(response);
         logger.info(responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
@@ -387,10 +389,11 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testVerticesFilterBlankKey() throws Exception {
+        Map<String, String> params = new TreeMap<String, String>();
+        params.put("key", "");
+        params.put("value", "someValue");
         HttpResponse response = lineageHelper.runGetRequest(
-            lineageHelper.getUrl(LineageHelper.URL.VERTICES,
-                new Pair<String, String>("key", ""),
-                new Pair<String, String>("value", "somevalue")));
+            lineageHelper.getUrl(LineageHelper.URL.VERTICES, params));
         String responseString = lineageHelper.getResponseString(response);
         logger.info(responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
