@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.entity.v0.EntityType;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -307,7 +308,7 @@ public class OptionalInputTest extends BaseTestClass {
                 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         bundles[0].setProcessData(Bundle
-            .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
+            .setProcessFeeds(new ProcessMerlin(bundles[0].getProcessData()), bundles[0].getDataSets(), 2, 0,1));
         bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
 
@@ -371,7 +372,7 @@ public class OptionalInputTest extends BaseTestClass {
                 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         bundles[0].setProcessData(Bundle
-            .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 2, 1));
+            .setProcessFeeds(new ProcessMerlin(bundles[0].getProcessData()), bundles[0].getDataSets(), 2, 2, 1));
 
         //delete all input data
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);

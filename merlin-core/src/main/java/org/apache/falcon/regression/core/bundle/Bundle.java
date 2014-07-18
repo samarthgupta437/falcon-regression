@@ -823,7 +823,7 @@ public class Bundle {
         ProcessMerlin processMerlin = new ProcessMerlin(b.getProcessData());
         processMerlin.setUniqueName();
         processMerlin.setProcessClusters(newClusters, startTime, endTime);
-        String process = setProcessFeeds(processMerlin.toString(), newDataSets, numberOfInputs,
+        String process = setProcessFeeds(processMerlin, newDataSets, numberOfInputs,
             numberOfOptionalInput, numberOfOutputs);
         b.setProcessData(process);
         return b;
@@ -834,18 +834,16 @@ public class Bundle {
      * definitions and matching numeric parameters. Optional inputs are set first and then
      * compulsory ones.
      *
-     * @param process process definition to be modified
+     * @param p process definition to be modified
      * @param newDataSets list of feed definitions
      * @param numberOfInputs number of desired inputs
      * @param numberOfOptionalInput how many inputs should be optional
      * @param numberOfOutputs number of outputs
      * @return modified process
      */
-    public static String setProcessFeeds(String process, List<String> newDataSets,
+    public static String setProcessFeeds(ProcessMerlin p, List<String> newDataSets,
                                   int numberOfInputs, int numberOfOptionalInput,
                                   int numberOfOutputs) {
-
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         int numberOfOptionalSet = 0;
         boolean isFirst = true;
 
