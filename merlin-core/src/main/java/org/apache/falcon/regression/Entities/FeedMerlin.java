@@ -152,7 +152,7 @@ public class FeedMerlin extends Feed {
     }
 
     /**
-     * Sets unique names for the cluster
+     * Sets unique names for the feed
      * @return mapping of old name to new name
      */
     public Map<? extends String, ? extends String> setUniqueName() {

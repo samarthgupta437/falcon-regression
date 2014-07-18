@@ -221,6 +221,7 @@ public class Bundle {
         }
 
         ProcessMerlin processMerlin = new ProcessMerlin(processData);
+        processMerlin.setUniqueName();
 
         /* setting new names in feeds and process */
         for (FeedMerlin feedMerlin : feedMerlinList) {
@@ -819,9 +820,9 @@ public class Bundle {
         b.setDataSets(newDataSets);
 
         //add clusters and feed to process
-        String process = b.getProcessData();
-        process = Util.generateUniqueProcessEntity(process);
-        process = setProcessClusters(process, newClusters, startTime, endTime);
+        ProcessMerlin processMerlin = new ProcessMerlin(b.getProcessData());
+        processMerlin.setUniqueName();
+        String process = setProcessClusters(processMerlin.toString(), newClusters, startTime, endTime);
         process = setProcessFeeds(process, newDataSets, numberOfInputs, numberOfOptionalInput,
             numberOfOutputs);
         b.setProcessData(process);

@@ -145,6 +145,20 @@ public class ProcessMerlin extends Process {
             }
         }
     }
+
+    /**
+     * Sets unique names for the process
+     * @return mapping of old name to new name
+     */
+    public Map<? extends String, ? extends String> setUniqueName() {
+        final String oldName = getName();
+        final String newName =  oldName + Util.getUniqueString();
+        setName(newName);
+        final HashMap<String, String> nameMap = new HashMap<String, String>(1);
+        nameMap.put(oldName, newName);
+        return nameMap;
+    }
+
 }
 
 
