@@ -181,18 +181,6 @@ public class Util {
         return datasetElement.getName();
     }
 
-    /**
-     * Sets unique name for process.
-     *
-     * @param data process definition
-     * @return process definition with unique name
-     */
-    public static String generateUniqueProcessEntity(String data) {
-        Process process = (Process) Entity.fromString(EntityType.PROCESS, data);
-        process.setName(process.getName() + getUniqueString());
-        return process.toString();
-    }
-
     public static String getUniqueString() {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }
