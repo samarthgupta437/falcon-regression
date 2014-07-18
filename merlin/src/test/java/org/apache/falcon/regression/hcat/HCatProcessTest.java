@@ -28,6 +28,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -140,12 +141,11 @@ public class HCatProcessTest extends BaseTestClass {
             .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -205,12 +205,11 @@ public class HCatProcessTest extends BaseTestClass {
             .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir2, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -300,12 +299,11 @@ public class HCatProcessTest extends BaseTestClass {
             .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -385,12 +383,11 @@ public class HCatProcessTest extends BaseTestClass {
             .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir2, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -501,12 +498,11 @@ public class HCatProcessTest extends BaseTestClass {
             .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -566,12 +562,11 @@ public class HCatProcessTest extends BaseTestClass {
             flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, outputTableName, cols)
             .partCols(partitionCols)
