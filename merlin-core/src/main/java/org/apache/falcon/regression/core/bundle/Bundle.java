@@ -41,7 +41,6 @@ import org.apache.falcon.entity.v0.process.Cluster;
 import org.apache.falcon.entity.v0.process.EngineType;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Inputs;
-import org.apache.falcon.entity.v0.process.LateInput;
 import org.apache.falcon.entity.v0.process.LateProcess;
 import org.apache.falcon.entity.v0.process.Output;
 import org.apache.falcon.entity.v0.process.Outputs;
@@ -803,26 +802,27 @@ public class Bundle {
         c.setUniqueName();
         List<String> newClusters = new ArrayList<String>();
         List<String> newDataSets = new ArrayList<String>();
-
+        final String clusterName = c.getName();
         for (int i = 0; i < numberOfClusters; i++) {
-            String clusterName = c.getName() + i;
-            c.setName(clusterName);
+            c.setName(clusterName + i);
             newClusters.add(i, c.toString());
         }
         b.setClusterData(newClusters);
 
         //generate and set newDataSets
         for (int i = 0; i < numberOfInputs; i++) {
-            String referenceFeed = Util.generateUniqueDataEntity(b.getDataSets().get(0));
-            referenceFeed =
-                b.setFeedClusters(referenceFeed, newClusters, inputBasePaths + "/input" + i,
+            final FeedMerlin feed = new FeedMerlin(b.getDataSets().get(0));
+            feed.setUniqueName();
+            String referenceFeed = setFeedClusters(feed,
+                newClusters, inputBasePaths + "/input" + i,
                     startTime, endTime);
             newDataSets.add(referenceFeed);
         }
         for (int i = 0; i < numberOfOutputs; i++) {
-            String referenceFeed = Util.generateUniqueDataEntity(b.getDataSets().get(0));
-            referenceFeed =
-                b.setFeedClusters(referenceFeed, newClusters, inputBasePaths + "/output" + i,
+            final FeedMerlin feed = new FeedMerlin(b.getDataSets().get(0));
+            feed.setUniqueName();
+            String referenceFeed = setFeedClusters(feed,
+                newClusters, inputBasePaths + "/output" + i,
                     startTime, endTime);
             newDataSets.add(referenceFeed);
         }
@@ -937,11 +937,9 @@ public class Bundle {
      * @param endTime end of feed validity on every cluster
      * @return modified feed definition
      */
-    private String setFeedClusters(String referenceFeed,
-                                  List<String> newClusters, String location, String startTime,
-                                  String endTime) {
-
-        Feed f = (Feed) Entity.fromString(EntityType.FEED, referenceFeed);
+    private static String setFeedClusters(FeedMerlin f, List<String> newClusters, String location,
+                                          String startTime,
+                                          String endTime) {
         Clusters cs = new Clusters();
         f.setFrequency(new Frequency("" + 5, TimeUnit.minutes));
 
