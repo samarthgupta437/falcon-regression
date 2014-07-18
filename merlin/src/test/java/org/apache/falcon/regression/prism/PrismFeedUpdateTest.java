@@ -190,7 +190,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
             .setProcessName(process02, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
         feed.add(outputFeed);
-        process02 = bundles[0].setProcessFeeds(process02, feed, 0, 0, 1);
+        process02 = Bundle.setProcessFeeds(process02, feed, 0, 0, 1);
 
 
         //submit and schedule both process

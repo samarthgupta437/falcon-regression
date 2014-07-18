@@ -306,7 +306,7 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
-        bundles[0].setProcessData(bundles[0]
+        bundles[0].setProcessData(Bundle
             .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
         bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
@@ -370,7 +370,7 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
-        bundles[0].setProcessData(bundles[0]
+        bundles[0].setProcessData(Bundle
             .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 2, 1));
 
         //delete all input data

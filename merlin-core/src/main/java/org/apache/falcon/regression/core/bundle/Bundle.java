@@ -821,8 +821,8 @@ public class Bundle {
         //add clusters and feed to process
         String process = b.getProcessData();
         process = Util.generateUniqueProcessEntity(process);
-        process = b.setProcessClusters(process, newClusters, startTime, endTime);
-        process = b.setProcessFeeds(process, newDataSets, numberOfInputs, numberOfOptionalInput,
+        process = setProcessClusters(process, newClusters, startTime, endTime);
+        process = setProcessFeeds(process, newDataSets, numberOfInputs, numberOfOptionalInput,
             numberOfOutputs);
         b.setProcessData(process);
         return b;
@@ -840,7 +840,7 @@ public class Bundle {
      * @param numberOfOutputs number of outputs
      * @return modified process
      */
-    public String setProcessFeeds(String process, List<String> newDataSets,
+    public static String setProcessFeeds(String process, List<String> newDataSets,
                                   int numberOfInputs, int numberOfOptionalInput,
                                   int numberOfOutputs) {
 
@@ -897,7 +897,8 @@ public class Bundle {
      * @param endTime end of process validity on every cluster
      * @return modified process definition
      */
-    private String setProcessClusters(String process, List<String> newClusters, String startTime,
+    private static String setProcessClusters(String process, List<String> newClusters,
+                                          String startTime,
                                      String endTime) {
 
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
