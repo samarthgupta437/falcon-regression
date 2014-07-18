@@ -28,6 +28,7 @@ import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -153,13 +154,12 @@ public class HCatReplicationTest extends BaseTestClass {
         final String partitionColumn = "dt";
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         // create table on cluster 1 and add data to it.
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
@@ -241,13 +241,12 @@ public class HCatReplicationTest extends BaseTestClass {
         final String partitionColumn = "dt";
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         // create table on cluster 1 and add data to it.
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
