@@ -151,8 +151,7 @@ public class LineageHelper {
             String[] params = new String[paramPairs.size()];
             int i = 0;
             for (String key : paramPairs.keySet()) {
-                params[i] = key + '=' + paramPairs.get(key);
-                i++;
+                params[i++] = key + '=' + paramPairs.get(key);
             }
             return hostAndPath + "/?" + StringUtils.join(params, "&");
         }
