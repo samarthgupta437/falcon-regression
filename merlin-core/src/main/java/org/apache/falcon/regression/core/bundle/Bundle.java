@@ -823,67 +823,10 @@ public class Bundle {
         ProcessMerlin processMerlin = new ProcessMerlin(b.getProcessData());
         processMerlin.setUniqueName();
         processMerlin.setProcessClusters(newClusters, startTime, endTime);
-        String process = setProcessFeeds(processMerlin, newDataSets, numberOfInputs,
+        processMerlin.setProcessFeeds(newDataSets, numberOfInputs,
             numberOfOptionalInput, numberOfOutputs);
-        b.setProcessData(process);
+        b.setProcessData(processMerlin.toString());
         return b;
-    }
-
-    /**
-     * Method sets optional/compulsory inputs and outputs of process according to list of feed
-     * definitions and matching numeric parameters. Optional inputs are set first and then
-     * compulsory ones.
-     *
-     * @param p process definition to be modified
-     * @param newDataSets list of feed definitions
-     * @param numberOfInputs number of desired inputs
-     * @param numberOfOptionalInput how many inputs should be optional
-     * @param numberOfOutputs number of outputs
-     * @return modified process
-     */
-    public static String setProcessFeeds(ProcessMerlin p, List<String> newDataSets,
-                                  int numberOfInputs, int numberOfOptionalInput,
-                                  int numberOfOutputs) {
-        int numberOfOptionalSet = 0;
-        boolean isFirst = true;
-
-        Inputs is = new Inputs();
-        for (int i = 0; i < numberOfInputs; i++) {
-            Input in = new Input();
-            in.setEnd("now(0,0)");
-            in.setStart("now(0,-20)");
-            if (numberOfOptionalSet < numberOfOptionalInput) {
-                in.setOptional(true);
-                in.setName("inputData" + i);
-                numberOfOptionalSet++;
-            } else {
-                in.setOptional(false);
-                if (isFirst) {
-                    in.setName("inputData");
-                    isFirst = false;
-                } else
-                    in.setName("inputData" + i);
-            }
-            in.setFeed(Util.readDatasetName(newDataSets.get(i)));
-            is.getInputs().add(in);
-        }
-
-        p.setInputs(is);
-        if (numberOfInputs == 0) {
-            p.setInputs(null);
-        }
-
-        Outputs os = new Outputs();
-        for (int i = 0; i < numberOfOutputs; i++) {
-            Output op = new Output();
-            op.setFeed(Util.readDatasetName(newDataSets.get(numberOfInputs - i)));
-            op.setName("outputData");
-            op.setInstance("now(0,0)");
-            os.getOutputs().add(op);
-        }
-        p.setOutputs(os);
-        p.setLateProcess(null);
-        return p.toString();
     }
 
     public void submitAndScheduleBundle(Bundle b, ColoHelper prismHelper,

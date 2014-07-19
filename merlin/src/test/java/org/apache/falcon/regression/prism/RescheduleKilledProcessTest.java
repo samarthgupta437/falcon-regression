@@ -83,7 +83,9 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
         feed.add(BundleUtil.getOutputFeedFromBundle(bundles[0]));
-        process = Bundle.setProcessFeeds(new ProcessMerlin(process), feed, 0, 0, 1);
+        final ProcessMerlin processMerlin = new ProcessMerlin(process);
+        processMerlin.setProcessFeeds(feed, 0, 0, 1);
+        process = processMerlin.toString();
 
         process = InstanceUtil.setProcessCluster(process, null,
             XmlUtil.createProcessValidity(processStartTime, "2099-01-01T00:00Z"));

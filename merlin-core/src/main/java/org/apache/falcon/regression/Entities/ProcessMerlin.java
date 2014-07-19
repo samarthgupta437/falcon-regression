@@ -25,7 +25,9 @@ import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.process.Cluster;
 import org.apache.falcon.entity.v0.process.Clusters;
 import org.apache.falcon.entity.v0.process.Input;
+import org.apache.falcon.entity.v0.process.Inputs;
 import org.apache.falcon.entity.v0.process.Output;
+import org.apache.falcon.entity.v0.process.Outputs;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.process.Properties;
 import org.apache.falcon.entity.v0.process.Property;
@@ -184,6 +186,59 @@ public class ProcessMerlin extends Process {
         return nameMap;
     }
 
+    /**
+     * Method sets optional/compulsory inputs and outputs of process according to list of feed
+     * definitions and matching numeric parameters. Optional inputs are set first and then
+     * compulsory ones.
+     *
+     * @param newDataSets list of feed definitions
+     * @param numberOfInputs number of desired inputs
+     * @param numberOfOptionalInput how many inputs should be optional
+     * @param numberOfOutputs number of outputs
+     */
+    public void setProcessFeeds(List<String> newDataSets,
+                                  int numberOfInputs, int numberOfOptionalInput,
+                                  int numberOfOutputs) {
+        int numberOfOptionalSet = 0;
+        boolean isFirst = true;
+
+        Inputs is = new Inputs();
+        for (int i = 0; i < numberOfInputs; i++) {
+            Input in = new Input();
+            in.setEnd("now(0,0)");
+            in.setStart("now(0,-20)");
+            if (numberOfOptionalSet < numberOfOptionalInput) {
+                in.setOptional(true);
+                in.setName("inputData" + i);
+                numberOfOptionalSet++;
+            } else {
+                in.setOptional(false);
+                if (isFirst) {
+                    in.setName("inputData");
+                    isFirst = false;
+                } else
+                    in.setName("inputData" + i);
+            }
+            in.setFeed(new FeedMerlin(newDataSets.get(i)).getName());
+            is.getInputs().add(in);
+        }
+
+        setInputs(is);
+        if (numberOfInputs == 0) {
+            setInputs(null);
+        }
+
+        Outputs os = new Outputs();
+        for (int i = 0; i < numberOfOutputs; i++) {
+            Output op = new Output();
+            op.setFeed(new FeedMerlin(newDataSets.get(numberOfInputs - i)).getName());
+            op.setName("outputData");
+            op.setInstance("now(0,0)");
+            os.getOutputs().add(op);
+        }
+        setOutputs(os);
+        setLateProcess(null);
+    }
 }
 
 
