@@ -777,7 +777,6 @@ public class Bundle {
      * Generates unique entities definitions: clusters, feeds and process, populating them with
      * desired values of different properties.
      *
-     * @param b bundle to be modified
      * @param numberOfClusters number of clusters on which feeds and process should run
      * @param numberOfInputs number of desired inputs in process definition
      * @param numberOfOptionalInput how many inputs should be optional
@@ -785,15 +784,13 @@ public class Bundle {
      * @param numberOfOutputs number of outputs
      * @param startTime start of feeds and process validity on every cluster
      * @param endTime end of feeds and process validity on every cluster
-     * @return modified bundle
      */
-    public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
+    public void generateRequiredBundle(int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
                                     String inputBasePaths, int numberOfOutputs, String startTime,
                                     String endTime) {
-
         //generate and set clusters
-        ClusterMerlin c = new ClusterMerlin(b.getClusters().get(0));
+        ClusterMerlin c = new ClusterMerlin(getClusters().get(0));
         c.setUniqueName();
         List<String> newClusters = new ArrayList<String>();
         final String clusterName = c.getName();
@@ -801,32 +798,31 @@ public class Bundle {
             c.setName(clusterName + i);
             newClusters.add(i, c.toString());
         }
-        b.setClusterData(newClusters);
+        setClusterData(newClusters);
 
         //generate and set newDataSets
         List<String> newDataSets = new ArrayList<String>();
         for (int i = 0; i < numberOfInputs; i++) {
-            final FeedMerlin feed = new FeedMerlin(b.getDataSets().get(0));
+            final FeedMerlin feed = new FeedMerlin(getDataSets().get(0));
             feed.setUniqueName();
             feed.setFeedClusters(newClusters, inputBasePaths + "/input" + i, startTime, endTime);
             newDataSets.add(feed.toString());
         }
         for (int i = 0; i < numberOfOutputs; i++) {
-            final FeedMerlin feed = new FeedMerlin(b.getDataSets().get(0));
+            final FeedMerlin feed = new FeedMerlin(getDataSets().get(0));
             feed.setUniqueName();
             feed.setFeedClusters(newClusters, inputBasePaths + "/output" + i,  startTime, endTime);
             newDataSets.add(feed.toString());
         }
-        b.setDataSets(newDataSets);
+        setDataSets(newDataSets);
 
         //add clusters and feed to process
-        ProcessMerlin processMerlin = new ProcessMerlin(b.getProcessData());
+        ProcessMerlin processMerlin = new ProcessMerlin(getProcessData());
         processMerlin.setUniqueName();
         processMerlin.setProcessClusters(newClusters, startTime, endTime);
         processMerlin.setProcessFeeds(newDataSets, numberOfInputs,
             numberOfOptionalInput, numberOfOutputs);
-        b.setProcessData(processMerlin.toString());
-        return b;
+        setProcessData(processMerlin.toString());
     }
 
     public void submitAndScheduleBundle(Bundle b, ColoHelper prismHelper,
