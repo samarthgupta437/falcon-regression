@@ -796,7 +796,6 @@ public class Bundle {
         ClusterMerlin c = new ClusterMerlin(b.getClusters().get(0));
         c.setUniqueName();
         List<String> newClusters = new ArrayList<String>();
-        List<String> newDataSets = new ArrayList<String>();
         final String clusterName = c.getName();
         for (int i = 0; i < numberOfClusters; i++) {
             c.setName(clusterName + i);
@@ -805,6 +804,7 @@ public class Bundle {
         b.setClusterData(newClusters);
 
         //generate and set newDataSets
+        List<String> newDataSets = new ArrayList<String>();
         for (int i = 0; i < numberOfInputs; i++) {
             final FeedMerlin feed = new FeedMerlin(b.getDataSets().get(0));
             feed.setUniqueName();
