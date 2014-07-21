@@ -20,8 +20,8 @@ package org.apache.falcon.regression.hcat;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.entity.v0.cluster.Interfacetype;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
@@ -193,7 +193,7 @@ public class HCatReplicationTest extends BaseTestClass {
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -292,12 +292,12 @@ public class HCatReplicationTest extends BaseTestClass {
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //check if data was replicated correctly
         List<Path> srcData = HadoopUtil

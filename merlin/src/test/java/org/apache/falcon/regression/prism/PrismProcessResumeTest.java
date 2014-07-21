@@ -18,9 +18,9 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -83,15 +83,15 @@ public class PrismProcessResumeTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData()));
         //verify
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
 
         //resume using prism
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
         //verify
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
 
         //suspend using the colohelper
         AssertUtil.assertSucceeded(
@@ -99,29 +99,29 @@ public class PrismProcessResumeTest extends BaseTestClass {
                 .suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData())
         );
         //verify
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
 
         //resume using colohelper
         AssertUtil.assertSucceeded(cluster2.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
         //verify
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
 
         //suspend on the other one
         AssertUtil.assertSucceeded(
             cluster1.getProcessHelper()
                 .suspend(Util.URLS.SUSPEND_URL, bundles[1].getProcessData())
         );
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.SUSPENDED);
 
         //resume using colohelper
         AssertUtil.assertSucceeded(cluster1.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 
     /**
@@ -144,8 +144,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
         AssertUtil.assertFailed(prism.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
         //verify
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
 
         //delete using prism
         AssertUtil.assertSucceeded(prism.getProcessHelper()
@@ -154,17 +154,17 @@ public class PrismProcessResumeTest extends BaseTestClass {
         //try to resume it through prism
         AssertUtil.assertFailed(prism.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.KILLED);
 
         //try to resume process through colohelper
         AssertUtil.assertFailed(cluster2.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.KILLED);
         //try to resume process through colohelper
         AssertUtil.assertFailed(cluster1.getProcessHelper()
             .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.KILLED);
     }
 
     /**
@@ -181,7 +181,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
 
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .suspend(Util.URLS.SUSPEND_URL, bundles[0].getProcessData()));
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.SUSPENDED);
 
         for (int i = 0; i < 2; i++) {
             //resume suspended process using prism
@@ -189,13 +189,13 @@ public class PrismProcessResumeTest extends BaseTestClass {
                 prism.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
             //verify
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
         }
 
         AssertUtil.assertSucceeded(prism.getProcessHelper()
             .suspend(Util.URLS.SUSPEND_URL, bundles[1].getProcessData()));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.SUSPENDED);
 
         for (int i = 0; i < 2; i++) {
             //resume resumed process
@@ -204,9 +204,9 @@ public class PrismProcessResumeTest extends BaseTestClass {
                     .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData())
             );
             //verify
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
             AssertUtil
-                .checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
+                .checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.SUSPENDED);
         }
 
         for (int i = 0; i < 2; i++) {
@@ -215,8 +215,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
                 prism.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData())
             );
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
         }
 
         for (int i = 0; i < 2; i++) {
@@ -225,8 +225,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
                 cluster1.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData())
             );
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
         }
     }
 
@@ -299,15 +299,15 @@ public class PrismProcessResumeTest extends BaseTestClass {
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
             //verify
             AssertUtil
-                .checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
+                .checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.SUSPENDED);
 
             //resume on the other one
             AssertUtil.assertSucceeded(
                 prism.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
             AssertUtil
-                .checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
+                .checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.SUSPENDED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
@@ -343,8 +343,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
             AssertUtil.assertFailed(prism.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
             //verify
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
 
             //try to resume using colohelper
             AssertUtil.assertFailed(
@@ -352,8 +352,8 @@ public class PrismProcessResumeTest extends BaseTestClass {
                     .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData())
             );
             //verify
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
 
             AssertUtil.assertSucceeded(
                 prism.getProcessHelper()
@@ -362,15 +362,15 @@ public class PrismProcessResumeTest extends BaseTestClass {
             //suspend on the other one
             AssertUtil.assertFailed(prism.getProcessHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.KILLED);
 
             AssertUtil.assertFailed(
                 cluster1.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData())
             );
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.KILLED);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.KILLED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
@@ -400,12 +400,12 @@ public class PrismProcessResumeTest extends BaseTestClass {
             );
             //verify
             AssertUtil
-                .checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.SUSPENDED);
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+                .checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
             AssertUtil.assertSucceeded(
                 cluster2.getProcessHelper()
                     .resume(Util.URLS.RESUME_URL, bundles[0].getProcessData()));
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
             Util.shutDownService(cluster2.getProcessHelper());
 
             AssertUtil.assertFailed(prism.getProcessHelper()
@@ -416,7 +416,7 @@ public class PrismProcessResumeTest extends BaseTestClass {
                 prism.getProcessHelper()
                     .suspend(Util.URLS.SUSPEND_URL, bundles[1].getProcessData()));
             AssertUtil
-                .checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.SUSPENDED);
+                .checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.SUSPENDED);
 
             for (int i = 0; i < 2; i++) {
                 //suspend on the other one
@@ -424,9 +424,9 @@ public class PrismProcessResumeTest extends BaseTestClass {
                     prism.getProcessHelper()
                         .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
                 AssertUtil
-                    .checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+                    .checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
                 AssertUtil
-                    .checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+                    .checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
             }
 
             for (int i = 0; i < 2; i++) {
@@ -435,9 +435,9 @@ public class PrismProcessResumeTest extends BaseTestClass {
                     cluster1.getProcessHelper()
                         .resume(Util.URLS.RESUME_URL, bundles[1].getProcessData()));
                 AssertUtil
-                    .checkStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
+                    .checkStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
                 AssertUtil
-                    .checkStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+                    .checkStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
             }
 
         } catch (Exception e) {

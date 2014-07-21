@@ -19,8 +19,8 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
@@ -289,7 +289,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
             feedOutputPath);
         bundles[0].setProcessConcurrency(2);
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
@@ -311,14 +311,14 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(2);
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         prism.getProcessHelper().resume(URLS.RESUME_URL, bundles[0].getProcessData());
         TimeUtil.sleepSeconds(15);
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
@@ -338,7 +338,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
@@ -377,10 +377,10 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
             logger.info("cluster to be submitted: " + i + "  "
                 + Util.prettyPrintXml(bundles[0].getClusters().get(i)));
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,            bundles[0].getProcessData()));
-        AssertUtil.checkStatus(serverOC.get(0), ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
@@ -421,7 +421,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(3);
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.readEntityName(bundles[0]
-            .getProcessData()), 1, Status.TIMEDOUT, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 1, Status.TIMEDOUT, EntityType.PROCESS);
         ProcessInstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");

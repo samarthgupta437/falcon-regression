@@ -19,9 +19,9 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -308,9 +308,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         logger.info("Wait till process goes into running ");
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
-            Status.RUNNING, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, EntityType.PROCESS);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(2), Util.getProcessName(process), 1,
-            Status.RUNNING, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, EntityType.PROCESS);
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
         logger.info("updated feed: " + Util.prettyPrintXml(feed01));

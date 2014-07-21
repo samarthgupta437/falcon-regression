@@ -46,7 +46,6 @@ import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -827,16 +826,16 @@ public class Util {
         return property;
     }
 
-    public static ENTITY_TYPE getEntityType(String entity) {
+    public static EntityType getEntityType(String entity) {
         if (
             entity.contains("uri:falcon:process:0.1"))
-            return ENTITY_TYPE.PROCESS;
+            return EntityType.PROCESS;
         else if (
             entity.contains("uri:falcon:cluster:0.1"))
-            return ENTITY_TYPE.CLUSTER;
+            return EntityType.CLUSTER;
         else if (
             entity.contains("uri:falcon:feed:0.1")) {
-            return ENTITY_TYPE.FEED;
+            return EntityType.FEED;
         }
         return null;
     }
@@ -1003,11 +1002,11 @@ public class Util {
                                              boolean shouldReturn) throws
         JAXBException,
         IOException, URISyntaxException, AuthenticationException {
-        ENTITY_TYPE type = getEntityType(entity);
+        EntityType type = getEntityType(entity);
         IEntityManagerHelper helper;
-        if (ENTITY_TYPE.PROCESS == type)
+        if (EntityType.PROCESS == type)
             helper = cluster.getProcessHelper();
-        else if (ENTITY_TYPE.FEED == type)
+        else if (EntityType.FEED == type)
             helper = cluster.getFeedHelper();
         else
             helper = cluster.getClusterHelper();

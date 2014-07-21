@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.core.helpers;
 
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.log4j.Logger;
@@ -34,13 +34,13 @@ public class ColoHelper {
         try {
             this.prefix = prefix;
             clusterHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.CLUSTER,
+                EntityHelperFactory.getEntityHelper(EntityType.CLUSTER,
                     prefix);
             processHelper =
                 EntityHelperFactory
-                    .getEntityHelper(ENTITY_TYPE.PROCESS, prefix);
+                    .getEntityHelper(EntityType.PROCESS, prefix);
             feedHelper =
-                EntityHelperFactory.getEntityHelper(ENTITY_TYPE.FEED, prefix);
+                EntityHelperFactory.getEntityHelper(EntityType.FEED, prefix);
 
         } catch (Exception e) {
             logger.info(e.getMessage());

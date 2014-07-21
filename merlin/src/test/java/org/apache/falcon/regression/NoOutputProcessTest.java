@@ -19,10 +19,10 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -105,7 +105,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         //wait for all the instances to complete
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         Assert.assertEquals(consumer.getMessageData().size(), 3,
             " Message for all the 3 instance not found");
@@ -129,7 +129,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         //wait for all the instances to complete
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
             " Message for all the 3 instance not found");
