@@ -46,7 +46,6 @@ import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
 import org.apache.falcon.regression.core.response.ResponseKeys;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.request.BaseRequest;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -342,7 +341,7 @@ public class InstanceUtil {
                                             WorkflowJob.Status... ws) throws OozieClientException {
 
         String bundleID = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
-            processName, ENTITY_TYPE.PROCESS).get(0);
+            processName, EntityType.PROCESS).get(0);
         OozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
 
         List<String> workflows = OozieUtil.getCoordinatorJobs(prismHelper, bundleID);
@@ -408,7 +407,7 @@ public class InstanceUtil {
 
     public static List<CoordinatorAction> getProcessInstanceList(ColoHelper coloHelper,
                                                                  String processName,
-                                                                 ENTITY_TYPE entityType)
+                                                                 EntityType entityType)
         throws OozieClientException {
 
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
@@ -419,7 +418,7 @@ public class InstanceUtil {
     }
 
     public static String getLatestCoordinatorID(ColoHelper coloHelper, String processName,
-                                                ENTITY_TYPE entityType)
+                                                EntityType entityType)
         throws OozieClientException {
         return getDefaultCoordIDFromBundle(coloHelper,
             getLatestBundleID(coloHelper, processName, entityType));
@@ -448,7 +447,7 @@ public class InstanceUtil {
     public static int getInstanceCountWithStatus(ColoHelper coloHelper, String processName,
                                                  org.apache.oozie.client.CoordinatorAction.Status
                                                      status,
-                                                 ENTITY_TYPE entityType)
+                                                 EntityType entityType)
         throws OozieClientException {
         List<CoordinatorAction> list = getProcessInstanceList(coloHelper, processName, entityType);
         int instanceCount = 0;
@@ -470,7 +469,7 @@ public class InstanceUtil {
     public static String getDefaultCoordinatorFromProcessName(
         ColoHelper coloHelper, String processName, int bundleNumber) throws OozieClientException {
         String bundleID =
-            getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
+            getSequenceBundleID(coloHelper, processName, EntityType.PROCESS, bundleNumber);
         return getDefaultCoordIDFromBundle(coloHelper, bundleID);
     }
 
@@ -500,7 +499,7 @@ public class InstanceUtil {
      * @throws OozieClientException
      */
     public static String getLatestBundleID(ColoHelper coloHelper,
-                                           String entityName, ENTITY_TYPE entityType)
+                                           String entityName, EntityType entityType)
         throws OozieClientException {
         List<String> bundleIds = OozieUtil.getBundles(coloHelper.getFeedHelper().getOozieClient(),
             entityName, entityType);
@@ -525,7 +524,7 @@ public class InstanceUtil {
      * @throws OozieClientException
      */
     public static String getSequenceBundleID(ColoHelper prismHelper, String entityName,
-                                             ENTITY_TYPE entityType, int bundleNumber)
+                                             EntityType entityType, int bundleNumber)
         throws OozieClientException {
 
         //sequence start from 0
@@ -567,7 +566,7 @@ public class InstanceUtil {
                                                              int bundleNumber, int
         instanceNumber) throws OozieClientException {
         String bundleID = InstanceUtil
-            .getSequenceBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS, bundleNumber);
+            .getSequenceBundleID(coloHelper, processName, EntityType.PROCESS, bundleNumber);
         if (StringUtils.isEmpty(bundleID)) {
             return null;
         }
@@ -951,10 +950,10 @@ public class InstanceUtil {
         logger.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
-        if (OozieUtil.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED).size() == 0)
+        if (OozieUtil.getBundles(helper.getOozieClient(), feedName, EntityType.FEED).size() == 0)
             return 0;
         List<String> bundleID =
-            OozieUtil.getBundles(helper.getOozieClient(), feedName, ENTITY_TYPE.FEED);
+            OozieUtil.getBundles(helper.getOozieClient(), feedName, EntityType.FEED);
         logger.info("bundleID: " + bundleID);
 
         for (String aBundleID : bundleID) {
@@ -1017,7 +1016,7 @@ public class InstanceUtil {
     }
 
     public static List<CoordinatorAction> getProcessInstanceListFromAllBundles(
-        ColoHelper coloHelper, String processName, ENTITY_TYPE entityType)
+        ColoHelper coloHelper, String processName, EntityType entityType)
         throws OozieClientException {
         OozieClient oozieClient = coloHelper.getProcessHelper().getOozieClient();
         List<CoordinatorAction> list = new ArrayList<CoordinatorAction>();
@@ -1095,11 +1094,11 @@ public class InstanceUtil {
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
                                                   CoordinatorAction.Status expectedStatus,
-                                                  ENTITY_TYPE entityType, int totalMinutesToWait)
+                                                  EntityType entityType, int totalMinutesToWait)
         throws OozieClientException {
         String filter;
         // get the bundle ids
-        if (entityType.equals(ENTITY_TYPE.FEED)) {
+        if (entityType.equals(EntityType.FEED)) {
             filter = "name=FALCON_FEED_" + entityName;
         } else {
             filter = "name=FALCON_PROCESS_" + entityName;
@@ -1127,7 +1126,7 @@ public class InstanceUtil {
         OozieUtil.waitForCoordinatorJobCreation(client, bundleId);
         List<CoordinatorJob> coords = client.getBundleJobInfo(bundleId).getCoordinators();
         List<String> cIds = new ArrayList<String>();
-        if (entityType == ENTITY_TYPE.PROCESS) {
+        if (entityType == EntityType.PROCESS) {
             for (CoordinatorJob coord : coords) {
                 cIds.add(coord.getId());
             }
@@ -1187,7 +1186,7 @@ public class InstanceUtil {
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
                                                   int numberOfInstance,
                                                   CoordinatorAction.Status expectedStatus,
-                                                  ENTITY_TYPE entityType)
+                                                  EntityType entityType)
         throws OozieClientException {
         int totalMinutesToWait = getMinutesToWait(entityType, expectedStatus);
         waitTillInstanceReachState(client, entityName, numberOfInstance, expectedStatus,
@@ -1228,7 +1227,7 @@ public class InstanceUtil {
         int sleep = totalMinutesToWait * 60 / 20;
         for (int sleepCount = 0; sleepCount < sleep; sleepCount++) {
             String BundleID =
-                InstanceUtil.getLatestBundleID(coloHelper, processName, ENTITY_TYPE.PROCESS);
+                InstanceUtil.getLatestBundleID(coloHelper, processName, EntityType.PROCESS);
             OozieClient oozieClient =
                 coloHelper.getProcessHelper().getOozieClient();
             BundleJob j = oozieClient.getBundleJobInfo(BundleID);
@@ -1247,21 +1246,21 @@ public class InstanceUtil {
      * @param expectedStatus expected status we are waiting for
      * @return minutes to wait for expected status
      */
-    private static int getMinutesToWait(ENTITY_TYPE entityType,
+    private static int getMinutesToWait(EntityType entityType,
                                         CoordinatorAction.Status expectedStatus){
         switch (expectedStatus) {
             case RUNNING:
-                if(entityType == ENTITY_TYPE.PROCESS) {
+                if(entityType == EntityType.PROCESS) {
                     return OSUtil.IS_WINDOWS ? 20 : 10;
-                } else if(entityType == ENTITY_TYPE.FEED) {
+                } else if(entityType == EntityType.FEED) {
                     return OSUtil.IS_WINDOWS ? 10 : 5;
                 }
             case WAITING:
                 return OSUtil.IS_WINDOWS ? 6 : 3;
             case SUCCEEDED:
-                if(entityType == ENTITY_TYPE.PROCESS) {
+                if(entityType == EntityType.PROCESS) {
                     return OSUtil.IS_WINDOWS ? 25 : 15;
-                } else if(entityType == ENTITY_TYPE.FEED) {
+                } else if(entityType == EntityType.FEED) {
                     return OSUtil.IS_WINDOWS ? 20 : 10;
                 }
             case KILLED:
@@ -1316,7 +1315,7 @@ public class InstanceUtil {
                                                    int totalMinutesToWait
     ) throws OozieClientException {
         String entityName = Util.readEntityName(entity);
-        ENTITY_TYPE type = Util.getEntityType(entity);
+        EntityType type = Util.getEntityType(entity);
         String bundleID = getSequenceBundleID(coloHelper, entityName, type,
             bundleSeqNo);
         String coordID = getDefaultCoordIDFromBundle(coloHelper, bundleID);

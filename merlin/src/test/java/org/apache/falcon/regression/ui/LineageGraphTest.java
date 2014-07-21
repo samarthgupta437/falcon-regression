@@ -18,9 +18,9 @@
 
 package org.apache.falcon.regression.ui;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
 import org.apache.falcon.regression.core.response.lineage.Direction;
@@ -114,7 +114,7 @@ public class LineageGraphTest extends BaseUITestClass {
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
         /**get process instances*/
         Vertex processVertex = lineageHelper.getVerticesByName(processName).getResults().get(0);
         piVertices = lineageHelper.getVerticesByDirection(processVertex.get_id(),

@@ -18,11 +18,10 @@
 
 package org.apache.falcon.regression.prism;
 
-
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -182,7 +181,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
                 prism.getProcessHelper()
                     .delete(Util.URLS.DELETE_URL, bundles[0].getProcessData()));
 
-            HashMap<String, List<String>> systemPostUp = getSystemState(ENTITY_TYPE.PROCESS);
+            HashMap<String, List<String>> systemPostUp = getSystemState(EntityType.PROCESS);
 
             compareDataStoreStates(finalPrismStore, systemPostUp.get("prismStore"), clusterName);
             compareDataStoreStates(systemPostUp.get("prismArchive"), finalPrismArchiveStore,
@@ -719,7 +718,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
                     .delete(Util.URLS.DELETE_URL, bundles[0].getProcessData())
             );
 
-            HashMap<String, List<String>> systemPostUp = getSystemState(ENTITY_TYPE.PROCESS);
+            HashMap<String, List<String>> systemPostUp = getSystemState(EntityType.PROCESS);
 
             compareDataStoresForEquality(finalUA2Store, systemPostUp.get("ua2Store"));
             compareDataStoresForEquality(finalUA2ArchiveStore, systemPostUp.get("ua2Archive"));
@@ -938,7 +937,7 @@ public class PrismProcessDeleteTest extends BaseTestClass {
                     .delete(Util.URLS.DELETE_URL, bundles[0].getProcessData())
             );
 
-            HashMap<String, List<String>> systemPostUp = getSystemState(ENTITY_TYPE.PROCESS);
+            HashMap<String, List<String>> systemPostUp = getSystemState(EntityType.PROCESS);
 
             clusterName = Util.readEntityName(bundles[0].getProcessData());
 
@@ -978,18 +977,18 @@ public class PrismProcessDeleteTest extends BaseTestClass {
             store1.toArray(new String[store1.size()])));
     }
 
-    public HashMap<String, List<String>> getSystemState(ENTITY_TYPE entityType) throws Exception {
+    public HashMap<String, List<String>> getSystemState(EntityType entityType) throws Exception {
         IEntityManagerHelper prizm = prism.getClusterHelper();
         IEntityManagerHelper ua1 = cluster2.getClusterHelper();
         IEntityManagerHelper ua2 = cluster1.getClusterHelper();
 
-        if (entityType == ENTITY_TYPE.FEED) {
+        if (entityType == EntityType.FEED) {
             prizm = prism.getFeedHelper();
             ua1 = cluster2.getFeedHelper();
             ua2 = cluster1.getFeedHelper();
         }
 
-        if (entityType == ENTITY_TYPE.PROCESS) {
+        if (entityType == EntityType.PROCESS) {
             prizm = prism.getProcessHelper();
             ua1 = cluster2.getProcessHelper();
             ua2 = cluster1.getProcessHelper();

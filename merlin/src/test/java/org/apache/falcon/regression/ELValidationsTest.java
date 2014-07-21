@@ -18,8 +18,8 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -164,7 +164,7 @@ public class ELValidationsTest extends BaseTestClass {
             List<String> bundles = null;
             for (int i = 0; i < 10; ++i) {
                 bundles = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
-                    Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                    Util.getProcessName(bundle.getProcessData()), EntityType.PROCESS);
                 if (bundles.size() > 0) {
                     break;
                 }

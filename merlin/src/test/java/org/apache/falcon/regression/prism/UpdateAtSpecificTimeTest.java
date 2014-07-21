@@ -20,12 +20,12 @@ package org.apache.falcon.regression.prism;
 
 import com.jcraft.jsch.JSchException;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -154,12 +154,12 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
         String oldBundleId = InstanceUtil
             .getLatestBundleID(cluster_1,
-                Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(processBundle.getProcessData()), EntityType.PROCESS);
 
         InstanceUtil.waitTillInstancesAreCreated(cluster_1, oldProcess, 0);
 
         List<String> initialNominalTimes = OozieUtil.getActionsNominalTime(cluster_1,
-            oldBundleId, ENTITY_TYPE.PROCESS);
+            oldBundleId, EntityType.PROCESS);
 
 
         // update process by adding property
@@ -274,18 +274,18 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             String oldProcess = processBundle.getProcessData();
             String oldBundleID_cluster1 = InstanceUtil
                 .getLatestBundleID(cluster_1,
-                    Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+                    Util.readEntityName(oldProcess), EntityType.PROCESS);
             String oldBundleID_cluster2 = InstanceUtil
                 .getLatestBundleID(cluster_2,
-                    Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+                    Util.readEntityName(oldProcess), EntityType.PROCESS);
 
             List<String> oldNominalTimes_cluster1 = OozieUtil.getActionsNominalTime
                 (cluster_1,
-                    oldBundleID_cluster1, ENTITY_TYPE.PROCESS);
+                    oldBundleID_cluster1, EntityType.PROCESS);
 
             List<String> oldNominalTimes_cluster2 = OozieUtil.getActionsNominalTime
                 (cluster_2,
-                    oldBundleID_cluster2, ENTITY_TYPE.PROCESS);
+                    oldBundleID_cluster2, EntityType.PROCESS);
 
             //update process validity
             processBundle.setProcessProperty("someProp", "someValue");
@@ -320,7 +320,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
             String newBundleID_cluster1 = InstanceUtil
                 .getLatestBundleID(cluster_1,
-                    Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+                    Util.readEntityName(oldProcess), EntityType.PROCESS);
 
             //send second update request
             r = prism.getProcessHelper().update(oldProcess,
@@ -389,11 +389,11 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
             //save old data
             String oldBundle_cluster1 = InstanceUtil.getLatestBundleID(cluster_1,
-                Util.readEntityName(feed), ENTITY_TYPE.FEED);
+                Util.readEntityName(feed), EntityType.FEED);
 
             List<String> oldNominalTimes_cluster1 = OozieUtil.getActionsNominalTime
                 (cluster_1,
-                    oldBundle_cluster1, ENTITY_TYPE.FEED);
+                    oldBundle_cluster1, EntityType.FEED);
 
             //send update command with +5 mins in future
             String updateTime = TimeUtil.getTimeWrtSystemTime(5);
@@ -414,7 +414,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             Util.startService(cluster_2.getProcessHelper());
 
             String newBundle_cluster1 = InstanceUtil.getLatestBundleID(cluster_1,
-                Util.readEntityName(feed), ENTITY_TYPE.FEED);
+                Util.readEntityName(feed), EntityType.FEED);
 
             //send update again
             r = prism.getFeedHelper().update(feed, updatedFeed, updateTime);
@@ -461,17 +461,17 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0),
             Util.readEntityName(processBundle.getProcessData()), 0,
-            CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.WAITING, EntityType.PROCESS);
 
         //save old data
         String oldProcess = processBundle.getProcessData();
 
         String oldBundleID = InstanceUtil
             .getLatestBundleID(cluster_1,
-                Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(oldProcess), EntityType.PROCESS);
 
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster_1, oldBundleID,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         //update
         processBundle.setProcessProperty("someProp", "someVal");
@@ -533,7 +533,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
         String oldBundleID = InstanceUtil
             .getLatestBundleID(cluster_1,
-                Util.readEntityName(feed), ENTITY_TYPE.FEED);
+                Util.readEntityName(feed), EntityType.FEED);
 
         String updateTime = TimeUtil.addMinsToTime(endTime, 60);
         String updatedFeed = Util.setFeedProperty(feed, "someProp", "someVal");
@@ -568,9 +568,9 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         String oldProcess = processBundle.getProcessData();
         String oldBundleID = InstanceUtil
             .getLatestBundleID(cluster_1,
-                Util.readEntityName(oldProcess), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(oldProcess), EntityType.PROCESS);
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster_1, oldBundleID,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         processBundle.setProcessValidity(TimeUtil.addMinsToTime(startTime, -4),
             endTime);
@@ -618,19 +618,19 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         //save old info
         String oldBundleID_cluster1 = InstanceUtil
             .getLatestBundleID(cluster_1,
-                Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(processBundle.getProcessData()), EntityType.PROCESS);
         List<String> nominalTimes_cluster1 =
             OozieUtil.getActionsNominalTime(cluster_1, oldBundleID_cluster1,
-                ENTITY_TYPE.PROCESS);
+                EntityType.PROCESS);
         String oldBundleID_cluster2 = InstanceUtil
             .getLatestBundleID(cluster_2,
-                Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(processBundle.getProcessData()), EntityType.PROCESS);
         String oldBundleID_cluster3 = InstanceUtil
             .getLatestBundleID(cluster_3,
-                Util.readEntityName(processBundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                Util.readEntityName(processBundle.getProcessData()), EntityType.PROCESS);
         List<String> nominalTimes_cluster3 = OozieUtil.getActionsNominalTime
             (cluster_3, oldBundleID_cluster3,
-                ENTITY_TYPE.PROCESS);
+                EntityType.PROCESS);
 
 
         //update process

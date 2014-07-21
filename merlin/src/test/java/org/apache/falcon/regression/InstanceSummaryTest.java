@@ -19,11 +19,11 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.InstancesSummaryResult;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -124,7 +124,7 @@ public class InstanceSummaryTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(2),
             Util.readEntityName(processBundle.getProcessData()), 2,
-            Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+            Status.SUCCEEDED, EntityType.PROCESS);
 
 
         //AssertUtil.assertSucceeded(r);

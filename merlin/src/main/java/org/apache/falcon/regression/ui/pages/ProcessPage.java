@@ -18,8 +18,8 @@
 
 package org.apache.falcon.regression.ui.pages;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.process.Process;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.log4j.Logger;
@@ -68,7 +68,7 @@ public class ProcessPage extends EntityPage<Process> {
     private static final String LINEAGE_LEGENDS_ELEMENTS = LINEAGE_LEGENDS_BLOCK + "/ul/li";
 
     public ProcessPage(WebDriver driver, ColoHelper helper, String entityName) {
-        super(driver, helper, ENTITY_TYPE.PROCESS, Process.class, entityName);
+        super(driver, helper, EntityType.PROCESS, Process.class, entityName);
     }
 
     /**

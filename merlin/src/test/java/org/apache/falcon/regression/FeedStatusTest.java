@@ -19,10 +19,10 @@
 package org.apache.falcon.regression;
 
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -94,7 +94,7 @@ public class FeedStatusTest extends BaseTestClass {
 
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
     }
 
     /**
@@ -118,7 +118,7 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.assertSucceeded(response);
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUSPENDED"));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.SUSPENDED);
     }
 
     /**
@@ -138,7 +138,7 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.assertSucceeded(response);
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUBMITTED"));
-        AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
     }
 
     /**
@@ -160,7 +160,7 @@ public class FeedStatusTest extends BaseTestClass {
 
         Assert.assertTrue(
             response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
-        AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
+        AssertUtil.checkNotStatus(clusterOC, EntityType.FEED, feed, Job.Status.KILLED);
     }
 
     /**

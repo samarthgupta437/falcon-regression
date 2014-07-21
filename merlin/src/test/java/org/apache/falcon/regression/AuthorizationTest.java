@@ -20,8 +20,8 @@ package org.apache.falcon.regression;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ProcessInstancesResult;
@@ -131,7 +131,7 @@ public class AuthorizationTest extends BaseTestClass {
         throws Exception {
         //submit, schedule process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //try to delete process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -150,7 +150,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
         //delete feed by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().delete(Util.URLS
@@ -165,11 +165,11 @@ public class AuthorizationTest extends BaseTestClass {
     public void U1SuspendU2DeleteProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         //try to delete process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -189,7 +189,7 @@ public class AuthorizationTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.SUSPENDED);
         //delete feed by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().delete(Util.URLS
@@ -210,7 +210,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
         //try to suspend by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().suspend(Util.URLS
@@ -224,7 +224,7 @@ public class AuthorizationTest extends BaseTestClass {
     @Test(enabled = false)
     public void U1ScheduleU2SuspendProcess() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //try to suspend process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -247,7 +247,7 @@ public class AuthorizationTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.SUSPENDED);
         //try to resume feed by User2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().resume(Util.URLS
@@ -264,7 +264,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         //try to resume process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -305,11 +305,11 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 2, CoordinatorAction.Status.WAITING, EntityType.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
@@ -372,7 +372,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
@@ -421,11 +421,11 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 2, CoordinatorAction.Status.WAITING, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 2, CoordinatorAction.Status.WAITING, EntityType.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
@@ -485,7 +485,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //check that there are 4 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 4, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 4, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //4 instances should be running , 1 should be waiting
         ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
@@ -550,7 +550,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
         //update feed definition
         String newFeed = Util.setFeedPathValue(feed,
             baseHDFSDir + "/randomPath/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
@@ -595,7 +595,7 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         //submit, schedule process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //update process definition
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2020-01-02T01:04Z");
@@ -621,25 +621,25 @@ public class AuthorizationTest extends BaseTestClass {
         //schedule input feed by U1
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(
             Util.URLS.SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
 
         //by U2 schedule process dependant on scheduled feed by U1
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         ServiceResponse serviceResponse = prism.getProcessHelper().submitAndSchedule(Util
             .URLS.SUBMIT_AND_SCHEDULE_URL, process, MerlinConstants.USER2_NAME);
         AssertUtil.assertSucceeded(serviceResponse);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, process, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, process, Job.Status.RUNNING);
 
         //get old process details
         String oldProcessBundleId = InstanceUtil
-            .getLatestBundleID(cluster, Util.readEntityName(process), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster, Util.readEntityName(process), EntityType.PROCESS);
 
         String oldProcessUser =
-            getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+            getBundleUser(cluster, bundles[0].getProcessName(), EntityType.PROCESS);
 
         //get old feed details
         String oldFeedBundleId = InstanceUtil
-            .getLatestBundleID(cluster, Util.readEntityName(feed), ENTITY_TYPE.FEED);
+            .getLatestBundleID(cluster, Util.readEntityName(feed), EntityType.FEED);
 
         //update feed definition
         String newFeed = Util.setFeedPathValue(feed,
@@ -657,11 +657,11 @@ public class AuthorizationTest extends BaseTestClass {
         //new process bundle should be created by U2
         OozieUtil.verifyNewBundleCreation(cluster, oldProcessBundleId, null, process, true, false);
         String newProcessUser =
-            getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+            getBundleUser(cluster, bundles[0].getProcessName(), EntityType.PROCESS);
         Assert.assertEquals(oldProcessUser, newProcessUser, "User should be the same");
     }
 
-    private String getBundleUser(ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType)
+    private String getBundleUser(ColoHelper coloHelper, String entityName, EntityType entityType)
         throws OozieClientException {
         String newProcessBundleId = InstanceUtil.getLatestBundleID(coloHelper, entityName,
             entityType);
