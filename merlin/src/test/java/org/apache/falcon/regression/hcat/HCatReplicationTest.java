@@ -333,6 +333,7 @@ public class HCatReplicationTest extends BaseTestClass {
                 .add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition)
                     .build());
         }
+        logger.info("adding partitions: " + partitionDesc);
         hc.addPartitions(partitionDesc);
     }
 

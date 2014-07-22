@@ -671,9 +671,7 @@ public class Bundle {
     }
 
     public void addClusterToBundle(String clusterData, ClusterType type,
-                                   String startTime, String endTime
-    ) {
-
+                                   String startTime, String endTime) {
         clusterData = setNewClusterName(clusterData);
 
         this.clusters.add(clusterData);
