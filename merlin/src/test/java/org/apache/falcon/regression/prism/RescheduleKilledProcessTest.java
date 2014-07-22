@@ -90,7 +90,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         process = InstanceUtil.setProcessCluster(process, null,
             XmlUtil.createProcessValidity(processStartTime, "2099-01-01T00:00Z"));
         process = InstanceUtil
-            .setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
+            .setProcessCluster(process, Util.readEntityName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
         bundles[0].setProcessData(process);
 

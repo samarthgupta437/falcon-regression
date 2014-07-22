@@ -141,23 +141,23 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
                 null);
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                 null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
 
         //submit and schedule feeds
@@ -179,10 +179,10 @@ public class PrismFeedUpdateTest extends BaseTestClass {
             .setProcessCluster(process01, null,
                 XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
         process01 = InstanceUtil
-            .setProcessCluster(process01, Util.readClusterName(bundles[0].getClusters().get(0)),
+            .setProcessCluster(process01, Util.readEntityName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
         process01 = InstanceUtil
-            .setProcessCluster(process01, Util.readClusterName(bundles[1].getClusters().get(0)),
+            .setProcessCluster(process01, Util.readEntityName(bundles[1].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
 
         //get 2nd process :

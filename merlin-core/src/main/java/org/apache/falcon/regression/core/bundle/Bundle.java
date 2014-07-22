@@ -542,14 +542,14 @@ public class Bundle {
 
         //verify presence
         for (String cluster : clusters) {
-            Assert.assertTrue(dependencies.contains("(cluster) " + Util.readClusterName(cluster)));
+            Assert.assertTrue(dependencies.contains("(cluster) " + Util.readEntityName(cluster)));
         }
         for (String feed : getDataSets()) {
             Assert.assertTrue(dependencies.contains("(feed) " + Util.readDatasetName(feed)));
             for (String cluster : clusters) {
                 Assert.assertTrue(coloHelper.getFeedHelper().getDependencies(
                     Util.readDatasetName(feed))
-                    .contains("(cluster) " + Util.readClusterName(cluster)));
+                    .contains("(cluster) " + Util.readEntityName(cluster)));
             }
             Assert.assertFalse(coloHelper.getFeedHelper().getDependencies(
                 Util.readDatasetName(feed))

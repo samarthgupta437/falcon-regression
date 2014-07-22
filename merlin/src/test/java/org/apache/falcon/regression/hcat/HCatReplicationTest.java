@@ -177,7 +177,7 @@ public class HCatReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
 
         AssertUtil.assertSucceeded(
@@ -265,13 +265,13 @@ public class HCatReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
         // set the cluster 3 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
 
         AssertUtil.assertSucceeded(

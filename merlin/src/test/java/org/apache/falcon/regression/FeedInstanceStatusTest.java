@@ -115,18 +115,18 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed, XmlUtil.createValidity(startTime,
                 TimeUtil.addMinsToTime(startTime, 65)),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "US/${cluster.colo}");
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 20),
                 TimeUtil.addMinsToTime(startTime, 85)),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(TimeUtil.addMinsToTime(startTime, 40),
                 TimeUtil.addMinsToTime(startTime, 110)),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "UK/${cluster.colo}");
 
 
