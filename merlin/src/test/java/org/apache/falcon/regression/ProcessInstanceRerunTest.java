@@ -45,6 +45,9 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * Test Suite for instance rerun.
+ */
 @Test(groups = "embedded")
 public class ProcessInstanceRerunTest extends BaseTestClass {
 
