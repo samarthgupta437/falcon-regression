@@ -49,6 +49,7 @@ public abstract class Page {
      * Go to page in browser
      */
     public void navigateTo() {
+        logger.info("Navigating to " + URL);
         driver.get(URL);
         waitForElement(expectedElement, DEFAULT_TIMEOUT, notFoundMsg);
     }
@@ -57,6 +58,7 @@ public abstract class Page {
      * Refresh page
      */
     public void refresh() {
+        logger.info("Refreshing page " + URL);
         driver.navigate().refresh();
     }
 
@@ -120,7 +122,7 @@ public abstract class Page {
         }
     }
 
-    public static class Condition implements ExpectedCondition<Boolean> {
+    static class Condition implements ExpectedCondition<Boolean> {
 
         private final boolean isPresent;
         private String xpath;
