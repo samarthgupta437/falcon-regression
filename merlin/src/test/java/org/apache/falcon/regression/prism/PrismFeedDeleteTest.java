@@ -122,7 +122,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String feedName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String feedName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, feedName);
         compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, feedName);
@@ -175,7 +175,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoresForEquality(initialPrismStore, finalPrismStore);
         compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
@@ -307,7 +307,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
 
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
@@ -447,7 +447,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
         compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, clusterName);
@@ -501,7 +501,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
         compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, clusterName);
@@ -558,7 +558,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
         compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, clusterName);
@@ -615,7 +615,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoresForEquality(initialPrismStore, finalPrismStore);
         compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
@@ -698,7 +698,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoresForEquality(initialPrismStore, finalPrismStore);
         compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
@@ -771,7 +771,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoresForEquality(initialPrismStore, finalPrismStore);
         compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
@@ -894,7 +894,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoresForEquality(initialPrismStore, finalPrismStore);
         compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
@@ -993,7 +993,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
         //prism:
         compareDataStoresForEquality(initialPrismStore, finalPrismStore);
         compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
@@ -1047,7 +1047,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readDatasetName(bundles[1].getDataSets().get(0));
+        String clusterName = Util.readEntityName(bundles[1].getDataSets().get(0));
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
         compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, clusterName);
@@ -1065,7 +1065,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
 
-        clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
+        clusterName = Util.readEntityName(bundles[0].getDataSets().get(0));
 
         HashMap<String, List<String>> systemPostUp = getSystemState(EntityType.FEED);
 

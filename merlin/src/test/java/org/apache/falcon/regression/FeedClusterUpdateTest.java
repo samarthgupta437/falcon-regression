@@ -136,27 +136,27 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit), "RETENTION" +
+                Util.readEntityName(feedOriginalSubmit), "RETENTION" +
                     ""), 1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "RETENTION"), 0);
 
         //prepare updated Feed
@@ -185,22 +185,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 2);
     }
 
@@ -234,27 +234,27 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "RETENTION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             0);
 
         //prepare updated Feed
@@ -286,22 +286,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
     }
 
@@ -329,27 +329,27 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             0);
 
         //prepare updated Feed
@@ -381,22 +381,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
     }
 
@@ -425,27 +425,27 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             0);
 
         //prepare updated Feed
@@ -475,22 +475,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
     }
 
@@ -518,27 +518,27 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "RETENTION"), 0);
 
         //prepare updated Feed
@@ -570,22 +570,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
     }
 
@@ -625,27 +625,27 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit), "RETENTION" +
+                Util.readEntityName(feedOriginalSubmit), "RETENTION" +
                     ""), 1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "RETENTION"), 1);
 
         //prepare updated Feed
@@ -672,22 +672,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedUpdated);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 0);
     }
 
@@ -757,27 +757,27 @@ public class FeedClusterUpdateTest extends BaseTestClass {
 
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster2.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster3.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             1);
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                Util.readDatasetName(feedOriginalSubmit),
+                Util.readEntityName(feedOriginalSubmit),
                 "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
                 .checkIfFeedCoordExist(cluster1.getFeedHelper(),
-                    Util.readDatasetName(feedOriginalSubmit), "RETENTION"),
+                    Util.readEntityName(feedOriginalSubmit), "RETENTION"),
             1);
 
         //prepare updated Feed
@@ -819,22 +819,22 @@ public class FeedClusterUpdateTest extends BaseTestClass {
             response.getMessage()));
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "REPLICATION"), 2);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feedUpdated),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feedUpdated),
                 "RETENTION"), 1);
     }
 

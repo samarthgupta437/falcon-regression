@@ -115,11 +115,11 @@ public class PrismFeedSnSTest extends BaseTestClass {
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         //ensure only one bundle is there
         Assert.assertEquals(OozieUtil.getBundles(cluster1OC,
-            Util.readDatasetName(bundles[0].getDataSets().get(0)), EntityType.FEED).size(), 1);
+            Util.readEntityName(bundles[0].getDataSets().get(0)), EntityType.FEED).size(), 1);
         AssertUtil.assertSucceeded(prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getDataSets().get(0)));
         Assert.assertEquals(OozieUtil.getBundles(cluster2OC,
-            Util.readDatasetName(bundles[1].getDataSets().get(0)), EntityType.FEED).size(), 1);
+            Util.readEntityName(bundles[1].getDataSets().get(0)), EntityType.FEED).size(), 1);
         //now check if they have been scheduled correctly or not
         AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
         AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
@@ -141,7 +141,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
         Assert.assertEquals(OozieUtil.getBundles(cluster1OC,
-            Util.readDatasetName(bundles[0].getDataSets().get(0)), EntityType.FEED).size(), 1);
+            Util.readEntityName(bundles[0].getDataSets().get(0)), EntityType.FEED).size(), 1);
 
         AssertUtil.assertSucceeded(cluster1.getFeedHelper()
             .resume(URLS.RESUME_URL, bundles[0].getDataSets().get(0)));
@@ -156,7 +156,7 @@ public class PrismFeedSnSTest extends BaseTestClass {
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[1].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.SUSPENDED);
         Assert.assertEquals(OozieUtil.getBundles(cluster2OC,
-            Util.readDatasetName(bundles[1].getDataSets().get(0)), EntityType.FEED).size(), 1);
+            Util.readEntityName(bundles[1].getDataSets().get(0)), EntityType.FEED).size(), 1);
         AssertUtil.assertSucceeded(cluster2.getFeedHelper()
             .resume(URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
         AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);

@@ -567,7 +567,7 @@ public class PrismSubmitTest extends BaseTestClass {
 
         AssertUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1, 0);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readDatasetName(bundles[0].getDataSets().get(1)), 1);
+            Util.readEntityName(bundles[0].getDataSets().get(1)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
 
         Util.startService(cluster1.getClusterHelper());

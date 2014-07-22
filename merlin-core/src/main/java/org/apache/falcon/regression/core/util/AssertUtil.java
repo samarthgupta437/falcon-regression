@@ -235,7 +235,7 @@ public class AssertUtil {
         throws OozieClientException {
         String name = null;
         if (entityType == EntityType.FEED) {
-            name = Util.readDatasetName(data);
+            name = Util.readEntityName(data);
         } else if (entityType == EntityType.PROCESS) {
             name = Util.readEntityName(data);
         }
@@ -280,7 +280,7 @@ public class AssertUtil {
         throws OozieClientException {
         String processName = null;
         if (entityType == EntityType.FEED) {
-            processName = Util.readDatasetName(data);
+            processName = Util.readEntityName(data);
         } else if (entityType == EntityType.PROCESS) {
             processName = Util.readEntityName(data);
         }

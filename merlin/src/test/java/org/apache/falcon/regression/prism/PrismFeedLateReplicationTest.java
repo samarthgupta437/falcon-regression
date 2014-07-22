@@ -130,7 +130,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         TimeUtil.sleepSeconds(10);
 
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         List<String> replicationCoordIDTarget = InstanceUtil
@@ -216,7 +216,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId = InstanceUtil
-            .getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            .getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget = InstanceUtil.getReplicationCoordID(bundleId,
             cluster1.getFeedHelper());
@@ -397,7 +397,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());
@@ -596,7 +596,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());

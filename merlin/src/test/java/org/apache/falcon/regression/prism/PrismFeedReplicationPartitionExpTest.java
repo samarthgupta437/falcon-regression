@@ -297,16 +297,16 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
             CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
 
 
@@ -384,16 +384,16 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
 
 

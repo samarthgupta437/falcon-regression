@@ -212,8 +212,8 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                     TimeUtil.addMinsToTime(processStartTime, 16),
                     TimeUtil.addMinsToTime(processStartTime, 45)));
         process = InstanceUtil
-            .addProcessInputFeed(process, Util.readDatasetName(feed02),
-                Util.readDatasetName(feed02));
+            .addProcessInputFeed(process, Util.readEntityName(feed02),
+                    Util.readEntityName(feed02));
 
         //submit and schedule process
         logger.info("process: " + Util.prettyPrintXml(process));

@@ -171,11 +171,6 @@ public class Util {
             return Entity.fromString(EntityType.CLUSTER, data).getName();
     }
 
-    public static String readDatasetName(String data) {
-        Feed datasetElement = (Feed) Entity.fromString(EntityType.FEED, data);
-        return datasetElement.getName();
-    }
-
     public static String getUniqueString() {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }

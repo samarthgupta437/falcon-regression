@@ -110,9 +110,9 @@ public class ProcessMerlin extends Process {
         Map<String, FeedMerlin> inpFeeds = new HashMap<String, FeedMerlin>();
         for (Input input : getInputs().getInputs()) {
             for (String feed : b.getDataSets()) {
-                if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
+                if (Util.readEntityName(feed).equalsIgnoreCase(input.getFeed())) {
                     FeedMerlin feedO = new FeedMerlin(feed);
-                    inpFeeds.put(Util.readDatasetName(feed), feedO);
+                    inpFeeds.put(Util.readEntityName(feed), feedO);
                     break;
                 }
             }

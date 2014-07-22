@@ -142,7 +142,7 @@ public class BundleUtil {
 
         for (Output output : processObject.getOutputs().getOutputs()) {
             for (String feed : bundle.getDataSets()) {
-                if (Util.readDatasetName(feed).equalsIgnoreCase(output.getFeed())) {
+                if (Util.readEntityName(feed).equalsIgnoreCase(output.getFeed())) {
                     return feed;
                 }
             }
@@ -164,7 +164,7 @@ public class BundleUtil {
         Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (Input input : processObject.getInputs().getInputs()) {
             for (String feed : bundle.getDataSets()) {
-                if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
+                if (Util.readEntityName(feed).equalsIgnoreCase(input.getFeed())) {
                     return feed;
                 }
             }

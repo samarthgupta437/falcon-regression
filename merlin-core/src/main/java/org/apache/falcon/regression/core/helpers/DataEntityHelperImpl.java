@@ -35,7 +35,7 @@ public class DataEntityHelperImpl extends IEntityManagerHelper {
     }
 
     public String getEntityName(String entity) {
-        return Util.readDatasetName(entity);
+        return Util.readEntityName(entity);
     }
 
 }

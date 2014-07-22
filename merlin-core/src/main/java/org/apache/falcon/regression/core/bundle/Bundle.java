@@ -450,7 +450,7 @@ public class Bundle {
 
     public String getFeed(String feedName) {
         for (String feed : getDataSets()) {
-            if (Util.readDatasetName(feed).contains(feedName)) {
+            if (Util.readEntityName(feed).contains(feedName)) {
                 return feed;
             }
         }
@@ -545,14 +545,14 @@ public class Bundle {
             Assert.assertTrue(dependencies.contains("(cluster) " + Util.readEntityName(cluster)));
         }
         for (String feed : getDataSets()) {
-            Assert.assertTrue(dependencies.contains("(feed) " + Util.readDatasetName(feed)));
+            Assert.assertTrue(dependencies.contains("(feed) " + Util.readEntityName(feed)));
             for (String cluster : clusters) {
                 Assert.assertTrue(coloHelper.getFeedHelper().getDependencies(
-                    Util.readDatasetName(feed))
+                    Util.readEntityName(feed))
                     .contains("(cluster) " + Util.readEntityName(cluster)));
             }
             Assert.assertFalse(coloHelper.getFeedHelper().getDependencies(
-                Util.readDatasetName(feed))
+                Util.readEntityName(feed))
                 .contains("(process)" + Util.readEntityName(getProcessData())));
         }
 

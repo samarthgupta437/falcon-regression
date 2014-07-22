@@ -154,22 +154,22 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed, feed));
 
         Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
-            Util.readDatasetName(feed),
+            Util.readEntityName(feed),
             "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(),
-            Util.readDatasetName(feed),
+            Util.readEntityName(feed),
             "RETENTION"), 2);
         Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(),
-            Util.readDatasetName(feed),
+            Util.readEntityName(feed),
             "REPLICATION"), 0);
         Assert.assertEquals(InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(),
-            Util.readDatasetName(feed),
+            Util.readEntityName(feed),
             "RETENTION"), 2);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 4);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 2);
     }
 
@@ -296,8 +296,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         process = InstanceUtil
             .setProcessCluster(process, Util.readEntityName(bundles[2].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
-        process = InstanceUtil.addProcessInputFeed(process, Util.readDatasetName(feed02),
-            Util.readDatasetName(feed02));
+        process = InstanceUtil.addProcessInputFeed(process, Util.readEntityName(feed02),
+            Util.readEntityName(feed02));
 
         //submit and schedule process
         logger.info("process: " + Util.prettyPrintXml(process));
