@@ -44,11 +44,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class LineageHelper {
-    private static final Logger logger = Logger.getLogger(LineageHelper.class);
+    private static final Logger LOGGER = Logger.getLogger(LineageHelper.class);
     private final String hostname;
 
     /**
-     * Lineage related REST endpoints
+     * Lineage related REST endpoints.
      */
     public enum URL {
         SERIALIZE("/api/graphs/lineage/serialize"),
@@ -70,7 +70,8 @@ public class LineageHelper {
     }
 
     /**
-     * Create a LineageHelper to use with a specified hostname
+     * Create a LineageHelper to use with a specified hostname.
+     *
      * @param hostname hostname
      */
     public LineageHelper(String hostname) {
@@ -78,7 +79,8 @@ public class LineageHelper {
     }
 
     /**
-     * Create a LineageHelper to use with a specified prismHelper
+     * Create a LineageHelper to use with a specified prismHelper.
+     *
      * @param prismHelper prismHelper
      */
     public LineageHelper(ColoHelper prismHelper) {
@@ -86,14 +88,15 @@ public class LineageHelper {
     }
 
     /**
-     * Extract response string from the response object
+     * Extract response string from the response object.
+     *
      * @param response the response object
      * @return the response string
      * @throws IOException
      */
     public String getResponseString(HttpResponse response) throws IOException {
         BufferedReader reader = new BufferedReader(
-            new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+                new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
         StringBuilder sb = new StringBuilder();
         for (String line; (line = reader.readLine()) != null; ) {
             sb.append(line).append("\n");
@@ -102,7 +105,8 @@ public class LineageHelper {
     }
 
     /**
-     * Run a get request on the specified url
+     * Run a get request on the specified url.
+     *
      * @param url url
      * @return response of the request
      * @throws URISyntaxException
@@ -116,7 +120,8 @@ public class LineageHelper {
     }
 
     /**
-     * Successfully run a get request on the specified url
+     * Successfully run a get request on the specified url.
+     *
      * @param url url
      * @return string response of the request
      * @throws URISyntaxException
@@ -127,27 +132,28 @@ public class LineageHelper {
         throws URISyntaxException, IOException, AuthenticationException {
         HttpResponse response = runGetRequest(url);
         String responseString = getResponseString(response);
-        logger.info(Util.prettyPrintXmlOrJson(responseString));
+        LOGGER.info(Util.prettyPrintXmlOrJson(responseString));
         Assert.assertEquals(response.getStatusLine().getStatusCode(), 200,
-            "The get request  was expected to be successfully");
+                "The get request  was expected to be successfully");
         return responseString;
     }
 
     /**
-     * Create a full url for the given lineage endpoint, urlPath and parameter
-     * @param url lineage endpoint
-     * @param urlPath url path to be added to lineage endpoint
+     * Create a full url for the given lineage endpoint, urlPath and parameter.
+     *
+     * @param url        lineage endpoint
+     * @param urlPath    url path to be added to lineage endpoint
      * @param paramPairs parameters to be passed
      * @return url string
      */
     public String getUrl(final URL url, final String urlPath, final Map<String,
-        String> paramPairs) {
+            String> paramPairs) {
         Assert.assertNotNull(hostname, "Hostname can't be null.");
         String hostAndPath = hostname + url.getValue();
-        if(urlPath != null) {
+        if (urlPath != null) {
             hostAndPath += "/" + urlPath;
         }
-        if(paramPairs != null && paramPairs.size() > 0) {
+        if (paramPairs != null && paramPairs.size() > 0) {
             String[] params = new String[paramPairs.size()];
             int i = 0;
             for (String key : paramPairs.keySet()) {
@@ -159,8 +165,9 @@ public class LineageHelper {
     }
 
     /**
-     * Create a full url for the given lineage endpoint, urlPath and parameter
-     * @param url lineage endpoint
+     * Create a full url for the given lineage endpoint, urlPath and parameter.
+     *
+     * @param url     lineage endpoint
      * @param urlPath url path to be added to lineage endpoint
      * @return url string
      */
@@ -169,8 +176,9 @@ public class LineageHelper {
     }
 
     /**
-     * Create a full url for the given lineage endpoint and parameter
-     * @param url lineage endpoint
+     * Create a full url for the given lineage endpoint and parameter.
+     *
+     * @param url        lineage endpoint
      * @param paramPairs parameters to be passed
      * @return url string
      */
@@ -179,7 +187,8 @@ public class LineageHelper {
     }
 
     /**
-     * Create a full url for the given lineage endpoint and parameter
+     * Create a full url for the given lineage endpoint and parameter.
+     *
      * @param url lineage endpoint
      * @return url string
      */
@@ -188,7 +197,8 @@ public class LineageHelper {
     }
 
     /**
-     * Create url path from parts
+     * Create url path from parts.
+     *
      * @param pathParts parts of the path
      * @return url path
      */
@@ -197,8 +207,9 @@ public class LineageHelper {
     }
 
     /**
-     * Create url path from parts
-     * @param oneInt part of the path
+     * Create url path from parts.
+     *
+     * @param oneInt    part of the path
      * @param pathParts parts of the path
      * @return url path
      */
@@ -207,7 +218,8 @@ public class LineageHelper {
     }
 
     /**
-     * Get result of the supplied type for the given url
+     * Get result of the supplied type for the given url.
+     *
      * @param url url
      * @return result of the REST request
      */
@@ -226,7 +238,8 @@ public class LineageHelper {
     }
 
     /**
-     * Get vertices result for the url
+     * Get vertices result for the url.
+     *
      * @param url url
      * @return result of the REST request
      */
@@ -235,7 +248,8 @@ public class LineageHelper {
     }
 
     /**
-     * Get vertex result for the url
+     * Get vertex result for the url.
+     *
      * @param url url
      * @return result of the REST request
      */
@@ -244,7 +258,8 @@ public class LineageHelper {
     }
 
     /**
-     * Get vertex id result for the url
+     * Get vertex id result for the url.
+     *
      * @param url url
      * @return result of the REST request
      */
@@ -253,7 +268,8 @@ public class LineageHelper {
     }
 
     /**
-     * Get all the vertices
+     * Get all the vertices.
+     *
      * @return all the vertices
      */
     public VerticesResult getAllVertices() {
@@ -284,19 +300,19 @@ public class LineageHelper {
     }
 
     public VerticesResult getVerticesByDirection(int vertexId, Direction direction) {
-        Assert.assertTrue((direction == Direction.bothCount ||
-                direction == Direction.inCount || direction == Direction.outCount ||
-                direction == Direction.bothVertices ||
-                direction == Direction.inComingVertices || direction == Direction.outgoingVertices),
-            "Vertices requested.");
+        Assert.assertTrue((direction == Direction.bothCount
+                       || direction == Direction.inCount || direction == Direction.outCount
+                       || direction == Direction.bothVertices
+                       || direction == Direction.inComingVertices || direction == Direction.outgoingVertices),
+                "Vertices requested.");
         return getVerticesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
     public VertexIdsResult getVertexIdsByDirection(int vertexId, Direction direction) {
-        Assert.assertTrue((direction == Direction.bothVerticesIds ||
-                direction == Direction.incomingVerticesIds ||
-                direction == Direction.outgoingVerticesIds),
-            "Vertex Ids requested.");
+        Assert.assertTrue((direction == Direction.bothVerticesIds
+                        || direction == Direction.incomingVerticesIds
+                        || direction == Direction.outgoingVerticesIds),
+                "Vertex Ids requested.");
         return getVertexIdsResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
@@ -304,12 +320,13 @@ public class LineageHelper {
         final VerticesResult clusterResult = getVerticesByName(vertexName);
         GraphAssert.assertVertexSanity(clusterResult);
         Assert.assertEquals(clusterResult.getTotalSize(), 1,
-            "Expected one node for vertex name:" + vertexName);
+                "Expected one node for vertex name:" + vertexName);
         return clusterResult.getResults().get(0);
     }
 
     /**
-     * Get edges result for the url
+     * Get edges result for the url.
+     *
      * @param url url
      * @return result of the REST request
      */
@@ -322,9 +339,9 @@ public class LineageHelper {
     }
 
     public EdgesResult getEdgesByDirection(int vertexId, Direction direction) {
-        Assert.assertTrue((direction == Direction.bothEdges ||
-            direction == Direction.inComingEdges ||
-            direction == Direction.outGoingEdges), "Vertices requested.");
+        Assert.assertTrue((direction == Direction.bothEdges
+                || direction == Direction.inComingEdges
+                || direction == Direction.outGoingEdges), "Vertices requested.");
         return getEdgesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
