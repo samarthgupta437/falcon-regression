@@ -122,7 +122,7 @@ public class InstanceParamTest extends BaseTestClass {
         OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS,
             processBundle.getProcessName(), 0);
         InstanceUtil.waitTillInstanceReachState(oC1, processBundle.getProcessName(), 0,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS, 10);
         InstancesResult r = prism.getProcessHelper()
             .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
                 "?start="+startTime);
