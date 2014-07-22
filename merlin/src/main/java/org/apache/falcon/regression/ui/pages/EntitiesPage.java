@@ -69,12 +69,21 @@ public class EntitiesPage extends Page {
         return null;
     }
 
+    /**
+     * Loads next page
+     */
     private void goNextPage() {
         logger.info("Navigating to next page...");
         WebElement nextButton = driver.findElement(By.xpath(ACTIVE_NXT_BTN));
         nextButton.click();
         waitForElement(expectedElement, DEFAULT_TIMEOUT, "Next page didn't load");
     }
+
+
+    /**
+     * Checks if next page is present
+     * @return true if next page is present
+     */
 
     private boolean nextPagePresent() {
         logger.info("Checking if next page is present...");
