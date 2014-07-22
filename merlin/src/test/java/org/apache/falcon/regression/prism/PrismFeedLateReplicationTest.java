@@ -19,10 +19,10 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -130,7 +130,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         TimeUtil.sleepSeconds(10);
 
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         List<String> replicationCoordIDTarget = InstanceUtil
@@ -216,7 +216,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId = InstanceUtil
-            .getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            .getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget = InstanceUtil.getReplicationCoordID(bundleId,
             cluster1.getFeedHelper());
@@ -397,7 +397,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());
@@ -596,7 +596,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());

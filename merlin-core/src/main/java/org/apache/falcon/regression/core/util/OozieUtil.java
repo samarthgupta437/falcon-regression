@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.oozie.client.AuthOozieClient;
 import org.apache.oozie.client.BundleJob;
@@ -175,7 +175,7 @@ public class OozieUtil {
     }
 
     public static Job.Status getOozieJobStatus(OozieClient client, String processName,
-                                               ENTITY_TYPE entityType)
+                                               EntityType entityType)
         throws OozieClientException {
         String filter = String.format("name=FALCON_%s_%s", entityType, processName);
         List<Job.Status> statuses = getBundleStatuses(client, filter, 0, 10);
@@ -187,7 +187,7 @@ public class OozieUtil {
     }
 
     public static List<String> getBundles(OozieClient client, String entityName,
-                                          ENTITY_TYPE entityType)
+                                          EntityType entityType)
         throws OozieClientException {
         String filter = "name=FALCON_" + entityType + "_" + entityName;
         return getBundleIds(client, filter, 0, 10);
@@ -225,7 +225,7 @@ public class OozieUtil {
     }
 
     public static boolean verifyOozieJobStatus(OozieClient client, String processName,
-                                               ENTITY_TYPE entityType, Job.Status expectedStatus)
+                                               EntityType entityType, Job.Status expectedStatus)
         throws OozieClientException {
         for (int seconds = 0; seconds < 100; seconds+=5) {
             Job.Status status = getOozieJobStatus(client, processName, entityType);
@@ -286,14 +286,14 @@ public class OozieUtil {
     }
 
     public static CoordinatorJob getDefaultOozieCoord(ColoHelper prismHelper, String bundleId,
-                                                      ENTITY_TYPE type)
+                                                      EntityType type)
         throws OozieClientException {
         XOozieClient client = prismHelper.getClusterHelper().getOozieClient();
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
         for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-            if ((coord.getAppName().contains("DEFAULT") && ENTITY_TYPE.PROCESS == type) ||
-                (coord.getAppName().contains("REPLICATION") && ENTITY_TYPE.FEED == type)) {
+            if ((coord.getAppName().contains("DEFAULT") && EntityType.PROCESS == type) ||
+                (coord.getAppName().contains("REPLICATION") && EntityType.FEED == type)) {
                 return client.getCoordJobInfo(coord.getId());
             } else {
                 logger.info("Desired coord does not exists on " + client.getOozieUrl());
@@ -306,12 +306,12 @@ public class OozieUtil {
     public static int getNumberOfWorkflowInstances(ColoHelper prismHelper, String bundleId)
         throws OozieClientException {
         return getDefaultOozieCoord(prismHelper, bundleId,
-            ENTITY_TYPE.PROCESS).getActions().size();
+            EntityType.PROCESS).getActions().size();
     }
 
     public static List<String> getActionsNominalTime(ColoHelper prismHelper,
                                                      String bundleId,
-                                                     ENTITY_TYPE type)
+                                                     EntityType type)
         throws OozieClientException {
         Map<Date, CoordinatorAction.Status> actions = getActionsNominalTimeAndStatus(prismHelper, bundleId, type);
         List<String> nominalTime = new ArrayList<String>();
@@ -322,7 +322,7 @@ public class OozieUtil {
     }
 
     public static Map<Date, CoordinatorAction.Status> getActionsNominalTimeAndStatus(ColoHelper prismHelper, String bundleId,
-                                                                       ENTITY_TYPE type) throws OozieClientException {
+                                                                       EntityType type) throws OozieClientException {
         Map<Date, CoordinatorAction.Status> result = new TreeMap<Date, CoordinatorAction.Status>();
         List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
                 bundleId, type).getActions();
@@ -358,7 +358,7 @@ public class OozieUtil {
 
                                                boolean matchInstances) throws OozieClientException {
         String entityName = Util.readEntityName(entity);
-        ENTITY_TYPE entityType = Util.getEntityType(entity);
+        EntityType entityType = Util.getEntityType(entity);
         String newBundleId = InstanceUtil.getLatestBundleID(cluster, entityName,
             entityType);
         if (shouldBeCreated) {
@@ -380,7 +380,7 @@ public class OozieUtil {
     private static void validateNumberOfWorkflowInstances(ColoHelper cluster,
                                                           List<String> initialNominalTimes,
                                                           String originalBundleId,
-                                                          String newBundleId, ENTITY_TYPE type)
+                                                          String newBundleId, EntityType type)
         throws OozieClientException {
 
         List<String> nominalTimesOriginalAndNew = getActionsNominalTime
@@ -427,13 +427,13 @@ public class OozieUtil {
         return DateTimeFormat.forPattern("yyyy'-'MM'-'dd'T'HH':'mm'Z'");
     }
 
-    public static int getNumberOfBundle(ColoHelper helper, ENTITY_TYPE type, String entityName)
+    public static int getNumberOfBundle(ColoHelper helper, EntityType type, String entityName)
         throws OozieClientException {
         return OozieUtil.getBundles(helper.getFeedHelper().getOozieClient(),
             entityName, type).size();
     }
 
-    public static void createMissingDependencies(ColoHelper helper, ENTITY_TYPE type,
+    public static void createMissingDependencies(ColoHelper helper, EntityType type,
                                                  String entityName, int bundleNumber,
                                                  int instanceNumber)
         throws OozieClientException, IOException {
@@ -459,7 +459,7 @@ public class OozieUtil {
         return missingPaths;
     }
 
-    public static void createMissingDependencies(ColoHelper helper, ENTITY_TYPE type,
+    public static void createMissingDependencies(ColoHelper helper, EntityType type,
                                                  String entityName, int bundleNumber)
         throws OozieClientException, IOException {
         String bundleID = InstanceUtil.getSequenceBundleID(helper, entityName, type, bundleNumber);

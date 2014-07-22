@@ -18,9 +18,9 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -119,37 +119,14 @@ public class InstanceParamTest extends BaseTestClass {
             ClusterType.SOURCE, null, null);
         processBundle.submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster1, processBundle.getProcessData(), 0);
-        OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS,
+        OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS,
             processBundle.getProcessName(), 0);
         InstanceUtil.waitTillInstanceReachState(oC1, processBundle.getProcessName(), 0,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS, 10);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS, 10);
         InstancesResult r = prism.getProcessHelper()
             .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
                 "?start="+startTime);
-        r = prism.getProcessHelper()
-            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
-                "?start="+startTime);
-        r = prism.getProcessHelper()
-            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
-                "?start="+startTime);
-        r = prism.getProcessHelper()
-            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
-                "?start="+startTime);
-        r = prism.getProcessHelper()
-            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
-                "?start="+startTime);
-        r = prism.getProcessHelper()
-            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
-                "?start="+startTime);
-        r = prism.getProcessHelper()
-            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
-                "?start="+startTime);
-        r = prism.getProcessHelper()
-            .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
-                "?start="+startTime);
-        r.getMessage();
-
-    }
+        }
 
     @Test(timeOut = 1200000, enabled = false)
     public void getParamsValidRequest_instanceKilled()
@@ -162,17 +139,16 @@ public class InstanceParamTest extends BaseTestClass {
             ClusterType.SOURCE, null, null);
         processBundle.submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster1, processBundle.getProcessData(), 0);
-        OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS,
+        OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS,
             processBundle.getProcessName(), 0);
         InstanceUtil.waitTillInstanceReachState(oC1, processBundle.getProcessName(), 0,
-            CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
         InstancesResult r = prism.getProcessHelper()
             .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
                 "?start="+startTime);
         r.getMessage();
 
     }
-
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws IOException {

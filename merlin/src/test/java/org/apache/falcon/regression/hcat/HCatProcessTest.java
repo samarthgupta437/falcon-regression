@@ -22,10 +22,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.cluster.Interfacetype;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.process.EngineType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
@@ -184,7 +184,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
@@ -270,7 +270,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         final ContentSummary inputContentSummary =
             clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -359,7 +359,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
@@ -462,7 +462,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         final ContentSummary inputContentSummary =
             clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -543,7 +543,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/" + dataDates.get(0), clusterFS);
@@ -603,7 +603,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);

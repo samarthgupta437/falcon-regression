@@ -18,10 +18,10 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -105,18 +105,18 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void snsExistingFeed() throws Exception {
         submitFirstClusterScheduleFirstFeed();
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
 
         //get created bundle id
         String bundleId = InstanceUtil
             .getLatestBundleID(cluster, Util.readEntityName(bundles[0].getDataSets().get(0)),
-                ENTITY_TYPE.FEED);
+                EntityType.FEED);
 
         //try to submit and schedule the same process again
         ServiceResponse response = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
         AssertUtil.assertSucceeded(response);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
 
         //check that new bundle wasn't created
         OozieUtil.verifyNewBundleCreation(cluster, bundleId, null, bundles[0].getDataSets().get
@@ -145,17 +145,17 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void snsDeletedFeed() throws Exception {
         submitFirstClusterScheduleFirstFeed();
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
         Assert.assertEquals(
             Util.parseResponse(prism.getFeedHelper()
                 .delete(URLS.DELETE_URL, bundles[0].getDataSets().get(0)))
                 .getStatusCode(), 200);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.KILLED);
 
         ServiceResponse response = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
         AssertUtil.assertSucceeded(response);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
     }
 
     /**
@@ -167,18 +167,18 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void snsSuspendedFeed() throws Exception {
         submitFirstClusterScheduleFirstFeed();
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
         Assert.assertEquals(Util.parseResponse(
                 prism.getFeedHelper()
                     .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)))
                 .getStatusCode(),
             200);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
         ServiceResponse response = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, bundles[0].getDataSets().get(0));
 
         AssertUtil.assertSucceeded(response);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
     }
 }
 

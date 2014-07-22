@@ -19,11 +19,11 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -230,13 +230,13 @@ public class AssertUtil {
      * @param expectedStatus expected Job.Status of entity
      * @throws OozieClientException
      */
-    public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
+    public static void checkStatus(OozieClient oozieClient, EntityType entityType, String data,
                                    Job.Status expectedStatus)
         throws OozieClientException {
         String name = null;
-        if (entityType == ENTITY_TYPE.FEED) {
+        if (entityType == EntityType.FEED) {
             name = Util.readDatasetName(data);
-        } else if (entityType == ENTITY_TYPE.PROCESS) {
+        } else if (entityType == EntityType.PROCESS) {
             name = Util.readEntityName(data);
         }
         Assert.assertEquals(
@@ -254,13 +254,13 @@ public class AssertUtil {
      * @param expectedStatus expected Job.Status of entity
      * @throws OozieClientException
      */
-    public static void checkStatus(OozieClient oozieClient, ENTITY_TYPE entityType, Bundle bundle,
+    public static void checkStatus(OozieClient oozieClient, EntityType entityType, Bundle bundle,
                                    Job.Status expectedStatus)
         throws OozieClientException {
         String data = null;
-        if (entityType == ENTITY_TYPE.FEED) {
+        if (entityType == EntityType.FEED) {
             data = bundle.getDataSets().get(0);
-        } else if (entityType == ENTITY_TYPE.PROCESS) {
+        } else if (entityType == EntityType.PROCESS) {
             data = bundle.getProcessData();
         }
         checkStatus(oozieClient, entityType, data, expectedStatus);
@@ -275,7 +275,7 @@ public class AssertUtil {
      * @param expectedStatus expected Job.Status of entity
      * @throws OozieClientException
      */
-    public static void checkNotStatus(OozieClient oozieClient, ENTITY_TYPE entityType, String data,
+    public static void checkNotStatus(OozieClient oozieClient, EntityType entityType, String data,
                                       Job.Status expectedStatus)
         throws OozieClientException {
         String entityName = Util.readEntityName(data);
@@ -292,13 +292,13 @@ public class AssertUtil {
      * @param expectedStatus expected Job.Status of entity
      * @throws OozieClientException
      */
-    public static void checkNotStatus(OozieClient oozieClient, ENTITY_TYPE entityType,
+    public static void checkNotStatus(OozieClient oozieClient, EntityType entityType,
                                       Bundle bundle, Job.Status expectedStatus)
         throws OozieClientException {
         String data = null;
-        if (entityType == ENTITY_TYPE.FEED) {
+        if (entityType == EntityType.FEED) {
             data = bundle.getDataSets().get(0);
-        } else if (entityType == ENTITY_TYPE.PROCESS) {
+        } else if (entityType == EntityType.PROCESS) {
             data = bundle.getProcessData();
         }
         checkNotStatus(oozieClient, entityType, data, expectedStatus);

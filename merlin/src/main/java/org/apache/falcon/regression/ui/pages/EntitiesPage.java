@@ -19,7 +19,7 @@
 package org.apache.falcon.regression.ui.pages;
 
 
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
@@ -39,7 +39,7 @@ public class EntitiesPage extends Page {
             = "//table[@id='entity-list']/tbody/tr";
     private final static String PAGE_NUMBER = "//ul[@class='pagination']/li[@class='active']/a";
 
-    public EntitiesPage(WebDriver driver, ColoHelper helper, ENTITY_TYPE type) {
+    public EntitiesPage(WebDriver driver, ColoHelper helper, EntityType type) {
         super(driver, helper);
         URL += "/index.html?type=" + type.toString().toLowerCase();
 

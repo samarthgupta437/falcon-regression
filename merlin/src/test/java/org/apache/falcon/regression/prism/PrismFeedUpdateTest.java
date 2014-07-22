@@ -20,9 +20,9 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -222,7 +222,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         bundles[0].submitAndScheduleProcess();
 
         InstanceUtil.waitTillInstancesAreCreated(cluster1, bundles[0].getProcessData(), 0);
-        OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS, bundles[0].getProcessName(),
+        OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS, bundles[0].getProcessName(),
             0, 0);
         InstanceUtil.waitForBundleToReachState(cluster1, bundles[0].getProcessName(),
             Job.Status.SUCCEEDED, 20);
@@ -231,9 +231,9 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         feed.addProperty("someProp","someVal");
         AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed.toString(), feed.toString()));
         //check for new feed bundle creation
-        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, ENTITY_TYPE.FEED,
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(prism, EntityType.FEED,
             feed.getName()),2);
-        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, ENTITY_TYPE.PROCESS,
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.PROCESS,
             bundles[0].getProcessName()),1);
     }
 
@@ -251,16 +251,16 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         bundles[0].submitAndScheduleProcess();
 
         InstanceUtil.waitTillInstancesAreCreated(cluster1, bundles[0].getProcessData(), 0);
-        OozieUtil.createMissingDependencies(cluster1, ENTITY_TYPE.PROCESS, bundles[0].getProcessName(),
+        OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS, bundles[0].getProcessName(),
             0, 0);
 
         FeedMerlin feed = new FeedMerlin(bundles[0].getDataSets().get(0));
         feed.setAvailabilityFlag("mytestflag");
         AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed.toString(), feed.toString()));
         //check for new feed bundle creation
-        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, ENTITY_TYPE.FEED,
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.FEED,
             feed.getName()),2);
-        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, ENTITY_TYPE.PROCESS,
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.PROCESS,
             bundles[0].getProcessName()),2);
     }
 

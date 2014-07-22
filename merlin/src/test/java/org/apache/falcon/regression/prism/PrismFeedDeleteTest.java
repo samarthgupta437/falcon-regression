@@ -20,12 +20,12 @@ package org.apache.falcon.regression.prism;
 
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -716,7 +716,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
 
-        HashMap<String, List<String>> finalSystemState = getSystemState(ENTITY_TYPE.FEED);
+        HashMap<String, List<String>> finalSystemState = getSystemState(EntityType.FEED);
 
         compareDataStoreStates(finalSystemState.get("prismArchive"), finalPrismArchiveStore,
             clusterName);
@@ -789,7 +789,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundles[0].getDataSets().get(0)));
 
-        HashMap<String, List<String>> systemStatePostUp = getSystemState(ENTITY_TYPE.FEED);
+        HashMap<String, List<String>> systemStatePostUp = getSystemState(EntityType.FEED);
 
         compareDataStoreStates(finalPrismStore, systemStatePostUp.get("prismStore"), clusterName);
         compareDataStoreStates(systemStatePostUp.get("prismArchive"), finalPrismArchiveStore,
@@ -1067,7 +1067,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
 
         clusterName = Util.readDatasetName(bundles[0].getDataSets().get(0));
 
-        HashMap<String, List<String>> systemPostUp = getSystemState(ENTITY_TYPE.FEED);
+        HashMap<String, List<String>> systemPostUp = getSystemState(EntityType.FEED);
 
         compareDataStoreStates(systemPostUp.get("prismArchive"), finalPrismArchiveStore,
             clusterName);
@@ -1097,18 +1097,18 @@ public class PrismFeedDeleteTest extends BaseTestClass {
             store1.toArray(new String[store1.size()])), "DataStores are not equal!");
     }
 
-    public HashMap<String, List<String>> getSystemState(ENTITY_TYPE entityType) throws Exception {
+    public HashMap<String, List<String>> getSystemState(EntityType entityType) throws Exception {
         IEntityManagerHelper prismHelper = prism.getClusterHelper();
         IEntityManagerHelper server1Helper = cluster1.getClusterHelper();
         IEntityManagerHelper server2Helper = cluster2.getClusterHelper();
 
-        if (entityType == ENTITY_TYPE.FEED) {
+        if (entityType == EntityType.FEED) {
             prismHelper = prism.getFeedHelper();
             server1Helper = cluster1.getFeedHelper();
             server2Helper = cluster2.getFeedHelper();
         }
 
-        if (entityType == ENTITY_TYPE.PROCESS) {
+        if (entityType == EntityType.PROCESS) {
             prismHelper = prism.getProcessHelper();
             server1Helper = cluster1.getProcessHelper();
             server2Helper = cluster2.getProcessHelper();

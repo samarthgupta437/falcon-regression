@@ -26,7 +26,6 @@ import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
@@ -184,7 +183,7 @@ public class RetentionTest extends BaseTestClass {
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
         String bundleId = OozieUtil.getBundles(clusterOC,
-            inputDataSetName, ENTITY_TYPE.FEED).get(0);
+            inputDataSetName, EntityType.FEED).get(0);
 
         List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
         logger.info("workflows: " + workflows);
@@ -266,7 +265,7 @@ public class RetentionTest extends BaseTestClass {
 
         List<String> jobIds = OozieUtil.getCoordinatorJobs(cluster,
             OozieUtil.getBundles(clusterOC,
-                feedName, ENTITY_TYPE.FEED).get(0)
+                feedName, EntityType.FEED).get(0)
         );
 
         //create queuedata folderList:

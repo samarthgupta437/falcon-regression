@@ -20,7 +20,7 @@ package org.apache.falcon.regression.ui;
 
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Inputs;
@@ -173,7 +173,7 @@ public class ProcessUITest extends BaseUITestClass {
         OozieClientException {
 
         //check Process statuses via UI
-        EntitiesPage page = new EntitiesPage(DRIVER, cluster, ENTITY_TYPE.PROCESS);
+        EntitiesPage page = new EntitiesPage(DRIVER, cluster, EntityType.PROCESS);
         page.navigateTo();
 
         softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
@@ -181,7 +181,7 @@ public class ProcessUITest extends BaseUITestClass {
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
                 EntitiesPage.EntityStatus.RUNNING, "Process status should be RUNNING");
@@ -189,16 +189,16 @@ public class ProcessUITest extends BaseUITestClass {
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
         processPage.navigateTo();
 
-        String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+        String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), EntityType.PROCESS);
         Map<Date, CoordinatorAction.Status> actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID,
-                ENTITY_TYPE.PROCESS);
+                EntityType.PROCESS);
         checkActions(actions, processPage);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         processPage.refresh();
-        actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, ENTITY_TYPE.PROCESS);
+        actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, EntityType.PROCESS);
         checkActions(actions, processPage);
 
         softAssert.assertAll();
