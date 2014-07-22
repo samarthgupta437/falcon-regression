@@ -98,7 +98,8 @@ public class LineageHelper {
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
         StringBuilder sb = new StringBuilder();
-        for (String line; (line = reader.readLine()) != null;) {
+        String line;
+        while((line = reader.readLine()) != null){
             sb.append(line).append("\n");
         }
         return sb.toString();
