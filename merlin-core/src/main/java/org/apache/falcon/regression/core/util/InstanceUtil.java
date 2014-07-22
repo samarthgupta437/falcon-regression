@@ -1191,7 +1191,9 @@ public class InstanceUtil {
                 String.format("Coordinator %s should be running/prep but is %s.", coordId,
                     coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
-            if(!(expectedStatus == coordinatorActions.get(instanceNumber).getStatus()))
+            if(expectedStatus == coordinatorActions.get(instanceNumber).getStatus())
+                return ;
+            else
                 TimeUtil.sleepSeconds(sleepTime);
         }
         Assert.assertTrue(false, "expected state of instance was never reached");
