@@ -79,7 +79,7 @@ public class BundleUtil {
         return readBundleFromFolder("updateBundle").get(0);
     }
 
-    private static List<Bundle> readBundleFromFolder(final String folderPath) throws IOException {
+    public static List<Bundle> readBundleFromFolder(final String folderPath) throws IOException {
         final List<Bundle> bundleList = new ArrayList<Bundle>();
         logger.info("Loading xmls from directory: " + folderPath);
         File directory = null;
