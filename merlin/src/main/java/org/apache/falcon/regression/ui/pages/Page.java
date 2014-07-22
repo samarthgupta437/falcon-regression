@@ -122,7 +122,7 @@ public abstract class Page {
         }
     }
 
-    public static class Condition implements ExpectedCondition<Boolean> {
+    static class Condition implements ExpectedCondition<Boolean> {
 
         private final boolean isPresent;
         private String xpath;
