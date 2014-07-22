@@ -43,6 +43,9 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ *  Class with helper functions to test lineage feature.
+ */
 public class LineageHelper {
     private static final Logger LOGGER = Logger.getLogger(LineageHelper.class);
     private final String hostname;
@@ -71,7 +74,6 @@ public class LineageHelper {
 
     /**
      * Create a LineageHelper to use with a specified hostname.
-     *
      * @param hostname hostname
      */
     public LineageHelper(String hostname) {
@@ -80,7 +82,6 @@ public class LineageHelper {
 
     /**
      * Create a LineageHelper to use with a specified prismHelper.
-     *
      * @param prismHelper prismHelper
      */
     public LineageHelper(ColoHelper prismHelper) {
@@ -89,7 +90,6 @@ public class LineageHelper {
 
     /**
      * Extract response string from the response object.
-     *
      * @param response the response object
      * @return the response string
      * @throws IOException
@@ -98,7 +98,7 @@ public class LineageHelper {
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
         StringBuilder sb = new StringBuilder();
-        for (String line; (line = reader.readLine()) != null; ) {
+        for (String line; (line = reader.readLine()) != null;) {
             sb.append(line).append("\n");
         }
         return sb.toString();
@@ -106,7 +106,6 @@ public class LineageHelper {
 
     /**
      * Run a get request on the specified url.
-     *
      * @param url url
      * @return response of the request
      * @throws URISyntaxException
@@ -121,7 +120,6 @@ public class LineageHelper {
 
     /**
      * Successfully run a get request on the specified url.
-     *
      * @param url url
      * @return string response of the request
      * @throws URISyntaxException
@@ -140,7 +138,6 @@ public class LineageHelper {
 
     /**
      * Create a full url for the given lineage endpoint, urlPath and parameter.
-     *
      * @param url        lineage endpoint
      * @param urlPath    url path to be added to lineage endpoint
      * @param paramPairs parameters to be passed
@@ -166,7 +163,6 @@ public class LineageHelper {
 
     /**
      * Create a full url for the given lineage endpoint, urlPath and parameter.
-     *
      * @param url     lineage endpoint
      * @param urlPath url path to be added to lineage endpoint
      * @return url string
@@ -177,7 +173,6 @@ public class LineageHelper {
 
     /**
      * Create a full url for the given lineage endpoint and parameter.
-     *
      * @param url        lineage endpoint
      * @param paramPairs parameters to be passed
      * @return url string
@@ -188,7 +183,6 @@ public class LineageHelper {
 
     /**
      * Create a full url for the given lineage endpoint and parameter.
-     *
      * @param url lineage endpoint
      * @return url string
      */
@@ -198,7 +192,6 @@ public class LineageHelper {
 
     /**
      * Create url path from parts.
-     *
      * @param pathParts parts of the path
      * @return url path
      */
@@ -208,7 +201,6 @@ public class LineageHelper {
 
     /**
      * Create url path from parts.
-     *
      * @param oneInt    part of the path
      * @param pathParts parts of the path
      * @return url path
@@ -219,7 +211,6 @@ public class LineageHelper {
 
     /**
      * Get result of the supplied type for the given url.
-     *
      * @param url url
      * @return result of the REST request
      */
@@ -239,7 +230,6 @@ public class LineageHelper {
 
     /**
      * Get vertices result for the url.
-     *
      * @param url url
      * @return result of the REST request
      */
@@ -249,7 +239,6 @@ public class LineageHelper {
 
     /**
      * Get vertex result for the url.
-     *
      * @param url url
      * @return result of the REST request
      */
@@ -259,7 +248,6 @@ public class LineageHelper {
 
     /**
      * Get vertex id result for the url.
-     *
      * @param url url
      * @return result of the REST request
      */
@@ -269,7 +257,6 @@ public class LineageHelper {
 
     /**
      * Get all the vertices.
-     *
      * @return all the vertices
      */
     public VerticesResult getAllVertices() {
@@ -326,7 +313,6 @@ public class LineageHelper {
 
     /**
      * Get edges result for the url.
-     *
      * @param url url
      * @return result of the REST request
      */
