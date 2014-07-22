@@ -242,9 +242,7 @@ public class ProcessPage extends EntityPage<Process> {
             List<WebElement> paths = driver.findElements(By.xpath(EDGE));
             logger.info(paths.size() + " edges found");
             for (WebElement path : paths) {
-                String d = path.getAttribute("d");
-                d = d.replaceAll("[MLC]", ",");
-                String[] coordinates = d.split(",");
+                String[] coordinates = path.getAttribute("d").split("[MLC,]");
                 int x = 0, y, i = 0;
                 while (i < coordinates.length) {
                     if (!coordinates[i].isEmpty()) {
