@@ -288,6 +288,11 @@ public class ProcessPage extends EntityPage<Process> {
         return new Point(Integer.parseInt(numbers[0]), Integer.parseInt(numbers[1]));
     }
 
+    /**
+     * Returns status of instance from instances panel
+     * @param instanceDate date stamp of instance
+     * @return status of instance from instances panel
+     */
     public String getInstanceStatus(String instanceDate) {
         waitForInstancesPanel();
         logger.info("Getting status of " + instanceDate + " instance");
@@ -300,6 +305,11 @@ public class ProcessPage extends EntityPage<Process> {
         }
     }
 
+    /**
+     * Checks if 'Lineage' link is present on instances panel
+     * @param instanceDate date stamp of instance
+     * @return true if link is present
+     */
     public boolean isLineageLinkPresent(String instanceDate) {
         waitForInstancesPanel();
         logger.info("Checking if 'Lineage' link is present for " + instanceDate);
