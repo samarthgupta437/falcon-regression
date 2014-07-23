@@ -98,7 +98,7 @@ import java.util.UUID;
 public final class Util {
 
     private Util(){
-        //not called
+        throw new AssertionError("Instantiating utility class...");
     }
     private static final Logger LOGGER = Logger.getLogger(Util.class);
 

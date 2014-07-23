@@ -82,7 +82,7 @@ import java.util.TreeMap;
 public final class InstanceUtil {
 
     private InstanceUtil() {
-        //not called
+        throw new AssertionError("Instantiating utility class...");
     }
 
     private static final Logger LOGGER = Logger.getLogger(InstanceUtil.class);
