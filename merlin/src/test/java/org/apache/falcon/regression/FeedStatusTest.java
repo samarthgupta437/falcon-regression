@@ -45,11 +45,11 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class FeedStatusTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    OozieClient clusterOC = serverOC.get(0);
+    private ColoHelper cluster = servers.get(0);
+    private OozieClient clusterOC = serverOC.get(0);
     private String feed;
-    String aggregateWorkflowDir = baseHDFSDir + "/FeedStatusTest/aggregator";
-    private static final Logger logger = Logger.getLogger(FeedStatusTest.class);
+    private String aggregateWorkflowDir = baseHDFSDir + "/FeedStatusTest/aggregator";
+    private static final Logger LOGGER = Logger.getLogger(FeedStatusTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -57,7 +57,7 @@ public class FeedStatusTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -85,7 +85,7 @@ public class FeedStatusTest extends BaseTestClass {
     public void getStatusForScheduledFeed() throws Exception {
         ServiceResponse response =
             prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        logger.info("Feed: " + Util.prettyPrintXml(feed));
+        LOGGER.info("Feed: " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
