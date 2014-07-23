@@ -50,10 +50,10 @@ import java.net.URISyntaxException;
 @Test(groups = "embedded")
 public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseHDFSDir + "/FeedSubmitAndScheduleTest/aggregator";
-    private static final Logger logger = Logger.getLogger(FeedSubmitAndScheduleTest.class);
+    private ColoHelper cluster = servers.get(0);
+    private OozieClient clusterOC = serverOC.get(0);
+    private String aggregateWorkflowDir = baseHDFSDir + "/FeedSubmitAndScheduleTest/aggregator";
+    private static final Logger LOGGER = Logger.getLogger(FeedSubmitAndScheduleTest.class);
 
     @BeforeMethod(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
@@ -62,7 +62,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
@@ -80,7 +80,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
     }
 
     /**
-     * Submits and schedules feed with a cluster it depends on
+     * Submits and schedules feed with a cluster it depends on.
      *
      * @throws JAXBException
      * @throws IOException
@@ -119,8 +119,7 @@ public class FeedSubmitAndScheduleTest extends BaseTestClass {
         AssertUtil.checkStatus(clusterOC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
 
         //check that new bundle wasn't created
-        OozieUtil.verifyNewBundleCreation(cluster, bundleId, null, bundles[0].getDataSets().get
-            (0), false, false);
+        OozieUtil.verifyNewBundleCreation(cluster, bundleId, null, bundles[0].getDataSets().get(0), false, false);
     }
 
     /**

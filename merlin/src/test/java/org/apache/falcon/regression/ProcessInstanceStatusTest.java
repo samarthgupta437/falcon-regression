@@ -22,8 +22,8 @@ import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.InstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.response.ResponseKeys;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -57,22 +57,22 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceStatusTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    FileSystem clusterFS = serverFS.get(0);
-    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
-    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath =
+    private ColoHelper cluster = servers.get(0);
+    private FileSystem clusterFS = serverFS.get(0);
+    private String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceStatusTest";
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    private String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String feedOutputPath =
         baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedInputTimedOutPath =
+    private String feedInputTimedOutPath =
         baseTestHDFSDir + "/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputTimedOutPath =
+    private String feedOutputTimedOutPath =
         baseTestHDFSDir + "/output-data/timedoutStatus/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private static final Logger logger = Logger.getLogger(ProcessInstanceStatusTest.class);
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceStatusTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
 
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
@@ -95,7 +95,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
@@ -115,14 +115,14 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_StartAndEnd_checkNoInstanceAfterEndDate()
+    public void testProcessInstanceStatusStartAndEndCheckNoInstanceAfterEndDate()
         throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-03T10:22Z");
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(1);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T10:20Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
@@ -136,13 +136,13 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_onlyStartAfterMat() throws Exception {
+    public void testProcessInstanceStatusOnlyStartAfterMat() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-03T10:22Z");
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(1);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T05:00Z");
         AssertUtil.assertSucceeded(r);
@@ -156,12 +156,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_EndOutOfRange() throws Exception {
+    public void testProcessInstanceStatusEndOutOfRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:30Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
@@ -172,12 +172,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * an appropriate message.
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_dateEmpty()
-            throws JAXBException, AuthenticationException, IOException, URISyntaxException {
+    public void testProcessInstanceStatusDateEmpty()
+        throws JAXBException, AuthenticationException, IOException, URISyntaxException {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), null);
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
@@ -189,11 +189,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_StartAndEnd() throws Exception {
+    public void testProcessInstanceStatusStartAndEnd() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
@@ -206,12 +206,12 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_StartOutOfRange() throws Exception {
+    public void testProcessInstanceStatusStartOutOfRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T00:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
@@ -224,17 +224,18 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_killed() throws Exception {
+    public void testProcessInstanceStatusKilled() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL,
             bundles[0].getProcessData()));
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
-        if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND))
+        if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND)) {
             Assert.assertTrue(false);
+        }
     }
 
     /**
@@ -244,14 +245,14 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_onlyStartSuspended() throws Exception {
+    public void testProcessInstanceStatusOnlyStartSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
         TimeUtil.sleepSeconds(15);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.SUSPENDED);
@@ -264,11 +265,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_reverseDateRange() throws Exception {
+    public void testProcessInstanceStatusReverseDateRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:20Z&end=2010-01-02T01:07Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
@@ -281,7 +282,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_StartEndOutOfRange() throws Exception {
+    public void testProcessInstanceStatusStartEndOutOfRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -291,7 +292,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T00:00Z&end=2010-01-02T01:30Z");
         InstanceUtil.validateSuccessWithStatusCode(r, 400);
@@ -304,7 +305,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_resumed() throws Exception {
+    public void testProcessInstanceStatusResumed() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -320,7 +321,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         TimeUtil.sleepSeconds(15);
         AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:22Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.RUNNING);
@@ -334,13 +335,13 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_onlyStart() throws Exception {
+    public void testProcessInstanceStatusOnlyStart() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccessOnlyStart(r, WorkflowStatus.RUNNING);
@@ -353,14 +354,15 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_invalidName() throws Exception {
+    public void testProcessInstanceStatusInvalidName() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus("invalidProcess", "?start=2010-01-01T01:00Z");
-        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND))
+        if (!(r.getStatusCode() == ResponseKeys.PROCESS_NOT_FOUND)) {
             Assert.assertTrue(false);
+        }
     }
 
     /**
@@ -370,19 +372,20 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_suspended() throws Exception {
+    public void testProcessInstanceStatusSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-        for (int i = 0; i < bundles[0].getClusters().size(); i++)
-            logger.info("cluster to be submitted: " + i + "  "
-                + Util.prettyPrintXml(bundles[0].getClusters().get(i)));
+        for (int i = 0; i < bundles[0].getClusters().size(); i++) {
+            LOGGER.info("cluster to be submitted: " + i + "  "
+                    + Util.prettyPrintXml(bundles[0].getClusters().get(i)));
+        }
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
-        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL,            bundles[0].getProcessData()));
+        AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.SUSPENDED);
@@ -395,11 +398,11 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_woParams() throws Exception {
+    public void testProcessInstanceStatusWoParams() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T02:30Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()), null);
         InstanceUtil.validateSuccessWithStatusCode(r, ResponseKeys.UNPARSEABLE_DATE);
     }
@@ -411,7 +414,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceStatus_timedOut() throws Exception {
+    public void testProcessInstanceStatusTimedOut() throws Exception {
         bundles[0].setInputFeedDataPath(feedInputTimedOutPath);
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -422,7 +425,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.readEntityName(bundles[0]
             .getProcessData()), 1, Status.TIMEDOUT, EntityType.PROCESS);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:11Z");
         InstanceUtil.validateFailedInstances(r, 3);

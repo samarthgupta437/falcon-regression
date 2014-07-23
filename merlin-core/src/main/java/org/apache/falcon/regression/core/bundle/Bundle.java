@@ -77,7 +77,7 @@ public class Bundle {
 
     private static final String PRISM_PREFIX = "prism";
     private static ColoHelper prismHelper = new ColoHelper(PRISM_PREFIX);
-    private static final Logger logger = Logger.getLogger(Bundle.class);
+    private static final Logger LOGGER = Logger.getLogger(Bundle.class);
 
     private List<String> clusters;
     private List<String> dataSets;
@@ -119,8 +119,9 @@ public class Bundle {
         submitAndScheduleAllFeeds();
         ServiceResponse r = prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL,
             processData);
-        if (shouldSucceed)
+        if (shouldSucceed) {
             AssertUtil.assertSucceeded(r);
+        }
         return r;
     }
 
@@ -168,12 +169,12 @@ public class Bundle {
         }
     }
 
-    public Bundle(Bundle bundle, ColoHelper prismHelper) {
-        this(bundle, prismHelper.getPrefix());
+    public Bundle(Bundle bundle, ColoHelper helper) {
+        this(bundle, helper.getPrefix());
     }
 
-    public void setClusterData(List<String> clusters) {
-        this.clusters = new ArrayList<String>(clusters);
+    public void setClusterData(List<String> pClusters) {
+        this.clusters = new ArrayList<String>(pClusters);
     }
 
     public List<String> getClusterNames() {
@@ -242,45 +243,46 @@ public class Bundle {
         processData = processMerlin.toString();
     }
 
-    public ServiceResponse submitBundle(ColoHelper prismHelper)
+    public ServiceResponse submitBundle(ColoHelper helper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
 
-        submitClusters(prismHelper);
+        submitClusters(helper);
 
         //lets submit all data first
-        submitFeeds(prismHelper);
+        submitFeeds(helper);
 
-        return prismHelper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
+        return helper.getProcessHelper().submitEntity(URLS.SUBMIT_URL, getProcessData());
     }
 
     /**
      * Submits bundle and schedules process.
      *
-     * @param prismHelper prismHelper of prism host
+     * @param helper helper of prism host
      * @return message from schedule response
      * @throws IOException
      * @throws JAXBException
      * @throws URISyntaxException
      * @throws AuthenticationException
      */
-    public String submitAndScheduleBundle(ColoHelper prismHelper)
+    public String submitAndScheduleBundle(ColoHelper helper)
         throws IOException, JAXBException, URISyntaxException,
         AuthenticationException {
-        ServiceResponse submitResponse = submitBundle(prismHelper);
-        if (submitResponse.getCode() == 400)
+        ServiceResponse submitResponse = submitBundle(helper);
+        if (submitResponse.getCode() == 400) {
             return submitResponse.getMessage();
+        }
 
         //lets schedule the damn thing now :)
         ServiceResponse scheduleResult =
-            prismHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, getProcessData());
-        logger.info("process schedule result=" + scheduleResult.getMessage());
+                helper.getProcessHelper().schedule(URLS.SCHEDULE_URL, getProcessData());
+        LOGGER.info("process schedule result=" + scheduleResult.getMessage());
         AssertUtil.assertSucceeded(scheduleResult);
         TimeUtil.sleepSeconds(7);
         return scheduleResult.getMessage();
     }
 
     /**
-     * Sets the only process input
+     * Sets the only process input.
      *
      * @param startEl its start in terms of EL expression
      * @param endEl its end in terms of EL expression
@@ -308,11 +310,12 @@ public class Bundle {
 
 
         String oldLocation = dataElement.getLocations().getLocations().get(0).getPath();
-        logger.info("oldlocation: " + oldLocation);
+        LOGGER.info("oldlocation: " + oldLocation);
         dataElement.getLocations().getLocations().get(0).setPath(
-            oldLocation.substring(0, oldLocation.indexOf('$')) + "invalid/" +
+            oldLocation.substring(0, oldLocation.indexOf('$')) + "invalid/"
+                    +
                 oldLocation.substring(oldLocation.indexOf('$')));
-        logger.info("new location: " + dataElement.getLocations().getLocations().get(0).getPath());
+        LOGGER.info("new location: " + dataElement.getLocations().getLocations().get(0).getPath());
         dataSets.set(index, dataElement.toString());
     }
 
@@ -331,22 +334,24 @@ public class Bundle {
         if (!dataElement.getName().contains("raaw-logs16")) {
             dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(1));
         }
-        if (dataElement.getFrequency().getTimeUnit() == TimeUnit.hours)
+        if (dataElement.getFrequency().getTimeUnit() == TimeUnit.hours) {
             return (Integer.parseInt(dataElement.getFrequency().getFrequency())) * 60;
-        else return (Integer.parseInt(dataElement.getFrequency().getFrequency()));
+        } else {
+            return (Integer.parseInt(dataElement.getFrequency().getFrequency()));
+        }
     }
 
     public Date getStartInstanceProcess(Calendar time) {
         Process processElement = InstanceUtil.getProcessElement(this);
-        logger.info("start instance: " + processElement.getInputs().getInputs().get(0).getStart());
+        LOGGER.info("start instance: " + processElement.getInputs().getInputs().get(0).getStart());
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getStart(), time);
     }
 
     public Date getEndInstanceProcess(Calendar time) {
         Process processElement = InstanceUtil.getProcessElement(this);
-        logger.info("end instance: " + processElement.getInputs().getInputs().get(0).getEnd());
-        logger.info("timezone in getendinstance: " + time.getTimeZone().toString());
-        logger.info("time in getendinstance: " + time.getTime());
+        LOGGER.info("end instance: " + processElement.getInputs().getInputs().get(0).getEnd());
+        LOGGER.info("timezone in getendinstance: " + time.getTimeZone().toString());
+        LOGGER.info("time in getendinstance: " + time.getTime());
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getEnd(), time);
     }
 
@@ -388,7 +393,7 @@ public class Bundle {
 
         feedElement.setFrequency(new Frequency("" + frequency, periodicity));
         dataSets.set(datasetIndex, feedElement.toString());
-        logger.info("modified o/p dataSet is: " + dataSets.get(datasetIndex));
+        LOGGER.info("modified o/p dataSet is: " + dataSets.get(datasetIndex));
     }
 
     public int getProcessConcurrency() {
@@ -412,7 +417,7 @@ public class Bundle {
         l.setType(LocationType.DATA);
         feedElement.getLocations().getLocations().set(0, l);
         dataSets.set(datasetIndex, feedElement.toString());
-        logger.info("modified location path dataSet is: " + dataSets.get(datasetIndex));
+        LOGGER.info("modified location path dataSet is: " + dataSets.get(datasetIndex));
     }
 
     public void setProcessConcurrency(int concurrency) {
@@ -580,11 +585,11 @@ public class Bundle {
     }
 
     public void setRetry(Retry retry) {
-        logger.info("old process: " + Util.prettyPrintXml(processData));
+        LOGGER.info("old process: " + Util.prettyPrintXml(processData));
         Process processObject = getProcessObject();
         processObject.setRetry(retry);
         processData = processObject.toString();
-        logger.info("updated process: " + Util.prettyPrintXml(processData));
+        LOGGER.info("updated process: " + Util.prettyPrintXml(processData));
     }
 
     public void setInputFeedAvailabilityFlag(String flag) {
@@ -640,8 +645,9 @@ public class Bundle {
                 Entity.fromString(EntityType.CLUSTER, clusterData);
 
         for (int i = 0; i < c.getLocations().getLocations().size(); i++) {
-            if (c.getLocations().getLocations().get(i).getName().contains("working"))
+            if (c.getLocations().getLocations().get(i).getName().contains("working")) {
                 c.getLocations().getLocations().get(i).setPath(path);
+            }
         }
 
         //this.setClusterData(clusterData)
@@ -649,24 +655,24 @@ public class Bundle {
     }
 
 
-    public void submitClusters(ColoHelper prismHelper)
+    public void submitClusters(ColoHelper helper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
-        submitClusters(prismHelper, null);
+        submitClusters(helper, null);
     }
 
-    public void submitClusters(ColoHelper prismHelper, String user)
+    public void submitClusters(ColoHelper helper, String user)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String cluster : this.clusters) {
             AssertUtil.assertSucceeded(
-                prismHelper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster, user));
+                    helper.getClusterHelper().submitEntity(URLS.SUBMIT_URL, cluster, user));
         }
     }
 
-    public void submitFeeds(ColoHelper prismHelper)
+    public void submitFeeds(ColoHelper helper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
         for (String feed : this.dataSets) {
             AssertUtil.assertSucceeded(
-                prismHelper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
+                    helper.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed));
         }
     }
 
@@ -697,10 +703,12 @@ public class Bundle {
         cluster.setName(Util.getClusterObject(clusterData).getName());
         org.apache.falcon.entity.v0.process.Validity v =
             processObject.getClusters().getClusters().get(0).getValidity();
-        if (StringUtils.isNotEmpty(startTime))
+        if (StringUtils.isNotEmpty(startTime)) {
             v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
-        if (StringUtils.isNotEmpty(endTime))
+        }
+        if (StringUtils.isNotEmpty(endTime)) {
             v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
+        }
         cluster.setValidity(v);
         processObject.getClusters().getClusters().add(cluster);
         this.processData = processObject.toString();
@@ -713,24 +721,27 @@ public class Bundle {
         return clusterObj.toString();
     }
 
-    public void deleteBundle(ColoHelper prismHelper) {
+    public void deleteBundle(ColoHelper helper) {
 
         try {
-            prismHelper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
+            helper.getProcessHelper().delete(URLS.DELETE_URL, getProcessData());
         } catch (Exception e) {
+            e.getStackTrace();
         }
 
         for (String dataset : getDataSets()) {
             try {
-                prismHelper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
+                helper.getFeedHelper().delete(URLS.DELETE_URL, dataset);
             } catch (Exception e) {
+                e.getStackTrace();
             }
         }
 
         for (String cluster : this.getClusters()) {
             try {
-                prismHelper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
+                helper.getClusterHelper().delete(URLS.DELETE_URL, cluster);
             } catch (Exception e) {
+                e.getStackTrace();
             }
         }
 
@@ -823,32 +834,35 @@ public class Bundle {
         setProcessData(processMerlin.toString());
     }
 
-    public void submitAndScheduleBundle(Bundle b, ColoHelper prismHelper,
+    public void submitAndScheduleBundle(Bundle b, ColoHelper helper,
                                         boolean checkSuccess)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 
         for (int i = 0; i < b.getClusters().size(); i++) {
-            ServiceResponse r = prismHelper.getClusterHelper()
+            ServiceResponse r = helper.getClusterHelper()
                 .submitEntity(URLS.SUBMIT_URL, b.getClusters().get(i));
-            if (checkSuccess)
+            if (checkSuccess) {
                 AssertUtil.assertSucceeded(r);
+            }
         }
         for (int i = 0; i < b.getDataSets().size(); i++) {
             ServiceResponse r =
-                prismHelper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL,
+                    helper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL,
                     b.getDataSets().get(i));
-            if (checkSuccess)
+            if (checkSuccess) {
                 AssertUtil.assertSucceeded(r);
+            }
         }
         ServiceResponse r =
-            prismHelper.getProcessHelper()
+                helper.getProcessHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, b.getProcessData());
-        if (checkSuccess)
+        if (checkSuccess) {
             AssertUtil.assertSucceeded(r);
+        }
     }
 
     /**
-     * Changes names of process inputs
+     * Changes names of process inputs.
      *
      * @param process process definition to be modified
      * @param names desired names of inputs
@@ -863,7 +877,7 @@ public class Bundle {
     }
 
     /**
-     * Adds optional property to process definition
+     * Adds optional property to process definition.
      *
      * @param process process definition to be modified
      * @param properties desired properties to be added
@@ -896,7 +910,7 @@ public class Bundle {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
         Outputs outputs = p.getOutputs();
         if (outputs.getOutputs().size() != names.length) {
-            logger.info("Number of output names not equal to output in processdef");
+            LOGGER.info("Number of output names not equal to output in processdef");
             return null;
         }
         for (int i = 0; i < names.length; i++) {
@@ -909,9 +923,9 @@ public class Bundle {
     public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) {
         this.getDataSets().add(feed);
         String feedName = Util.readEntityName(feed);
-        String processData = getProcessData();
+        String vProcessData = getProcessData();
 
-        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, vProcessData);
         final List<Input> processInputs = processObject.getInputs().getInputs();
         Input templateInput = processInputs.get(templateInputIdx);
         Input newInput = new Input();

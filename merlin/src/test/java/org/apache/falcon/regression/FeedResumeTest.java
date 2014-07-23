@@ -47,10 +47,10 @@ public class FeedResumeTest extends BaseTestClass {
 
     private final IEntityManagerHelper feedHelper = prism.getFeedHelper();
     private String feed;
-    ColoHelper cluster = servers.get(0);
-    OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseHDFSDir + "/FeedResumeTest/aggregator";
-    private static final Logger logger = Logger.getLogger(FeedResumeTest.class);
+    private ColoHelper cluster = servers.get(0);
+    private OozieClient clusterOC = serverOC.get(0);
+    private String aggregateWorkflowDir = baseHDFSDir + "/FeedResumeTest/aggregator";
+    private static final Logger LOGGER = Logger.getLogger(FeedResumeTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -58,7 +58,7 @@ public class FeedResumeTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);

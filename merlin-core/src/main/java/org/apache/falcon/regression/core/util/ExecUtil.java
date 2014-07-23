@@ -36,11 +36,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class ExecUtil {
-    private static final Logger logger = Logger.getLogger(ExecUtil.class);
+/**
+ * util methods related to exec.
+ */
+public final class ExecUtil {
+    private ExecUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(ExecUtil.class);
 
     static List<String> runRemoteScriptAsSudo(final String hostName, final String userName,
-                                              final String password,final String command,
+                                              final String password, final String command,
                                               final String runAs, final String identityFile) throws
         JSchException, IOException {
         JSch jsch = new JSch();
@@ -70,11 +76,13 @@ public class ExecUtil {
         } else {
             runCmd = String.format("sudo su - %s -c '%s'", runAs, command);
         }
-        if (userName.equals(runAs)) runCmd = command;
-        logger.info(
-            "host_name: " + hostName + " user_name: " + userName + " password: " + password +
-                " command: " +
-                runCmd);
+        if (userName.equals(runAs)) {
+            runCmd = command;
+        }
+        LOGGER.info(
+            "host_name: " + hostName + " user_name: " + userName + " password: " + password
+                    +
+                " command: " +runCmd);
         channel.setCommand(runCmd);
         InputStream in = channel.getInputStream();
         OutputStream out = channel.getOutputStream();
@@ -92,7 +100,7 @@ public class ExecUtil {
         String line;
         while (true) {
             while ((line=r.readLine())!=null) {
-                logger.debug(line);
+                LOGGER.debug(line);
                 data.add(line);
             }
             if (channel.isClosed()) {
@@ -104,11 +112,13 @@ public class ExecUtil {
         while (true) {
             while (in.available() > 0) {
                 int i = in.read(tmp, 0, 1024);
-                if (i < 0) break;
-                logger.info(new String(tmp, 0, i));
+                if (i < 0) {
+                    break;
+                }
+                LOGGER.info(new String(tmp, 0, i));
             }
             if (channel.isClosed()) {
-                logger.info("exit-status: " + channel.getExitStatus());
+                LOGGER.info("exit-status: " + channel.getExitStatus());
                 break;
             }
             TimeUtil.sleepSeconds(1);
@@ -122,7 +132,7 @@ public class ExecUtil {
     }
 
     public static ExecResult executeCommand(String command) {
-        logger.info("Command to be executed: " + command);
+        LOGGER.info("Command to be executed: " + command);
         StringBuilder errors = new StringBuilder();
         StringBuilder output = new StringBuilder();
 
@@ -143,9 +153,9 @@ public class ExecUtil {
                 output.append(line).append("\n");
             }
             final int exitVal = process.waitFor();
-            logger.info("exitVal: " + exitVal);
-            logger.info("output: " + output);
-            logger.info("errors: " + errors);
+            LOGGER.info("exitVal: " + exitVal);
+            LOGGER.info("output: " + output);
+            LOGGER.info("errors: " + errors);
             return new ExecResult(exitVal, output.toString().trim(), errors.toString().trim());
         } catch (InterruptedException e) {
             Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
@@ -163,7 +173,7 @@ public class ExecUtil {
         return executeCommand(command).getOutput();
     }
 
-    private static class HardcodedUserInfo implements UserInfo {
+    private  static final class HardcodedUserInfo implements UserInfo {
 
         private final String password;
 
@@ -192,11 +202,11 @@ public class ExecUtil {
         }
 
         public void showMessage(String s) {
-            logger.info("message = " + s);
+            LOGGER.info("message = " + s);
         }
     }
 
-    private static class ExecResult {
+    private static final class ExecResult {
 
         private final int exitVal;
         private final String output;

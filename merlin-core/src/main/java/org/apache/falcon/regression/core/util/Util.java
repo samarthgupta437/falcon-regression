@@ -82,9 +82,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class Util {
+/**
+ * util methods used across test.
+ */
+public final class Util {
 
-    private static final Logger logger = Logger.getLogger(Util.class);
+    private Util() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(Util.class);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -163,15 +169,17 @@ public class Util {
     }
 
     public static String readEntityName(String data) {
-        if (data.contains("uri:falcon:feed"))
+        if (data.contains("uri:falcon:feed")) {
             return Entity.fromString(EntityType.FEED, data).getName();
-        else if (data.contains("uri:falcon:process"))
+        } else if (data.contains("uri:falcon:process")) {
             return Entity.fromString(EntityType.PROCESS, data).getName();
-        else
+        } else {
             return Entity.fromString(EntityType.CLUSTER, data).getName();
+        }
     }
 
     public static String getUniqueString() {
+
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
@@ -242,7 +250,7 @@ public class Util {
     public static void createLateDataFoldersWithRandom(ColoHelper prismHelper, String folderPrefix,
                                                        List<String> folderList)
         throws IOException {
-        logger.info("creating late data folders.....");
+        LOGGER.info("creating late data folders.....");
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
 
@@ -254,13 +262,13 @@ public class Util {
             fs.mkdirs(new Path(folderPrefix + folder));
         }
 
-        logger.info("created all late data folders.....");
+        LOGGER.info("created all late data folders.....");
     }
 
     public static void copyDataToFolders(ColoHelper prismHelper, List<String> folderList,
                                          String directory, String folderPrefix)
         throws IOException {
-        logger.info("copying data into folders....");
+        LOGGER.info("copying data into folders....");
         List<String> fileLocations = new ArrayList<String>();
         File[] files = new File(directory).listFiles();
         if (files != null) {
@@ -283,14 +291,16 @@ public class Util {
 
         for (final String folder : folderList) {
             boolean r;
-            String folder_space = folder.replaceAll("/", "_");
+            String folderSpace = folder.replaceAll("/", "_");
             File f = new File(
-                OSUtil.NORMAL_INPUT + folder_space +
+                OSUtil.NORMAL_INPUT + folderSpace
+                        +
                     ".txt");
             if (!f.exists()) {
                 r = f.createNewFile();
-                if (!r)
-                    logger.info("file could not be created");
+                if (!r) {
+                    LOGGER.info("file could not be created");
+                }
             }
 
 
@@ -299,14 +309,15 @@ public class Util {
             fr.close();
             fs.copyFromLocalFile(new Path(f.getAbsolutePath()), new Path(folderPrefix + folder));
             r = f.delete();
-            if (!r)
-                logger.info("delete was not successful");
+            if (!r) {
+                LOGGER.info("delete was not successful");
+            }
 
             Path[] srcPaths = new Path[fileLocations.length];
             for (int i = 0; i < srcPaths.length; ++i) {
                 srcPaths[i] = new Path(fileLocations[i]);
             }
-            logger.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder);
+            LOGGER.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder);
             fs.copyFromLocalFile(false, true, srcPaths, new Path(folderPrefix + folder));
         }
     }
@@ -328,7 +339,8 @@ public class Util {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
 
         for (String folder : folderList) {
-            if (folder.compareTo(formatter.print(startTime)) >= 0 &&
+            if (folder.compareTo(formatter.print(startTime)) >= 0
+                    &&
                 folder.compareTo(formatter.print(endTime)) <= 0) {
                 return folder;
             }
@@ -346,7 +358,7 @@ public class Util {
     }
 
     public static void createLateDataFolders(ColoHelper prismHelper, List<String> folderList,
-                                             final String FolderPrefix)
+                                             final String folderPrefix)
         throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
@@ -354,7 +366,7 @@ public class Util {
         final FileSystem fs = FileSystem.get(conf);
 
         for (final String folder : folderList) {
-            fs.mkdirs(new Path(FolderPrefix + folder));
+            fs.mkdirs(new Path(folderPrefix + folder));
         }
     }
 
@@ -370,9 +382,10 @@ public class Util {
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
-                String path = remoteLocation + "/" +
+                String path = remoteLocation + "/"
+                        +
                     System.currentTimeMillis() / 1000 + "/";
-                logger.info("inserting data@ " + path);
+                LOGGER.info("inserting data@ " + path);
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(path));
             }
         }
@@ -401,7 +414,8 @@ public class Util {
         List<String> raw = ExecUtil.runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
-            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
+            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep "
+                    +
                 "\"Received\" | awk '{print $2}'",
             coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getIdentityFile()
@@ -419,7 +433,8 @@ public class Util {
         List<String> raw = ExecUtil.runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
-            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
+            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep "
+                    +
                 "\"Retrying attempt\" | awk '{print $2}'",
             coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getIdentityFile()
@@ -451,9 +466,11 @@ public class Util {
             try {
                 statusCode = Util.sendRequest(helper.getHostname(), "get").getCode();
             } catch (IOException e) {
-                logger.info(e.getMessage());
+                LOGGER.info(e.getMessage());
             }
-            if (statusCode == 200) return;
+            if (statusCode == 200) {
+                return;
+            }
             TimeUtil.sleepSeconds(5);
         }
         throw new RuntimeException("Service on" + helper.getHostname() + " did not start!");
@@ -461,7 +478,7 @@ public class Util {
 
     public static void restartService(IEntityManagerHelper helper)
         throws IOException, JSchException, AuthenticationException, URISyntaxException {
-        logger.info("restarting service for: " + helper.getQaHost());
+        LOGGER.info("restarting service for: " + helper.getQaHost());
 
         shutDownService(helper);
         startService(helper);
@@ -472,14 +489,14 @@ public class Util {
     }
 
     public static void dumpConsumerData(Consumer consumer) {
-        logger.info("dumping all queue data:");
+        LOGGER.info("dumping all queue data:");
 
         for (HashMap<String, String> data : consumer.getMessageData()) {
-            logger.info("*************************************");
+            LOGGER.info("*************************************");
             for (String key : data.keySet()) {
-                logger.info(key + "=" + data.get(key));
+                LOGGER.info(key + "=" + data.get(key));
             }
-            logger.info("*************************************");
+            LOGGER.info("*************************************");
         }
     }
 
@@ -488,11 +505,12 @@ public class Util {
                                          String folderPrefix, String postFix)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
-        logger.info("folderData: " + folderPaths.toString());
+        LOGGER.info("folderData: " + folderPaths.toString());
 
         if (postFix != null) {
-            for (int i = 0; i < folderPaths.size(); i++)
+            for (int i = 0; i < folderPaths.size(); i++) {
                 folderPaths.set(i, folderPaths.get(i) + postFix);
+            }
         }
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
@@ -501,16 +519,17 @@ public class Util {
             OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-    public static void lateDataReplenishWithout_Success(ColoHelper prismHelper, int interval,
+    public static void lateDataReplenishWithoutSuccess(ColoHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
                                                         String postFix)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
-        logger.info("folderData: " + folderPaths.toString());
+        LOGGER.info("folderData: " + folderPaths.toString());
 
         if (postFix != null) {
-            for (int i = 0; i < folderPaths.size(); i++)
+            for (int i = 0; i < folderPaths.size(); i++) {
                 folderPaths.set(i, folderPaths.get(i) + postFix);
+            }
         }
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
@@ -523,17 +542,17 @@ public class Util {
                                            String folderPrefix, String fileToBePut)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
-        logger.info("folderData: " + folderPaths.toString());
+        LOGGER.info("folderData: " + folderPaths.toString());
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
 
-        if (fileToBePut.equals("_SUCCESS"))
+        if (fileToBePut.equals("_SUCCESS")) {
             Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                OSUtil.NORMAL_INPUT + "_SUCCESS");
-
-        else
+                    OSUtil.NORMAL_INPUT + "_SUCCESS");
+        } else {
             Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                OSUtil.NORMAL_INPUT + "log_01.txt");
+                    OSUtil.NORMAL_INPUT + "log_01.txt");
+        }
 
     }
 
@@ -541,11 +560,13 @@ public class Util {
 
         Cluster clusterObject =
             getClusterObject(cluster);
-        if ((null == prefix) || prefix.isEmpty())
+        if ((null == prefix) || prefix.isEmpty()) {
             prefix = "";
-        else prefix = prefix + ".";
+        } else {
+            prefix = prefix + ".";
+        }
 
-        String hcat_endpoint = Config.getProperty(prefix + "hcat_endpoint");
+        String hcatEndpoint = Config.getProperty(prefix + "hcat_endpoint");
 
         //now read and set relevant values
         for (Interface iface : clusterObject.getInterfaces().getInterfaces()) {
@@ -560,7 +581,7 @@ public class Util {
             } else if (iface.getType() == Interfacetype.MESSAGING) {
                 iface.setEndpoint(Config.getProperty(prefix + "activemq_url"));
             } else if (iface.getType() == Interfacetype.REGISTRY) {
-                iface.setEndpoint(hcat_endpoint);
+                iface.setEndpoint(hcatEndpoint);
             }
         }
 
@@ -578,9 +599,11 @@ public class Util {
 
             // add the hive meta store principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
-                "hive.metastore.kerberos" +
+                "hive.metastore.kerberos"
+                        +
                     ".principal",
-                Config.getProperty(prefix + "hive.metastore.kerberos" +
+                Config.getProperty(prefix + "hive.metastore.kerberos"
+                        +
                     ".principal", "none")
             ));
 
@@ -588,21 +611,21 @@ public class Util {
             // falcon.
             // hive.metastore.sasl.enabled = true
             clusterProperties.getProperties()
-                .add(getFalconClusterPropertyObject("hive.metastore.sasl" +
+                .add(getFalconClusterPropertyObject("hive.metastore.sasl"
+                        +
                     ".enabled", "true"));
             // Only set the metastore uri if its not empty or null.
-            if (null != hcat_endpoint && !hcat_endpoint.isEmpty()) {
+            if (null != hcatEndpoint && !hcatEndpoint.isEmpty()) {
                 //hive.metastore.uris
                 clusterProperties.getProperties()
-                    .add(getFalconClusterPropertyObject("hive.metastore.uris", hcat_endpoint));
+                    .add(getFalconClusterPropertyObject("hive.metastore.uris", hcatEndpoint));
             }
         }
         return clusterObject.toString();
     }
 
     public static org.apache.falcon.entity.v0.cluster.Property
-    getFalconClusterPropertyObject
-        (String name, String value) {
+    getFalconClusterPropertyObject(String name, String value) {
         org.apache.falcon.entity.v0.cluster.Property property = new org
             .apache.falcon.entity.v0.cluster.Property();
         property.setName(name);
@@ -611,14 +634,11 @@ public class Util {
     }
 
     public static EntityType getEntityType(String entity) {
-        if (
-            entity.contains("uri:falcon:process:0.1"))
+        if (entity.contains("uri:falcon:process:0.1")) {
             return EntityType.PROCESS;
-        else if (
-            entity.contains("uri:falcon:cluster:0.1"))
+        } else if (entity.contains("uri:falcon:cluster:0.1")) {
             return EntityType.CLUSTER;
-        else if (
-            entity.contains("uri:falcon:feed:0.1")) {
+        } else if (entity.contains("uri:falcon:feed:0.1")) {
             return EntityType.FEED;
         }
         return null;
@@ -632,6 +652,9 @@ public class Util {
             getEntityDefinition(server2, entity, true));
     }
 
+    /**
+     * emuns used for instance api.
+     */
     public enum URLS {
 
         LIST_URL("/api/entities/list"),
@@ -651,7 +674,8 @@ public class Util {
         INSTANCE_RESUME("/api/instance/resume"),
         INSTANCE_SUSPEND("/api/instance/suspend"),
         INSTANCE_RERUN("/api/instance/rerun"),
-        INSTANCE_SUMMARY("/api/instance/summary");
+        INSTANCE_SUMMARY("/api/instance/summary"),
+        INSTANCE_PARAMS("/api/instance/params");
         private final String url;
 
         URLS(String url) {
@@ -739,11 +763,13 @@ public class Util {
         }
         String cleanStr = str.trim();
         //taken from http://stackoverflow.com/questions/7256142/way-to-quickly-check-if-string-is-xml-or-json-in-c-sharp
-        if (cleanStr.startsWith("{") || cleanStr.startsWith("["))
+        if (cleanStr.startsWith("{") || cleanStr.startsWith("[")) {
             return prettyPrintJson(cleanStr);
-        if (cleanStr.startsWith("<"))
+        }
+        if (cleanStr.startsWith("<")) {
             return prettyPrintXml(cleanStr);
-        logger.warn("The string does not seem to be either json or xml: " + cleanStr);
+        }
+        LOGGER.warn("The string does not seem to be either json or xml: " + cleanStr);
         return str;
     }
 
@@ -754,20 +780,22 @@ public class Util {
         IOException, URISyntaxException, AuthenticationException {
         EntityType type = getEntityType(entity);
         IEntityManagerHelper helper;
-        if (EntityType.PROCESS == type)
+        if (EntityType.PROCESS == type) {
             helper = cluster.getProcessHelper();
-        else if (EntityType.FEED == type)
+        } else if (EntityType.FEED == type) {
             helper = cluster.getFeedHelper();
-        else
+        } else {
             helper = cluster.getClusterHelper();
+        }
 
         ServiceResponse response = helper.getEntityDefinition(URLS
             .GET_ENTITY_DEFINITION, entity);
 
-        if (shouldReturn)
+        if (shouldReturn) {
             AssertUtil.assertSucceeded(response);
-        else
+        } else {
             AssertUtil.assertFailed(response);
+        }
         String result = response.getMessage();
         Assert.assertNotNull(result);
 

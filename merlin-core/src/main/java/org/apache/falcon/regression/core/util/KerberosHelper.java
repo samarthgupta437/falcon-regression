@@ -22,13 +22,19 @@ import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
 
-public class KerberosHelper {
+/**
+ * Util methods for Kerberos.
+ */
+public final class KerberosHelper {
+    private KerberosHelper() {
+        throw new AssertionError("Instantiating utility class...");
+    }
 
-    private static final Logger logger = Logger.getLogger(KerberosHelper.class);
+    private static final Logger LOGGER = Logger.getLogger(KerberosHelper.class);
 
     public static void loginFromKeytab(String user) {
         if (!MerlinConstants.IS_SECURE) {
-            logger.info("Kerberos is disabled, hence no user switching.");
+            LOGGER.info("Kerberos is disabled, hence no user switching.");
             return;
         }
         if (user == null) {

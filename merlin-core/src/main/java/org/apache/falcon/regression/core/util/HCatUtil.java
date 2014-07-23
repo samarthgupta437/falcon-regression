@@ -26,7 +26,13 @@ import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 
-public class HCatUtil {
+/**
+ * util methods for HCat.
+ */
+public final class HCatUtil {
+    private HCatUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
 
     public static HCatClient getHCatClient(String hCatEndPoint, String hiveMetaStorePrinciple)
         throws HCatException {

@@ -44,9 +44,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class OozieUtil {
+/**
+ * helper methods for oozie .
+ */
+public final class OozieUtil {
+    private OozieUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
 
-    private static final Logger logger = Logger.getLogger(OozieUtil.class);
+    private static final Logger LOGGER = Logger.getLogger(OozieUtil.class);
 
     public static AuthOozieClient getClient(String url) {
         return new AuthOozieClient(url);
@@ -54,7 +60,7 @@ public class OozieUtil {
 
     public static List<BundleJob> getBundles(OozieClient client, String filter, int start, int len)
         throws OozieClientException {
-        logger.info("Connecting to oozie: " + client.getOozieUrl());
+        LOGGER.info("Connecting to oozie: " + client.getOozieUrl());
         return client.getBundleJobsInfo(filter, start, len);
     }
 
@@ -66,7 +72,7 @@ public class OozieUtil {
     public static List<String> getBundleIds(List<BundleJob> bundles) {
         List<String> ids = new ArrayList<String>();
         for (BundleJob bundle : bundles) {
-            logger.info("Bundle Id: " + bundle.getId());
+            LOGGER.info("Bundle Id: " + bundle.getId());
             ids.add(bundle.getId());
         }
         return ids;
@@ -80,7 +86,7 @@ public class OozieUtil {
     public static List<Job.Status> getBundleStatuses(List<BundleJob> bundles) {
         List<Job.Status> statuses = new ArrayList<Job.Status>();
         for (BundleJob bundle : bundles) {
-            logger.info("bundle: " + bundle);
+            LOGGER.info("bundle: " + bundle);
             statuses.add(bundle.getStatus());
         }
         return statuses;
@@ -113,21 +119,21 @@ public class OozieUtil {
     }
 
     /**
-     * @param bundleID
-     * @param oozieClient
+     * @param bundleID bundle number
+     * @param oozieClient oozie client
      * @return list of action ids of the succeeded retention workflow
      * @throws OozieClientException
      */
     public static List<String> waitForRetentionWorkflowToSucceed(String bundleID,
                                                                  OozieClient oozieClient)
         throws OozieClientException {
-        logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
+        LOGGER.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         List<String> jobIds = new ArrayList<String>();
-        logger.info("using bundleId:" + bundleID);
+        LOGGER.info("using bundleId:" + bundleID);
         waitForCoordinatorJobCreation(oozieClient, bundleID);
         final String coordinatorId =
             oozieClient.getBundleJobInfo(bundleID).getCoordinators().get(0).getId();
-        logger.info("using coordinatorId: " + coordinatorId);
+        LOGGER.info("using coordinatorId: " + coordinatorId);
 
         for (int i = 0;
              i < 120 && oozieClient.getCoordJobInfo(coordinatorId).getActions().isEmpty(); ++i) {
@@ -138,14 +144,16 @@ public class OozieUtil {
 
         final List<CoordinatorAction> actions =
             oozieClient.getCoordJobInfo(coordinatorId).getActions();
-        logger.info("actions: " + actions);
+        LOGGER.info("actions: " + actions);
 
         for (CoordinatorAction action : actions) {
             for (int i = 0; i < 180; ++i) {
                 CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
-                logger.info("actionInfo: " + actionInfo);
-                if (actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED ||
-                    actionInfo.getStatus() == CoordinatorAction.Status.KILLED ||
+                LOGGER.info("actionInfo: " + actionInfo);
+                if (actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED
+                        ||
+                    actionInfo.getStatus() == CoordinatorAction.Status.KILLED
+                        ||
                     actionInfo.getStatus() == CoordinatorAction.Status.FAILED) {
                     break;
                 }
@@ -165,7 +173,7 @@ public class OozieUtil {
 
     public static void waitForCoordinatorJobCreation(OozieClient oozieClient, String bundleID)
         throws OozieClientException {
-        logger.info("Connecting to oozie: " + oozieClient.getOozieUrl());
+        LOGGER.info("Connecting to oozie: " + oozieClient.getOozieUrl());
         for (int i = 0;
              i < 60 && oozieClient.getBundleJobInfo(bundleID).getCoordinators().isEmpty(); ++i) {
             TimeUtil.sleepSeconds(2);
@@ -209,7 +217,7 @@ public class OozieUtil {
                 jobInfo = oozieClient.getCoordJobInfo(job.getId());
                 for (CoordinatorAction action : jobInfo.getActions()) {
                     DateTime temp = new DateTime(action.getCreatedTime(), DateTimeZone.UTC);
-                    logger.info(temp);
+                    LOGGER.info(temp);
                     startTimes.add(temp);
                 }
             }
@@ -229,7 +237,7 @@ public class OozieUtil {
         throws OozieClientException {
         for (int seconds = 0; seconds < 100; seconds+=5) {
             Job.Status status = getOozieJobStatus(client, processName, entityType);
-            logger.info("Current status: " + status);
+            LOGGER.info("Current status: " + status);
             if (status == expectedStatus) {
                 return true;
             }
@@ -249,7 +257,7 @@ public class OozieUtil {
         if (actions.size() < 1) {
             return null;
         }
-        logger.info("conf from event: " + actions.get(0).getMissingDependencies());
+        LOGGER.info("conf from event: " + actions.get(0).getMissingDependencies());
 
         String[] missingDependencies = actions.get(0).getMissingDependencies().split("#");
         return new ArrayList<String>(Arrays.asList(missingDependencies));
@@ -292,11 +300,12 @@ public class OozieUtil {
         BundleJob bundlejob = client.getBundleJobInfo(bundleId);
 
         for (CoordinatorJob coord : bundlejob.getCoordinators()) {
-            if ((coord.getAppName().contains("DEFAULT") && EntityType.PROCESS == type) ||
+            if ((coord.getAppName().contains("DEFAULT") && EntityType.PROCESS == type)
+                    ||
                 (coord.getAppName().contains("REPLICATION") && EntityType.FEED == type)) {
                 return client.getCoordJobInfo(coord.getId());
             } else {
-                logger.info("Desired coord does not exists on " + client.getOozieUrl());
+                LOGGER.info("Desired coord does not exists on " + client.getOozieUrl());
             }
         }
 
@@ -320,9 +329,8 @@ public class OozieUtil {
         }
         return nominalTime;
     }
-
-    public static Map<Date, CoordinatorAction.Status> getActionsNominalTimeAndStatus(ColoHelper prismHelper, String bundleId,
-                                                                       EntityType type) throws OozieClientException {
+    public static Map<Date, CoordinatorAction.Status> getActionsNominalTimeAndStatus(ColoHelper prismHelper,
+            String bundleId, EntityType type) throws OozieClientException {
         Map<Date, CoordinatorAction.Status> result = new TreeMap<Date, CoordinatorAction.Status>();
         List<CoordinatorAction> actions = getDefaultOozieCoord(prismHelper,
                 bundleId, type).getActions();
@@ -338,9 +346,12 @@ public class OozieUtil {
 
         BundleJob bundleJob = client.getBundleJobInfo(bundleId);
 
-        if (bundleJob.getStatus() == BundleJob.Status.DONEWITHERROR ||
-            bundleJob.getStatus() == BundleJob.Status.FAILED ||
-            bundleJob.getStatus() == BundleJob.Status.SUCCEEDED ||
+        if (bundleJob.getStatus() == BundleJob.Status.DONEWITHERROR
+                ||
+            bundleJob.getStatus() == BundleJob.Status.FAILED
+                ||
+            bundleJob.getStatus() == BundleJob.Status.SUCCEEDED
+                ||
             bundleJob.getStatus() == BundleJob.Status.KILLED) {
             return true;
         }
@@ -364,13 +375,16 @@ public class OozieUtil {
         if (shouldBeCreated) {
             Assert.assertTrue(!newBundleId.equalsIgnoreCase(originalBundleId),
                 "eeks! new bundle is not getting created!!!!");
-            logger.info("old bundleId=" + originalBundleId + " on oozie: " +
+            LOGGER.info("old bundleId=" + originalBundleId + " on oozie: "
+                    +
                 "" + cluster.getProcessHelper().getOozieClient().getOozieUrl());
-            logger.info("new bundleId=" + newBundleId + " on oozie: " +
+            LOGGER.info("new bundleId=" + newBundleId + " on oozie: "
+                    +
                 "" + cluster.getProcessHelper().getOozieClient().getOozieUrl());
-            if (matchInstances)
+            if (matchInstances) {
                 validateNumberOfWorkflowInstances(cluster,
-                    initialNominalTimes, originalBundleId, newBundleId, entityType);
+                        initialNominalTimes, originalBundleId, newBundleId, entityType);
+            }
         } else {
             Assert.assertEquals(newBundleId,
                 originalBundleId, "eeks! new bundle is getting created!!!!");
@@ -383,8 +397,7 @@ public class OozieUtil {
                                                           String newBundleId, EntityType type)
         throws OozieClientException {
 
-        List<String> nominalTimesOriginalAndNew = getActionsNominalTime
-            (cluster,
+        List<String> nominalTimesOriginalAndNew = getActionsNominalTime(cluster,
                 originalBundleId, type);
 
         nominalTimesOriginalAndNew.addAll(getActionsNominalTime(cluster,
@@ -393,11 +406,12 @@ public class OozieUtil {
         initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
 
         if (initialNominalTimes.size() != 0) {
-            logger.debug("Missing instance are : " + getListElements(initialNominalTimes));
-            logger.debug("Original Bundle ID   : " + originalBundleId);
-            logger.debug("New Bundle ID        : " + newBundleId);
+            LOGGER.debug("Missing instance are : " + getListElements(initialNominalTimes));
+            LOGGER.debug("Original Bundle ID   : " + originalBundleId);
+            LOGGER.debug("New Bundle ID        : " + newBundleId);
 
-            Assert.assertFalse(true, "some instances have gone missing after " +
+            Assert.assertFalse(true, "some instances have gone missing after "
+                    +
                 "update");
         }
     }
@@ -405,8 +419,9 @@ public class OozieUtil {
     private static String getListElements(List<String> list) {
 
         String concatenated = "";
-        for (String curr : list)
+        for (String curr : list) {
             concatenated = concatenated + " , " + curr;
+        }
         return concatenated;
     }
 
@@ -438,15 +453,14 @@ public class OozieUtil {
                                                  int instanceNumber)
         throws OozieClientException, IOException {
         String bundleID = InstanceUtil.getSequenceBundleID(helper, entityName, type, bundleNumber);
-        OozieClient OC = helper.getClusterHelper().getOozieClient();
-        List<CoordinatorJob> coords = OC.getBundleJobInfo(bundleID).getCoordinators();
-        InstanceUtil.createHDFSFolders(helper, getMissingDependenciesForInstance(OC, coords,
-            instanceNumber));
-        }
+        OozieClient oozieClient = helper.getClusterHelper().getOozieClient();
+        List<CoordinatorJob> coords = oozieClient.getBundleJobInfo(bundleID).getCoordinators();
+        InstanceUtil.createHDFSFolders(helper, getMissingDependenciesForInstance(oozieClient, coords,
+                instanceNumber));
+    }
 
     private static List<String> getMissingDependenciesForInstance(OozieClient oozieClient,
-                                                                  List<CoordinatorJob> coords,
-                                                          int instanceNumber)
+            List<CoordinatorJob> coords, int instanceNumber)
         throws OozieClientException {
         ArrayList<String> missingPaths = new ArrayList<String>();
         for (CoordinatorJob coord : coords) {
@@ -454,8 +468,25 @@ public class OozieUtil {
             CoordinatorJob temp = oozieClient.getCoordJobInfo(coord.getId());
             CoordinatorAction instance = temp.getActions().get(instanceNumber);
             missingPaths.addAll(Arrays.asList(instance.getMissingDependencies().split("#")));
-          }
-
+        }
         return missingPaths;
+    }
+
+    public static void createMissingDependencies(ColoHelper helper, EntityType type,
+                                                 String entityName, int bundleNumber)
+        throws OozieClientException, IOException {
+        String bundleID = InstanceUtil.getSequenceBundleID(helper, entityName, type, bundleNumber);
+        OozieClient oozieClient = helper.getClusterHelper().getOozieClient();
+        List<CoordinatorJob> coords = oozieClient.getBundleJobInfo(bundleID).getCoordinators();
+        for (CoordinatorJob coord : coords) {
+
+            CoordinatorJob temp = oozieClient.getCoordJobInfo(coord.getId());
+            for (int instanceNumber = 0; instanceNumber < temp.getActions().size();
+                 instanceNumber++) {
+                CoordinatorAction instance = temp.getActions().get(instanceNumber);
+                InstanceUtil.createHDFSFolders(helper,
+                    Arrays.asList(instance.getMissingDependencies().split("#")));
+            }
+        }
     }
 }

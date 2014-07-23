@@ -33,21 +33,24 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
-/*
+/**
 all time / date related util methods for merlin . need to move methods from
 instanceUtil to here , pending item.
  */
 
-public class TimeUtil {
+public final class TimeUtil {
 
-    private static final Logger logger = Logger.getLogger(TimeUtil.class);
+    private TimeUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(TimeUtil.class);
 
     public static void sleepSeconds(double seconds) {
         long ms = (long) (seconds * 1000);
         try {
             TimeUnit.MILLISECONDS.sleep(ms);
         } catch (InterruptedException e) {
-            logger.info("Sleep was interrupted");
+            LOGGER.info("Sleep was interrupted");
         }
     }
 
@@ -55,19 +58,20 @@ public class TimeUtil {
         DateTime startTime =
             new DateTime(oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
 
-        if (startTime.getMinuteOfHour() < 20)
+        if (startTime.getMinuteOfHour() < 20) {
             startTime = startTime.minusMinutes(startTime.getMinuteOfHour());
-        else if (startTime.getMinuteOfHour() < 40)
+        } else if (startTime.getMinuteOfHour() < 40) {
             startTime = startTime.minusMinutes(startTime.getMinuteOfHour() + 20);
-        else
+        } else {
             startTime = startTime.minusMinutes(startTime.getMinuteOfHour() + 40);
+        }
         return dateToOozieDate(startTime.toDate());
 
     }
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
         DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
+        LOGGER.info("today is: " + today.toString());
 
         return getMinuteDatesOnEitherSide(today.minusMinutes(interval),
             today.plusMinutes(interval), minuteSkip);
@@ -100,7 +104,8 @@ public class TimeUtil {
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip,
                                                           DateTimeFormatter formatter) {
-        logger.info("generating data between " + formatter.print(startDate) + " and " +
+        LOGGER.info("generating data between " + formatter.print(startDate) + " and "
+                +
             formatter.print(endDate));
         if (minuteSkip == 0) {
             minuteSkip = 1;
@@ -115,7 +120,7 @@ public class TimeUtil {
     }
 
     /**
-     * Get format string corresponding to the FEED_TYPE
+     * Get format string corresponding to the FEED_TYPE .
      *
      * @param feedType type of the feed
      * @return format string
@@ -139,7 +144,7 @@ public class TimeUtil {
     }
 
     /**
-     * Convert list of dates to list of string according to the supplied format
+     * Convert list of dates to list of string according to the supplied format.
      *
      * @param dates        list of dates
      * @param formatString format string to be used for converting dates
@@ -157,7 +162,7 @@ public class TimeUtil {
     }
 
     /**
-     * Get all possible dates between start and end date gap between subsequent dates be one unit
+     * Get all possible dates between start and end date gap between subsequent dates be one unit.
      * of feedType
      *
      * @param startDate start date
@@ -203,10 +208,11 @@ public class TimeUtil {
     public static String getTimeWrtSystemTime(int minutes) {
 
         DateTime jodaTime = new DateTime(DateTimeZone.UTC);
-        if (minutes > 0)
+        if (minutes > 0) {
             jodaTime = jodaTime.plusMinutes(minutes);
-        else
+        } else {
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
+        }
 
         DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         DateTimeZone tz = DateTimeZone.getDefault();
@@ -230,7 +236,7 @@ public class TimeUtil {
     public static String dateToOozieDate(Date dt) {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        logger.info("SystemTime: " + jodaTime);
+        LOGGER.info("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         return fmt.print(jodaTime);
     }
@@ -242,9 +248,10 @@ public class TimeUtil {
         while (true) {
             DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
             sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
-            if (sysDate.compareTo(finalDate) > 0)
+            LOGGER.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
+            if (sysDate.compareTo(finalDate) > 0) {
                 break;
+            }
 
             TimeUtil.sleepSeconds(15);
         }

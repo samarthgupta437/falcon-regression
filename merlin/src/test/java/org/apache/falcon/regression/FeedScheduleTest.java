@@ -42,11 +42,11 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class FeedScheduleTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    OozieClient clusterOC = serverOC.get(0);
+    private ColoHelper cluster = servers.get(0);
+    private OozieClient clusterOC = serverOC.get(0);
     private String feed;
-    String aggregateWorkflowDir = baseHDFSDir + "/FeedScheduleTest/aggregator";
-    private static final Logger logger = Logger.getLogger(FeedScheduleTest.class);
+    private String aggregateWorkflowDir = baseHDFSDir + "/FeedScheduleTest/aggregator";
+    private static final Logger LOGGER = Logger.getLogger(FeedScheduleTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -54,7 +54,7 @@ public class FeedScheduleTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();

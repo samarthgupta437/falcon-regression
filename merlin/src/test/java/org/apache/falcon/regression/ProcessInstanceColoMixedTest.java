@@ -23,7 +23,7 @@ import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -57,22 +57,22 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     private final String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     private final String feedPath = baseTestHDFSDir + "/feed0%d" + datePattern;
     private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    ColoHelper cluster1 = servers.get(0);
-    ColoHelper cluster2 = servers.get(1);
-    FileSystem cluster1FS = serverFS.get(0);
-    FileSystem cluster2FS = serverFS.get(1);
-    private static final Logger logger = Logger.getLogger(ProcessInstanceColoMixedTest.class);
+    private ColoHelper cluster1 = servers.get(0);
+    private ColoHelper cluster2 = servers.get(1);
+    private FileSystem cluster1FS = serverFS.get(0);
+    private FileSystem cluster2FS = serverFS.get(1);
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceColoMixedTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void prepareClusters() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
         HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
 
         //get 3 unique bundles
         bundles[0] = BundleUtil.readELBundle();
@@ -86,9 +86,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
         //set cluster colos
         bundles[0].setCLusterColo(cluster1.getClusterHelper().getColoName());
-        logger.info("cluster b1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
+        LOGGER.info("cluster b1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         bundles[1].setCLusterColo(cluster2.getClusterHelper().getColoName());
-        logger.info("cluster b2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
+        LOGGER.info("cluster b2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
@@ -98,12 +98,12 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) {
-        logger.info("tearDown " + method.getName());
+        LOGGER.info("tearDown " + method.getName());
         removeBundles();
     }
 
     @Test(timeOut = 12000000)
-    public void mixed01_C1sC2sC1eC2e() throws Exception {
+    public void mixed01C1sC2sC1eC2e() throws Exception {
         //ua1 and ua3 are source. ua2 target.   feed01 on ua1 , feed02 on ua3
         //get 2 unique feeds
         String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
@@ -177,9 +177,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
-        logger.info("feed01: " + Util.prettyPrintXml(feed01));
-        logger.info("feed02: " + Util.prettyPrintXml(feed02));
-        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
+        LOGGER.info("feed01: " + Util.prettyPrintXml(feed01));
+        LOGGER.info("feed02: " + Util.prettyPrintXml(feed02));
+        LOGGER.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
 
         ServiceResponse r = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
@@ -216,18 +216,18 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                     Util.readEntityName(feed02));
 
         //submit and schedule process
-        logger.info("process: " + Util.prettyPrintXml(process));
+        LOGGER.info("process: " + Util.prettyPrintXml(process));
 
         prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
-        logger.info("Wait till process goes into running ");
+        LOGGER.info("Wait till process goes into running ");
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
             Status.RUNNING, EntityType.PROCESS);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(1), Util.getProcessName(process), 1,
             Status.RUNNING, EntityType.PROCESS);
-        ProcessInstancesResult responseInstance = prism.getProcessHelper()
+        InstancesResult responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + processStartTime + "&end=" + TimeUtil
                     .addMinsToTime(processStartTime, 45));
@@ -237,16 +237,16 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         responseInstance = prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + TimeUtil
-                    .addMinsToTime(processStartTime, 37) + "&end=" +
-                    TimeUtil.addMinsToTime(processStartTime, 44));
+                    .addMinsToTime(processStartTime, 37) + "&end="
+                        + TimeUtil.addMinsToTime(processStartTime, 44));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + TimeUtil
-                    .addMinsToTime(processStartTime, 37) + "&end=" +
-                    TimeUtil.addMinsToTime(processStartTime, 44));
+                    .addMinsToTime(processStartTime, 37) + "&end="
+                        + TimeUtil.addMinsToTime(processStartTime, 44));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
@@ -260,8 +260,8 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + TimeUtil
-                    .addMinsToTime(processStartTime, 16) + "&end=" +
-                    TimeUtil.addMinsToTime(processStartTime, 45));
+                    .addMinsToTime(processStartTime, 16) + "&end="
+                        + TimeUtil.addMinsToTime(processStartTime, 45));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 

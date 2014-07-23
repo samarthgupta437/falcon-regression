@@ -22,7 +22,7 @@ import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
 import org.apache.falcon.regression.core.response.lineage.VerticesResult;
@@ -135,7 +135,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         final List<Vertex> processInstanceVertices =
             processIncoming.filterByType(Vertex.VERTEX_TYPE.PROCESS_INSTANCE);
         logger.info("process instances = " + processInstanceVertices);
-        ProcessInstancesResult result = prism.getProcessHelper()
+        InstancesResult result = prism.getProcessHelper()
             .getProcessInstanceStatus(processName, "?start=" + processStartDate +
                 "&end=" + endDate);
         Assert.assertEquals(processInstanceVertices.size(), result.getInstances().length,
@@ -161,14 +161,14 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         logger.info("process instance vertex = " + piVertices);
 
         // fetching process instances info
-        ProcessInstancesResult piResult = prism.getProcessHelper()
+        InstancesResult piResult = prism.getProcessHelper()
             .getProcessInstanceStatus(processName, "?start=" + processStartDate +
                 "&end=" + endDate);
         Assert.assertEquals(piVertices.size(), piResult.getInstances().length,
             "Number of process instances should be same weather it is retrieved from lineage api " +
                 "or falcon rest api");
         final List<String> allowedPITimes = new ArrayList<String>();
-        for (ProcessInstancesResult.ProcessInstance processInstance : piResult.getInstances()) {
+        for (InstancesResult.Instance processInstance : piResult.getInstances()) {
             allowedPITimes.add(processInstance.getInstance());
         }
 

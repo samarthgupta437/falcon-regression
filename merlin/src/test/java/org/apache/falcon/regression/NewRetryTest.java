@@ -25,7 +25,7 @@ import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.process.PolicyType;
 import org.apache.falcon.entity.v0.process.Retry;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -658,7 +658,7 @@ public class NewRetryTest extends BaseTestClass {
             logger.info("now firing user reruns:");
 
             DateTime[] dateBoundaries = getFailureTimeBoundaries(clusterOC, bundleId);
-            ProcessInstancesResult piResult = prism.getProcessHelper()
+            InstancesResult piResult = prism.getProcessHelper()
                 .getProcessInstanceRerun(Util.readEntityName(bundles[0].getProcessData()),
                     "?start=" + formatter.print(dateBoundaries[0]).replace("/", "T") +
                         "Z" + "&end=" + formatter.print(dateBoundaries[dateBoundaries.length - 1])

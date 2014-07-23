@@ -29,9 +29,15 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 
-public class XmlUtil {
+/**
+ * Util methods for XML.
+ */
+public final class XmlUtil {
 
-    private static final Logger logger = Logger.getLogger(XmlUtil.class);
+    private XmlUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(XmlUtil.class);
 
     public static Validity createValidity(String start, String end) {
         Validity v = new Validity();
@@ -52,7 +58,7 @@ public class XmlUtil {
         String startTime, String endTime) {
         org.apache.falcon.entity.v0.process.Validity v =
             new org.apache.falcon.entity.v0.process.Validity();
-        logger.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
+        LOGGER.info("instanceUtil.oozieDateToDate(endTime).toDate(): "
             + TimeUtil.oozieDateToDate(endTime).toDate());
         v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
         v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
@@ -64,7 +70,7 @@ public class XmlUtil {
         XMLUnit.setIgnoreWhitespace(true);
         XMLUnit.setIgnoreAttributeOrder(true);
         Diff diff = XMLUnit.compareXML(expected, actual);
-        logger.info(diff);
+        LOGGER.info(diff);
         return diff.identical();
     }
 }

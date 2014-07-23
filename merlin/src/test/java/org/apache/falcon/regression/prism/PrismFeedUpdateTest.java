@@ -236,6 +236,35 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //check for new feed bundle creation
         Assert.assertEquals(OozieUtil.getNumberOfBundle(prism, EntityType.FEED,
             feed.getName()),2);
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.PROCESS,
+            bundles[0].getProcessName()),1);
+    }
+
+    /**
+     * schedules a feed and dependent process. Update availability flag and check for process update
+     * Test for bug https://issues.apache.org/jira/browse/FALCON-278
+     */
+    @Test
+    public void updateAvailabilityFlag()
+        throws Exception {
+        String startTime = TimeUtil.getTimeWrtSystemTime(3);
+        String endTime = TimeUtil.getTimeWrtSystemTime(30);
+        bundles[0].setProcessValidity(startTime, endTime);
+        bundles[0].submitAndScheduleAllFeeds();
+        bundles[0].submitAndScheduleProcess();
+
+        InstanceUtil.waitTillInstancesAreCreated(cluster1, bundles[0].getProcessData(), 0);
+        OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS, bundles[0].getProcessName(),
+            0, 0);
+
+        FeedMerlin feed = new FeedMerlin(bundles[0].getDataSets().get(0));
+        feed.setAvailabilityFlag("mytestflag");
+        AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed.toString(), feed.toString()));
+        //check for new feed bundle creation
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.FEED,
+            feed.getName()),2);
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.PROCESS,
+            bundles[0].getProcessName()),2);
     }
 
 }

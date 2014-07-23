@@ -20,10 +20,15 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.lang.StringUtils;
 
-public class OSUtil {
+/**
+ * Util methods related to OS.
+ */
+public final class OSUtil {
+    private OSUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
 
-    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith
-        ("windows");
+    public static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().startsWith("windows");
     public static final String SEPARATOR = System.getProperty("file.separator", "/");
     public static final String RESOURCES =
         String.format("src%stest%sresources%s", SEPARATOR, SEPARATOR, SEPARATOR);
