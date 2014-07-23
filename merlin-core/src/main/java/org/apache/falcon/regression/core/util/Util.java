@@ -23,12 +23,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.falcon.entity.v0.Entity;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
@@ -66,13 +61,9 @@ import org.xml.sax.SAXException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 
@@ -89,7 +80,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 
 public class Util {
@@ -166,7 +156,7 @@ public class Util {
             return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(),
                 helper.getStoreLocation() + subPath);
         } else {
-            return runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
+            return ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
                 helper.getUsername(), helper.getIdentityFile());
         }
@@ -181,53 +171,7 @@ public class Util {
             return Entity.fromString(EntityType.CLUSTER, data).getName();
     }
 
-    public static String readClusterName(String data) {
-        Cluster cluster = (Cluster) Entity.fromString(EntityType.CLUSTER, data);
-        return cluster.getName();
-    }
-
-    public static String readDatasetName(String data) {
-        Feed datasetElement = (Feed) Entity.fromString(EntityType.FEED, data);
-        return datasetElement.getName();
-    }
-
-    /**
-     * Sets unique name for process.
-     *
-     * @param data process definition
-     * @return process definition with unique name
-     */
-    public static String generateUniqueProcessEntity(String data) {
-        Process process = (Process) Entity.fromString(EntityType.PROCESS, data);
-        process.setName(process.getName() + getUniqueString());
-        return process.toString();
-    }
-
-    /**
-     * Sets unique name for cluster.
-     *
-     * @param data cluster definition
-     * @return cluster definition with unique name
-     */
-    public static String generateUniqueClusterEntity(String data) {
-        Cluster cluster = (Cluster) Entity.fromString(EntityType.CLUSTER, data);
-        cluster.setName(cluster.getName() + getUniqueString());
-        return cluster.toString();
-    }
-
-    /**
-     * Sets unique name for feed.
-     *
-     * @param data feed definition
-     * @return feed definition with unique name
-     */
-    public static String generateUniqueDataEntity(String data) {
-        Feed feed = (Feed) Entity.fromString(EntityType.FEED, data);
-        feed.setName(feed.getName() + getUniqueString());
-        return feed.toString();
-    }
-
-    private static String getUniqueString() {
+    public static String getUniqueString() {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
@@ -250,15 +194,6 @@ public class Util {
         return finalResult;
     }
 
-
-    public static int executeCommandGetExitCode(String command) {
-        return executeCommand(command).getExitVal();
-    }
-
-
-    public static String executeCommandGetOutput(String command) {
-        return executeCommand(command).getOutput();
-    }
 
     public static String setFeedProperty(String feed, String propertyName, String propertyValue) {
 
@@ -295,40 +230,6 @@ public class Util {
             }
         }
 
-        return null;
-    }
-
-    public static ExecResult executeCommand(String command) {
-        logger.info("Command to be executed: " + command);
-        StringBuilder errors = new StringBuilder();
-        StringBuilder output = new StringBuilder();
-
-        try {
-            java.lang.Process process = Runtime.getRuntime().exec(command);
-
-            BufferedReader errorReader =
-                new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            BufferedReader consoleReader =
-                new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            String line;
-            while ((line = errorReader.readLine()) != null) {
-                errors.append(line).append("\n");
-            }
-
-            while ((line = consoleReader.readLine()) != null) {
-                output.append(line).append("\n");
-            }
-            final int exitVal = process.waitFor();
-            logger.info("exitVal: " + exitVal);
-            logger.info("output: " + output);
-            logger.info("errors: " + errors);
-            return new ExecResult(exitVal, output.toString().trim(), errors.toString().trim());
-        } catch (InterruptedException e) {
-            Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
-        } catch (IOException e) {
-            Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
-        }
         return null;
     }
 
@@ -497,7 +398,7 @@ public class Util {
 
     public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
         throws IOException, JSchException {
-        List<String> raw = runRemoteScriptAsSudo(coloHelper.getProcessHelper()
+        List<String> raw = ExecUtil.runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
             "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
@@ -515,7 +416,7 @@ public class Util {
 
     public static List<String> getInstanceRetryTimes(ColoHelper coloHelper, String workflowId)
         throws IOException, JSchException {
-        List<String> raw = runRemoteScriptAsSudo(coloHelper.getProcessHelper()
+        List<String> raw = ExecUtil.runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
             "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
@@ -533,7 +434,7 @@ public class Util {
 
     public static void shutDownService(IEntityManagerHelper helper)
         throws IOException, JSchException {
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
+        ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
             helper.getPassword(), helper.getServiceStopCmd(),
             helper.getServiceUser(), helper.getIdentityFile());
         TimeUtil.sleepSeconds(10);
@@ -542,7 +443,7 @@ public class Util {
     public static void startService(IEntityManagerHelper helper)
         throws IOException, JSchException, AuthenticationException, URISyntaxException {
 
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
+        ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
             helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
             helper.getIdentityFile());
         int statusCode = 0;
@@ -566,107 +467,8 @@ public class Util {
         startService(helper);
     }
 
-    private static List<String> runRemoteScriptAsSudo(String hostName,
-                                                      String userName,
-                                                      String password,
-                                                      String command,
-                                                      String runAs,
-                                                      String identityFile
-    ) throws JSchException, IOException {
-        JSch jsch = new JSch();
-        Session session = jsch.getSession(userName, hostName, 22);
-        // only set the password if its not empty
-        if (null != password && !password.isEmpty()) {
-            session.setUserInfo(new HardcodedUserInfo(password));
-        }
-        Properties config = new Properties();
-        config.setProperty("StrictHostKeyChecking", "no");
-        config.setProperty("UserKnownHostsFile", "/dev/null");
-        // only set the password if its not empty
-        if (null == password || password.isEmpty()) {
-            jsch.addIdentity(identityFile);
-        }
-        session.setConfig(config);
-        session.connect();
-        Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
-
-        List<String> data = new ArrayList<String>();
-
-        ChannelExec channel = (ChannelExec) session.openChannel("exec");
-        channel.setPty(true);
-        String runCmd;
-        if (null == runAs || runAs.isEmpty()) {
-            runCmd = "sudo -S -p '' " + command;
-        } else {
-            runCmd = String.format("sudo su - %s -c '%s'", runAs, command);
-        }
-        if (userName.equals(runAs)) runCmd = command;
-        logger.info(
-            "host_name: " + hostName + " user_name: " + userName + " password: " + password +
-                " command: " +
-                runCmd);
-        channel.setCommand(runCmd);
-        InputStream in = channel.getInputStream();
-        OutputStream out = channel.getOutputStream();
-        channel.setErrStream(System.err);
-        channel.connect();
-        TimeUtil.sleepSeconds(20);
-        // only print the password if its not empty
-        if (null != password && !password.isEmpty()) {
-            out.write((password + "\n").getBytes());
-            out.flush();
-        }
-
-        //save console output to data
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
-        String line;
-        while (true) {
-            while ((line=r.readLine())!=null) {
-                logger.debug(line);
-                data.add(line);
-            }
-            if (channel.isClosed()) {
-                break;
-            }
-        }
-
-        byte[] tmp = new byte[1024];
-        while (true) {
-            while (in.available() > 0) {
-                int i = in.read(tmp, 0, 1024);
-                if (i < 0) break;
-                logger.info(new String(tmp, 0, i));
-            }
-            if (channel.isClosed()) {
-                logger.info("exit-status: " + channel.getExitStatus());
-                break;
-            }
-            TimeUtil.sleepSeconds(1);
-        }
-
-        in.close();
-        channel.disconnect();
-        session.disconnect();
-        out.close();
-        return data;
-    }
-
     public static Process getProcessObject(String processData) {
         return (Process) Entity.fromString(EntityType.PROCESS, processData);
-    }
-
-    /**
-     * Sets unique names for each cluster entity in supplied list.
-     *
-     * @param clusterData list of cluster definitions to be modified
-     * @return list of unique cluster definitions
-     */
-    public static List<String> generateUniqueClusterEntity(List<String> clusterData) {
-        List<String> newList = new ArrayList<String>();
-        for (String cluster : clusterData) {
-            newList.add(generateUniqueClusterEntity(cluster));
-        }
-        return newList;
     }
 
     public static void dumpConsumerData(Consumer consumer) {
@@ -734,24 +536,6 @@ public class Util {
                 OSUtil.NORMAL_INPUT + "log_01.txt");
 
     }
-
-    public static Properties getPropertiesObj(String filename) {
-        try {
-            Properties properties = new Properties();
-
-            logger.info("filename: " + filename);
-            InputStream conf_stream =
-                Util.class.getResourceAsStream("/" + filename);
-            properties.load(conf_stream);
-            conf_stream.close();
-            return properties;
-
-        } catch (Exception e) {
-            logger.info(e.getStackTrace());
-        }
-        return null;
-    }
-
 
     public static String getEnvClusterXML(String cluster, String prefix) {
 
@@ -887,40 +671,6 @@ public class Util {
     public static String getFileNameFromPath(String path) {
 
         return path.substring(path.lastIndexOf("/") + 1, path.length());
-    }
-
-
-    private static class HardcodedUserInfo implements UserInfo {
-
-        private final String password;
-
-        private HardcodedUserInfo(String password) {
-            this.password = password;
-        }
-
-        public String getPassphrase() {
-            return null;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public boolean promptPassword(String s) {
-            return true;
-        }
-
-        public boolean promptPassphrase(String s) {
-            return true;
-        }
-
-        public boolean promptYesNo(String s) {
-            return true;
-        }
-
-        public void showMessage(String s) {
-            logger.info("message = " + s);
-        }
     }
 
 

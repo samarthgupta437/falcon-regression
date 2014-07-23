@@ -120,7 +120,7 @@ public class FeedRetentionTest extends BaseTestClass {
         feedOutput01 = InstanceUtil.setFeedCluster(feedOutput01,
             XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
             XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}",
             String.format(outputPathTemplate, 1, 1, "data"),
             String.format(outputPathTemplate, 1, 1, "stats"),
@@ -130,7 +130,7 @@ public class FeedRetentionTest extends BaseTestClass {
         feedOutput01 = InstanceUtil.setFeedCluster(feedOutput01,
             XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
             XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}",
             String.format(outputPathTemplate, 1, 2, "data"),
             String.format(outputPathTemplate, 1, 2, "stats"),
@@ -150,7 +150,7 @@ public class FeedRetentionTest extends BaseTestClass {
         feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
             XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
             XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}",
             String.format(outputPathTemplate, 2, 1, "data"),
             String.format(outputPathTemplate, 2, 1, "stats"),
@@ -160,7 +160,7 @@ public class FeedRetentionTest extends BaseTestClass {
         feedOutput02 = InstanceUtil.setFeedCluster(feedOutput02,
             XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
             XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}",
             String.format(outputPathTemplate, 2, 2, "data"),
             String.format(outputPathTemplate, 2, 2, "stats"),
@@ -181,13 +181,13 @@ public class FeedRetentionTest extends BaseTestClass {
         feedInput = InstanceUtil.setFeedCluster(feedInput,
             XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:10Z"),
             XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}", inputData);
 
         feedInput = InstanceUtil.setFeedCluster(feedInput,
             XmlUtil.createValidity("2010-10-01T12:00Z", "2099-10-01T12:25Z"),
             XmlUtil.createRtention("minutes(5)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}", inputData);
 
         AssertUtil.assertSucceeded(
@@ -198,11 +198,11 @@ public class FeedRetentionTest extends BaseTestClass {
             XmlUtil.createProcessValidity("2012-10-01T12:00Z", "2012-10-01T12:10Z"));
 
         process = InstanceUtil.setProcessCluster(process,
-            Util.readClusterName(bundles[0].getClusters().get(0)),
+            Util.readEntityName(bundles[0].getClusters().get(0)),
             XmlUtil.createProcessValidity(TimeUtil.getTimeWrtSystemTime(-2),
                 TimeUtil.getTimeWrtSystemTime(5)));
         process = InstanceUtil.setProcessCluster(process,
-            Util.readClusterName(bundles[1].getClusters().get(0)),
+            Util.readEntityName(bundles[1].getClusters().get(0)),
             XmlUtil.createProcessValidity(TimeUtil.getTimeWrtSystemTime(-2),
                 TimeUtil.getTimeWrtSystemTime(5)));
 

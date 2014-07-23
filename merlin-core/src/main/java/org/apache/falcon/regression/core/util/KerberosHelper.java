@@ -36,7 +36,7 @@ public class KerberosHelper {
         }
         final String keytab = MerlinConstants.getKeytabForUser(user);
         final String command = String.format("kinit -kt %s %s", keytab, user);
-        final int exitVal = Util.executeCommandGetExitCode(command);
+        final int exitVal = ExecUtil.executeCommandGetExitCode(command);
         Assert.assertEquals(exitVal, 0, "Switching Kerberos credential did not succeed.");
     }
 

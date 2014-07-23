@@ -108,19 +108,19 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "US/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "UK/${cluster.colo}");
 
 
@@ -130,7 +130,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         TimeUtil.sleepSeconds(10);
 
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         List<String> replicationCoordIDTarget = InstanceUtil
@@ -181,19 +181,19 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "US/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "UK/${cluster.colo}");
 
 
@@ -216,7 +216,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId = InstanceUtil
-            .getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            .getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget = InstanceUtil.getReplicationCoordID(bundleId,
             cluster1.getFeedHelper());
@@ -345,19 +345,19 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         //create data in colos
@@ -397,7 +397,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());
@@ -542,19 +542,19 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         //create data in colos
@@ -596,7 +596,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), EntityType.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());

@@ -182,7 +182,7 @@ public class LineageGraphTest extends BaseUITestClass {
     @Test
     public void testVerticesInfo()
         throws JAXBException, URISyntaxException, AuthenticationException, IOException {
-        String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
         for (Vertex piVertex : piVertices) {
