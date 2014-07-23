@@ -37,7 +37,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.apache.oozie.client.WorkflowJob;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -47,39 +46,41 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.util.List;
 
+/**
+ * tests for instance option params.
+ */
 public class InstanceParamTest extends BaseTestClass {
 
     /**
-     * test cases for https://issues.apache.org/jira/browse/FALCON-263
+     * test cases for https://issues.apache.org/jira/browse/FALCON-263.
      */
 
-    String baseTestHDFSDir = baseHDFSDir + "/InstanceParamTest";
-    String feedInputPath = baseTestHDFSDir +
+    private String baseTestHDFSDir = baseHDFSDir + "/InstanceParamTest";
+    private String feedInputPath = baseTestHDFSDir
+            +
         "/testInputData/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    String startTime;
-    String endTime;
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    private String startTime;
+    private String endTime;
 
-    ColoHelper cluster1 = servers.get(0);
-    OozieClient oC1 = serverOC.get(0);
-    Bundle processBundle;
-    private static final Logger logger = Logger.getLogger(InstanceParamTest.class);
+    private ColoHelper cluster1 = servers.get(0);
+    private OozieClient oC1 = serverOC.get(0);
+    private Bundle processBundle;
+    private static final Logger LOGGER = Logger.getLogger(InstanceParamTest.class);
 
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         startTime = TimeUtil.get20roundedTime(TimeUtil
-            .getTimeWrtSystemTime
-                (-20));
+            .getTimeWrtSystemTime(-20));
         endTime = TimeUtil.getTimeWrtSystemTime(60);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         processBundle = BundleUtil.readELBundle();
         processBundle = new Bundle(processBundle, cluster1);
         processBundle.generateUniqueBundle();
@@ -92,7 +93,7 @@ public class InstanceParamTest extends BaseTestClass {
         }
     }
     @Test(timeOut = 1200000, enabled = false)
-    public void getParamsValidRequest_instanceWaiting()
+    public void getParamsValidRequestInstanceWaiting()
         throws URISyntaxException, JAXBException, AuthenticationException, IOException,
         OozieClientException {
         processBundle.setProcessValidity(startTime, endTime);
@@ -109,7 +110,7 @@ public class InstanceParamTest extends BaseTestClass {
     }
 
     @Test(timeOut = 1200000, enabled = true)
-    public void getParamsValidRequest_instanceSucceeded()
+    public void getParamsValidRequestInstanceSucceeded()
         throws URISyntaxException, JAXBException, AuthenticationException, IOException,
         OozieClientException {
         processBundle.setProcessValidity(startTime, endTime);
@@ -126,10 +127,11 @@ public class InstanceParamTest extends BaseTestClass {
         InstancesResult r = prism.getProcessHelper()
             .getInstanceParams(Util.readEntityName(processBundle.getProcessData()),
                 "?start="+startTime);
-        }
+        LOGGER.info(r.getMessage());
+    }
 
     @Test(timeOut = 1200000, enabled = false)
-    public void getParamsValidRequest_instanceKilled()
+    public void getParamsValidRequestInstanceKilled()
         throws URISyntaxException, JAXBException, AuthenticationException, IOException,
         OozieClientException {
         processBundle.setProcessValidity(startTime, endTime);
