@@ -40,8 +40,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class BundleUtil {
-    private static final Logger logger = Logger.getLogger(BundleUtil.class);
+/**
+ * util methods related to bundle.
+ */
+public final class BundleUtil {
+    private BundleUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(BundleUtil.class);
 
     public static Bundle readLateDataBundle() throws IOException {
         return readBundleFromFolder("LateDataBundles");
@@ -80,7 +86,7 @@ public class BundleUtil {
     }
 
     private static Bundle readBundleFromFolder(final String folderPath) throws IOException {
-        logger.info("Loading xmls from directory: " + folderPath);
+        LOGGER.info("Loading xmls from directory: " + folderPath);
         File directory = null;
         try {
             directory = new File(BundleUtil.class.getResource("/" + folderPath).toURI());
@@ -93,19 +99,21 @@ public class BundleUtil {
         String processData = "";
 
         for (File file : files) {
-            logger.info("Loading data from path: " + file.getAbsolutePath());
+            LOGGER.info("Loading data from path: " + file.getAbsolutePath());
             final String data = IOUtils.toString(file.toURI());
 
             if (data.contains("uri:ivory:cluster:0.1") || data.contains("uri:falcon:cluster:0.1")) {
-                logger.info("data been added to cluster");
+                LOGGER.info("data been added to cluster");
                 clusterData = data;
-            } else if (data.contains("uri:ivory:feed:0.1") ||
+            } else if (data.contains("uri:ivory:feed:0.1")
+                    ||
                 data.contains("uri:falcon:feed:0.1")) {
-                logger.info("data been added to feed");
+                LOGGER.info("data been added to feed");
                 dataSets.add(InstanceUtil.setFeedACL(data));
-            } else if (data.contains("uri:ivory:process:0.1") ||
+            } else if (data.contains("uri:ivory:process:0.1")
+                    ||
                 data.contains("uri:falcon:process:0.1")) {
-                logger.info("data been added to process");
+                LOGGER.info("data been added to process");
                 processData = data;
             }
         }

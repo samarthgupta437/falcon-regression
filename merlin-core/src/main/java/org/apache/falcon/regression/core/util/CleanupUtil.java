@@ -36,8 +36,14 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CleanupUtil {
-    private static final Logger logger = Logger.getLogger(CleanupUtil.class);
+/**
+ * util methods related to conf.
+ */
+public final class CleanupUtil {
+    private CleanupUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(CleanupUtil.class);
 
     public static List<String> getAllProcesses(ColoHelper prism)
         throws IOException, URISyntaxException, AuthenticationException, JAXBException {
@@ -82,11 +88,12 @@ public class CleanupUtil {
                 try {
                     prism.getClusterHelper().deleteByName(Util.URLS.DELETE_URL, cluster, null);
                 } catch (Exception e) {
-                    logger.warn("Caught exception: " + ExceptionUtils.getStackTrace(e));
+                    LOGGER.warn("Caught exception: " + ExceptionUtils.getStackTrace(e));
                 }
             }
         } catch (Exception e) {
-            logger.warn("Unable to get a list of clusters because of exception: " +
+            LOGGER.warn("Unable to get a list of clusters because of exception: "
+                    +
                 ExceptionUtils.getStackTrace(e));
         }
     }
@@ -98,11 +105,12 @@ public class CleanupUtil {
                 try {
                     prism.getFeedHelper().deleteByName(Util.URLS.DELETE_URL, feed, null);
                 } catch (Exception e) {
-                    logger.warn("Caught exception: " + ExceptionUtils.getStackTrace(e));
+                    LOGGER.warn("Caught exception: " + ExceptionUtils.getStackTrace(e));
                 }
             }
         } catch (Exception e) {
-            logger.warn("Unable to get a list of feeds because of exception: " +
+            LOGGER.warn("Unable to get a list of feeds because of exception: "
+                    +
                 ExceptionUtils.getStackTrace(e));
         }
     }
@@ -115,11 +123,12 @@ public class CleanupUtil {
                 try {
                     entityManagerHelper.deleteByName(Util.URLS.DELETE_URL, process, null);
                 } catch (Exception e) {
-                    logger.warn("Caught exception: " + ExceptionUtils.getStackTrace(e));
+                    LOGGER.warn("Caught exception: " + ExceptionUtils.getStackTrace(e));
                 }
             }
         } catch (Exception e) {
-            logger.warn("Unable to get a list of feeds because of exception: " +
+            LOGGER.warn("Unable to get a list of feeds because of exception: "
+                    +
                 ExceptionUtils.getStackTrace(e));
         }
     }
@@ -134,7 +143,7 @@ public class CleanupUtil {
         try {
             helper.delete(Util.URLS.DELETE_URL, feed);
         } catch (Exception e) {
-            logger.info("Caught exception: " + ExceptionUtils.getStackTrace(e));
+            LOGGER.info("Caught exception: " + ExceptionUtils.getStackTrace(e));
         }
     }
 }

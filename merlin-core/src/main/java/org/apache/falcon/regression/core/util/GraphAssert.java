@@ -28,11 +28,17 @@ import org.apache.falcon.regression.core.response.lineage.VerticesResult;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
-public class GraphAssert {
-    private static final Logger logger = Logger.getLogger(GraphAssert.class);
+/**
+ * util methods for Graph Asserts.
+ */
+public final class GraphAssert {
+    private GraphAssert() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(GraphAssert.class);
 
     /**
-     * Check that the result has certain minimum number of vertices
+     * Check that the result has certain minimum number of vertices.
      * @param graphResult the result to be checked
      * @param minNumOfVertices required number of vertices
      */
@@ -43,7 +49,7 @@ public class GraphAssert {
     }
 
     /**
-     * Check that the vertices in the result are sane
+     * Check that the vertices in the result are sane.
      * @param verticesResult the result to be checked
      */
     public static void assertVertexSanity(final VerticesResult verticesResult) {
@@ -64,7 +70,7 @@ public class GraphAssert {
     }
 
     /**
-     * Check that edges in the result are sane
+     * Check that edges in the result are sane.
      * @param edgesResult result to be checked
      */
     public static void assertEdgeSanity(final EdgesResult edgesResult) {
@@ -76,7 +82,7 @@ public class GraphAssert {
     }
 
     /**
-     * Check that edge is sane
+     * Check that edge is sane.
      * @param edge edge to be checked
      */
     public static void assertEdgeSanity(Edge edge) {
@@ -89,14 +95,14 @@ public class GraphAssert {
     }
 
     /**
-     * Check that user vertex is present
+     * Check that user vertex is present.
      * @param verticesResult the result to be checked
      */
     public static void assertUserVertexPresence(final VerticesResult verticesResult) {
         checkVerticesPresence(verticesResult, 1);
         for(Vertex vertex : verticesResult.getResults()) {
-            if(vertex.getType() == Vertex.VERTEX_TYPE.USER) {
-                if(vertex.getName().equals(MerlinConstants.CURRENT_USER_NAME)) {
+            if (vertex.getType() == Vertex.VERTEX_TYPE.USER) {
+                if (vertex.getName().equals(MerlinConstants.CURRENT_USER_NAME)) {
                     return;
                 }
             }
@@ -106,7 +112,7 @@ public class GraphAssert {
     }
 
     /**
-     * Check that a vertex of a certain name is present
+     * Check that a vertex of a certain name is present.
      * @param verticesResult the result to be checked
      * @param name expected name
      */
@@ -121,30 +127,30 @@ public class GraphAssert {
     }
 
     /**
-     * Check that the result has at least a certain number of vertices of a certain type
+     * Check that the result has at least a certain number of vertices of a certain type.
      * @param verticesResult the result to be checked
-     * @param vertex_type vertex type
+     * @param vertexType vertex type
      * @param minOccurrence required number of vertices
      */
     public static void assertVerticesPresenceMinOccur(final VerticesResult verticesResult,
-                                                      final Vertex.VERTEX_TYPE vertex_type,
+                                                      final Vertex.VERTEX_TYPE vertexType,
                                                       final int minOccurrence) {
         int occurrence = 0;
         for(Vertex vertex : verticesResult.getResults()) {
-            if(vertex.getType() == vertex_type) {
-                logger.info("Found vertex: " + vertex);
+            if (vertex.getType() == vertexType) {
+                LOGGER.info("Found vertex: " + vertex);
                 occurrence++;
-                if(occurrence >= minOccurrence) {
+                if (occurrence >= minOccurrence) {
                     return;
                 }
             }
         }
         Assert.fail(String.format("Expected at least %d vertices of type %s. But found only %d",
-            minOccurrence, vertex_type, occurrence));
+            minOccurrence, vertexType, occurrence));
     }
 
     /**
-     * Check result to contain at least a certain number of edges of a certain type
+     * Check result to contain at least a certain number of edges of a certain type.
      * @param edgesResult result to be checked
      * @param edgeLabel edge label
      * @param minOccurrence required number of edges
@@ -154,10 +160,10 @@ public class GraphAssert {
                                                   final int minOccurrence) {
         int occurrence = 0;
         for(Edge edge : edgesResult.getResults()) {
-            if(edge.get_label() == edgeLabel) {
-                logger.info("Found edge: " + edge);
+            if (edge.get_label() == edgeLabel) {
+                LOGGER.info("Found edge: " + edge);
                 occurrence++;
-                if(occurrence >= minOccurrence) {
+                if (occurrence >= minOccurrence) {
                     return;
                 }
             }

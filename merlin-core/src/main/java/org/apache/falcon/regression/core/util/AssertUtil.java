@@ -37,12 +37,19 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.util.List;
 
-public class AssertUtil {
+/**
+ * Util methods for assert.
+ */
+public final class AssertUtil {
 
-    private static final Logger logger = Logger.getLogger(AssertUtil.class);
+    private AssertUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+
+    private static final Logger LOGGER = Logger.getLogger(AssertUtil.class);
 
     /**
-     * Checks that any path in list doesn't contains a string
+     * Checks that any path in list doesn't contains a string.
      *
      * @param paths list of paths
      * @param shouldNotBePresent string that shouldn't be present
@@ -50,46 +57,49 @@ public class AssertUtil {
     public static void failIfStringFoundInPath(
         List<Path> paths, String... shouldNotBePresent) {
         for (Path path : paths) {
-            for (String aShouldNotBePresent : shouldNotBePresent)
-                if (path.toUri().toString().contains(aShouldNotBePresent))
-                    Assert.fail("String " + aShouldNotBePresent + " was not expected in path " +
-                        path.toUri().toString());
+            for (String aShouldNotBePresent : shouldNotBePresent) {
+                if (path.toUri().toString().contains(aShouldNotBePresent)) {
+                    Assert.fail("String " + aShouldNotBePresent + " was not expected in path "
+                            +
+                            path.toUri().toString());
+                }
+            }
         }
     }
 
     /**
-     * Checks that two lists have same size
+     * Checks that two lists have same size.
      *
      * @param expected expected list
      * @param actual   actual list
      */
     public static void checkForListSizes(List<?> expected, List<?> actual) {
         if (expected.size() != actual.size()) {
-            logger.info("expected = " + expected);
-            logger.info("actual = " + actual);
-            logger.info("expected.size() = " + expected.size());
-            logger.info("actual.size() = " + actual.size());
+            LOGGER.info("expected = " + expected);
+            LOGGER.info("actual = " + actual);
+            LOGGER.info("expected.size() = " + expected.size());
+            LOGGER.info("actual.size() = " + actual.size());
             Assert.fail("Size of expected and actual list don't match.");
         }
     }
 
     /**
-     * Checks that two lists have same size
+     * Checks that two lists have same size.
      *
      * @param elements list of elements
      * @param expectedSize expected size of the list
      */
     public static void checkForListSize(List<?> elements, int expectedSize) {
         if (elements.size() != expectedSize) {
-            logger.info("expectedSize = " + expectedSize);
-            logger.info("elements.size() = " + elements.size());
-            logger.info("elements = " + elements);
+            LOGGER.info("expectedSize = " + expectedSize);
+            LOGGER.info("elements.size() = " + elements.size());
+            LOGGER.info("elements = " + elements);
             Assert.fail("Size of expected and actual list don't match.");
         }
     }
 
     /**
-     * Checks that two lists has expected diff element
+     * Checks that two lists has expected diff element.
      *
      * @param initialState first list
      * @param finalState   second list
@@ -103,21 +113,23 @@ public class AssertUtil {
         if (expectedDiff > -1) {
             finalState.removeAll(initialState);
             Assert.assertEquals(finalState.size(), expectedDiff);
-            if (expectedDiff != 0)
+            if (expectedDiff != 0) {
                 Assert.assertTrue(finalState.get(0).contains(filename));
+            }
         } else {
             expectedDiff = expectedDiff * -1;
             initialState.removeAll(finalState);
             Assert.assertEquals(initialState.size(), expectedDiff);
-            if (expectedDiff != 0)
+            if (expectedDiff != 0) {
                 Assert.assertTrue(initialState.get(0).contains(filename));
+            }
         }
 
 
     }
 
     /**
-     * Checks that two lists has expected diff element
+     * Checks that two lists has expected diff element.
      *
      * @param initialState first list
      * @param finalState   second list
@@ -141,7 +153,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that ServiceResponse status is SUCCEEDED
+     * Checks that ServiceResponse status is SUCCEEDED.
      *
      * @param response ServiceResponse
      * @throws JAXBException
@@ -155,7 +167,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that ProcessInstancesResult status is SUCCEEDED
+     * Checks that ProcessInstancesResult status is SUCCEEDED.
      *
      * @param response ProcessInstancesResult
      */
@@ -166,7 +178,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that ServiceResponse status is status FAILED
+     * Checks that ServiceResponse status is status FAILED.
      *
      * @param response ServiceResponse
      * @param message  message for exception
@@ -178,7 +190,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that ServiceResponse status is status FAILED with some status code
+     * Checks that ServiceResponse status is status FAILED with some status code.
      *
      * @param response   ServiceResponse
      * @param statusCode expected status code
@@ -196,7 +208,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that ServiceResponse status is status PARTIAL
+     * Checks that ServiceResponse status is status PARTIAL.
      *
      * @param response ServiceResponse
      * @throws JAXBException
@@ -208,7 +220,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that ServiceResponse status is status FAILED with status code 400
+     * Checks that ServiceResponse status is status FAILED with status code 400.
      *
      * @param response ServiceResponse
      * @throws JAXBException
@@ -267,7 +279,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that status of some entity job is NOT equal to expected
+     * Checks that status of some entity job is NOT equal to expected.
      *
      * @param oozieClient    OozieClient
      * @param entityType     FEED or PROCESS
@@ -289,7 +301,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks that status of some entity job is NOT equal to expected
+     * Checks that status of some entity job is NOT equal to expected.
      *
      * @param oozieClient    OozieClient
      * @param entityType     FEED or PROCESS
@@ -310,7 +322,7 @@ public class AssertUtil {
     }
 
     /**
-     * Checks size of the content a two locations
+     * Checks size of the content a two locations.
      *
      * @param firstPath  path to the first location
      * @param secondPath path to the second location
@@ -321,18 +333,18 @@ public class AssertUtil {
         IOException {
         final ContentSummary firstSummary = fs.getContentSummary(new Path(firstPath));
         final ContentSummary secondSummary = fs.getContentSummary(new Path(secondPath));
-        logger.info(firstPath + " : firstSummary = " + firstSummary.toString(false));
-        logger.info(secondPath + " : secondSummary = " + secondSummary.toString(false));
+        LOGGER.info(firstPath + " : firstSummary = " + firstSummary.toString(false));
+        LOGGER.info(secondPath + " : secondSummary = " + secondSummary.toString(false));
         Assert.assertEquals(firstSummary.getLength(), secondSummary.getLength(),
             "Contents at the two locations don't have same size.");
     }
 
     /**
      * Fail the test because of the supplied exception.
-     * @param e
+     * @param e exception
      */
     public static void fail(Exception e) {
-        logger.info("Got exception: " + ExceptionUtils.getStackTrace(e));
+        LOGGER.info("Got exception: " + ExceptionUtils.getStackTrace(e));
         Assert.fail("Failing because of exception.");
     }
 }
