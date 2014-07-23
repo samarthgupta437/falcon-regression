@@ -21,6 +21,7 @@ package org.apache.falcon.regression.ui.pages;
 
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 public class EntitiesPage extends Page {
+
+    private static final Logger logger = Logger.getLogger(EntitiesPage.class);
 
     private final static String ACTIVE_NXT_BTN
             = "//ul/li[not(@class)]/a[contains(text(),'»')]";
@@ -66,13 +69,24 @@ public class EntitiesPage extends Page {
         return null;
     }
 
+    /**
+     * Loads next page
+     */
     private void goNextPage() {
+        logger.info("Navigating to next page...");
         WebElement nextButton = driver.findElement(By.xpath(ACTIVE_NXT_BTN));
         nextButton.click();
         waitForElement(expectedElement, DEFAULT_TIMEOUT, "Next page didn't load");
     }
 
+
+    /**
+     * Checks if next page is present
+     * @return true if next page is present
+     */
+
     private boolean nextPagePresent() {
+        logger.info("Checking if next page is present...");
         try {
             new WebDriverWait(driver, DEFAULT_TIMEOUT).until(new Condition(ACTIVE_NXT_BTN, true));
             return true;
@@ -91,6 +105,7 @@ public class EntitiesPage extends Page {
     }
 
     private Map<String,String> getEntitiesOnPage() {
+        logger.info("Reading all entities on page...");
         List<WebElement> lines = driver.findElements(By.xpath(ENTITIES_TABLE));
         Map<String, String> entities = new HashMap<String, String>();
         for (WebElement line : lines) {
