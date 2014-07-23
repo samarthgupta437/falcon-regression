@@ -79,7 +79,11 @@ import java.util.TreeMap;
 /**
  * util functions related to instanceTest.
  */
-public class InstanceUtil {
+public final class InstanceUtil {
+
+    private InstanceUtil() {
+        //not called
+    }
 
     private static final Logger LOGGER = Logger.getLogger(InstanceUtil.class);
 
