@@ -60,7 +60,6 @@ import org.testng.annotations.Test;
 
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -182,7 +181,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
@@ -809,7 +808,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
@@ -882,7 +881,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
@@ -962,7 +961,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
@@ -1087,7 +1086,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
             AssertUtil.assertSucceeded(
                 cluster3.getProcessHelper()
                     .schedule(URLS.SCHEDULE_URL, originalProcess));
-            Thread.sleep(30000);
+            TimeUtil.sleepSeconds(30);
             InstanceUtil.waitTillInstancesAreCreated(cluster3, originalProcess, 0, 10);
 
             String oldBundleId = InstanceUtil
@@ -1160,7 +1159,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        Thread.sleep(3000);
+        TimeUtil.sleepSeconds(30);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
@@ -1352,7 +1351,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
@@ -1398,7 +1397,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         AssertUtil.assertSucceeded(
             cluster3.getProcessHelper()
                 .schedule(URLS.SCHEDULE_URL, bundles[1].getProcessData()));
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         InstanceUtil.waitTillInstancesAreCreated(cluster3, bundles[1].getProcessData(), 0, 10);
 
         String oldBundleId = InstanceUtil
