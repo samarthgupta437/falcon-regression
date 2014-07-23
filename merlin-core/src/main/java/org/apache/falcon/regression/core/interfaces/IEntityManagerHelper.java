@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.response.InstancesSummaryResult;
 import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Config;
+import org.apache.falcon.regression.core.util.ExecUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -480,12 +481,12 @@ public abstract class IEntityManagerHelper {
     }
 
     public String list() {
-        return Util.executeCommandGetOutput(
+        return ExecUtil.executeCommandGetOutput(
             BASE_COMMAND + " entity -list -url " + this.hostname + " -type " + getEntityType());
     }
 
     public String getDependencies(String entityName) {
-        return Util.executeCommandGetOutput(
+        return ExecUtil.executeCommandGetOutput(
             BASE_COMMAND + " entity -dependency -url " + this.hostname + " -type " +
                 getEntityType() + " -name " + entityName);
     }

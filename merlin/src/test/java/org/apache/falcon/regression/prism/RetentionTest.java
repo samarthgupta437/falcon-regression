@@ -174,7 +174,7 @@ public class RetentionTest extends BaseTestClass {
         cluster.getFeedHelper()
             .schedule(URLS.SCHEDULE_URL, inputFeed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
-        final String inputDataSetName = Util.readDatasetName(inputFeed);
+        final String inputDataSetName = Util.readEntityName(inputFeed);
         logger.info(inputDataSetName);
         Consumer consumer =
             new Consumer("FALCON." + inputDataSetName,
@@ -318,10 +318,10 @@ public class RetentionTest extends BaseTestClass {
     private void verifyFeedDeletion(String feed)
         throws IOException {
         String directory = "/projects/ivory/staging/" + cluster.getFeedHelper().getServiceUser()
-            + "/workflows/feed/" + Util.readDatasetName(feed);
+            + "/workflows/feed/" + Util.readEntityName(feed);
         //make sure feed bundle is not there
         Assert.assertFalse(clusterFS.isDirectory(new Path(directory)),
-            "Feed " + Util.readDatasetName(feed) + " did not have its bundle removed!!!!");
+            "Feed " + Util.readEntityName(feed) + " did not have its bundle removed!!!!");
     }
 
     private static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {

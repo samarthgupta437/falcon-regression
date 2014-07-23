@@ -235,7 +235,7 @@ public class AssertUtil {
         throws OozieClientException {
         String name = null;
         if (entityType == EntityType.FEED) {
-            name = Util.readDatasetName(data);
+            name = Util.readEntityName(data);
         } else if (entityType == EntityType.PROCESS) {
             name = Util.readEntityName(data);
         }
@@ -278,8 +278,13 @@ public class AssertUtil {
     public static void checkNotStatus(OozieClient oozieClient, EntityType entityType, String data,
                                       Job.Status expectedStatus)
         throws OozieClientException {
-        String entityName = Util.readEntityName(data);
-        Assert.assertNotEquals(OozieUtil.getOozieJobStatus(oozieClient, entityName,
+        String processName = null;
+        if (entityType == EntityType.FEED) {
+            processName = Util.readEntityName(data);
+        } else if (entityType == EntityType.PROCESS) {
+            processName = Util.readEntityName(data);
+        }
+        Assert.assertNotEquals(OozieUtil.getOozieJobStatus(oozieClient, processName,
             entityType), expectedStatus, "Status should not be " + expectedStatus);
     }
 

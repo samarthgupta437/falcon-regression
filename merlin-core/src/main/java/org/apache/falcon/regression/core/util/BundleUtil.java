@@ -44,43 +44,42 @@ public class BundleUtil {
     private static final Logger logger = Logger.getLogger(BundleUtil.class);
 
     public static Bundle readLateDataBundle() throws IOException {
-        return readBundleFromFolder("LateDataBundles").get(0);
+        return readBundleFromFolder("LateDataBundles");
     }
 
     public static Bundle readRetryBundle() throws IOException {
-        return readBundleFromFolder("RetryTests").get(0);
+        return readBundleFromFolder("RetryTests");
     }
 
     public static Bundle readRetentionBundle() throws IOException {
-        return readBundleFromFolder("RetentionBundles").get(0);
+        return readBundleFromFolder("RetentionBundles");
     }
 
     public static Bundle readELBundle() throws IOException {
-        return readBundleFromFolder("ELbundle").get(0);
+        return readBundleFromFolder("ELbundle");
     }
 
     public static Bundle readHCatBundle() throws IOException {
-        return readBundleFromFolder("hcat").get(0);
+        return readBundleFromFolder("hcat");
     }
 
     public static Bundle readHCat2Bundle() throws IOException {
-        return readBundleFromFolder("hcat_2").get(0);
+        return readBundleFromFolder("hcat_2");
     }
 
     public static Bundle readLocalDCBundle() throws IOException {
-        return readBundleFromFolder("LocalDC_feedReplicaltion_BillingRC").get(0);
+        return readBundleFromFolder("LocalDC_feedReplicaltion_BillingRC");
     }
 
     public static Bundle readImpressionRCBundle() throws IOException {
-        return readBundleFromFolder("impressionRC").get(0);
+        return readBundleFromFolder("impressionRC");
     }
 
     public static Bundle readUpdateBundle() throws IOException {
-        return readBundleFromFolder("updateBundle").get(0);
+        return readBundleFromFolder("updateBundle");
     }
 
-    public static List<Bundle> readBundleFromFolder(final String folderPath) throws IOException {
-        final List<Bundle> bundleList = new ArrayList<Bundle>();
+    private static Bundle readBundleFromFolder(final String folderPath) throws IOException {
         logger.info("Loading xmls from directory: " + folderPath);
         File directory = null;
         try {
@@ -112,8 +111,7 @@ public class BundleUtil {
         }
         Assert.assertNotNull(clusterData, "expecting cluster data to be non-empty");
         Assert.assertTrue(!dataSets.isEmpty(), "expecting feed data to be non-empty");
-        bundleList.add(new Bundle(clusterData, dataSets, processData));
-        return bundleList;
+        return new Bundle(clusterData, dataSets, processData);
     }
 
     public static void submitAllClusters(ColoHelper prismHelper, Bundle... b)
@@ -144,7 +142,7 @@ public class BundleUtil {
 
         for (Output output : processObject.getOutputs().getOutputs()) {
             for (String feed : bundle.getDataSets()) {
-                if (Util.readDatasetName(feed).equalsIgnoreCase(output.getFeed())) {
+                if (Util.readEntityName(feed).equalsIgnoreCase(output.getFeed())) {
                     return feed;
                 }
             }
@@ -166,7 +164,7 @@ public class BundleUtil {
         Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (Input input : processObject.getInputs().getInputs()) {
             for (String feed : bundle.getDataSets()) {
-                if (Util.readDatasetName(feed).equalsIgnoreCase(input.getFeed())) {
+                if (Util.readEntityName(feed).equalsIgnoreCase(input.getFeed())) {
                     return feed;
                 }
             }

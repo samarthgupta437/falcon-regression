@@ -150,31 +150,31 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //set clusters for feed02
         feed02 = InstanceUtil
             .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feed02 = InstanceUtil
             .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE, null);
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE, null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
         LOGGER.info("feed01: " + Util.prettyPrintXml(feed01));
@@ -203,17 +203,17 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             .setProcessCluster(process, null,
                 XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
         process = InstanceUtil
-            .setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
+            .setProcessCluster(process, Util.readEntityName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime,
                     TimeUtil.addMinsToTime(processStartTime, 35)));
         process = InstanceUtil
-            .setProcessCluster(process, Util.readClusterName(bundles[1].getClusters().get(0)),
+            .setProcessCluster(process, Util.readEntityName(bundles[1].getClusters().get(0)),
                 XmlUtil.createProcessValidity(
                     TimeUtil.addMinsToTime(processStartTime, 16),
                     TimeUtil.addMinsToTime(processStartTime, 45)));
         process = InstanceUtil
-            .addProcessInputFeed(process, Util.readDatasetName(feed02),
-                Util.readDatasetName(feed02));
+            .addProcessInputFeed(process, Util.readEntityName(feed02),
+                    Util.readEntityName(feed02));
 
         //submit and schedule process
         LOGGER.info("process: " + Util.prettyPrintXml(process));

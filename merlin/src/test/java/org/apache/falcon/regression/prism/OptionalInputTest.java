@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.entity.v0.EntityType;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -79,11 +80,9 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_1optional_1compulsory() throws Exception {
-        bundles[0] =
-            bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
-
+    public void optionalTest_1optional_1compulsary() throws Exception {
+        bundles[0].generateRequiredBundle(1, 2, 1, inputPath, 1, "2010-01-02T01:00Z",
+            "2010-01-02T01:12Z");
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
 
@@ -115,10 +114,9 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_1optional_2compulsory() throws Exception {
-        bundles[0] =
-            bundles[0].getRequiredBundle(bundles[0], 1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
+    public void optionalTest_1optional_2compulsary() throws Exception {
+        bundles[0].generateRequiredBundle(1, 3, 1, inputPath, 1, "2010-01-02T01:00Z",
+            "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
@@ -159,10 +157,9 @@ public class OptionalInputTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(enabled = true, groups = {"singleCluster"})
-    public void optionalTest_2optional_1compulsory() throws Exception {
-        bundles[0] =
-            bundles[0].getRequiredBundle(bundles[0], 1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
+    public void optionalTest_2optional_1compulsary() throws Exception {
+        bundles[0].generateRequiredBundle(1, 3, 2, inputPath, 1, "2010-01-02T01:00Z",
+            "2010-01-02T01:12Z");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
@@ -203,8 +200,7 @@ public class OptionalInputTest extends BaseTestClass {
     public void optionalTest_optionalInputWithEmptyDir() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(10);
-        bundles[0] =
-            bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0].generateRequiredBundle(1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
@@ -241,9 +237,8 @@ public class OptionalInputTest extends BaseTestClass {
      */
     @Test(enabled = true, groups = {"singleCluster"})
     public void optionalTest_allInputOptional() throws Exception {
-        bundles[0] =
-            bundles[0].getRequiredBundle(bundles[0], 1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
-                "2010-01-02T01:12Z");
+        bundles[0].generateRequiredBundle(1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
+            "2010-01-02T01:12Z");
 
         bundles[0].setProcessData(
             bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData"));
@@ -276,8 +271,7 @@ public class OptionalInputTest extends BaseTestClass {
     public void optionalTest_updateProcessMakeOptionalCompulsory() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
-        bundles[0] =
-            bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0].generateRequiredBundle(1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
@@ -306,8 +300,9 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
-        bundles[0].setProcessData(bundles[0]
-            .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 0, 1));
+        final ProcessMerlin processMerlin = new ProcessMerlin(bundles[0].getProcessData());
+        processMerlin.setProcessFeeds(bundles[0].getDataSets(), 2, 0, 1);
+        bundles[0].setProcessData(processMerlin.toString());
         bundles[0].setProcessInputStartEnd("now(0,-10)", "now(0,0)");
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
 
@@ -341,8 +336,7 @@ public class OptionalInputTest extends BaseTestClass {
     public void optionalTest_updateProcessMakeCompulsoryOptional() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
-        bundles[0] =
-            bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, inputPath, 1, startTime, endTime);
+        bundles[0].generateRequiredBundle(1, 2, 1, inputPath, 1, startTime, endTime);
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
@@ -370,8 +364,9 @@ public class OptionalInputTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()),
                 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
-        bundles[0].setProcessData(bundles[0]
-            .setProcessFeeds(bundles[0].getProcessData(), bundles[0].getDataSets(), 2, 2, 1));
+        final ProcessMerlin processMerlin = new ProcessMerlin(bundles[0].getProcessData());
+        processMerlin.setProcessFeeds(bundles[0].getDataSets(), 2, 2, 1);
+        bundles[0].setProcessData(processMerlin.toString());
 
         //delete all input data
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);

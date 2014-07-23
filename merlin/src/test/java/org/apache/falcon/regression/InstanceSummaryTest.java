@@ -260,19 +260,19 @@ public class InstanceSummaryTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-10-01T12:10Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), null, null);
+                Util.readEntityName(bundles[2].getClusters().get(0)), null, null);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-10-01T12:25Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                 null,
                 feedInputPath);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
                 null, feedInputPath);
 
         //submit clusters

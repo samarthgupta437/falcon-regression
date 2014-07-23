@@ -177,7 +177,7 @@ public class HCatReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
 
         AssertUtil.assertSucceeded(
@@ -187,7 +187,7 @@ public class HCatReplicationTest extends BaseTestClass {
         TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //replication should start, wait while it ends
@@ -265,13 +265,13 @@ public class HCatReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
         // set the cluster 3 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
 
         AssertUtil.assertSucceeded(
@@ -281,12 +281,12 @@ public class HCatReplicationTest extends BaseTestClass {
         TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //replication should start, wait while it ends
@@ -333,6 +333,7 @@ public class HCatReplicationTest extends BaseTestClass {
                 .add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition)
                     .build());
         }
+        logger.info("adding partitions: " + partitionDesc);
         hc.addPartitions(partitionDesc);
     }
 

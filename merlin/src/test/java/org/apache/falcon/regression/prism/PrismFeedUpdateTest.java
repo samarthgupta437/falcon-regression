@@ -19,6 +19,7 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.Entities.FeedMerlin;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
@@ -140,23 +141,23 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
                 null);
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                 null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
 
         //submit and schedule feeds
@@ -178,10 +179,10 @@ public class PrismFeedUpdateTest extends BaseTestClass {
             .setProcessCluster(process01, null,
                 XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
         process01 = InstanceUtil
-            .setProcessCluster(process01, Util.readClusterName(bundles[0].getClusters().get(0)),
+            .setProcessCluster(process01, Util.readEntityName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
         process01 = InstanceUtil
-            .setProcessCluster(process01, Util.readClusterName(bundles[1].getClusters().get(0)),
+            .setProcessCluster(process01, Util.readEntityName(bundles[1].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
 
         //get 2nd process :
@@ -190,7 +191,9 @@ public class PrismFeedUpdateTest extends BaseTestClass {
             .setProcessName(process02, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
         feed.add(outputFeed);
-        process02 = bundles[0].setProcessFeeds(process02, feed, 0, 0, 1);
+        final ProcessMerlin processMerlin = new ProcessMerlin(process02);
+        processMerlin.setProcessFeeds(feed, 0, 0, 1);
+        process02 = processMerlin.toString();
 
 
         //submit and schedule both process

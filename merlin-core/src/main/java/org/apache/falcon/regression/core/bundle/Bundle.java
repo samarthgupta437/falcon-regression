@@ -26,22 +26,15 @@ import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.entity.v0.cluster.Interface;
 import org.apache.falcon.entity.v0.cluster.Interfaces;
 import org.apache.falcon.entity.v0.cluster.Interfacetype;
-import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.CatalogTable;
 import org.apache.falcon.entity.v0.feed.ClusterType;
-import org.apache.falcon.entity.v0.feed.Clusters;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
-import org.apache.falcon.entity.v0.feed.Locations;
-import org.apache.falcon.entity.v0.feed.Retention;
-import org.apache.falcon.entity.v0.feed.RetentionType;
-import org.apache.falcon.entity.v0.feed.Validity;
 import org.apache.falcon.entity.v0.process.Cluster;
 import org.apache.falcon.entity.v0.process.EngineType;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Inputs;
-import org.apache.falcon.entity.v0.process.LateInput;
 import org.apache.falcon.entity.v0.process.LateProcess;
 import org.apache.falcon.entity.v0.process.Output;
 import org.apache.falcon.entity.v0.process.Outputs;
@@ -73,7 +66,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A bundle abstraction.
@@ -174,8 +169,8 @@ public class Bundle {
         }
     }
 
-    public Bundle(Bundle bundle, ColoHelper prismHelper) {
-        this(bundle, prismHelper.getPrefix());
+    public Bundle(Bundle bundle, ColoHelper helper) {
+        this(bundle, helper.getPrefix());
     }
 
     public void setClusterData(List<String> pClusters) {
@@ -213,136 +208,40 @@ public class Bundle {
      * to unique.
      */
     public void generateUniqueBundle() {
-
-        List<String> oldClusters = new ArrayList<String>(this.clusters);
-        this.clusters = Util.generateUniqueClusterEntity(clusters);
-
-        List<String> newDataSet = new ArrayList<String>();
-        for (String dataSet : getDataSets()) {
-            String uniqueDataEntity = Util.generateUniqueDataEntity(dataSet);
-            for (int i = 0; i < clusters.size(); i++) {
-                String oldCluster = oldClusters.get(i);
-                String uniqueCluster = clusters.get(i);
-
-                uniqueDataEntity =
-                    injectNewDataIntoFeed(uniqueDataEntity, Util.readClusterName(uniqueCluster),
-                        Util.readClusterName(oldCluster));
-                this.processData =
-                    injectNewDataIntoProcess(getProcessData(), Util.readDatasetName(dataSet),
-                        Util.readDatasetName(uniqueDataEntity),
-                        Util.readClusterName(uniqueCluster),
-                        Util.readClusterName(oldCluster));
-            }
-            newDataSet.add(uniqueDataEntity);
+        /* creating new names */
+        List<ClusterMerlin> clusterMerlinList = ClusterMerlin.fromString(clusters);
+        Map<String, String> clusterNameMap = new HashMap<String, String>();
+        for (ClusterMerlin clusterMerlin : clusterMerlinList) {
+            clusterNameMap.putAll(clusterMerlin.setUniqueName());
         }
-        if (getDataSets().size() == 0) {
 
-            for (int i = 0; i < clusters.size(); i++) {
-                String oldCluster = oldClusters.get(i);
-                String uniqueCluster = clusters.get(i);
-                this.processData =
-                    injectNewDataIntoProcess(getProcessData(), null, null,
-                        Util.readClusterName(uniqueCluster),
-                        Util.readClusterName(oldCluster));
-            }
+        List<FeedMerlin> feedMerlinList = FeedMerlin.fromString(dataSets);
+        Map<String, String> feedNameMap = new HashMap<String, String>();
+        for (FeedMerlin feedMerlin : feedMerlinList) {
+            feedNameMap.putAll(feedMerlin.setUniqueName());
         }
-        this.dataSets = newDataSet;
 
-        if (!processData.equals("")) {
-            this.processData = Util.generateUniqueProcessEntity(processData);
-            this.processData = injectLateDataBasedOnInputs(processData);
+        ProcessMerlin processMerlin = new ProcessMerlin(processData);
+        processMerlin.setUniqueName();
+
+        /* setting new names in feeds and process */
+        for (FeedMerlin feedMerlin : feedMerlinList) {
+            feedMerlin.renameClusters(clusterNameMap);
         }
+        processMerlin.renameClusters(clusterNameMap);
+        processMerlin.renameFeeds(feedNameMap);
+
+        /* setting variables */
+        clusters.clear();
+        for (ClusterMerlin clusterMerlin : clusterMerlinList) {
+            clusters.add(clusterMerlin.toString());
+        }
+        dataSets.clear();
+        for (FeedMerlin feedMerlin : feedMerlinList) {
+            dataSets.add(feedMerlin.toString());
+        }
+        processData = processMerlin.toString();
     }
-
-    private String injectLateDataBasedOnInputs(String pProcessData) {
-
-        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, pProcessData);
-
-        if (processElement.getLateProcess() != null) {
-
-            ArrayList<LateInput> lateInput = new ArrayList<LateInput>();
-
-            for (Input input : processElement.getInputs().getInputs()) {
-                LateInput temp = new LateInput();
-                temp.setInput(input.getName());
-                temp.setWorkflowPath(processElement.getWorkflow().getPath());
-                lateInput.add(temp);
-            }
-
-
-            processElement.getLateProcess().getLateInputs().clear();
-            processElement.getLateProcess().getLateInputs().addAll(lateInput);
-
-            LOGGER.info("process after late input set: " + processElement.toString());
-
-            return processElement.toString();
-        }
-
-        return pProcessData;
-    }
-
-    /**
-     * Renames feed cluster with matching name.
-     *
-     * @param dataSet feed definition to be modified
-     * @param uniqueCluster new cluster name
-     * @param oldCluster old cluster name
-     * @return feed definition with new cluster name
-     */
-    private String injectNewDataIntoFeed(String dataSet, String uniqueCluster, String oldCluster) {
-        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, dataSet);
-        for (org.apache.falcon.entity.v0.feed.Cluster cluster : feedElement
-            .getClusters().getClusters()) {
-            if (cluster.getName().equalsIgnoreCase(oldCluster)) {
-                cluster.setName(uniqueCluster);
-            }
-        }
-        return feedElement.toString();
-    }
-
-    /**
-     * Injects new data source into process: input or output.
-     * Replaces old process input/output feed name with new one as well as an appropriate process
-     * cluster.
-     *
-     * @param pProcessData process definition to be modified
-     * @param oldDataName old feed name
-     * @param newDataName new feed name
-     * @param uniqueCluster new cluster name
-     * @param oldCluster old cluster name
-     * @return modified process definition
-     */
-    private String injectNewDataIntoProcess(String pProcessData, String oldDataName,
-                                            String newDataName,
-                                            String uniqueCluster, String oldCluster) {
-        if (pProcessData.equals("")) {
-            return "";
-        }
-        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, pProcessData);
-        if (processElement.getInputs() != null) {
-            for (Input input : processElement.getInputs().getInputs()) {
-                if (input.getFeed().equals(oldDataName)) {
-                    input.setFeed(newDataName);
-                }
-            }
-        }
-        if (processElement.getOutputs() != null) {
-            for (Output output : processElement.getOutputs().getOutputs()) {
-                if (output.getFeed().equalsIgnoreCase(oldDataName)) {
-                    output.setFeed(newDataName);
-                }
-            }
-        }
-        for (Cluster cluster : processElement.getClusters().getClusters()) {
-            if (cluster.getName().equalsIgnoreCase(oldCluster)) {
-                cluster.setName(uniqueCluster);
-            }
-        }
-
-        //now just wrap the process back!
-        return processElement.toString();
-    }
-
 
     public ServiceResponse submitBundle(ColoHelper helper)
         throws JAXBException, IOException, URISyntaxException, AuthenticationException {
@@ -556,7 +455,7 @@ public class Bundle {
 
     public String getFeed(String feedName) {
         for (String feed : getDataSets()) {
-            if (Util.readDatasetName(feed).contains(feedName)) {
+            if (Util.readEntityName(feed).contains(feedName)) {
                 return feed;
             }
         }
@@ -648,17 +547,17 @@ public class Bundle {
 
         //verify presence
         for (String cluster : clusters) {
-            Assert.assertTrue(dependencies.contains("(cluster) " + Util.readClusterName(cluster)));
+            Assert.assertTrue(dependencies.contains("(cluster) " + Util.readEntityName(cluster)));
         }
         for (String feed : getDataSets()) {
-            Assert.assertTrue(dependencies.contains("(feed) " + Util.readDatasetName(feed)));
+            Assert.assertTrue(dependencies.contains("(feed) " + Util.readEntityName(feed)));
             for (String cluster : clusters) {
                 Assert.assertTrue(coloHelper.getFeedHelper().getDependencies(
-                    Util.readDatasetName(feed))
-                    .contains("(cluster) " + Util.readClusterName(cluster)));
+                    Util.readEntityName(feed))
+                    .contains("(cluster) " + Util.readEntityName(cluster)));
             }
             Assert.assertFalse(coloHelper.getFeedHelper().getDependencies(
-                Util.readDatasetName(feed))
+                Util.readEntityName(feed))
                 .contains("(process)" + Util.readEntityName(getProcessData())));
         }
 
@@ -778,9 +677,7 @@ public class Bundle {
     }
 
     public void addClusterToBundle(String clusterData, ClusterType type,
-                                   String startTime, String endTime
-    ) {
-
+                                   String startTime, String endTime) {
         clusterData = setNewClusterName(clusterData);
 
         this.clusters.add(clusterData);
@@ -847,6 +744,8 @@ public class Bundle {
                 e.getStackTrace();
             }
         }
+
+
     }
 
     public String getProcessName() {
@@ -887,7 +786,6 @@ public class Bundle {
      * Generates unique entities definitions: clusters, feeds and process, populating them with
      * desired values of different properties.
      *
-     * @param b bundle to be modified
      * @param numberOfClusters number of clusters on which feeds and process should run
      * @param numberOfInputs number of desired inputs in process definition
      * @param numberOfOptionalInput how many inputs should be optional
@@ -895,189 +793,45 @@ public class Bundle {
      * @param numberOfOutputs number of outputs
      * @param startTime start of feeds and process validity on every cluster
      * @param endTime end of feeds and process validity on every cluster
-     * @return modified bundle
      */
-    public Bundle getRequiredBundle(Bundle b, int numberOfClusters, int numberOfInputs,
+    public void generateRequiredBundle(int numberOfClusters, int numberOfInputs,
                                     int numberOfOptionalInput,
                                     String inputBasePaths, int numberOfOutputs, String startTime,
                                     String endTime) {
-
         //generate and set clusters
-        org.apache.falcon.entity.v0.cluster.Cluster c =
-            (org.apache.falcon.entity.v0.cluster.Cluster)
-                Entity.fromString(EntityType.CLUSTER,
-                    Util.generateUniqueClusterEntity(b.getClusters().get(0)));
+        ClusterMerlin c = new ClusterMerlin(getClusters().get(0));
+        c.setUniqueName();
         List<String> newClusters = new ArrayList<String>();
-        List<String> newDataSets = new ArrayList<String>();
-
+        final String clusterName = c.getName();
         for (int i = 0; i < numberOfClusters; i++) {
-            String clusterName = c.getName() + i;
-            c.setName(clusterName);
+            c.setName(clusterName + i);
             newClusters.add(i, c.toString());
         }
-        b.setClusterData(newClusters);
+        setClusterData(newClusters);
 
         //generate and set newDataSets
+        List<String> newDataSets = new ArrayList<String>();
         for (int i = 0; i < numberOfInputs; i++) {
-            String referenceFeed = Util.generateUniqueDataEntity(b.getDataSets().get(0));
-            referenceFeed =
-                b.setFeedClusters(referenceFeed, newClusters, inputBasePaths + "/input" + i,
-                    startTime, endTime);
-            newDataSets.add(referenceFeed);
+            final FeedMerlin feed = new FeedMerlin(getDataSets().get(0));
+            feed.setUniqueName();
+            feed.setFeedClusters(newClusters, inputBasePaths + "/input" + i, startTime, endTime);
+            newDataSets.add(feed.toString());
         }
         for (int i = 0; i < numberOfOutputs; i++) {
-            String referenceFeed = Util.generateUniqueDataEntity(b.getDataSets().get(0));
-            referenceFeed =
-                b.setFeedClusters(referenceFeed, newClusters, inputBasePaths + "/output" + i,
-                    startTime, endTime);
-            newDataSets.add(referenceFeed);
+            final FeedMerlin feed = new FeedMerlin(getDataSets().get(0));
+            feed.setUniqueName();
+            feed.setFeedClusters(newClusters, inputBasePaths + "/output" + i,  startTime, endTime);
+            newDataSets.add(feed.toString());
         }
-        b.setDataSets(newDataSets);
+        setDataSets(newDataSets);
 
         //add clusters and feed to process
-        String process = b.getProcessData();
-        process = Util.generateUniqueProcessEntity(process);
-        process = b.setProcessClusters(process, newClusters, startTime, endTime);
-        process = b.setProcessFeeds(process, newDataSets, numberOfInputs, numberOfOptionalInput,
-            numberOfOutputs);
-        b.setProcessData(process);
-        return b;
-    }
-
-    /**
-     * Method sets optional/compulsory inputs and outputs of process according to list of feed
-     * definitions and matching numeric parameters. Optional inputs are set first and then
-     * compulsory ones.
-     *
-     * @param process process definition to be modified
-     * @param newDataSets list of feed definitions
-     * @param numberOfInputs number of desired inputs
-     * @param numberOfOptionalInput how many inputs should be optional
-     * @param numberOfOutputs number of outputs
-     * @return modified process
-     */
-    public String setProcessFeeds(String process, List<String> newDataSets,
-                                  int numberOfInputs, int numberOfOptionalInput,
-                                  int numberOfOutputs) {
-
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
-        int numberOfOptionalSet = 0;
-        boolean isFirst = true;
-
-        Inputs is = new Inputs();
-        for (int i = 0; i < numberOfInputs; i++) {
-            Input in = new Input();
-            in.setEnd("now(0,0)");
-            in.setStart("now(0,-20)");
-            if (numberOfOptionalSet < numberOfOptionalInput) {
-                in.setOptional(true);
-                in.setName("inputData" + i);
-                numberOfOptionalSet++;
-            } else {
-                in.setOptional(false);
-                if (isFirst) {
-                    in.setName("inputData");
-                    isFirst = false;
-                } else {
-                    in.setName("inputData" + i);
-                }
-            }
-            in.setFeed(Util.readDatasetName(newDataSets.get(i)));
-            is.getInputs().add(in);
-        }
-
-        p.setInputs(is);
-        if (numberOfInputs == 0) {
-            p.setInputs(null);
-        }
-
-        Outputs os = new Outputs();
-        for (int i = 0; i < numberOfOutputs; i++) {
-            Output op = new Output();
-            op.setFeed(Util.readDatasetName(newDataSets.get(numberOfInputs - i)));
-            op.setName("outputData");
-            op.setInstance("now(0,0)");
-            os.getOutputs().add(op);
-        }
-        p.setOutputs(os);
-        p.setLateProcess(null);
-        return p.toString();
-    }
-
-    /**
-     * Method sets a number of clusters to process definition.
-     *
-     * @param process process definition to be modified
-     * @param newClusters list of definitions of clusters which are to be set to process
-     *                    (clusters on which process should run)
-     * @param startTime start of process validity on every cluster
-     * @param endTime end of process validity on every cluster
-     * @return modified process definition
-     */
-    public String setProcessClusters(String process, List<String> newClusters, String startTime,
-                                     String endTime) {
-
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
-        org.apache.falcon.entity.v0.process.Clusters cs =
-            new org.apache.falcon.entity.v0.process.Clusters();
-        for (String newCluster : newClusters) {
-            Cluster c = new Cluster();
-            c.setName(Util.readClusterName(newCluster));
-            org.apache.falcon.entity.v0.process.Validity v =
-                new org.apache.falcon.entity.v0.process.Validity();
-            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
-            c.setValidity(v);
-            cs.getClusters().add(c);
-        }
-        p.setClusters(cs);
-        return p.toString();
-    }
-
-    /**
-     * Method sets a number of clusters to feed definition.
-     *
-     * @param referenceFeed feed definition to be changed
-     * @param newClusters list of definitions of clusters which are to be set to feed
-     * @param location location of data on every cluster
-     * @param startTime start of feed validity on every cluster
-     * @param endTime end of feed validity on every cluster
-     * @return modified feed definition
-     */
-    public String setFeedClusters(String referenceFeed,
-                                  List<String> newClusters, String location, String startTime,
-                                  String endTime) {
-
-        Feed f = (Feed) Entity.fromString(EntityType.FEED, referenceFeed);
-        Clusters cs = new Clusters();
-        f.setFrequency(new Frequency("" + 5, TimeUnit.minutes));
-
-        for (String newCluster : newClusters) {
-            org.apache.falcon.entity.v0.feed.Cluster c =
-                new org.apache.falcon.entity.v0.feed.Cluster();
-            c.setName(Util.readClusterName(newCluster));
-            Location l = new Location();
-            l.setType(LocationType.DATA);
-            l.setPath(location + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
-            Locations ls = new Locations();
-            ls.getLocations().add(l);
-            c.setLocations(ls);
-            Validity v = new Validity();
-            startTime = TimeUtil.addMinsToTime(startTime, -180);
-            endTime = TimeUtil.addMinsToTime(endTime, 180);
-            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
-            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
-            c.setValidity(v);
-            Retention r = new Retention();
-            r.setAction(ActionType.DELETE);
-            Frequency f1 = new Frequency("" + 20, TimeUnit.hours);
-            r.setLimit(f1);
-            r.setType(RetentionType.INSTANCE);
-            c.setRetention(r);
-            cs.getClusters().add(c);
-        }
-        f.setClusters(cs);
-        return f.toString();
+        ProcessMerlin processMerlin = new ProcessMerlin(getProcessData());
+        processMerlin.setUniqueName();
+        processMerlin.setProcessClusters(newClusters, startTime, endTime);
+        processMerlin.setProcessFeeds(newDataSets, numberOfInputs,
+            numberOfOptionalInput, numberOfOutputs);
+        setProcessData(processMerlin.toString());
     }
 
     public void submitAndScheduleBundle(Bundle b, ColoHelper helper,
@@ -1108,7 +862,7 @@ public class Bundle {
     }
 
     /**
-     * Changes names of process inputs .
+     * Changes names of process inputs.
      *
      * @param process process definition to be modified
      * @param names desired names of inputs

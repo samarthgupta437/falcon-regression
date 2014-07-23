@@ -44,7 +44,7 @@ public class ClusterEntityHelperImpl extends IEntityManagerHelper {
     }
 
     public String getEntityName(String entity) {
-        return Util.readClusterName(entity);
+        return Util.readEntityName(entity);
     }
 
     public ServiceResponse getStatus(URLS url, String data, String user) {

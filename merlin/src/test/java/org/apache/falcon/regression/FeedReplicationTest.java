@@ -121,13 +121,13 @@ public class FeedReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)),
+            Util.readEntityName(bundles[0].getClusters().get(0)),
             ClusterType.SOURCE, null);
         //set cluster2 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)),
+            Util.readEntityName(bundles[1].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
@@ -154,7 +154,7 @@ public class FeedReplicationTest extends BaseTestClass {
         InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //replication should start, wait while it ends
@@ -194,19 +194,19 @@ public class FeedReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)),
+            Util.readEntityName(bundles[0].getClusters().get(0)),
             ClusterType.SOURCE, null);
         //set cluster2 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)),
+            Util.readEntityName(bundles[1].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
         //set cluster3 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)),
+            Util.readEntityName(bundles[2].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
@@ -235,10 +235,10 @@ public class FeedReplicationTest extends BaseTestClass {
         InstanceUtil.waitTillInstancesAreCreated(cluster3, feed, 0);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         //replication on cluster 2 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
@@ -292,13 +292,13 @@ public class FeedReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)),
+            Util.readEntityName(bundles[0].getClusters().get(0)),
             ClusterType.SOURCE, null);
         //set cluster2 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)),
+            Util.readEntityName(bundles[1].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
