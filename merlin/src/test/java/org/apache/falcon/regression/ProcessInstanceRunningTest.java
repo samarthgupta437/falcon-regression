@@ -46,21 +46,24 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.util.List;
 
+/**
+ * Regression for instance running api.
+ */
 @Test(groups = "embedded")
 public class ProcessInstanceRunningTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    FileSystem clusterFS = serverFS.get(0);
-    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
-    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath =
+    private ColoHelper cluster = servers.get(0);
+    private FileSystem clusterFS = serverFS.get(0);
+    private String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceRunningTest";
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    private String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String feedOutputPath =
         baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private static final Logger logger = Logger.getLogger(ProcessInstanceRunningTest.class);
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceRunningTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle bundle = BundleUtil.readELBundle();
@@ -80,7 +83,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
@@ -204,7 +207,7 @@ public class ProcessInstanceRunningTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        logger.info("in @AfterClass");
+        LOGGER.info("in @AfterClass");
         Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
         b.setInputFeedDataPath(feedInputPath);

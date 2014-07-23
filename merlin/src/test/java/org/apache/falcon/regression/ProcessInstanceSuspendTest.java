@@ -54,18 +54,18 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceSuspendTest extends BaseTestClass {
 
-    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";
-    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath =
+    private String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceSuspendTest";
+    private String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String feedOutputPath =
         baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    ColoHelper cluster = servers.get(0);
-    FileSystem clusterFS = serverFS.get(0);
-    private static final Logger logger = Logger.getLogger(ProcessInstanceSuspendTest.class);
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    private ColoHelper cluster = servers.get(0);
+    private FileSystem clusterFS = serverFS.get(0);
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceSuspendTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle bundle = BundleUtil.readELBundle();
@@ -82,7 +82,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
@@ -102,7 +102,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_largeRange() throws Exception {
+    public void testProcessInstanceSuspendLargeRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -131,7 +131,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_succeeded() throws Exception {
+    public void testProcessInstanceSuspendSucceeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -153,7 +153,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_all() throws Exception {
+    public void testProcessInstanceSuspendAll() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -182,7 +182,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_woParams() throws Exception {
+    public void testProcessInstanceSuspendWoParams() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:22Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -203,7 +203,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_StartAndEnd() throws Exception {
+    public void testProcessInstanceSuspendStartAndEnd() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -231,7 +231,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_nonExistent() throws Exception {
+    public void testProcessInstanceSuspendNonExistent() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -243,8 +243,9 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
         InstancesResult r =
             prism.getProcessHelper()
                 .getProcessInstanceSuspend("invalidName", "?start=2010-01-02T01:20Z");
-        if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND))
+        if ((r.getStatusCode() != ResponseKeys.PROCESS_NOT_FOUND)) {
             Assert.assertTrue(false);
+        }
     }
 
     /**
@@ -254,7 +255,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_onlyStart() throws Exception {
+    public void testProcessInstanceSuspendOnlyStart() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:11Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -283,7 +284,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceSuspend_suspendLast() throws Exception {
+    public void testProcessInstanceSuspendSuspendLast() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:23Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -307,7 +308,7 @@ public class ProcessInstanceSuspendTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        logger.info("in @AfterClass");
+        LOGGER.info("in @AfterClass");
         Bundle bundle = BundleUtil.readELBundle();
         bundle = new Bundle(bundle, cluster);
         bundle.setInputFeedDataPath(feedInputPath);

@@ -50,19 +50,19 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceKillsTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    FileSystem clusterFS = serverFS.get(0);
-    String testDir = "/ProcessInstanceKillsTest";
-    String baseTestHDFSDir = baseHDFSDir + testDir;
-    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath =
+    private ColoHelper cluster = servers.get(0);
+    private FileSystem clusterFS = serverFS.get(0);
+    private String testDir = "/ProcessInstanceKillsTest";
+    private String baseTestHDFSDir = baseHDFSDir + testDir;
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    private String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String feedOutputPath =
         baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private static final Logger logger = Logger.getLogger(ProcessInstanceKillsTest.class);
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceKillsTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
         Bundle b = BundleUtil.readELBundle();
@@ -82,7 +82,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
 
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
@@ -93,7 +93,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) {
-        logger.info("tearDown " + method.getName());
+        LOGGER.info("tearDown " + method.getName());
         removeBundles();
     }
 
@@ -104,7 +104,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_single() throws Exception {
+    public void testProcessInstanceKillSingle() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -125,7 +125,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_startAndEndSame() throws Exception {
+    public void testProcessInstanceKillStartAndEndSame() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T00:00Z", "2010-01-02T04:00Z");
         bundles[0].setProcessConcurrency(2);
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
@@ -148,7 +148,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_killNonMatrelized() throws Exception {
+    public void testProcessInstanceKillKillNonMatrelized() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T00:00Z", "2010-01-02T04:00Z");
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
@@ -160,7 +160,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T00:03Z&end=2010-01-02T00:30Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
-        logger.info(r.toString());
+        LOGGER.info(r.toString());
     }
 
     /**
@@ -170,7 +170,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception TODO amend test with validations
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
+    public void testProcessInstanceKillBothStartAndEndInFuture01() throws Exception {
         /*
         both start and end r in future with respect to process start end
          */
@@ -193,7 +193,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + startTimeRequest + "&end=" + endTimeRequest);
-        logger.info(r.toString());
+        LOGGER.info(r.toString());
     }
 
     /**
@@ -203,7 +203,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_bothStartAndEndInFuture() throws Exception {
+    public void testProcessInstanceKillBothStartAndEndInFuture() throws Exception {
         /*
          both start and end r in future with respect to current time
           */
@@ -218,7 +218,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + startTime + "&end=" + endTime);
-        logger.info(r.getMessage());
+        LOGGER.info(r.getMessage());
         Assert.assertEquals(r.getInstances(), null);
     }
 
@@ -230,7 +230,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_multipleInstance() throws Exception {
+    public void testProcessInstanceKillMultipleInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:21Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -253,7 +253,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_lastInstance() throws Exception {
+    public void testProcessInstanceKillLastInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:21Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -276,7 +276,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_suspended() throws Exception {
+    public void testProcessInstanceKillSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -299,7 +299,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_succeeded() throws Exception {
+    public void testProcessInstanceKillSucceeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -317,7 +317,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        logger.info("in @AfterClass");
+        LOGGER.info("in @AfterClass");
         Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
         b.setInputFeedDataPath(feedInputPath);

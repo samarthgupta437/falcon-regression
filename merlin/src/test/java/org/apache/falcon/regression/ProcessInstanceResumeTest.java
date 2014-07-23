@@ -49,18 +49,18 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceResumeTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    FileSystem clusterFS = serverFS.get(0);
-    String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceResumeTest";
-    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath =
+    private ColoHelper cluster = servers.get(0);
+    private FileSystem clusterFS = serverFS.get(0);
+    private String baseTestHDFSDir = baseHDFSDir + "/ProcessInstanceResumeTest";
+    private String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String feedOutputPath =
         baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    private static final Logger logger = Logger.getLogger(ProcessInstanceResumeTest.class);
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceResumeTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
@@ -77,7 +77,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("setup " + method.getName());
+        LOGGER.info("setup " + method.getName());
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
@@ -88,7 +88,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) {
-        logger.info("tearDown " + method.getName());
+        LOGGER.info("tearDown " + method.getName());
         removeBundles();
     }
 
@@ -99,7 +99,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_onlyEnd() throws Exception {
+    public void testProcessInstanceResumeOnlyEnd() throws Exception {
         bundles[0].setProcessConcurrency(6);
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
@@ -126,7 +126,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_resumeSome() throws Exception {
+    public void testProcessInstanceResumeResumeSome() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -158,7 +158,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_resumeMany() throws Exception {
+    public void testProcessInstanceResumeResumeMany() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -188,7 +188,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_single() throws Exception {
+    public void testProcessInstanceResumeSingle() throws Exception {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(1);
@@ -212,7 +212,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_nonExistent() throws Exception {
+    public void testProcessInstanceResumeNonExistent() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -232,7 +232,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_noParams() throws Exception {
+    public void testProcessInstanceResumeNoParams() throws Exception {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
@@ -250,7 +250,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_deleted() throws Exception {
+    public void testProcessInstanceResumeDeleted() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -269,7 +269,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_nonSuspended() throws Exception {
+    public void testProcessInstanceResumeNonSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -296,7 +296,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_lastInstance() throws Exception {
+    public void testProcessInstanceResumeLastInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -325,7 +325,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceResume_withinRange() throws Exception {
+    public void testProcessInstanceResumeWithinRange() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -351,7 +351,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        logger.info("in @AfterClass");
+        LOGGER.info("in @AfterClass");
 
         Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
