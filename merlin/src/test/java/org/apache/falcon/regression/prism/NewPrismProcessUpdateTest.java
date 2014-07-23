@@ -205,7 +205,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         waitForProcessToReachACertainState(cluster3, bundles[1], Job.Status.RUNNING);
 
-        LOGGER.info("updated process: " + bundles[1].getProcessData());
+        LOGGER.info("updated process: " + Util.prettyPrintXml(bundles[1].getProcessData()));
         while (Util.parseResponse(
                 prism.getProcessHelper()
                         .update(bundles[1].getProcessData(), Util.prettyPrintXml(bundles[1]
@@ -683,7 +683,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         bundles[1].submitBundle(prism);
         //now to schedule in 1 colo and let it remain in another
 
-        LOGGER.info("process to be scheduled: " + bundles[1].getProcessData());
+        LOGGER.info("process to be scheduled: " + Util.prettyPrintXml(bundles[1].getProcessData()));
 
         AssertUtil.assertSucceeded(
                 cluster3.getProcessHelper()
@@ -1264,7 +1264,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         List<String> oldNominalTimes =
                 OozieUtil.getActionsNominalTime(cluster3, oldBundleId, EntityType.PROCESS);
 
-        LOGGER.info("original process: " + bundles[1].getProcessData());
+        LOGGER.info("original process: " + Util.prettyPrintXml(bundles[1].getProcessData()));
 
         String updatedProcess = InstanceUtil
                 .setProcessFrequency(bundles[1].getProcessData(),
@@ -1317,7 +1317,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
                 EntityType.PROCESS);
 
-        LOGGER.info("original process: " + bundles[1].getProcessData());
+        LOGGER.info("original process: " + Util.prettyPrintXml(bundles[1].getProcessData()));
 
         String updatedProcess = InstanceUtil
                 .setProcessFrequency(bundles[1].getProcessData(),
