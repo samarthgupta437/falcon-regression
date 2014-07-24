@@ -50,7 +50,6 @@ public final class HadoopUtil {
         return conf;
     }
 
-    @SuppressWarnings("deprecation")
     public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 
         List<String> files = new ArrayList<String>();
@@ -60,14 +59,13 @@ public final class HadoopUtil {
         FileStatus[] stats = fs.listStatus(location);
 
         for (FileStatus stat : stats) {
-            if (!stat.isDir()) {
+            if (!isDir(stat)) {
                 files.add(stat.getPath().toString());
             }
         }
         return files;
     }
 
-    @SuppressWarnings("deprecation")
     public static List<Path> getAllDirsRecursivelyHDFS(
         FileSystem fs, Path location, int depth) throws IOException {
 
@@ -76,7 +74,7 @@ public final class HadoopUtil {
         FileStatus[] stats = fs.listStatus(location);
 
         for (FileStatus stat : stats) {
-            if (stat.isDir()) {
+            if (isDir(stat)) {
                 returnList.add(stat.getPath());
                 if (depth > 0) {
                     returnList.addAll(getAllDirsRecursivelyHDFS(fs, stat.getPath(), depth - 1));
@@ -88,7 +86,6 @@ public final class HadoopUtil {
         return returnList;
     }
 
-    @SuppressWarnings("deprecation")
     public static List<Path> getAllFilesRecursivelyHDFS(
         FileSystem fs, Path location) throws IOException {
 
@@ -107,7 +104,7 @@ public final class HadoopUtil {
         }
         for (FileStatus stat : stats) {
 
-            if (!stat.isDir()) {
+            if (!isDir(stat)) {
                 if (!stat.getPath().toUri().toString().contains("_SUCCESS")) {
                     returnList.add(stat.getPath());
                 }
@@ -118,6 +115,11 @@ public final class HadoopUtil {
 
         return returnList;
 
+    }
+
+    @SuppressWarnings("deprecation")
+    private static boolean isDir(FileStatus stat) {
+        return stat.isDir();
     }
 
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
@@ -149,7 +151,6 @@ public final class HadoopUtil {
         HadoopUtil.copyDataToFolder(fs, dstHdfsDir, localLocation);
     }
 
-    @SuppressWarnings("deprecation")
     public static List<String> getHDFSSubFoldersName(FileSystem fs,
                                                      String baseDir) throws IOException {
 
@@ -159,7 +160,7 @@ public final class HadoopUtil {
 
 
         for (FileStatus stat : stats) {
-            if (stat.isDir()) {
+            if (isDir(stat)) {
                 returnList.add(stat.getPath().getName());
             }
 
@@ -191,7 +192,6 @@ public final class HadoopUtil {
         return false;
     }
 
-    @SuppressWarnings("deprecation")
     private static List<String> getAllFileNamesFromHDFS(
         FileSystem fs, String hdfsPath) throws IOException {
 
@@ -202,7 +202,7 @@ public final class HadoopUtil {
 
         for (FileStatus stat : stats) {
             String currentPath = stat.getPath().toUri().getPath(); // gives directory name
-            if (!stat.isDir()) {
+            if (!isDir(stat)) {
                 returnList.add(currentPath);
             }
 
