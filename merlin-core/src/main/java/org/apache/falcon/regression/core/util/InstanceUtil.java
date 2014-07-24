@@ -1172,14 +1172,14 @@ public final class InstanceUtil {
      *
      * @param client             oozie client to retrieve info about instances
      * @param entityName         name of feed or process
-     * @param instanceNumber     instance number for which we wait to reach the required status
+     * @param instancesNumber     instance number for which we wait to reach the required status
      * @param expectedStatus     expected status we are waiting for
      * @param entityType         type of entity - feed or process expected
      * @param totalMinutesToWait time in minutes for which instance state should be polled
      * @throws OozieClientException
      */
     public static void waitTillInstanceReachState(OozieClient client, String entityName,
-            int instanceNumber,
+            int instancesNumber,
             CoordinatorAction.Status expectedStatus,
             EntityType entityType, int totalMinutesToWait)
         throws OozieClientException {
@@ -1243,8 +1243,16 @@ public final class InstanceUtil {
                     String.format("Coordinator %s should be running/prep but is %s.", coordId,
                             coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
-            if (coordinatorActions.size() > instanceNumber
-                && expectedStatus == coordinatorActions.get(instanceNumber - 1).getStatus()) {
+            int instanceWithStatus = 0;
+            for (CoordinatorAction coordinatorAction : coordinatorActions) {
+                LOGGER.info(String.format("Coordinator Action %s status is %s on oozie %s",
+                    coordinatorAction.getId(), coordinatorAction.getStatus(), client.getOozieUrl()));
+                if (expectedStatus == coordinatorAction.getStatus()) {
+                    instanceWithStatus++;
+                }
+            }
+
+            if (instanceWithStatus >= instancesNumber) {
                 return;
             } else {
                 TimeUtil.sleepSeconds(sleepTime);
