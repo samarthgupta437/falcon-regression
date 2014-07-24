@@ -116,17 +116,6 @@ public final class HadoopUtil {
         return stat.isDir();
     }
 
-    public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
-                                        final String fileLocation)
-        throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://"
-            + coloHelper.getProcessHelper().getHadoopURL());
-
-        final FileSystem fs = FileSystem.get(conf);
-        copyDataToFolder(fs, folder.toString(), fileLocation);
-    }
-
     public static void copyDataToFolder(final FileSystem fs, final String dstHdfsDir,
                                         final String srcFileLocation)
         throws IOException {

@@ -89,12 +89,12 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
 
     private void uploadDataToServer3(String location, String fileName) throws IOException {
         HadoopUtil.recreateDir(cluster3FS, location);
-        HadoopUtil.copyDataToFolder(cluster3, new Path(location), fileName);
+        HadoopUtil.copyDataToFolder(cluster3FS, location, fileName);
     }
 
     private void uploadDataToServer1(String location, String fileName) throws IOException {
         HadoopUtil.recreateDir(cluster1FS, location);
-        HadoopUtil.copyDataToFolder(cluster1, new Path(location), fileName);
+        HadoopUtil.copyDataToFolder(cluster1FS, location, fileName);
     }
 
     @BeforeClass(alwaysRun = true)
@@ -289,9 +289,9 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         HadoopUtil.recreateDir(cluster3FS, testDirWithDate + "00/ua3/");
         HadoopUtil.recreateDir(cluster3FS, testDirWithDate + "05/ua3/");
 
-        HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "00/ua3/"),
+        HadoopUtil.copyDataToFolder(cluster3FS, testDirWithDate + "00/ua3/",
             testFile1);
-        HadoopUtil.copyDataToFolder(cluster3, new Path(testDirWithDate + "05/ua3/"),
+        HadoopUtil.copyDataToFolder(cluster3FS, testDirWithDate + "05/ua3/",
             testFile2);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
