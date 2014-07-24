@@ -144,7 +144,7 @@ public class FeedReplicationTest extends BaseTestClass {
         String timePattern = fmt.print(date);
         String sourceLocation = sourcePath + "/" + timePattern + "/";
         String targetLocation = targetPath + "/" + timePattern + "/";
-        HadoopUtil.createDir(sourceLocation, cluster1FS);
+        HadoopUtil.recreateDir(cluster1FS, sourceLocation);
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
@@ -223,7 +223,7 @@ public class FeedReplicationTest extends BaseTestClass {
         String timePattern = fmt.print(date);
         String sourceLocation = sourcePath + "/" + timePattern + "/";
         String targetLocation = targetPath + "/" + timePattern + "/";
-        HadoopUtil.createDir(sourceLocation, cluster1FS);
+        HadoopUtil.recreateDir(cluster1FS, sourceLocation);
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);
@@ -315,7 +315,7 @@ public class FeedReplicationTest extends BaseTestClass {
         String timePattern = fmt.print(date);
         String sourceLocation = sourcePath + "/" + timePattern + "/";
         String targetLocation = targetPath + "/" + timePattern + "/";
-        HadoopUtil.createDir(sourceLocation, cluster1FS);
+        HadoopUtil.recreateDir(cluster1FS, sourceLocation);
 
         Path toSource = new Path(sourceLocation);
         Path toTarget = new Path(targetLocation);

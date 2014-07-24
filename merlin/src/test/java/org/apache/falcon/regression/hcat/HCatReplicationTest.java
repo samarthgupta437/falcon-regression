@@ -89,8 +89,7 @@ public class HCatReplicationTest extends BaseTestClass {
         cluster2HC = cluster2.getClusterHelper().getHCatClient();
         cluster3HC = cluster3.getClusterHelper().getHCatClient();
         // create the base dir on all clusters.
-        // method will delete the dir if it exists.
-        HadoopUtil.createDir(serverFS, baseTestHDFSDir);
+        HadoopUtil.recreateDir(serverFS, baseTestHDFSDir);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -135,7 +134,7 @@ public class HCatReplicationTest extends BaseTestClass {
         }
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
-        HadoopUtil.createDir(serverFS, testHdfsDir);
+        HadoopUtil.recreateDir(serverFS, testHdfsDir);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
         final String dataEndDate = "2010-01-01T21:00Z";
@@ -223,7 +222,7 @@ public class HCatReplicationTest extends BaseTestClass {
         }
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
-        HadoopUtil.createDir(serverFS, testHdfsDir);
+        HadoopUtil.recreateDir(serverFS, testHdfsDir);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
         final String dataEndDate = "2010-01-01T21:00Z";

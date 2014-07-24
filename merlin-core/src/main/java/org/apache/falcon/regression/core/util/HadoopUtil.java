@@ -211,7 +211,7 @@ public final class HadoopUtil {
         return returnList;
     }
 
-    public static void createDir(String path, FileSystem fs) throws IOException {
+    public static void recreateDir(FileSystem fs, String path) throws IOException {
 
         deleteDirIfExists(path, fs);
         LOGGER.info("creating hdfs dir: " + path + " on " + fs.getConf().get("fs.default.name"));
@@ -219,10 +219,10 @@ public final class HadoopUtil {
 
     }
 
-    public static void createDir(List<FileSystem> fileSystems, String path) throws IOException {
+    public static void recreateDir(List<FileSystem> fileSystems, String path) throws IOException {
 
         for (FileSystem fs : fileSystems) {
-            createDir(path, fs);
+            recreateDir(fs, path);
         }
     }
 

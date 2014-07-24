@@ -120,7 +120,7 @@ public class ProcessLibPathTest extends BaseTestClass {
     public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
         String workflowDir = testLibDir + "/aggregatorLib2/";
         HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
-        HadoopUtil.createDir(workflowDir + "/lib", clusterFS);
+        HadoopUtil.recreateDir(clusterFS, workflowDir + "/lib");
         HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib",
             OSUtil.RESOURCES + "ivory-oozie-lib-0.1.jar");
         logger.info("processData: " + Util.prettyPrintXml(bundles[0].getProcessData()));

@@ -77,7 +77,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
-        HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
+        HadoopUtil.recreateDir(clusterFS, baseTestHDFSDir);
         cli = cluster.getClusterHelper().getHCatClient();
         bundle = new Bundle(BundleUtil.readHCat2Bundle(), cluster);
         bundle.generateUniqueBundle();

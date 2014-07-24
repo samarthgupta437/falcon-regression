@@ -113,8 +113,8 @@ public class HCatProcessTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(baseTestHDFSDir, clusterFS);
         HadoopUtil.uploadDir(clusterFS, hiveScriptDir, hiveScript);
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        HadoopUtil.createDir(outputHDFSDir, clusterFS);
-        HadoopUtil.createDir(outputHDFSDir2, clusterFS);
+        HadoopUtil.recreateDir(clusterFS, outputHDFSDir);
+        HadoopUtil.recreateDir(clusterFS, outputHDFSDir2);
         clusterHC.dropTable(dbName, inputTableName, true);
         clusterHC.dropTable(dbName, inputTableName2, true);
         clusterHC.dropTable(dbName, outputTableName, true);
