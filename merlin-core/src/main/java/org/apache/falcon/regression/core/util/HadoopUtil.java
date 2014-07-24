@@ -44,12 +44,6 @@ public final class HadoopUtil {
     }
     private static final Logger LOGGER = Logger.getLogger(HadoopUtil.class);
 
-    public static Configuration getHadoopConfiguration(ColoHelper prismHelper) {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-        return conf;
-    }
-
     public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 
         List<String> files = new ArrayList<String>();
