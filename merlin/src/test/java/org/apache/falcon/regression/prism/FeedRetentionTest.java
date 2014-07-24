@@ -59,7 +59,6 @@ public class FeedRetentionTest extends BaseTestClass {
     @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
         for (FileSystem fs : serverFS) {
-            HadoopUtil.createDir(impressionrcWorkflowLibPath);
             fs.copyFromLocalFile(new Path(
                 OSUtil.getPath(OSUtil.RESOURCES, "workflows", "impression_rc_workflow.xml")),
                 new Path(impressionrcWorkflowDir + "workflow.xml"));

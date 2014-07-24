@@ -211,13 +211,18 @@ public final class HadoopUtil {
         return returnList;
     }
 
-    public static void createDir(String path, FileSystem... fileSystems) throws IOException {
+    public static void createDir(String path, FileSystem fs) throws IOException {
+
+        deleteDirIfExists(path, fs);
+        LOGGER.info("creating hdfs dir: " + path + " on " + fs.getConf().get("fs.default.name"));
+        fs.mkdirs(new Path(path));
+
+    }
+
+    public static void createDir(List<FileSystem> fileSystems, String path) throws IOException {
 
         for (FileSystem fs : fileSystems) {
-            deleteDirIfExists(path, fs);
-            LOGGER.info("creating hdfs dir: " + path + " on " + fs
-                .getConf().get("fs.default.name"));
-            fs.mkdirs(new Path(path));
+            createDir(path, fs);
         }
     }
 
