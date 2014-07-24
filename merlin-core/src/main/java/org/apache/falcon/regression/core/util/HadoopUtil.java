@@ -100,17 +100,8 @@ public final class HadoopUtil {
         return files;
     }
 
-    public static List<Path> getAllDirsRecursivelyHDFS(
-        ColoHelper colcoHelper, Path location, int depth) throws IOException {
-
-        Configuration conf = HadoopUtil.getHadoopConfiguration(colcoHelper);
-        final FileSystem fs = FileSystem.get(conf);
-
-        return getAllDirsRecursivelyHDFS(fs, location, depth);
-    }
-
     @SuppressWarnings("deprecation")
-    private static List<Path> getAllDirsRecursivelyHDFS(
+    public static List<Path> getAllDirsRecursivelyHDFS(
         FileSystem fs, Path location, int depth) throws IOException {
 
         List<Path> returnList = new ArrayList<Path>();

@@ -168,7 +168,7 @@ public class RetentionTest extends BaseTestClass {
         throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
-            Util.getHadoopDataFromDir(cluster, inputFeed,
+            Util.getHadoopDataFromDir(clusterFS, inputFeed,
                 testHDFSDir);
 
         cluster.getFeedHelper()
@@ -203,7 +203,7 @@ public class RetentionTest extends BaseTestClass {
         }
         //now look for cluster data
         List<String> finalData =
-            Util.getHadoopDataFromDir(cluster, inputFeed,
+            Util.getHadoopDataFromDir(clusterFS, inputFeed,
                 testHDFSDir);
 
         //now see if retention value was matched to as expected

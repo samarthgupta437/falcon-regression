@@ -797,7 +797,7 @@ public class NewRetryTest extends BaseTestClass {
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             Util.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData =
-                Util.getHadoopDataFromDir(cluster, BundleUtil.getInputFeedFromBundle(bundles[0]),
+                Util.getHadoopDataFromDir(clusterFS, BundleUtil.getInputFeedFromBundle(bundles[0]),
                     lateDir);
             AssertUtil.assertSucceeded(
                 prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
