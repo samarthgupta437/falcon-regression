@@ -83,16 +83,6 @@ public final class HadoopUtil {
         return returnList;
     }
 
-    public static List<String> getAllFilesHDFS(String hadoopURL, String location)
-        throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", hadoopURL);
-        final FileSystem fs = FileSystem.get(conf);
-
-        return getAllFilesHDFS(fs, new Path(location));
-
-    }
-
     @SuppressWarnings("deprecation")
     public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 

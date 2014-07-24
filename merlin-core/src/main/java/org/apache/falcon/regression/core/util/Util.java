@@ -152,8 +152,8 @@ public final class Util {
     public static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
         throws IOException, JSchException {
         if (helper.getStoreLocation().startsWith("hdfs:")) {
-            return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(),
-                helper.getStoreLocation() + subPath);
+            return HadoopUtil.getAllFilesHDFS(helper.getHadoopFS(),
+                new Path(helper.getStoreLocation() + subPath));
         } else {
             return ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
