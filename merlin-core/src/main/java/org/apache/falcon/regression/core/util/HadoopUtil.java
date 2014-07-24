@@ -51,39 +51,6 @@ public final class HadoopUtil {
     }
 
     @SuppressWarnings("deprecation")
-    public static List<Path> getAllFilesRecursivelyHDFS(
-        ColoHelper colcoHelper, Path location) throws IOException {
-
-        List<Path> returnList = new ArrayList<Path>();
-
-        Configuration conf = HadoopUtil.getHadoopConfiguration(colcoHelper);
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        if (location.toString().contains("*")) {
-            location = new Path(
-                    location.toString().substring(0, location.toString().indexOf("*") - 1));
-        }
-
-        FileStatus[] stats = fs.listStatus(location);
-
-        for (FileStatus stat : stats) {
-            //Util.print("crrentPath: " +stat.getPath().toUri().getPath()); // gives directory name
-            if (!stat.isDir()) {
-                if (!stat.getPath().getName().contains("_SUCCESS")) {
-                    returnList.add(stat.getPath());
-                }
-            } else {
-                returnList.addAll(getAllFilesRecursivelyHDFS(colcoHelper, stat.getPath()));
-            }
-
-
-        }
-
-        return returnList;
-    }
-
-    @SuppressWarnings("deprecation")
     public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 
         List<String> files = new ArrayList<String>();
@@ -123,64 +90,34 @@ public final class HadoopUtil {
 
     @SuppressWarnings("deprecation")
     public static List<Path> getAllFilesRecursivelyHDFS(
-        ColoHelper coloHelper, Path location, String... ignoreFolders) throws IOException {
+        FileSystem fs, Path location) throws IOException {
 
         List<Path> returnList = new ArrayList<Path>();
 
-        Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
-
-        final FileSystem fs = FileSystem.get(conf);
-
         FileStatus[] stats;
         try {
-
             stats = fs.listStatus(location);
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return new ArrayList<Path>();
         }
-
-        //Util.print("getAllFilesRecursivelyHDFS: "+location);
 
         if (stats == null) {
             return returnList;
         }
         for (FileStatus stat : stats) {
 
-            //Util.print("checking in DIR: "+stat.getPath());
-
             if (!stat.isDir()) {
-                if (!checkIfIsIgnored(stat.getPath().toUri().toString(), ignoreFolders)) {
-                    //	Util.print("adding File: " +stat.getPath().toUri().getPath()); // gives
-                    // file name
-
+                if (!stat.getPath().toUri().toString().contains("_SUCCESS")) {
                     returnList.add(stat.getPath());
                 }
             } else {
-                //	Util.print("recursing for DIR: " +stat.getPath().toUri().getPath()); // gives
-                // directory name
-
-                returnList.addAll(getAllFilesRecursivelyHDFS(coloHelper, stat.getPath(),
-                    ignoreFolders));
+                returnList.addAll(getAllFilesRecursivelyHDFS(fs, stat.getPath()));
             }
         }
 
         return returnList;
 
-    }
-
-    private static boolean checkIfIsIgnored(String folder,
-                                            String[] ignoreFolders) {
-
-        for (String ignoreFolder : ignoreFolders) {
-
-            if (folder.contains(ignoreFolder)) {
-                //	Util.print("ignored Folder found: "+ignoreFolders[i]);
-                return true;
-            }
-        }
-        return false;
     }
 
     public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion)

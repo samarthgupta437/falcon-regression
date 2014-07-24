@@ -66,6 +66,8 @@ public class FeedReplicationTest extends BaseTestClass {
     private ColoHelper cluster2 = servers.get(1);
     private ColoHelper cluster3 = servers.get(2);
     private FileSystem cluster1FS = serverFS.get(0);
+    private FileSystem cluster2FS = serverFS.get(1);
+    private FileSystem cluster3FS = serverFS.get(2);
     private OozieClient cluster2OC = serverOC.get(1);
     private OozieClient cluster3OC = serverOC.get(2);
     private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
@@ -163,9 +165,9 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster1, toSource);
+            .getAllFilesRecursivelyHDFS(cluster1FS, toSource);
         List<Path> cluster2ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2FS, toTarget);
 
         AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
     }
@@ -250,11 +252,11 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster1, toSource);
+            .getAllFilesRecursivelyHDFS(cluster1FS, toSource);
         List<Path> cluster2ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2FS, toTarget);
         List<Path> cluster3ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster3, toTarget, "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster3FS, toTarget);
 
         AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
         AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster3ReplicatedData);
@@ -348,10 +350,10 @@ public class FeedReplicationTest extends BaseTestClass {
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster1, toSource);
+            .getAllFilesRecursivelyHDFS(cluster1FS, toSource);
         LOGGER.info("Data on source cluster: " + cluster1ReplicatedData);
         List<Path> cluster2ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2FS, toTarget);
         LOGGER.info("Data on target cluster: " + cluster2ReplicatedData);
         AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
     }

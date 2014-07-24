@@ -198,10 +198,10 @@ public class HCatReplicationTest extends BaseTestClass {
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(clusterFS, new Path(testHdfsDir));
         logger.info("Data on source cluster: " + cluster1ReplicatedData);
         List<Path> cluster2ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2FS, new Path(testHdfsDir));
         logger.info("Data on target cluster: " + cluster2ReplicatedData);
         AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
 
@@ -303,14 +303,14 @@ public class HCatReplicationTest extends BaseTestClass {
 
         //check if data was replicated correctly
         List<Path> srcData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(clusterFS, new Path(testHdfsDir));
         logger.info("Data on source cluster: " + srcData);
         List<Path> cluster2TargetData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2FS, new Path(testHdfsDir));
         logger.info("Data on target cluster: " + cluster2TargetData);
         AssertUtil.checkForListSizes(srcData, cluster2TargetData);
         List<Path> cluster3TargetData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster3, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster3FS, new Path(testHdfsDir));
         logger.info("Data on target cluster: " + cluster3TargetData);
         AssertUtil.checkForListSizes(srcData, cluster3TargetData);
     }

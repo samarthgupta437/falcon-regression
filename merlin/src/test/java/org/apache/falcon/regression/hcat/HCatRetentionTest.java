@@ -122,7 +122,7 @@ public class HCatRetentionTest extends BaseTestClass {
                 OSUtil.OOZIE_EXAMPLE_INPUT_LATE_INPUT, baseTestHDFSDir, dataDateStrings);
             addPartitionsToExternalTable(cli, dBName, tableName, feedType, dataDates, dataFolders);
             List<String> initialData =
-                getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
+                getHadoopDataFromDir(clusterFS, baseTestHDFSDir, testDir, feedType);
             List<HCatPartition> initialPtnList = cli.getPartitions(dBName, tableName);
             AssertUtil.checkForListSizes(initialData, initialPtnList);
 
@@ -136,7 +136,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
             List<String> expectedOutput = getExpectedOutput(retentionPeriod, retentionUnit,
                 feedType, new DateTime(DateTimeZone.UTC), initialData);
-            List<String> finalData = getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir,
+            List<String> finalData = getHadoopDataFromDir(clusterFS, baseTestHDFSDir, testDir,
                 feedType);
             List<HCatPartition> finalPtnList = cli.getPartitions(dBName, tableName);
 
@@ -152,13 +152,13 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    private static List<String> getHadoopDataFromDir(ColoHelper helper, String hadoopPath,
+    private static List<String> getHadoopDataFromDir(FileSystem fs, String hadoopPath,
                                                      String dir, FEED_TYPE feedType)
         throws IOException {
         List<String> finalResult = new ArrayList<String>();
         final int dirDepth = getDirDepthForFeedType(feedType);
 
-        List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper,
+        List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(fs,
             new Path(hadoopPath), dirDepth);
 
         for (Path result : results) {
