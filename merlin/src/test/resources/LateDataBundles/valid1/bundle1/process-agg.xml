@@ -42,7 +42,6 @@
     <retry policy="periodic" delay="minutes(10)" attempts="3"/>
 
     <late-process policy="periodic" delay="hours(1)">
-        <late-input input="impression" workflow-path="hdfs://impression/late/workflow"/>
-        <late-input input="clicks" workflow-path="hdfs://clicks/late/workflow"/>
+        <late-input input="inputData" workflow-path="hdfs://impression/late/workflow"/>
     </late-process>
 </process>
