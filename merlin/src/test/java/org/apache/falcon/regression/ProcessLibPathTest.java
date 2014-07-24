@@ -29,7 +29,6 @@ import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job.Status;
 import org.testng.annotations.AfterMethod;
@@ -121,7 +120,7 @@ public class ProcessLibPathTest extends BaseTestClass {
     public void setDifferentLibPathWithWrongJarInWorkflowLib() throws Exception {
         String workflowDir = testLibDir + "/aggregatorLib2/";
         HadoopUtil.uploadDir(clusterFS, workflowDir, OSUtil.RESOURCES_OOZIE);
-        HadoopUtil.deleteFile(cluster, new Path(workflowDir + "/lib/oozie-examples-3.1.5.jar"));
+        HadoopUtil.createDir(workflowDir + "/lib", clusterFS);
         HadoopUtil.copyDataToFolder(clusterFS, workflowDir + "/lib",
             OSUtil.RESOURCES + "ivory-oozie-lib-0.1.jar");
         logger.info("processData: " + Util.prettyPrintXml(bundles[0].getProcessData()));

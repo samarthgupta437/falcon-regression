@@ -120,16 +120,6 @@ public final class HadoopUtil {
 
     }
 
-    public static void deleteFile(ColoHelper coloHelper, Path fileHDFSLocaltion)
-        throws IOException {
-        Configuration conf = HadoopUtil.getHadoopConfiguration(coloHelper);
-
-        final FileSystem fs = FileSystem.get(conf);
-
-        fs.delete(fileHDFSLocaltion, false);
-
-    }
-
     public static void copyDataToFolder(ColoHelper coloHelper, final Path folder,
                                         final String fileLocation)
         throws IOException {
