@@ -1243,7 +1243,8 @@ public final class InstanceUtil {
                     String.format("Coordinator %s should be running/prep but is %s.", coordId,
                             coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();
-            if (expectedStatus == coordinatorActions.get(instanceNumber).getStatus()) {
+            if (coordinatorActions.size() > instanceNumber
+                && expectedStatus == coordinatorActions.get(instanceNumber - 1).getStatus()) {
                 return;
             } else {
                 TimeUtil.sleepSeconds(sleepTime);
