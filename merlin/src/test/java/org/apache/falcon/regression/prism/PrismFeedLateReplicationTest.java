@@ -447,9 +447,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Assert.assertEquals(subfolders.size(), 1);
         Assert.assertEquals(subfolders.get(0), "ua1");
 
-        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1, outPutBaseLocation, "_SUCCESS"));
+        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutBaseLocation,
+            "_SUCCESS"));
 
-        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
+        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutLocation, "_SUCCESS"));
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);
@@ -646,9 +647,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Assert.assertEquals(subfolders.size(), 1);
         Assert.assertEquals(subfolders.get(0), "ua1");
 
-        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1, outPutBaseLocation, "_SUCCESS"));
+        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutBaseLocation,
+            "_SUCCESS"));
 
-        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
+        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutLocation, "_SUCCESS"));
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);

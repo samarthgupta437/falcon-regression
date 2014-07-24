@@ -164,15 +164,10 @@ public final class HadoopUtil {
         return returnList;
     }
 
-    public static boolean isFilePresentHDFS(ColoHelper prismHelper,
-                                            String hdfsPath, String fileToCheckFor)
+    public static boolean isFilePresentHDFS(FileSystem fs, String hdfsPath, String fileToCheckFor)
         throws IOException {
 
         LOGGER.info("getting file from folder: " + hdfsPath);
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
 
         List<String> fileNames = getAllFileNamesFromHDFS(fs, hdfsPath);
 
