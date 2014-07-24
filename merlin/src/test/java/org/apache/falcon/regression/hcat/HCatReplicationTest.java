@@ -138,13 +138,14 @@ public class HCatReplicationTest extends BaseTestClass {
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
+        final String dataEndDate = "2010-01-01T21:00Z";
         final String tableUriPartitionFragment = StringUtils
             .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String datePattern =
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, startDate, 60,
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, dataEndDate, 60,
             DateTimeFormat.forPattern(datePattern));
 
         final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
@@ -225,13 +226,14 @@ public class HCatReplicationTest extends BaseTestClass {
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS, cluster3FS);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
+        final String dataEndDate = "2010-01-01T21:00Z";
         final String tableUriPartitionFragment = StringUtils
             .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String datePattern =
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, startDate, 60,
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, dataEndDate, 60,
             DateTimeFormat.forPattern(datePattern));
 
         final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
