@@ -221,15 +221,10 @@ public class Bundle {
             feedNameMap.putAll(feedMerlin.setUniqueName());
         }
 
-        ProcessMerlin processMerlin = new ProcessMerlin(processData);
-        processMerlin.setUniqueName();
-
         /* setting new names in feeds and process */
         for (FeedMerlin feedMerlin : feedMerlinList) {
             feedMerlin.renameClusters(clusterNameMap);
         }
-        processMerlin.renameClusters(clusterNameMap);
-        processMerlin.renameFeeds(feedNameMap);
 
         /* setting variables */
         clusters.clear();
@@ -240,7 +235,14 @@ public class Bundle {
         for (FeedMerlin feedMerlin : feedMerlinList) {
             dataSets.add(feedMerlin.toString());
         }
-        processData = processMerlin.toString();
+
+        if (StringUtils.isNotEmpty(processData)) {
+            ProcessMerlin processMerlin = new ProcessMerlin(processData);
+            processMerlin.setUniqueName();
+            processMerlin.renameClusters(clusterNameMap);
+            processMerlin.renameFeeds(feedNameMap);
+            processData = processMerlin.toString();
+        }
     }
 
     public ServiceResponse submitBundle(ColoHelper helper)
