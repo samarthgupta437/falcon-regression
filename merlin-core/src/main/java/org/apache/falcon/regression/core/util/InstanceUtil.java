@@ -72,6 +72,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -86,6 +87,8 @@ public final class InstanceUtil {
     }
 
     private static final Logger LOGGER = Logger.getLogger(InstanceUtil.class);
+    private static final EnumSet<Status> RUNNING_PREP_SUCCEEDED = EnumSet.of(Status.RUNNING,
+        Status.PREP, Status.SUCCEEDED);
 
     public static APIResult sendRequestProcessInstance(String
             url, String user)
@@ -1206,9 +1209,7 @@ public final class InstanceUtil {
         LOGGER.info(String.format("Using bundle %s", bundleId));
         final String coordId;
         final Status bundleStatus = client.getBundleJobInfo(bundleId).getStatus();
-        Assert.assertTrue(bundleStatus == Status.RUNNING || bundleStatus == Status.PREP
-                        ||
-                        bundleStatus == Status.SUCCEEDED,
+        Assert.assertTrue(RUNNING_PREP_SUCCEEDED.contains(bundleStatus),
                 String.format("Bundle job %s is should be prep/running but is %s", bundleId,
                         bundleStatus));
         OozieUtil.waitForCoordinatorJobCreation(client, bundleId);
@@ -1236,10 +1237,7 @@ public final class InstanceUtil {
             LOGGER.info(String.format("Try %d of %d", (i + 1), maxTries));
             CoordinatorJob coordinatorJob = client.getCoordJobInfo(coordId);
             final Status coordinatorStatus = coordinatorJob.getStatus();
-            Assert.assertTrue(
-                    coordinatorStatus == Status.RUNNING || coordinatorStatus == Status.PREP
-                            ||
-                            coordinatorStatus == Status.SUCCEEDED,
+            Assert.assertTrue(RUNNING_PREP_SUCCEEDED.contains(coordinatorStatus),
                     String.format("Coordinator %s should be running/prep but is %s.", coordId,
                             coordinatorStatus));
             List<CoordinatorAction> coordinatorActions = coordinatorJob.getActions();

@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -150,11 +151,8 @@ public final class OozieUtil {
             for (int i = 0; i < 180; ++i) {
                 CoordinatorAction actionInfo = oozieClient.getCoordActionInfo(action.getId());
                 LOGGER.info("actionInfo: " + actionInfo);
-                if (actionInfo.getStatus() == CoordinatorAction.Status.SUCCEEDED
-                        ||
-                    actionInfo.getStatus() == CoordinatorAction.Status.KILLED
-                        ||
-                    actionInfo.getStatus() == CoordinatorAction.Status.FAILED) {
+                if (EnumSet.of(CoordinatorAction.Status.SUCCEEDED, CoordinatorAction.Status.KILLED,
+                    CoordinatorAction.Status.FAILED).contains(actionInfo.getStatus())) {
                     break;
                 }
                 TimeUtil.sleepSeconds(10);
@@ -346,13 +344,8 @@ public final class OozieUtil {
 
         BundleJob bundleJob = client.getBundleJobInfo(bundleId);
 
-        if (bundleJob.getStatus() == BundleJob.Status.DONEWITHERROR
-                ||
-            bundleJob.getStatus() == BundleJob.Status.FAILED
-                ||
-            bundleJob.getStatus() == BundleJob.Status.SUCCEEDED
-                ||
-            bundleJob.getStatus() == BundleJob.Status.KILLED) {
+        if (EnumSet.of(BundleJob.Status.DONEWITHERROR, BundleJob.Status.FAILED,
+            BundleJob.Status.SUCCEEDED, BundleJob.Status.KILLED).contains(bundleJob.getStatus())) {
             return true;
         }
 
