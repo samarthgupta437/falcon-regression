@@ -25,27 +25,16 @@ import org.apache.log4j.Logger;
 
 public class ColoHelper {
     private static final Logger logger = Logger.getLogger(ColoHelper.class);
-    protected IEntityManagerHelper clusterHelper;
-    protected IEntityManagerHelper processHelper;
-    protected IEntityManagerHelper feedHelper;
-    protected String prefix;
+    private final IEntityManagerHelper clusterHelper;
+    private final IEntityManagerHelper processHelper;
+    private final IEntityManagerHelper feedHelper;
+    private String prefix;
 
     public ColoHelper(String prefix) {
-        try {
-            this.prefix = prefix;
-            clusterHelper =
-                EntityHelperFactory.getEntityHelper(EntityType.CLUSTER,
-                    prefix);
-            processHelper =
-                EntityHelperFactory
-                    .getEntityHelper(EntityType.PROCESS, prefix);
-            feedHelper =
-                EntityHelperFactory.getEntityHelper(EntityType.FEED, prefix);
-
-        } catch (Exception e) {
-            logger.info(e.getMessage());
-        }
-
+        this.prefix = prefix;
+        clusterHelper = EntityHelperFactory.getEntityHelper(EntityType.CLUSTER, prefix);
+        processHelper = EntityHelperFactory.getEntityHelper(EntityType.PROCESS, prefix);
+        feedHelper = EntityHelperFactory.getEntityHelper(EntityType.FEED, prefix);
     }
 
     public IEntityManagerHelper getClusterHelper() {
