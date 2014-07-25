@@ -28,6 +28,9 @@ import org.apache.log4j.Logger;
 import java.util.HashMap;
 
 public class MerlinConstants {
+    private MerlinConstants() {
+    }
+
     private static final Logger logger = Logger.getLogger(MerlinConstants.class);
 
     public final static boolean IS_SECURE =

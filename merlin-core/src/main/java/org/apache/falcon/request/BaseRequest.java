@@ -98,10 +98,8 @@ public class BaseRequest {
         } else if (this.method.equalsIgnoreCase("put")) {
             request = new HttpPut(new URI(this.url));
         }
-        if (this.requestData != null) {
-            if (request != null) {
-                request.setEntity(new StringEntity(requestData));
-            }
+        if (this.requestData != null && request != null) {
+            request.setEntity(new StringEntity(requestData));
         }
         return execute(request);
     }

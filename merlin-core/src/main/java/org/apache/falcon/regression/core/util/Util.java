@@ -117,14 +117,7 @@ public final class Util {
     }
 
     private static boolean isXML(String data) {
-
-        if (data != null && data.trim().length() > 0) {
-            if (data.trim().startsWith("<")) {
-                return true; //find a better way of validation
-            }
-        }
-
-        return false;
+        return data != null && data.trim().length() > 0 && data.trim().startsWith("<");
     }
 
     public static APIResult parseResponse(ServiceResponse response) throws JAXBException {
@@ -689,12 +682,12 @@ public final class Util {
 
 
     public static String getPathPrefix(String pathString) {
-        return pathString.substring(0, pathString.indexOf("$"));
+        return pathString.substring(0, pathString.indexOf('$'));
     }
 
     public static String getFileNameFromPath(String path) {
 
-        return path.substring(path.lastIndexOf("/") + 1, path.length());
+        return path.substring(path.lastIndexOf('/') + 1, path.length());
     }
 
 

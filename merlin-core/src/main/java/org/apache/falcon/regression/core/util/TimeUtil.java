@@ -317,7 +317,7 @@ public final class TimeUtil {
     }
 
     private static int getInt(String expression, int position) {
-        String numbers = expression.substring(expression.indexOf("(") + 1, expression.indexOf(")"));
+        String numbers = expression.substring(expression.indexOf('(') + 1, expression.indexOf(')'));
         return Integer.parseInt(numbers.split(",")[position]);
     }
 }

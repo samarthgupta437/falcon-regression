@@ -101,10 +101,9 @@ public final class GraphAssert {
     public static void assertUserVertexPresence(final VerticesResult verticesResult) {
         checkVerticesPresence(verticesResult, 1);
         for(Vertex vertex : verticesResult.getResults()) {
-            if (vertex.getType() == Vertex.VERTEX_TYPE.USER) {
-                if (vertex.getName().equals(MerlinConstants.CURRENT_USER_NAME)) {
-                    return;
-                }
+            if (vertex.getType() == Vertex.VERTEX_TYPE.USER
+                    && vertex.getName().equals(MerlinConstants.CURRENT_USER_NAME)) {
+                return;
             }
         }
         Assert.fail(String.format("Vertex corresponding to user: %s is not present.",
