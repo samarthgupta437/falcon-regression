@@ -609,7 +609,7 @@ public class LineageApiTest extends BaseTestClass {
         final VerticesResult verticesResult = lineageHelper.getVerticesByType(Vertex.VERTEX_TYPE.COLO);
         GraphAssert.assertVertexSanity(verticesResult);
         Assert.assertTrue(verticesResult.getTotalSize() > 0, "Expected at least 1 colo node");
-        Assert.assertTrue(verticesResult.getTotalSize() <= 3, "Expected at most 3 colo nodes");
+        Assert.assertTrue(verticesResult.getTotalSize() <= 4, "Expected at most 4 colo nodes");
         final List<Vertex> colo1Vertex = verticesResult.filterByName(clusterMerlin.getColo());
         AssertUtil.checkForListSize(colo1Vertex, 1);
         Vertex coloVertex = colo1Vertex.get(0);
