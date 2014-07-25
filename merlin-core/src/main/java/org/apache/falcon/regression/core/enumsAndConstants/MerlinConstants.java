@@ -42,8 +42,8 @@ public class MerlinConstants {
     private static final String USER_2_KEYTAB_STR = "user2_keytab";
     public static final String USER2_NAME;
     private static HashMap<String, String> keyTabMap;
-    public static String aclOwner = getAclOwner();
-    public static String aclGroup = getAclGroup();
+    public static final String aclOwner = Config.getProperty("ACL.OWNER", RequestKeys.CURRENT_USER);
+    public static final String aclGroup = Config.getProperty("ACL.GROUP", "default");
 
     /* initialize keyTabMap */
     static {
@@ -63,19 +63,5 @@ public class MerlinConstants {
     public static String getKeytabForUser(String user) {
         Assert.assertTrue(keyTabMap.containsKey(user), "Unknown user: " + user);
         return keyTabMap.get(user);
-    }
-
-    public static String getAclOwner() {
-        if(StringUtils.isNotEmpty(Config.getProperty("ACL.OWNER")))
-            return Config.getProperty("ACL.OWNER");
-        else
-            return RequestKeys.CURRENT_USER;
-    }
-
-    public static String getAclGroup() {
-        if(StringUtils.isNotEmpty(Config.getProperty("ACL.GROUP")))
-            return Config.getProperty("ACL.GROUP");
-        else
-            return "default";
     }
 }
