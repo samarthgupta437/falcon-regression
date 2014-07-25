@@ -40,6 +40,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -288,18 +289,16 @@ public class LineageHelper {
     }
 
     public VerticesResult getVerticesByDirection(int vertexId, Direction direction) {
-        Assert.assertTrue((direction == Direction.bothCount
-                       || direction == Direction.inCount || direction == Direction.outCount
-                       || direction == Direction.bothVertices
-                       || direction == Direction.inComingVertices || direction == Direction.outgoingVertices),
+        Assert.assertTrue((EnumSet.of(Direction.bothCount, Direction.inCount, Direction.outCount,
+                Direction.bothVertices, Direction.inComingVertices,
+                Direction.outgoingVertices).contains(direction)),
                 "Vertices requested.");
         return getVerticesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
     public VertexIdsResult getVertexIdsByDirection(int vertexId, Direction direction) {
-        Assert.assertTrue((direction == Direction.bothVerticesIds
-                        || direction == Direction.incomingVerticesIds
-                        || direction == Direction.outgoingVerticesIds),
+        Assert.assertTrue((EnumSet.of(Direction.bothVerticesIds, Direction.incomingVerticesIds,
+                Direction.outgoingVerticesIds).contains(direction)),
                 "Vertex Ids requested.");
         return getVertexIdsResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
@@ -326,9 +325,8 @@ public class LineageHelper {
     }
 
     public EdgesResult getEdgesByDirection(int vertexId, Direction direction) {
-        Assert.assertTrue((direction == Direction.bothEdges
-                || direction == Direction.inComingEdges
-                || direction == Direction.outGoingEdges), "Vertices requested.");
+        Assert.assertTrue((EnumSet.of(Direction.bothEdges, Direction.inComingEdges,
+            Direction.outGoingEdges).contains(direction)), "Vertices requested.");
         return getEdgesResult(getUrl(URL.VERTICES, getUrlPath(vertexId, direction.getValue())));
     }
 
