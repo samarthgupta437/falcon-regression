@@ -242,7 +242,7 @@ public final class HadoopUtil {
     public static List<String> flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  String remotePathPrefix,
                                                  List<String> remoteLocations) throws IOException {
-        if (StringUtils.isEmpty(remotePathPrefix)) {
+        if (StringUtils.isNotEmpty(remotePathPrefix)) {
             deleteDirIfExists(remotePathPrefix, fs);
         }
         LOGGER.info("Creating data in folders: \n" + remoteLocations);
