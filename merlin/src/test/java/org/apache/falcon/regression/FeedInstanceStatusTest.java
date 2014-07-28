@@ -86,20 +86,17 @@ public class FeedInstanceStatusTest extends BaseTestClass {
     public void feedInstanceStatus_running() throws Exception {
         bundles[0].setInputFeedDataPath(feedInputPath);
 
-        bundles[0].setCLusterColo("ua1");
         logger.info("cluster bundle1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
 
         ServiceResponse r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        bundles[1].setCLusterColo("ua2");
         logger.info("cluster bundle2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[1].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
-        bundles[2].setCLusterColo("ua3");
         logger.info("cluster bundle3: " + Util.prettyPrintXml(bundles[2].getClusters().get(0)));
         r = prism.getClusterHelper()
             .submitEntity(URLS.SUBMIT_URL, bundles[2].getClusters().get(0));
@@ -172,12 +169,12 @@ public class FeedInstanceStatusTest extends BaseTestClass {
             .getProcessInstanceStatus(Util.readEntityName(feed), "?start=" + TimeUtil
                 .addMinsToTime(startTime, 40));
 
-        String postFix = "/US/ua2";
+        String postFix = "/US/" + cluster2.getClusterHelper().getColo();
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
         Util.lateDataReplenish(cluster2, 80, 20, prefix, postFix);
 
-        postFix = "/UK/ua3";
+        postFix = "/UK/" + cluster3.getClusterHelper().getColo();;
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 80, 20, prefix, postFix);
