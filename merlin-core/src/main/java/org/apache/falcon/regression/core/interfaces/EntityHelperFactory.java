@@ -24,9 +24,10 @@ import org.apache.falcon.regression.core.helpers.DataEntityHelperImpl;
 import org.apache.falcon.regression.core.helpers.ProcessEntityHelperImpl;
 
 public class EntityHelperFactory {
+    private EntityHelperFactory() {
+    }
 
-    public static IEntityManagerHelper getEntityHelper(EntityType type,
-                                                       String prefix) {
+    public static IEntityManagerHelper getEntityHelper(EntityType type, String prefix) {
         switch (type) {
             case FEED:
                 return new DataEntityHelperImpl(prefix);

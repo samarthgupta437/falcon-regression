@@ -475,8 +475,8 @@ public final class InstanceUtil {
         String minString = "";
         for (CoordinatorJob coord : coords) {
             String strID = coord.getId();
-            if (min > Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
-                min = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
+            if (min > Integer.parseInt(strID.substring(0, strID.indexOf('-')))) {
+                min = Integer.parseInt(strID.substring(0, strID.indexOf('-')));
                 minString = coord.getId();
             }
         }
@@ -563,8 +563,8 @@ public final class InstanceUtil {
         String max = "0";
         int maxID = -1;
         for (String strID : bundleIds) {
-            if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf("-")))) {
-                maxID = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
+            if (maxID < Integer.parseInt(strID.substring(0, strID.indexOf('-')))) {
+                maxID = Integer.parseInt(strID.substring(0, strID.indexOf('-')));
                 max = strID;
             }
         }
@@ -607,7 +607,7 @@ public final class InstanceUtil {
         String bundleID;
         for (String strID : bundleIds) {
             LOGGER.info("getSequenceBundleID: " + strID);
-            int key = Integer.parseInt(strID.substring(0, strID.indexOf("-")));
+            int key = Integer.parseInt(strID.substring(0, strID.indexOf('-')));
             bundleMap.put(key, strID);
         }
         for (Map.Entry<Integer, String> entry : bundleMap.entrySet()) {
@@ -878,7 +878,7 @@ public final class InstanceUtil {
     public static String getFeedPrefix(String feed) {
         Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, feed);
         String p = feedElement.getLocations().getLocations().get(0).getPath();
-        p = p.substring(0, p.indexOf("$"));
+        p = p.substring(0, p.indexOf('$'));
         return p;
     }
 

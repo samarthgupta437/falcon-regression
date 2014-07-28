@@ -117,14 +117,7 @@ public final class Util {
     }
 
     private static boolean isXML(String data) {
-
-        if (data != null && data.trim().length() > 0) {
-            if (data.trim().startsWith("<")) {
-                return true; //find a better way of validation
-            }
-        }
-
-        return false;
+        return data != null && data.trim().length() > 0 && data.trim().startsWith("<");
     }
 
     public static APIResult parseResponse(ServiceResponse response) throws JAXBException {
@@ -594,26 +587,19 @@ public final class Util {
                 clusterObject.getProperties();
             // add the namenode principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
-                "dfs.namenode.kerberos.principal",
-                Config.getProperty(prefix + "namenode.kerberos.principal", "none")));
+                    "dfs.namenode.kerberos.principal",
+                    Config.getProperty(prefix + "namenode.kerberos.principal", "none")));
 
             // add the hive meta store principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
-                "hive.metastore.kerberos"
-                        +
-                    ".principal",
-                Config.getProperty(prefix + "hive.metastore.kerberos"
-                        +
-                    ".principal", "none")
-            ));
+                    "hive.metastore.kerberos.principal",
+                    Config.getProperty(prefix + "hive.metastore.kerberos.principal", "none")));
 
             // Until oozie has better integration with secure hive we need to send the properites to
             // falcon.
             // hive.metastore.sasl.enabled = true
             clusterProperties.getProperties()
-                .add(getFalconClusterPropertyObject("hive.metastore.sasl"
-                        +
-                    ".enabled", "true"));
+                .add(getFalconClusterPropertyObject("hive.metastore.sasl.enabled", "true"));
             // Only set the metastore uri if its not empty or null.
             if (null != hcatEndpoint && !hcatEndpoint.isEmpty()) {
                 //hive.metastore.uris
@@ -689,12 +675,12 @@ public final class Util {
 
 
     public static String getPathPrefix(String pathString) {
-        return pathString.substring(0, pathString.indexOf("$"));
+        return pathString.substring(0, pathString.indexOf('$'));
     }
 
     public static String getFileNameFromPath(String path) {
 
-        return path.substring(path.lastIndexOf("/") + 1, path.length());
+        return path.substring(path.lastIndexOf('/') + 1, path.length());
     }
 
 
