@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Util methods related to hadoop.
@@ -260,10 +261,13 @@ public final class HadoopUtil {
         if (!remotePathPrefix.endsWith("/") && !remoteLocations.get(0).startsWith("/")) {
             remotePathPrefix += "/";
         }
-
+        Pattern pattern = Pattern.compile(":[\\d]+/"); // remove 'hdfs(hftp)://server:port'
         List<String> locations = new ArrayList<String>();
         for (String remoteDir : remoteLocations) {
             String remoteLocation = remotePathPrefix + remoteDir;
+            if (pattern.matcher(remoteLocation).find()) {
+                remoteLocation = remoteLocation.split(":[\\d]+")[1];
+            }
             locations.add(remoteLocation);
             LOGGER.info(String.format("copying to: %s files: %s",
                 fs.getUri() + remoteLocation, Arrays.toString(files)));
