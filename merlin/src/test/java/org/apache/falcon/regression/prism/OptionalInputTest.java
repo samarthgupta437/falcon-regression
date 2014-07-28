@@ -216,10 +216,10 @@ public class OptionalInputTest extends BaseTestClass {
             TimeUtil.addMinsToTime(startTime, -10), endTime, 5);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
             inputPath + "/input1/", dataDates);
-        HadoopUtil.createEmptyDirWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -10)),
-            TimeUtil.oozieDateToDate(endTime),
-            inputPath + "/input0/", 5);
+        HadoopUtil.recreateDir(clusterFS, inputPath + "/input0/");
+        for (String date : dataDates) {
+            HadoopUtil.recreateDir(clusterFS, inputPath + "/input0/" + date);
+        }
 
         bundles[0].submitAndScheduleBundle(prism);
 
