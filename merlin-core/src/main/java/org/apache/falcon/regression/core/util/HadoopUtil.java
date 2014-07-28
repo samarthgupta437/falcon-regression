@@ -19,13 +19,11 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -224,16 +222,6 @@ public final class HadoopUtil {
         return FileSystem.get(conf);
     }
 
-    public static List<String> getWriteLocations(ColoHelper coloHelper,
-                                                 List<String> readOnlyLocations) {
-        List<String> writeFolders = new ArrayList<String>();
-        final String clusterReadonly = coloHelper.getClusterHelper().getClusterReadonly();
-        final String clusterWrite = coloHelper.getClusterHelper().getClusterWrite();
-        for (String location : readOnlyLocations) {
-            writeFolders.add(location.trim().replaceFirst(clusterReadonly, clusterWrite));
-        }
-        return writeFolders;
-    }
 
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  List<String> remoteLocations) throws IOException {
