@@ -385,6 +385,7 @@ public class ProcessInstanceStatusTest extends BaseTestClass {
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData()));
         AssertUtil.checkStatus(serverOC.get(0), EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
+        TimeUtil.sleepSeconds(15);
         InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
