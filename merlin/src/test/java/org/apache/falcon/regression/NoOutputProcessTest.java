@@ -53,7 +53,9 @@ public class NoOutputProcessTest extends BaseTestClass {
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseHDFSDir + "/NoOutputProcessTest/aggregator";
+    String testDir = baseHDFSDir + "/NoOutputProcessTest";
+    String inputPath = testDir + "/input/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    String aggregateWorkflowDir = testDir + "/aggregator";
     private static final Logger logger = Logger.getLogger(NoOutputProcessTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -69,7 +71,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         String startDate = "2010-01-03T00:00Z";
         String endDate = "2010-01-03T03:00Z";
 
-        b.setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        b.setInputFeedDataPath(inputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
@@ -85,7 +87,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
-        bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedDataPath(inputPath);
         bundles[0].setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].submitAndScheduleBundle(prism);
