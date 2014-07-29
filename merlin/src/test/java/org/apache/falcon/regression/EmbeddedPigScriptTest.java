@@ -66,6 +66,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
     String pigTestDir = baseHDFSDir + "/EmbeddedPigScriptTest";
     String pigScriptDir = pigTestDir + "/EmbeddedPigScriptTest/pig";
     String pigScriptLocation = pigScriptDir + "/id.pig";
+    String inputPath = pigTestDir + "/input/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     private static final Logger logger = Logger.getLogger(EmbeddedPigScriptTest.class);
 
     @BeforeClass(alwaysRun = true)
@@ -82,8 +83,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         String startDate = "2010-01-02T00:40Z";
         String endDate = "2010-01-02T01:10Z";
 
-        bundle.setInputFeedDataPath(pigTestDir +
-            "/input/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setInputFeedDataPath(inputPath);
         prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
@@ -99,7 +99,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
-        bundles[0].setInputFeedDataPath(pigTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundles[0].setInputFeedDataPath(inputPath);
         bundles[0].setOutputFeedLocationData(
             pigTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessWorkflow(pigScriptLocation);
