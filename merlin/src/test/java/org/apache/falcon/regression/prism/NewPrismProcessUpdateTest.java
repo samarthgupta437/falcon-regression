@@ -1505,7 +1505,7 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
             b.setProcessValidity(TimeUtil.getTimeWrtSystemTime(-10),
                     TimeUtil.getTimeWrtSystemTime(15));
-            b.submitAndScheduleBundle(prism);
+            b.submitFeedsScheduleProcess(prism);
 
             InstanceUtil.waitTillInstancesAreCreated(cluster1, b.getProcessData(), 0, 10);
             OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS,

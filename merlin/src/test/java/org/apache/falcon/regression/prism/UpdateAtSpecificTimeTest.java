@@ -109,7 +109,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         AuthenticationException, OozieClientException {
         processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
             TimeUtil.getTimeWrtSystemTime(20));
-        processBundle.submitAndScheduleBundle(prism);
+        processBundle.submitFeedsScheduleProcess(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster_1, processBundle.getProcessData(), 0);
         String oldProcess =
             processBundle.getProcessData();
@@ -147,7 +147,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
 
         processBundle.setProcessValidity(TimeUtil.getTimeWrtSystemTime(0),
                 TimeUtil.getTimeWrtSystemTime(20));
-        processBundle.submitAndScheduleBundle(prism);
+        processBundle.submitFeedsScheduleProcess(prism);
 
         //get old process details
         String oldProcess = processBundle.getProcessData();
@@ -456,7 +456,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         String startTime = TimeUtil.getTimeWrtSystemTime(-15);
         String endTime = TimeUtil.getTimeWrtSystemTime(60);
         processBundle.setProcessValidity(startTime, endTime);
-        processBundle.submitAndScheduleBundle(prism);
+        processBundle.submitFeedsScheduleProcess(prism);
         TimeUtil.sleepSeconds(10);
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0),
@@ -563,7 +563,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
         String startTime = TimeUtil.getTimeWrtSystemTime(10);
         String endTime = TimeUtil.getTimeWrtSystemTime(20);
         processBundle.setProcessValidity(startTime, endTime);
-        processBundle.submitAndScheduleBundle(prism);
+        processBundle.submitFeedsScheduleProcess(prism);
         //save old data
         String oldProcess = processBundle.getProcessData();
         String oldBundleID = InstanceUtil
@@ -609,7 +609,7 @@ public class UpdateAtSpecificTimeTest extends BaseTestClass {
             ClusterType.SOURCE, startTime_cluster3, endTime_cluster3);
 
         //submit and schedule
-        processBundle.submitAndScheduleBundle(prism);
+        processBundle.submitFeedsScheduleProcess(prism);
 
         //wait for coord to be in running state
         InstanceUtil.waitTillInstancesAreCreated(cluster_1, processBundle.getProcessData(), 0);

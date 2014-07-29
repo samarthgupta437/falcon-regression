@@ -133,7 +133,7 @@ public class AuthorizationTest extends BaseTestClass {
     public void u1ScheduleU2DeleteProcess()
         throws Exception {
         //submit, schedule process by U1
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //try to delete process by U2
@@ -167,7 +167,7 @@ public class AuthorizationTest extends BaseTestClass {
     @Test(enabled = false)
     public void u1SuspendU2DeleteProcess() throws Exception {
         //submit, schedule, suspend process by U1
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
@@ -226,7 +226,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void u1ScheduleU2SuspendProcess() throws Exception {
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //try to suspend process by U2
@@ -264,7 +264,7 @@ public class AuthorizationTest extends BaseTestClass {
     @Test(enabled = false)
     public void u1SuspendU2ResumeProcess() throws Exception {
         //submit, schedule, suspend process by U1
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
         AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
@@ -304,7 +304,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //submit, schedule process by U1
         LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -371,7 +371,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //submit, schedule process by U1
         LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -420,7 +420,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //submit, schedule process by U1
         LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -486,7 +486,7 @@ public class AuthorizationTest extends BaseTestClass {
 
         //submit, schedule process by U1
         LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         //check that there are 4 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
@@ -602,7 +602,7 @@ public class AuthorizationTest extends BaseTestClass {
     public void u1ScheduleU2UpdateProcess() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         //submit, schedule process by U1
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //update process definition

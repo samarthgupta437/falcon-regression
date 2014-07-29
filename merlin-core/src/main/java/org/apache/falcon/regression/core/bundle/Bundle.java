@@ -257,7 +257,7 @@ public class Bundle {
     }
 
     /**
-     * Submits bundle and schedules process.
+     * Submit all the entities and schedule the process.
      *
      * @param helper helper of prism host
      * @return message from schedule response
@@ -266,7 +266,7 @@ public class Bundle {
      * @throws URISyntaxException
      * @throws AuthenticationException
      */
-    public String submitAndScheduleBundle(ColoHelper helper)
+    public String submitFeedsScheduleProcess(ColoHelper helper)
         throws IOException, JAXBException, URISyntaxException,
         AuthenticationException {
         ServiceResponse submitResponse = submitBundle(helper);

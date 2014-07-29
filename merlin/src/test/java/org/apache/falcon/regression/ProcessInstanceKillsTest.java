@@ -110,7 +110,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(1);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
@@ -133,7 +133,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(10);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T00:03Z&end=2010-01-02T00:03Z");
@@ -155,7 +155,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T00:03Z&end=2010-01-02T00:30Z");
@@ -187,7 +187,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         String startTimeRequest = TimeUtil.getTimeWrtSystemTime(-17);
         String endTimeRequest = TimeUtil.getTimeWrtSystemTime(23);
         InstancesResult r = prism.getProcessHelper()
@@ -212,7 +212,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         String startTime = TimeUtil.getTimeWrtSystemTime(1);
         String endTime = TimeUtil.getTimeWrtSystemTime(40);
         InstancesResult r = prism.getProcessHelper()
@@ -236,7 +236,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z&end=2010-01-02T01:15Z");
@@ -259,7 +259,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:20Z");
@@ -282,7 +282,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(1);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
@@ -305,7 +305,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(1);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(bundles[0]
             .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
         InstancesResult r = prism.getProcessHelper()

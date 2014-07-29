@@ -221,7 +221,7 @@ public class OptionalInputTest extends BaseTestClass {
             TimeUtil.oozieDateToDate(endTime),
             inputPath + "/input0/", 5);
 
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,

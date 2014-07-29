@@ -88,7 +88,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(baseHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessValidity("2010-01-03T02:30Z", "2010-01-03T02:45Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
     }
 
     @AfterMethod(alwaysRun = true)

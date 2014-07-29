@@ -104,7 +104,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:26Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z&end=2010-01-02T01:21Z");
@@ -131,7 +131,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         TimeUtil.sleepSeconds(15);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
@@ -163,7 +163,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");
@@ -192,7 +192,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(1);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
@@ -217,7 +217,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstancesResult r =
             prism.getProcessHelper()
                 .getProcessInstanceResume("invalidName",
@@ -236,7 +236,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstancesResult r =
                 prism.getProcessHelper().getProcessInstanceResume(
                         Util.readEntityName(bundles[0].getProcessData()), null);
@@ -255,7 +255,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper().delete(URLS.DELETE_URL, bundles[0].getProcessData());
         InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
@@ -274,7 +274,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceResume(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z");
@@ -301,7 +301,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:25Z");
@@ -330,7 +330,7 @@ public class ProcessInstanceResumeTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setProcessConcurrency(6);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z&end=2010-01-02T01:20Z");

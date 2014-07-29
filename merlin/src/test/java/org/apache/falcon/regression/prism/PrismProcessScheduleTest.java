@@ -362,7 +362,7 @@ public class PrismProcessScheduleTest extends BaseTestClass {
                     "                    <value>randomValue</value>\n" +
                     "                </property>");
 
-            bundles[0].submitAndScheduleBundle(prism);
+            bundles[0].submitFeedsScheduleProcess(prism);
 
             InstanceUtil.waitForBundleToReachState(cluster1,
                 Util.readEntityName(bundles[0].getProcessData()),

@@ -98,7 +98,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[0].setProcessValidity(processStartDate, endDate);
         bundles[0].setProcessPeriodicity(5, Frequency.TimeUnit.minutes);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         processName = bundles[0].getProcessName();
         inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
         outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);

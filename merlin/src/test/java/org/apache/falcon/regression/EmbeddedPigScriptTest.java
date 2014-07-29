@@ -119,7 +119,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
     }
 
     @AfterMethod(alwaysRun = true)
