@@ -96,7 +96,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         p.setName("var1");
         p.setValue("hardCoded");
 
-        bundles[0].setProcessData(bundles[0].addProcessProperty(bundles[0].getProcessData(), p));
+        bundles[0].addProcessProperty(p);
 
         bundles[0].setProcessData(bundles[0]
             .setProcessInputPartition(bundles[0].getProcessData(), "${var1}", "${fileTime}"));

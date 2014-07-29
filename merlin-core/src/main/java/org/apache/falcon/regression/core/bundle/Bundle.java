@@ -864,7 +864,6 @@ public class Bundle {
      * Changes names of process inputs.
      *
      * @param names desired names of inputs
-     * @return modified process definition
      */
     public void setProcessInputNames(String... names) {
         Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
@@ -877,16 +876,14 @@ public class Bundle {
     /**
      * Adds optional property to process definition.
      *
-     * @param process process definition to be modified
      * @param properties desired properties to be added
-     * @return modified process definition
      */
-    public String addProcessProperty(String process, Property... properties) {
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+    public void addProcessProperty(Property... properties) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (Property property : properties) {
             p.getProperties().getProperties().add(property);
         }
-        return p.toString();
+        processData = p.toString();
     }
 
     /**
