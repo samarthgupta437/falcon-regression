@@ -64,7 +64,6 @@ import org.apache.oozie.client.WorkflowJob;
 import org.testng.Assert;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
@@ -663,56 +662,6 @@ public final class InstanceUtil {
         return actions.get(instanceNumber).getStatus();
     }
 
-    /**
-     * Copies local data to each of directories from the supplied list of remote locations.
-     *
-     * @param colo                    colohelper for remote cluster
-     * @param inputFoldersForInstance list of directories where data will be placed
-     * @param type                    type of provided data
-     * @throws IOException
-     */
-    public static void putDataInFolders(ColoHelper colo,
-            final List<String> inputFoldersForInstance,
-            String type) throws IOException {
-        for (String anInputFoldersForInstance : inputFoldersForInstance) {
-            putDataInFolder(colo.getClusterHelper().getHadoopFS(),
-                    anInputFoldersForInstance, type);
-        }
-    }
-
-    /**
-     * Creates directories on remote cluster and copies local data there.
-     *
-     * @param fs             remote file system
-     * @param remoteLocation remote location for copied data
-     * @param type           type of provided data
-     * @throws IOException
-     */
-    public static void putDataInFolder(FileSystem fs, final String remoteLocation, String type)
-        throws IOException {
-        String inputPath = OSUtil.NORMAL_INPUT;
-        if ((null != type) && type.equals("late")) {
-            inputPath = OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "lateData";
-        } else if ((null != type) && type.equals("oneFile")) {
-            inputPath = OSUtil.SINGLE_FILE;
-        }
-        File[] files = new File(inputPath).listFiles();
-        assert files != null;
-        Path remotePath = new Path(remoteLocation);
-        if (!fs.exists(remotePath)) {
-            fs.mkdirs(remotePath);
-        }
-        List<Path> localPaths = new ArrayList<Path>();
-        for (final File file : files) {
-            if (!file.isDirectory()) {
-                localPaths.add(new Path(file.getAbsolutePath()));
-            }
-        }
-        LOGGER.info(
-                "putting: " + Arrays.toString(files) + " to hdfs " + fs.getUri() + remoteLocation);
-        fs.copyFromLocalFile(false, false, localPaths.toArray(new Path[localPaths.size()]),
-                new Path(remoteLocation));
-    }
 
     public static void createHDFSFolders(ColoHelper helper, List<String> folderList)
         throws IOException {
@@ -973,48 +922,6 @@ public final class InstanceUtil {
         return actionInfo.getRun();
     }
 
-    /**
-     * Puts late data in remote directories.
-     *
-     * @param helper               colo helper for cluster where remote directories are
-     * @param inputFolderList      list of remote folders where data will be placed
-     * @param lateDataFolderNumber describes which specific data should be used
-     * @throws IOException
-     */
-    public static void putLateDataInFolders(ColoHelper helper,
-            List<String> inputFolderList,
-            int lateDataFolderNumber) throws IOException {
-        for (String anInputFolderList : inputFolderList) {
-            putLateDataInFolder(helper, anInputFolderList, lateDataFolderNumber);
-        }
-    }
-
-    /**
-     * Puts specific data in a remote folder.
-     *
-     * @param helper               colo helper for cluster where remote directory is
-     * @param remoteLocation       remote location for copied data
-     * @param lateDataFolderNumber describes which specific data should be used
-     * @throws IOException
-     */
-    public static void putLateDataInFolder(ColoHelper helper, final String remoteLocation,
-            int lateDataFolderNumber)
-        throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + helper.getFeedHelper().getHadoopURL());
-        final FileSystem fs = FileSystem.get(conf);
-        File[] files = new File(OSUtil.NORMAL_INPUT).listFiles();
-        if (lateDataFolderNumber == 2) {
-            files = new File(OSUtil.OOZIE_EXAMPLE_INPUT_DATA + "2ndLateData").listFiles();
-        }
-        assert files != null;
-        for (final File file : files) {
-            if (!file.isDirectory()) {
-                fs.copyFromLocalFile(new Path(file.getAbsolutePath()),
-                        new Path(remoteLocation));
-            }
-        }
-    }
 
     /**
      * Sets new feed data path.

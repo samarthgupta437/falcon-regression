@@ -152,8 +152,8 @@ public final class Util {
     public static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
         throws IOException, JSchException {
         if (helper.getStoreLocation().startsWith("hdfs:")) {
-            return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(),
-                helper.getStoreLocation() + subPath);
+            return HadoopUtil.getAllFilesHDFS(helper.getHadoopFS(),
+                new Path(helper.getStoreLocation() + subPath));
         } else {
             return ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
@@ -176,13 +176,13 @@ public final class Util {
         return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
-    public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
+    public static List<String> getHadoopDataFromDir(FileSystem fs, String feed, String dir)
         throws IOException {
         List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
         int depth = feedPath.split(dir)[1].split("/").length - 1;
-        List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(helper,
+        List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(fs,
             new Path(dir), depth);
 
         for (Path result : results) {

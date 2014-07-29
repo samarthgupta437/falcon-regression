@@ -89,8 +89,7 @@ public class HCatReplicationTest extends BaseTestClass {
         cluster2HC = cluster2.getClusterHelper().getHCatClient();
         cluster3HC = cluster3.getClusterHelper().getHCatClient();
         // create the base dir on all clusters.
-        // method will delete the dir if it exists.
-        HadoopUtil.createDir(baseTestHDFSDir, clusterFS, cluster2FS, cluster3FS);
+        HadoopUtil.recreateDir(serverFS, baseTestHDFSDir);
     }
 
     @BeforeMethod(alwaysRun = true)
@@ -135,7 +134,7 @@ public class HCatReplicationTest extends BaseTestClass {
         }
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
-        HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS);
+        HadoopUtil.recreateDir(serverFS, testHdfsDir);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
         final String dataEndDate = "2010-01-01T21:00Z";
@@ -198,10 +197,10 @@ public class HCatReplicationTest extends BaseTestClass {
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(clusterFS, new Path(testHdfsDir));
         logger.info("Data on source cluster: " + cluster1ReplicatedData);
         List<Path> cluster2ReplicatedData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2FS, new Path(testHdfsDir));
         logger.info("Data on target cluster: " + cluster2ReplicatedData);
         AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
 
@@ -223,7 +222,7 @@ public class HCatReplicationTest extends BaseTestClass {
         }
         String tblName = tcName;
         String testHdfsDir = baseTestHDFSDir + "/" + tcName;
-        HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS, cluster3FS);
+        HadoopUtil.recreateDir(serverFS, testHdfsDir);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
         final String dataEndDate = "2010-01-01T21:00Z";
@@ -303,14 +302,14 @@ public class HCatReplicationTest extends BaseTestClass {
 
         //check if data was replicated correctly
         List<Path> srcData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(clusterFS, new Path(testHdfsDir));
         logger.info("Data on source cluster: " + srcData);
         List<Path> cluster2TargetData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster2, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster2FS, new Path(testHdfsDir));
         logger.info("Data on target cluster: " + cluster2TargetData);
         AssertUtil.checkForListSizes(srcData, cluster2TargetData);
         List<Path> cluster3TargetData = HadoopUtil
-            .getAllFilesRecursivelyHDFS(cluster3, new Path(testHdfsDir), "_SUCCESS");
+            .getAllFilesRecursivelyHDFS(cluster3FS, new Path(testHdfsDir));
         logger.info("Data on target cluster: " + cluster3TargetData);
         AssertUtil.checkForListSizes(srcData, cluster3TargetData);
     }

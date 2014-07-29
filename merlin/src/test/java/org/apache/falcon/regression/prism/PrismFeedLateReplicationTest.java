@@ -158,9 +158,9 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 1);
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
-            HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
+            inputFolderListForColo1);
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
-            HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
+            inputFolderListForColo2);
     }
 
     @Test(groups = {"multiCluster"})
@@ -251,9 +251,9 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 1);
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
-            HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
+            inputFolderListForColo1);
         HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.NORMAL_INPUT,
-            HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2));
+            inputFolderListForColo2);
 
         //sleep till late starts
         TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 4));
@@ -289,10 +289,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         TimeUtil.sleepSeconds(30);
 
         //put data for the second time
-        InstanceUtil.putLateDataInFolders(cluster2,
-            HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1), 2);
-        InstanceUtil.putLateDataInFolders(cluster3,
-            HadoopUtil.getWriteLocations(cluster3, inputFolderListForColo2), 2);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.OOZIE_EXAMPLE_INPUT_DATA
+            + "2ndLateData", inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.OOZIE_EXAMPLE_INPUT_DATA
+            + "2ndLateData", inputFolderListForColo2);
 
         //sleep till late 2 starts
         TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 9));
@@ -447,9 +447,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Assert.assertEquals(subfolders.size(), 1);
         Assert.assertEquals(subfolders.get(0), "ua1");
 
-        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1, outPutBaseLocation, "_SUCCESS"));
+        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutBaseLocation,
+            "_SUCCESS"));
 
-        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
+        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutLocation, "_SUCCESS"));
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);
@@ -486,8 +487,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         TimeUtil.sleepSeconds(30);
 
         //put data for the second time
-        InstanceUtil.putLateDataInFolders(cluster2, inputFolderListForColo1, 2);
-        InstanceUtil.putLateDataInFolders(cluster3, inputFolderListForColo2, 2);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.OOZIE_EXAMPLE_INPUT_DATA
+            + "2ndLateData", inputFolderListForColo1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster3FS, OSUtil.OOZIE_EXAMPLE_INPUT_DATA
+            + "2ndLateData", inputFolderListForColo2);
 
         //sleep till late 2 starts
         TimeUtil.sleepTill(TimeUtil.addMinsToTime(startTime, 9));
@@ -646,9 +649,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Assert.assertEquals(subfolders.size(), 1);
         Assert.assertEquals(subfolders.get(0), "ua1");
 
-        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1, outPutBaseLocation, "_SUCCESS"));
+        Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutBaseLocation,
+            "_SUCCESS"));
 
-        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
+        Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1FS, outPutLocation, "_SUCCESS"));
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);

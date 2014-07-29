@@ -41,6 +41,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -108,41 +109,18 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
-        createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
-            TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
-            baseTestDir + "/input1/", 5);
+        List<String> dataDates = generateDateAndOneDayAfter(
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
+                TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)), 5);
+
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, baseTestDir
+            + "/input1/", dataDates);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC,
             Util.getProcessName(bundles[0].getProcessData()), 2,
             CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
     }
 
-    /**
-     * Generates list of remote directories between start and end date and then places data there.
-     *
-     * @param colo          colohelper for remote cluster
-     * @param startDateJoda start date
-     * @param endDateJoda   end date
-     * @param prefix        root path for all directories
-     * @param interval      interval with which directories are created
-     * @throws IOException
-     */
-    private static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
-                                                       DateTime endDateJoda, String prefix,
-                                                       int interval) throws IOException {
-        List<String> dataDates =
-            generateDateAndOneDayAfter(startDateJoda, endDateJoda, interval);
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.putDataInFolders(colo, dataFolder, "");
-    }
 
     /**
      * Generates patterns of the form .../2014/03/06/21/57/2014-Mar-07 between two supplied dates.
