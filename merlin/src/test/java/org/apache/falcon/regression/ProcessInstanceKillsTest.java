@@ -182,7 +182,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTimeData, 1);
         HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
-            baseTestHDFSDir + "/input", dataDates);
+            baseTestHDFSDir + "/input01", dataDates);
+        bundles[0].setInputFeedDataPath(feedInputPath.replace("input/","input01/"));
         bundles[0].setProcessValidity(startTime, endTime);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
