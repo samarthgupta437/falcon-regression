@@ -889,16 +889,14 @@ public class Bundle {
     /**
      * Sets partition for each input, according to number of supplied partitions.
      *
-     * @param process process definition to be modified
      * @param partition partitions to be set
-     * @return modified process definition
      */
-    public String setProcessInputPartition(String process, String... partition) {
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+    public void setProcessInputPartition(String... partition) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (int i = 0; i < partition.length; i++) {
             p.getInputs().getInputs().get(i).setPartition(partition[i]);
         }
-        return p.toString();
+        processData = p.toString();
     }
 
     public String setProcessOutputNames(String process, String... names) {
