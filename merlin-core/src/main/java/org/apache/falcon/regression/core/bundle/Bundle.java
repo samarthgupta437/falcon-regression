@@ -257,7 +257,7 @@ public class Bundle {
     }
 
     /**
-     * Submits bundle and schedules process.
+     * Submit all the entities and schedule the process.
      *
      * @param helper helper of prism host
      * @return message from schedule response
@@ -266,7 +266,7 @@ public class Bundle {
      * @throws URISyntaxException
      * @throws AuthenticationException
      */
-    public String submitAndScheduleBundle(ColoHelper helper)
+    public String submitFeedsScheduleProcess(ColoHelper helper)
         throws IOException, JAXBException, URISyntaxException,
         AuthenticationException {
         ServiceResponse submitResponse = submitBundle(helper);
@@ -836,28 +836,25 @@ public class Bundle {
         setProcessData(processMerlin.toString());
     }
 
-    public void submitAndScheduleBundle(Bundle b, ColoHelper helper,
-                                        boolean checkSuccess)
+    public void submitAndScheduleBundle(ColoHelper helper, boolean checkSuccess)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 
-        for (int i = 0; i < b.getClusters().size(); i++) {
+        for (int i = 0; i < getClusters().size(); i++) {
             ServiceResponse r = helper.getClusterHelper()
-                .submitEntity(URLS.SUBMIT_URL, b.getClusters().get(i));
+                .submitEntity(URLS.SUBMIT_URL, getClusters().get(i));
             if (checkSuccess) {
                 AssertUtil.assertSucceeded(r);
             }
         }
-        for (int i = 0; i < b.getDataSets().size(); i++) {
-            ServiceResponse r =
-                    helper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL,
-                    b.getDataSets().get(i));
+        for (int i = 0; i < getDataSets().size(); i++) {
+            ServiceResponse r = helper.getFeedHelper().submitAndSchedule(
+                    URLS.SUBMIT_AND_SCHEDULE_URL, getDataSets().get(i));
             if (checkSuccess) {
                 AssertUtil.assertSucceeded(r);
             }
         }
-        ServiceResponse r =
-                helper.getProcessHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, b.getProcessData());
+        ServiceResponse r = helper.getProcessHelper().submitAndSchedule(
+                URLS.SUBMIT_AND_SCHEDULE_URL, getProcessData());
         if (checkSuccess) {
             AssertUtil.assertSucceeded(r);
         }
@@ -866,60 +863,56 @@ public class Bundle {
     /**
      * Changes names of process inputs.
      *
-     * @param process process definition to be modified
      * @param names desired names of inputs
-     * @return modified process definition
      */
-    public String setProcessInputNames(String process, String... names) {
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+    public void setProcessInputNames(String... names) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (int i = 0; i < names.length; i++) {
             p.getInputs().getInputs().get(i).setName(names[i]);
         }
-        return p.toString();
+        processData = p.toString();
     }
 
     /**
      * Adds optional property to process definition.
      *
-     * @param process process definition to be modified
      * @param properties desired properties to be added
-     * @return modified process definition
      */
-    public String addProcessProperty(String process, Property... properties) {
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+    public void addProcessProperty(Property... properties) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (Property property : properties) {
             p.getProperties().getProperties().add(property);
         }
-        return p.toString();
+        processData = p.toString();
     }
 
     /**
      * Sets partition for each input, according to number of supplied partitions.
      *
-     * @param process process definition to be modified
      * @param partition partitions to be set
-     * @return modified process definition
      */
-    public String setProcessInputPartition(String process, String... partition) {
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+    public void setProcessInputPartition(String... partition) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
         for (int i = 0; i < partition.length; i++) {
             p.getInputs().getInputs().get(i).setPartition(partition[i]);
         }
-        return p.toString();
+        processData = p.toString();
     }
 
-    public String setProcessOutputNames(String process, String... names) {
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+    /**
+     * Sets name(s) of the process output(s)
+     * @param names new names of the outputs
+     */
+    public void setProcessOutputNames(String... names) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
         Outputs outputs = p.getOutputs();
-        if (outputs.getOutputs().size() != names.length) {
-            LOGGER.info("Number of output names not equal to output in processdef");
-            return null;
-        }
+        Assert.assertEquals(outputs.getOutputs().size(), names.length,
+                "Number of output names is not equal to number of outputs in process");
         for (int i = 0; i < names.length; i++) {
             outputs.getOutputs().get(i).setName(names[i]);
         }
         p.setOutputs(outputs);
-        return p.toString();
+        processData = p.toString();
     }
 
     public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) {

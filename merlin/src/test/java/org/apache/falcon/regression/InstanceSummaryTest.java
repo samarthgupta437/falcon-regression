@@ -113,7 +113,7 @@ public class InstanceSummaryTest extends BaseTestClass {
         throws URISyntaxException, JAXBException, IOException, ParseException,
         OozieClientException, AuthenticationException {
         processBundle.setProcessValidity(startTime, endTime);
-        processBundle.submitAndScheduleBundle(prism);
+        processBundle.submitFeedsScheduleProcess(prism);
         InstanceUtil.waitTillInstancesAreCreated(cluster3,
             processBundle.getProcessData(), 0);
 
@@ -208,7 +208,7 @@ public class InstanceSummaryTest extends BaseTestClass {
             ClusterType.SOURCE, null, null);
         processBundle.addClusterToBundle(bundles[2].getClusters().get(0),
             ClusterType.SOURCE, null, null);
-        processBundle.submitAndScheduleBundle(prism);
+        processBundle.submitFeedsScheduleProcess(prism);
         InstancesSummaryResult r = prism.getProcessHelper()
             .getInstanceSummary(Util.readEntityName(processBundle.getProcessData()),
                 "?start=" + startTime);

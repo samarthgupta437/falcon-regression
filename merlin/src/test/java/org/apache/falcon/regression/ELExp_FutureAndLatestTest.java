@@ -104,7 +104,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void latestTest() throws Exception {
         bundles[0].setDatasetInstances("latest(-3)", "latest(0)");
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
             CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
     }
@@ -112,7 +112,7 @@ public class ELExp_FutureAndLatestTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void futureTest() throws Exception {
         bundles[0].setDatasetInstances("future(0,10)", "future(3,10)");
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
             CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
     }

@@ -103,10 +103,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(
             pigTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessWorkflow(pigScriptLocation);
-        bundles[0]
-            .setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "INPUT"));
-        bundles[0].setProcessData(
-            bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
+        bundles[0].setProcessInputNames("INPUT");
+        bundles[0].setProcessOutputNames("OUTPUT");
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:10Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -120,7 +118,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         processElement.setProperties(properties);
         processElement.getWorkflow().setEngine(EngineType.PIG);
         InstanceUtil.writeProcessElement(bundles[0], processElement);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
     }
 
     @AfterMethod(alwaysRun = true)

@@ -93,7 +93,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-02T00:50Z",
             "2010-01-02T01:10Z", 5);
@@ -128,7 +128,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         logger.info("instanceShouldStillBeInWaitingState");
         InstanceUtil
@@ -171,7 +171,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -221,7 +221,7 @@ public class OptionalInputTest extends BaseTestClass {
             HadoopUtil.recreateDir(clusterFS, inputPath + "/input0/" + date);
         }
 
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -240,8 +240,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].generateRequiredBundle(1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
             "2010-01-02T01:12Z");
 
-        bundles[0].setProcessData(
-            bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData"));
+        bundles[0].setProcessInputNames("inputData");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
@@ -251,7 +250,7 @@ public class OptionalInputTest extends BaseTestClass {
 
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -283,7 +282,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
+        bundles[0].submitAndScheduleBundle(prism, true);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -348,7 +347,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(4);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
+        bundles[0].submitAndScheduleBundle(prism, true);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -371,8 +370,7 @@ public class OptionalInputTest extends BaseTestClass {
         //delete all input data
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
 
-        bundles[0].setProcessData(bundles[0]
-            .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
+        bundles[0].setProcessInputNames("inputData0", "inputData");
 
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
 

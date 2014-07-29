@@ -94,7 +94,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
         bundles[0].setProcessData(process);
 
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL,
             bundles[0].getProcessData()));
@@ -123,7 +123,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
 
         logger.info("process: " + Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
 
         AssertUtil.assertSucceeded(prism.getProcessHelper().delete(URLS.DELETE_URL,
             bundles[0].getProcessData()));

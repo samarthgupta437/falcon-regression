@@ -92,22 +92,19 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
         bundles[0].generateRequiredBundle(1, 2, 1, baseTestDir, 1, startTime, endTime);
-        bundles[0].setProcessData(bundles[0]
-            .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
+        bundles[0].setProcessInputNames("inputData0", "inputData");
         Property p = new Property();
         p.setName("var1");
         p.setValue("hardCoded");
 
-        bundles[0].setProcessData(bundles[0].addProcessProperty(bundles[0].getProcessData(), p));
-
-        bundles[0].setProcessData(bundles[0]
-            .setProcessInputPartition(bundles[0].getProcessData(), "${var1}", "${fileTime}"));
+        bundles[0].addProcessProperty(p);
+        bundles[0].setProcessInputPartition("${var1}", "${fileTime}");
 
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         List<String> dataDates = generateDateAndOneDayAfter(
                 TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),

@@ -95,7 +95,7 @@ public class RescheduleProcessInFinalStatesTest extends BaseTestClass {
             baseTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessConcurrency(6);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
-        bundles[0].submitAndScheduleBundle(prism);
+        bundles[0].submitFeedsScheduleProcess(prism);
     }
 
     @AfterMethod(alwaysRun = true)
