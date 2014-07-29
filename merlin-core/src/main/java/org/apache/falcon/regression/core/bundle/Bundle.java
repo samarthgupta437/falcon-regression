@@ -899,18 +899,20 @@ public class Bundle {
         processData = p.toString();
     }
 
-    public String setProcessOutputNames(String process, String... names) {
-        Process p = (Process) Entity.fromString(EntityType.PROCESS, process);
+    /**
+     * Sets name(s) of the process output(s)
+     * @param names new names of the outputs
+     */
+    public void setProcessOutputNames(String... names) {
+        Process p = (Process) Entity.fromString(EntityType.PROCESS, processData);
         Outputs outputs = p.getOutputs();
-        if (outputs.getOutputs().size() != names.length) {
-            LOGGER.info("Number of output names not equal to output in processdef");
-            return null;
-        }
+        Assert.assertEquals(outputs.getOutputs().size(), names.length,
+                "Number of output names is not equal to number of outputs in process");
         for (int i = 0; i < names.length; i++) {
             outputs.getOutputs().get(i).setName(names[i]);
         }
         p.setOutputs(outputs);
-        return p.toString();
+        processData = p.toString();
     }
 
     public void addInputFeedToBundle(String feedRefName, String feed, int templateInputIdx) {
