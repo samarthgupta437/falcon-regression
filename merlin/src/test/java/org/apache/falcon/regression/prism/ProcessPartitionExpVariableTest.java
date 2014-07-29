@@ -106,7 +106,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),

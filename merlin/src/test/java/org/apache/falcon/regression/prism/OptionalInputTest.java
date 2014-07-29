@@ -93,7 +93,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide("2010-01-02T00:50Z",
             "2010-01-02T01:10Z", 5);
@@ -128,7 +128,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         logger.info("instanceShouldStillBeInWaitingState");
         InstanceUtil
@@ -171,7 +171,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -251,7 +251,7 @@ public class OptionalInputTest extends BaseTestClass {
 
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+        bundles[0].submitAndScheduleBundle(prism, false);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -283,7 +283,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(2);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
+        bundles[0].submitAndScheduleBundle(prism, true);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,
@@ -348,7 +348,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(4);
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
 
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, true);
+        bundles[0].submitAndScheduleBundle(prism, true);
 
         InstanceUtil
             .waitTillInstanceReachState(oozieClient,

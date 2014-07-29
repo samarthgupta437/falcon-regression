@@ -836,28 +836,25 @@ public class Bundle {
         setProcessData(processMerlin.toString());
     }
 
-    public void submitAndScheduleBundle(Bundle b, ColoHelper helper,
-                                        boolean checkSuccess)
+    public void submitAndScheduleBundle(ColoHelper helper, boolean checkSuccess)
         throws IOException, JAXBException, URISyntaxException, AuthenticationException {
 
-        for (int i = 0; i < b.getClusters().size(); i++) {
+        for (int i = 0; i < getClusters().size(); i++) {
             ServiceResponse r = helper.getClusterHelper()
-                .submitEntity(URLS.SUBMIT_URL, b.getClusters().get(i));
+                .submitEntity(URLS.SUBMIT_URL, getClusters().get(i));
             if (checkSuccess) {
                 AssertUtil.assertSucceeded(r);
             }
         }
-        for (int i = 0; i < b.getDataSets().size(); i++) {
-            ServiceResponse r =
-                    helper.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL,
-                    b.getDataSets().get(i));
+        for (int i = 0; i < getDataSets().size(); i++) {
+            ServiceResponse r = helper.getFeedHelper().submitAndSchedule(
+                    URLS.SUBMIT_AND_SCHEDULE_URL, getDataSets().get(i));
             if (checkSuccess) {
                 AssertUtil.assertSucceeded(r);
             }
         }
-        ServiceResponse r =
-                helper.getProcessHelper()
-                .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, b.getProcessData());
+        ServiceResponse r = helper.getProcessHelper().submitAndSchedule(
+                URLS.SUBMIT_AND_SCHEDULE_URL, getProcessData());
         if (checkSuccess) {
             AssertUtil.assertSucceeded(r);
         }
