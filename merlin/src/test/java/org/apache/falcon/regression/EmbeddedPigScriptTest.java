@@ -102,8 +102,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(
             pigTestDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         bundles[0].setProcessWorkflow(pigScriptLocation);
-        bundles[0]
-            .setProcessData(bundles[0].setProcessInputNames(bundles[0].getProcessData(), "INPUT"));
+        bundles[0].setProcessInputNames("INPUT");
         bundles[0].setProcessData(
             bundles[0].setProcessOutputNames(bundles[0].getProcessData(), "OUTPUT"));
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:10Z");

@@ -91,8 +91,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
         bundles[0].generateRequiredBundle(1, 2, 1, baseTestDir, 1, startTime, endTime);
-        bundles[0].setProcessData(bundles[0]
-            .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
+        bundles[0].setProcessInputNames("inputData0", "inputData");
         Property p = new Property();
         p.setName("var1");
         p.setValue("hardCoded");

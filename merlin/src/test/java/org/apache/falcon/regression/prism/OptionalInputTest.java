@@ -240,8 +240,7 @@ public class OptionalInputTest extends BaseTestClass {
         bundles[0].generateRequiredBundle(1, 2, 2, inputPath, 1, "2010-01-02T01:00Z",
             "2010-01-02T01:12Z");
 
-        bundles[0].setProcessData(
-            bundles[0].setProcessInputNames(bundles[0].getProcessData(), "inputData"));
+        bundles[0].setProcessInputNames("inputData");
 
         for (int i = 0; i < bundles[0].getClusters().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getClusters().get(i)));
@@ -371,8 +370,7 @@ public class OptionalInputTest extends BaseTestClass {
         //delete all input data
         HadoopUtil.deleteDirIfExists(inputPath + "/", clusterFS);
 
-        bundles[0].setProcessData(bundles[0]
-            .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
+        bundles[0].setProcessInputNames("inputData0", "inputData");
 
         logger.info("modified process:" + Util.prettyPrintXml(bundles[0].getProcessData()));
 
