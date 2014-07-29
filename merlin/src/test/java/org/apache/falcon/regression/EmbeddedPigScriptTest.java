@@ -82,7 +82,8 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         String startDate = "2010-01-02T00:40Z";
         String endDate = "2010-01-02T01:10Z";
 
-        bundle.setInputFeedDataPath(pigTestDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+        bundle.setInputFeedDataPath(pigTestDir +
+            "/input/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
         prefix = bundle.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 

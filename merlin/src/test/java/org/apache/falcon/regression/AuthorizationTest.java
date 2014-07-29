@@ -70,7 +70,7 @@ public class AuthorizationTest extends BaseTestClass {
     private String baseTestDir = baseHDFSDir + "/AuthorizationTest";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
     private String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private String feedInputPath = baseTestDir + datePattern;
+    private String feedInputPath = baseTestDir + "/input" + datePattern;
 
     @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
