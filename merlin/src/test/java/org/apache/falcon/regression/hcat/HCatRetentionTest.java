@@ -330,7 +330,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) {
-        RetentionUnit[] units = new RetentionUnit[]{RetentionUnit.HOURS, RetentionUnit.DAYS,
+        RetentionUnit[] retentionUnits = new RetentionUnit[]{RetentionUnit.HOURS, RetentionUnit.DAYS,
             RetentionUnit.MONTHS};// "minutes","years",
         int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered
         // in validation scenarios.
@@ -339,15 +339,15 @@ public class HCatRetentionTest extends BaseTestClass {
                 //disabling since falcon has support is for only for single hcat partition
                 //FeedType.DAILY, FeedType.MINUTELY, FeedType.HOURLY, FeedType.MONTHLY,
                 FeedType.YEARLY};
-        Object[][] testData = new Object[units.length * periods.length * dataTypes.length][3];
+        Object[][] testData = new Object[retentionUnits.length * periods.length * dataTypes.length][3];
 
         int i = 0;
 
-        for (RetentionUnit unit : units) {
+        for (RetentionUnit retentionUnit : retentionUnits) {
             for (int period : periods) {
                 for (FeedType dataType : dataTypes) {
                     testData[i][0] = period;
-                    testData[i][1] = unit;
+                    testData[i][1] = retentionUnit;
                     testData[i][2] = dataType;
                     i++;
                 }
