@@ -176,6 +176,17 @@ public class Bundle {
     public void setClusterData(List<String> pClusters) {
         this.clusters = new ArrayList<String>(pClusters);
     }
+    /**
+     * Unwraps cluster element to string and writes it to bundle.
+     *
+     * @param c      Cluster object to be unwrapped and set into bundle
+     */
+    public void writeClusterElement(org.apache.falcon.entity.v0.cluster.Cluster c) {
+        final List<String> clusters = new ArrayList<String>();
+        clusters.add(c.toString());
+        setClusterData(clusters);
+    }
+
 
     public List<String> getClusterNames() {
         List<String> clusterNames = new ArrayList<String>();
@@ -609,7 +620,7 @@ public class Bundle {
         org.apache.falcon.entity.v0.cluster.Cluster c =
             InstanceUtil.getClusterElement(this);
         c.setColo(colo);
-        InstanceUtil.writeClusterElement(this, c);
+        writeClusterElement(c);
 
     }
 
@@ -623,7 +634,7 @@ public class Bundle {
                 anInterface.setEndpoint(value);
             }
         }
-        InstanceUtil.writeClusterElement(this, c);
+        writeClusterElement(c);
     }
 
     public void setInputFeedTableUri(String tableUri) {
@@ -657,7 +668,7 @@ public class Bundle {
         }
 
         //this.setClusterData(clusterData)
-        InstanceUtil.writeClusterElement(this, c);
+        writeClusterElement(c);
     }
 
 

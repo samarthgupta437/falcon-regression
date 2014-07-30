@@ -673,19 +673,6 @@ public final class InstanceUtil {
     }
 
     /**
-     * Unwraps cluster element to string and writes it to bundle.
-     *
-     * @param bundle target bundle
-     * @param c      Cluster object to be unwrapped and set into bundle
-     */
-    public static void writeClusterElement(Bundle bundle,
-            org.apache.falcon.entity.v0.cluster.Cluster c) {
-        final ArrayList<String> clusters = new ArrayList<String>();
-        clusters.add(c.toString());
-        bundle.setClusterData(clusters);
-    }
-
-    /**
      * Sets one more cluster to feed.
      *
      * @param feed          feed which is to be modified
