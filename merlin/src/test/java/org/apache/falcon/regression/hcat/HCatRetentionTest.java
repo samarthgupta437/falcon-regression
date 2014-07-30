@@ -44,7 +44,6 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -99,7 +98,7 @@ public class HCatRetentionTest extends BaseTestClass {
             retentionPeriod);
         createPartitionedTable(cli, dBName, tableName, baseTestHDFSDir, feedType);
         FeedMerlin feedElement = new FeedMerlin(bundle.getInputFeedFromBundle());
-        feedElement.setTableValue(dBName, tableName, getFeedPathValue(feedType));
+        feedElement.setTableValue(dBName, tableName, feedType.getHcatPathValue());
         feedElement
             .insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
         if (retentionPeriod <= 0) {
@@ -271,24 +270,6 @@ public class HCatRetentionTest extends BaseTestClass {
             client.addPartition(addPtn);
             ptn.clear();
         }
-    }
-
-    private static String getFeedPathValue(FeedType feedType) {
-        switch (feedType) {
-            case YEARLY:
-                return "year=${YEAR}";
-            case MONTHLY:
-                return "year=${YEAR};month=${MONTH}";
-            case DAILY:
-                return "year=${YEAR};month=${MONTH};day=${DAY}";
-            case HOURLY:
-                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}";
-            case MINUTELY:
-                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTELY}";
-            default:
-                Assert.fail("Unexpected feedType=" + feedType);
-        }
-        return null;
     }
 
     private static DateTime getEndLimit(int time, RetentionUnit interval,

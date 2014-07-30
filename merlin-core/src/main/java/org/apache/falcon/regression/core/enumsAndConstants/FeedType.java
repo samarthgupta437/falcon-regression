@@ -27,30 +27,35 @@ import org.joda.time.format.DateTimeFormatter;
  * Enum to represent different feed periodicity.
  */
 public enum FeedType {
-    MINUTELY("minutely", "yyyy/MM/dd/HH/mm", "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}") {
+    MINUTELY("minutely", "yyyy/MM/dd/HH/mm", "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}",
+            "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTE}") {
         public DateTime addTime(DateTime dateTime, int amount) {
             return dateTime.plusMinutes(amount);
         }
     },
-    HOURLY("hourly", "yyyy/MM/dd/HH", "${YEAR}/${MONTH}/${DAY}/${HOUR}") {
+    HOURLY("hourly", "yyyy/MM/dd/HH", "${YEAR}/${MONTH}/${DAY}/${HOUR}",
+            "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}") {
         @Override
         public DateTime addTime(DateTime dateTime, int amount) {
             return dateTime.plusHours(amount);
         }
     },
-    DAILY("daily", "yyyy/MM/dd", "${YEAR}/${MONTH}/${DAY}") {
+    DAILY("daily", "yyyy/MM/dd", "${YEAR}/${MONTH}/${DAY}",
+            "year=${YEAR};month=${MONTH};day=${DAY}") {
         @Override
         public DateTime addTime(DateTime dateTime, int amount) {
             return dateTime.plusDays(amount);
         }
     },
-    MONTHLY("monthly", "yyyy/MM", "${YEAR}/${MONTH}") {
+    MONTHLY("monthly", "yyyy/MM", "${YEAR}/${MONTH}",
+            "year=${YEAR};month=${MONTH}") {
         @Override
         public DateTime addTime(DateTime dateTime, int amount) {
             return dateTime.plusMonths(amount);
         }
     },
-    YEARLY("yearly", "yyyy", "${YEAR}") {
+    YEARLY("yearly", "yyyy", "${YEAR}",
+            "year=${YEAR}") {
         @Override
         public DateTime addTime(DateTime dateTime, int amount) {
             return dateTime.plusYears(amount);
@@ -59,12 +64,14 @@ public enum FeedType {
 
     private final String value;
     private final String pathValue;
+    private final String hcatPathValue;
     private final DateTimeFormatter formatter;
 
-    private FeedType(String value, String format, String pathValue) {
+    private FeedType(String value, String format, String pathValue, String hcatPathValue) {
         this.value = value;
         formatter = DateTimeFormat.forPattern(format);
         this.pathValue = pathValue;
+        this.hcatPathValue = hcatPathValue;
     }
 
     public String getValue() {
@@ -73,6 +80,10 @@ public enum FeedType {
 
     public String getPathValue() {
         return pathValue;
+    }
+
+    public String getHcatPathValue() {
+        return hcatPathValue;
     }
 
     public DateTimeFormatter getFormatter() {
