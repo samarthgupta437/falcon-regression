@@ -147,14 +147,14 @@ public class RetentionTest extends BaseTestClass {
         }
     }
 
-    private String getFeedPathValue(String dataType) {
-        if (dataType.equalsIgnoreCase("monthly")) {
+    private String getFeedPathValue(final String feedType) {
+        if (feedType.equalsIgnoreCase("monthly")) {
             return testHDFSDir + "${YEAR}/${MONTH}";
         }
-        if (dataType.equalsIgnoreCase("daily")) {
+        if (feedType.equalsIgnoreCase("daily")) {
             return testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}";
         }
-        if (dataType.equalsIgnoreCase("yearly")) {
+        if (feedType.equalsIgnoreCase("yearly")) {
             return testHDFSDir + "${YEAR}";
         }
         return null;
