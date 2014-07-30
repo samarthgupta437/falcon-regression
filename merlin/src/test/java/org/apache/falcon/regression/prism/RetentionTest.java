@@ -26,6 +26,7 @@ import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
@@ -96,15 +97,16 @@ public class RetentionTest extends BaseTestClass {
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
         // test for https://issues.apache.org/jira/browse/FALCON-321
-        testRetention(24, "hours", true, "daily", false);
+        testRetention(24, RetentionUnit.HOURS, true, "daily", false);
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
-    public void testRetention(final int retentionPeriod, final String retentionUnit,
+    public void testRetention(final int retentionPeriod, final RetentionUnit retentionUnit,
         final boolean gaps, final String feedType, final boolean withData) throws Exception {
         String inputFeed = setFeedPathValue(bundles[0].getInputFeedFromBundle(),
             getFeedPathValue(feedType));
-        inputFeed = insertRetentionValueInFeed(inputFeed, retentionUnit + "(" + retentionPeriod + ")");
+        inputFeed = insertRetentionValueInFeed(inputFeed,
+            retentionUnit.getValue() + "(" + retentionPeriod + ")");
 
         final ServiceResponse response = prism.getFeedHelper()
             .submitEntity(URLS.SUBMIT_URL, inputFeed);
@@ -161,7 +163,7 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
-                                             String interval)
+                                             RetentionUnit interval)
         throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
         //get Data created in the cluster
         List<String> initialData =
@@ -403,7 +405,7 @@ public class RetentionTest extends BaseTestClass {
         return dates;
     }
 
-    private List<String> filterDataOnRetention(String feed, int time, String interval,
+    private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,
                                                DateTime endDate,
                                                List<String> inputData) {
         String locationType = "";
@@ -444,17 +446,16 @@ public class RetentionTest extends BaseTestClass {
         formatter.print(endDate);
         String startLimit = "";
 
-        if (interval.equalsIgnoreCase("minutes")) {
+        if (interval == RetentionUnit.MINUTES) {
             startLimit =
                 formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
-        } else if (interval.equalsIgnoreCase("hours")) {
+        } else if (interval == RetentionUnit.HOURS) {
             startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
-        } else if (interval.equalsIgnoreCase("days")) {
+        } else if (interval == RetentionUnit.DAYS) {
             startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
-        } else if (interval.equalsIgnoreCase("months")) {
+        } else if (interval == RetentionUnit.MONTHS) {
             startLimit =
                 formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
-
         }
 
 
@@ -479,7 +480,8 @@ public class RetentionTest extends BaseTestClass {
     public Object[][] getTestData(Method m) {
         // a negative value like -4 should be covered in validation scenarios.
         int[] retentionPeriods = new int[]{0, 10080, 60, 8, 24};
-        String[] retentionUnits = new String[]{"hours", "days"};// "minutes","hours","days",
+        RetentionUnit[] retentionUnits = new RetentionUnit[]{RetentionUnit.HOURS,
+            RetentionUnit.DAYS};// "minutes","hours", "days",
         boolean[] gaps = new boolean[]{false, true};
         String[] feedType = new String[]{"daily", "yearly", "monthly"};
         Object[][] testData = new Object[retentionPeriods.length * retentionUnits.length *
@@ -487,12 +489,12 @@ public class RetentionTest extends BaseTestClass {
 
         int i = 0;
 
-        for (String unit : retentionUnits) {
+        for (RetentionUnit retentionUnit : retentionUnits) {
             for (int period : retentionPeriods) {
                 for (boolean gap : gaps) {
                     for (String dataType : feedType) {
                         testData[i][0] = period;
-                        testData[i][1] = unit;
+                        testData[i][1] = retentionUnit;
                         testData[i][2] = gap;
                         testData[i][3] = dataType;
                         testData[i][4] = true;
