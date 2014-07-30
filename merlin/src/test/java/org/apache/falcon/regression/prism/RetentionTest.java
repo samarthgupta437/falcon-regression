@@ -101,20 +101,20 @@ public class RetentionTest extends BaseTestClass {
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
-    public void testRetention(int period, String unit, boolean gaps, String dataType,
-                              boolean withData) throws Exception {
+    public void testRetention(final int retentionPeriod, final String retentionUnit,
+        final boolean gaps, final String feedType, final boolean withData) throws Exception {
         String inputFeed = setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]),
-            getFeedPathValue(dataType));
-        inputFeed = insertRetentionValueInFeed(inputFeed, unit + "(" + period + ")");
+            getFeedPathValue(feedType));
+        inputFeed = insertRetentionValueInFeed(inputFeed, retentionUnit + "(" + retentionPeriod + ")");
 
         final ServiceResponse response = prism.getFeedHelper()
             .submitEntity(URLS.SUBMIT_URL, inputFeed);
-        if (period > 0) {
+        if (retentionPeriod > 0) {
             AssertUtil.assertSucceeded(response);
 
-            replenishData(dataType, gaps, withData);
+            replenishData(feedType, gaps, withData);
 
-            commonDataRetentionWorkflow(inputFeed, period, unit);
+            commonDataRetentionWorkflow(inputFeed, retentionPeriod, retentionUnit);
         } else {
             AssertUtil.assertFailed(response);
         }
@@ -130,8 +130,7 @@ public class RetentionTest extends BaseTestClass {
         return feedObject.toString();
     }
 
-    private void replenishData(String dataType, boolean gap,
-                               boolean withData) throws Exception {
+    private void replenishData(String dataType, boolean gap, boolean withData) throws Exception {
         int skip = 0;
 
         if (gap) {
