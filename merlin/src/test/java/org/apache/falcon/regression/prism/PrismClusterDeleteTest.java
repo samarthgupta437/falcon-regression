@@ -55,7 +55,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         restartRequired = false;
-        Bundle bundle = BundleUtil.readBundles("LateDataBundles")[0][0];
+        Bundle bundle = BundleUtil.readLateDataBundle();
         bundles[0] = new Bundle(bundle, cluster1);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -104,7 +104,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getClusters().get(0));
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
         compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, clusterName);
@@ -160,7 +160,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getClusters().get(0));
         //prism:
         compareDataStoresForEquality(initialPrismStore, finalPrismStore);
         compareDataStoresForEquality(finalPrismArchiveStore, initialPrismArchiveStore);
@@ -292,7 +292,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         //now ensure that data has been deleted from all cluster store and is present in the
         // cluster archives
 
-        String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
+        String clusterName = Util.readEntityName(bundles[0].getClusters().get(0));
         //prism:
         compareDataStoreStates(initialPrismStore, finalPrismStore, clusterName);
         compareDataStoreStates(finalPrismArchiveStore, initialPrismArchiveStore, clusterName);

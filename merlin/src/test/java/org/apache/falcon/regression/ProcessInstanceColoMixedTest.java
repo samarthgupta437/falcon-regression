@@ -19,11 +19,11 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -45,6 +45,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * Process instance mixed colo tests.
@@ -56,27 +57,27 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     private final String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/";
     private final String feedPath = baseTestHDFSDir + "/feed0%d" + datePattern;
     private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    ColoHelper cluster1 = servers.get(0);
-    ColoHelper cluster2 = servers.get(1);
-    FileSystem cluster1FS = serverFS.get(0);
-    FileSystem cluster2FS = serverFS.get(1);
-    private static final Logger logger = Logger.getLogger(ProcessInstanceColoMixedTest.class);
+    private ColoHelper cluster1 = servers.get(0);
+    private ColoHelper cluster2 = servers.get(1);
+    private FileSystem cluster1FS = serverFS.get(0);
+    private FileSystem cluster2FS = serverFS.get(1);
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceColoMixedTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void prepareClusters() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
         HadoopUtil.uploadDir(cluster1FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         HadoopUtil.uploadDir(cluster2FS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
 
         //get 3 unique bundles
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0].generateUniqueBundle();
-        bundles[1] = BundleUtil.readELBundles()[0][0];
+        bundles[1] = BundleUtil.readELBundle();
         bundles[1].generateUniqueBundle();
 
         //generate bundles according to config files
@@ -84,10 +85,10 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         bundles[1] = new Bundle(bundles[1], cluster2);
 
         //set cluster colos
-        bundles[0].setCLusterColo(bundles[0].getClusterHelper().getColoName());
-        logger.info("cluster b1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
-        bundles[1].setCLusterColo(bundles[1].getClusterHelper().getColoName());
-        logger.info("cluster b2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
+        bundles[0].setCLusterColo(cluster1.getClusterHelper().getColoName());
+        LOGGER.info("cluster b1: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
+        bundles[1].setCLusterColo(cluster2.getClusterHelper().getColoName());
+        LOGGER.info("cluster b2: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
 
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[1].setProcessWorkflow(aggregateWorkflowDir);
@@ -97,12 +98,12 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) {
-        logger.info("tearDown " + method.getName());
+        LOGGER.info("tearDown " + method.getName());
         removeBundles();
     }
 
     @Test(timeOut = 12000000)
-    public void mixed01_C1sC2sC1eC2e() throws Exception {
+    public void mixed01C1sC2sC1eC2e() throws Exception {
         //ua1 and ua3 are source. ua2 target.   feed01 on ua1 , feed02 on ua3
         //get 2 unique feeds
         String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
@@ -127,26 +128,21 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE), null,
                 ClusterType.SOURCE, null);
 
-
         //set new feed input data
         feed01 = Util.setFeedPathValue(feed01, String.format(feedPath, 1));
         feed02 = Util.setFeedPathValue(feed02, String.format(feedPath, 2));
 
         //generate data in both the colos ua1 and ua3
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.getTimeWrtSystemTime(-35), TimeUtil.getTimeWrtSystemTime(25), 1);
+
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        TimeUtil.createDataWithinDatesAndPrefix(cluster1,
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-100)),
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(100)), prefix,
-            1);
-
+        HadoopUtil.flattenAndPutDataInFolder(cluster1FS, OSUtil.SINGLE_FILE, prefix, dataDates);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        TimeUtil.createDataWithinDatesAndPrefix(cluster2,
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(-100)),
-            TimeUtil.oozieDateToDate(TimeUtil.getTimeWrtSystemTime(100)), prefix,
-            1);
+        HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.SINGLE_FILE, prefix, dataDates);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-70);
 
@@ -154,48 +150,43 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
-                null);
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
-                null);
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //set clusters for feed02
         feed02 = InstanceUtil
             .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
-                null);
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null);
         feed02 = InstanceUtil
             .setFeedCluster(feed02, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
-                null);
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE, null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(10000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
-        logger.info("feed01: " + Util.prettyPrintXml(feed01));
-        logger.info("feed02: " + Util.prettyPrintXml(feed02));
-        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
+        LOGGER.info("feed01: " + Util.prettyPrintXml(feed01));
+        LOGGER.info("feed02: " + Util.prettyPrintXml(feed02));
+        LOGGER.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
 
         ServiceResponse r = prism.getFeedHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         AssertUtil.assertSucceeded(r);
         r = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
         AssertUtil.assertSucceeded(r);
-        r = prism.getFeedHelper()
-            .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, outputFeed);
+        r = prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, outputFeed);
         AssertUtil.assertSucceeded(r);
 
         //create a process with 2 clusters
@@ -212,40 +203,31 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
             .setProcessCluster(process, null,
                 XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
         process = InstanceUtil
-            .setProcessCluster(process, Util.readClusterName(bundles[0].getClusters().get(0)),
+            .setProcessCluster(process, Util.readEntityName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime,
                     TimeUtil.addMinsToTime(processStartTime, 35)));
         process = InstanceUtil
-            .setProcessCluster(process, Util.readClusterName(bundles[1].getClusters().get(0)),
+            .setProcessCluster(process, Util.readEntityName(bundles[1].getClusters().get(0)),
                 XmlUtil.createProcessValidity(
                     TimeUtil.addMinsToTime(processStartTime, 16),
                     TimeUtil.addMinsToTime(processStartTime, 45)));
         process = InstanceUtil
-            .addProcessInputFeed(process, Util.readDatasetName(feed02),
-                Util.readDatasetName(feed02));
-
+            .addProcessInputFeed(process, Util.readEntityName(feed02),
+                    Util.readEntityName(feed02));
 
         //submit and schedule process
-        logger.info("process: " + Util.prettyPrintXml(process));
+        LOGGER.info("process: " + Util.prettyPrintXml(process));
 
         prism.getProcessHelper()
             .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, process);
 
-        logger.info("Wait till process goes into running ");
-
-        int i;
-
-//        Status sUa1 = null, sUa2 = null;
-        int counter = 10;
-        if (OSUtil.IS_WINDOWS) {
-            counter = 20;
-        }
+        LOGGER.info("Wait till process goes into running ");
 
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
-            Status.RUNNING, counter, ENTITY_TYPE.PROCESS);
+            Status.RUNNING, EntityType.PROCESS);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(1), Util.getProcessName(process), 1,
-            Status.RUNNING, counter, ENTITY_TYPE.PROCESS);
-        ProcessInstancesResult responseInstance = prism.getProcessHelper()
+            Status.RUNNING, EntityType.PROCESS);
+        InstancesResult responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + processStartTime + "&end=" + TimeUtil
                     .addMinsToTime(processStartTime, 45));
@@ -255,16 +237,16 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         responseInstance = prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + TimeUtil
-                    .addMinsToTime(processStartTime, 37) + "&end=" +
-                    TimeUtil.addMinsToTime(processStartTime, 44));
+                    .addMinsToTime(processStartTime, 37) + "&end="
+                        + TimeUtil.addMinsToTime(processStartTime, 44));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
         responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + TimeUtil
-                    .addMinsToTime(processStartTime, 37) + "&end=" +
-                    TimeUtil.addMinsToTime(processStartTime, 44));
+                    .addMinsToTime(processStartTime, 37) + "&end="
+                        + TimeUtil.addMinsToTime(processStartTime, 44));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 
@@ -278,8 +260,8 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
         responseInstance = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + TimeUtil
-                    .addMinsToTime(processStartTime, 16) + "&end=" +
-                    TimeUtil.addMinsToTime(processStartTime, 45));
+                    .addMinsToTime(processStartTime, 16) + "&end="
+                        + TimeUtil.addMinsToTime(processStartTime, 45));
         AssertUtil.assertSucceeded(responseInstance);
         Assert.assertTrue(responseInstance.getInstances() != null);
 

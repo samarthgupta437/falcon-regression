@@ -24,6 +24,7 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -59,7 +60,7 @@ public class PrismSubmitTest extends BaseTestClass {
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         restartRequired = false;
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster1);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -117,7 +118,7 @@ public class PrismSubmitTest extends BaseTestClass {
     public void submitCluster_resubmitAlreadyPARTIALWithAllUp() throws Exception {
         restartRequired = true;
         Util.shutDownService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         ServiceResponse r =
             prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
@@ -125,7 +126,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
 
         Util.startService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
@@ -146,7 +147,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         Util.shutDownService(cluster1.getClusterHelper());
-        Thread.sleep(12000);
+        TimeUtil.sleepSeconds(12);
 
 
         List<String> beforeSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
@@ -169,7 +170,7 @@ public class PrismSubmitTest extends BaseTestClass {
         AssertUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
 
         Util.startService(cluster1.getClusterHelper());
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         beforeSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
         beforeSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();
@@ -251,13 +252,13 @@ public class PrismSubmitTest extends BaseTestClass {
 
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
 
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
 
         Util.startService(cluster1.getClusterHelper());
 
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         beforeSubmitCluster2 = cluster2.getClusterHelper().getStoreInfo();
         beforeSubmitPrism = prism.getClusterHelper().getStoreInfo();
@@ -292,11 +293,11 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
 
         AssertUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
     }
 
     @Test(groups = "embedded")
@@ -344,9 +345,9 @@ public class PrismSubmitTest extends BaseTestClass {
 
         AssertUtil.compareDataStoreStates(parCluster1, beforeCluster1, 0);
         AssertUtil.compareDataStoreStates(beforePrism, parPrism,
-            Util.readClusterName(bundles[1].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[1].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeCluster2, parCluster2,
-            Util.readClusterName(bundles[1].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[1].getClusters().get(0)), 1);
 
         Util.restartService(cluster1.getFeedHelper());
 
@@ -360,7 +361,7 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> afterCluster2 = cluster2.getClusterHelper().getStoreInfo();
 
         AssertUtil.compareDataStoreStates(parCluster1, afterCluster1,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(afterPrism, parPrism, 0);
         AssertUtil.compareDataStoreStates(afterCluster2, parCluster2, 0);
     }
@@ -379,11 +380,11 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
         AssertUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
 
         //resubmit PARTIAL success
         Util.startService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
@@ -391,7 +392,7 @@ public class PrismSubmitTest extends BaseTestClass {
         afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         AssertUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism, 0);
     }
 
@@ -399,13 +400,13 @@ public class PrismSubmitTest extends BaseTestClass {
     public void submitCluster_resubmitDiffContentPARTIAL() throws Exception {
         restartRequired = true;
         Util.shutDownService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         ServiceResponse r =
             prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
 
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
         Util.startService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
@@ -416,7 +417,7 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> afterSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         AssertUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism, 0);
     }
 
@@ -424,7 +425,7 @@ public class PrismSubmitTest extends BaseTestClass {
     public void submitCluster_PARTIALDeletedOfPARTIALSubmit() throws Exception {
         restartRequired = true;
         Util.shutDownService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
         ServiceResponse r =
             prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
@@ -438,7 +439,7 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         AssertUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readClusterName(bundles[0].getClusters().get(0)), -1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), -1);
 
         r = prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
         Assert.assertTrue(r.getMessage().contains("PARTIAL"));
@@ -451,10 +452,10 @@ public class PrismSubmitTest extends BaseTestClass {
             prism.getClusterHelper().submitEntity(URLS.SUBMIT_URL, bundles[0].getClusters().get(0));
 
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         Util.shutDownService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         List<String> beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         List<String> beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
@@ -464,10 +465,10 @@ public class PrismSubmitTest extends BaseTestClass {
         List<String> afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         AssertUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readClusterName(bundles[0].getClusters().get(0)), -1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), -1);
 
         Util.startService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         beforeSubmitCluster = cluster1.getClusterHelper().getStoreInfo();
         beforeSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
@@ -477,7 +478,7 @@ public class PrismSubmitTest extends BaseTestClass {
         afterSubmitPrism = cluster2.getClusterHelper().getStoreInfo();
         AssertUtil.compareDataStoreStates(beforeSubmitCluster, afterSubmitCluster, 0);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
     }
 
     @Test(groups = "embedded")
@@ -512,11 +513,11 @@ public class PrismSubmitTest extends BaseTestClass {
 
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"));
         AssertUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2,
-            Util.readClusterName(bundles[0].getClusters().get(0)), 1);
+            Util.readEntityName(bundles[0].getClusters().get(0)), 1);
     }
 
     @Test(groups = "embedded")
@@ -551,7 +552,7 @@ public class PrismSubmitTest extends BaseTestClass {
         Assert.assertTrue(r.getMessage().contains("SUCCEEDED"), r.getMessage());
 
         Util.shutDownService(cluster1.getClusterHelper());
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         List<String> beforeSubmitCluster1 = cluster1.getFeedHelper().getStoreInfo();
         List<String> beforeSubmitCluster2 = cluster2.getFeedHelper().getStoreInfo();
@@ -566,11 +567,11 @@ public class PrismSubmitTest extends BaseTestClass {
 
         AssertUtil.compareDataStoreStates(beforeSubmitCluster1, afterSubmitCluster1, 0);
         AssertUtil.compareDataStoreStates(beforeSubmitPrism, afterSubmitPrism,
-            Util.readDatasetName(bundles[0].getDataSets().get(1)), 1);
+            Util.readEntityName(bundles[0].getDataSets().get(1)), 1);
         AssertUtil.compareDataStoreStates(beforeSubmitCluster2, afterSubmitCluster2, 0);
 
         Util.startService(cluster1.getClusterHelper());
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         beforeSubmitCluster1 = cluster1.getProcessHelper().getStoreInfo();
         beforeSubmitCluster2 = cluster2.getProcessHelper().getStoreInfo();

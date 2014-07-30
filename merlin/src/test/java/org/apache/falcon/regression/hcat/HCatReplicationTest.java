@@ -20,14 +20,15 @@ package org.apache.falcon.regression.hcat;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.entity.v0.cluster.Interfacetype;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -45,9 +46,7 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
-import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -64,7 +63,7 @@ import java.util.Map;
 @Test(groups = "embedded")
 public class HCatReplicationTest extends BaseTestClass {
 
-    private static Logger logger = Logger.getLogger(HCatReplicationTest.class);
+    private static final Logger logger = Logger.getLogger(HCatReplicationTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     HCatClient clusterHC;
@@ -83,7 +82,6 @@ public class HCatReplicationTest extends BaseTestClass {
 
     final String dbName = "default";
     private static final String localHCatData = OSUtil.getPath(OSUtil.RESOURCES, "hcat", "data");
-    int defaultTimeout = OSUtil.IS_WINDOWS ? 10 : 8;
 
     @BeforeClass(alwaysRun = true)
     public void beforeClass() throws IOException {
@@ -98,17 +96,17 @@ public class HCatReplicationTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
         Bundle bundle = BundleUtil.readHCatBundle();
-        bundles[0] = new Bundle(bundle, cluster.getEnvFileName(), cluster.getPrefix());
+        bundles[0] = new Bundle(bundle, cluster.getPrefix());
         bundles[0].generateUniqueBundle();
         bundles[0].setClusterInterface(Interfacetype.REGISTRY,
             cluster.getClusterHelper().getHCatEndpoint());
 
-        bundles[1] = new Bundle(bundle, cluster2.getEnvFileName(), cluster2.getPrefix());
+        bundles[1] = new Bundle(bundle, cluster2.getPrefix());
         bundles[1].generateUniqueBundle();
         bundles[1].setClusterInterface(Interfacetype.REGISTRY, cluster2.getClusterHelper()
             .getHCatEndpoint());
 
-        bundles[2] = new Bundle(bundle, cluster3.getEnvFileName(), cluster3.getPrefix());
+        bundles[2] = new Bundle(bundle, cluster3.getPrefix());
         bundles[2].generateUniqueBundle();
         bundles[2].setClusterInterface(Interfacetype.REGISTRY, cluster3.getClusterHelper()
             .getHCatEndpoint());
@@ -140,28 +138,29 @@ public class HCatReplicationTest extends BaseTestClass {
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
+        final String dataEndDate = "2010-01-01T21:00Z";
         final String tableUriPartitionFragment = StringUtils
             .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String datePattern =
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
-        List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, dataEndDate, 60,
+            DateTimeFormat.forPattern(datePattern));
 
-        final ArrayList<String> dataset =
-            createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+        final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
+            localHCatData, testHdfsDir, dataDates);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         // create table on cluster 1 and add data to it.
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
@@ -179,23 +178,23 @@ public class HCatReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
 
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed)
         );
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -227,28 +226,29 @@ public class HCatReplicationTest extends BaseTestClass {
         HadoopUtil.createDir(testHdfsDir, clusterFS, cluster2FS, cluster3FS);
         final String startDate = "2010-01-01T20:00Z";
         final String endDate = "2099-01-01T00:00Z";
+        final String dataEndDate = "2010-01-01T21:00Z";
         final String tableUriPartitionFragment = StringUtils
             .join(new String[]{"#dt=${YEAR}", "${MONTH}", "${DAY}", "${HOUR}"}, separator);
         String tableUri = "catalog:" + dbName + ":" + tblName + tableUriPartitionFragment;
         final String datePattern =
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         // use the start date for both as this will only generate 2 partitions.
-        List<String> dataDates = getDatesList(startDate, startDate, datePattern, 60);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, dataEndDate, 60,
+            DateTimeFormat.forPattern(datePattern));
 
-        final ArrayList<String> dataset =
-            createPeriodicDataset(dataDates, localHCatData, clusterFS, testHdfsDir);
+        final List<String> dataset = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
+            localHCatData, testHdfsDir, dataDates);
         final String col1Name = "id";
         final String col2Name = "value";
         final String partitionColumn = "dt";
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
         // create table on cluster 1 and add data to it.
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         createTable(clusterHC, dbName, tblName, cols, partitionCols, testHdfsDir);
         addPartitionsToTable(dataDates, dataset, "dt", dbName, tblName, clusterHC);
 
@@ -267,39 +267,39 @@ public class HCatReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
         // set the cluster 3 as the target.
         feed = InstanceUtil.setFeedClusterWithTable(feed,
             XmlUtil.createValidity(startDate, endDate),
             XmlUtil.createRtention("months(9000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null,
             tableUri);
 
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed)
         );
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //check if all coordinators exist
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //replication should start, wait while it ends
         // we will check for 2 instances so that both partitions are copied over.
         InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //check if data was replicated correctly
         List<Path> srcData = HadoopUtil
@@ -335,35 +335,8 @@ public class HCatReplicationTest extends BaseTestClass {
                 .add(HCatAddPartitionDesc.create(dbName, tableName, partitionLoc, onePartition)
                     .build());
         }
+        logger.info("adding partitions: " + partitionDesc);
         hc.addPartitions(partitionDesc);
-    }
-
-    private ArrayList<String> createPeriodicDataset(List<String> dataDates, String localData,
-                                                    FileSystem fileSystem,
-                                                    String baseHDFSLocation) throws IOException {
-        ArrayList<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates)
-            dataFolder.add(baseHDFSLocation + "/" + dataDate);
-
-        HadoopUtil.flattenAndPutDataInFolder(fileSystem, localData, dataFolder);
-        return dataFolder;
-    }
-
-    public static List<String> getDatesList(String startDate, String endDate, String datePattern,
-                                            int skipMinutes) {
-        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(datePattern);
-        logger.info("generating data between " + formatter.print(startDateJoda) + " and " +
-            formatter.print(endDateJoda));
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(startDateJoda));
-        while (!startDateJoda.isAfter(endDateJoda)) {
-            startDateJoda = startDateJoda.plusMinutes(skipMinutes);
-            dates.add(formatter.print(startDateJoda));
-        }
-        return dates;
     }
 
     private static void createTable(HCatClient hcatClient, String dbName, String tblName,

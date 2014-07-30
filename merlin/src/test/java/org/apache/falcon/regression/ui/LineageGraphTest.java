@@ -18,9 +18,9 @@
 
 package org.apache.falcon.regression.ui;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
 import org.apache.falcon.regression.core.response.lineage.Direction;
@@ -41,8 +41,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.codehaus.jettison.json.JSONException;
-import org.joda.time.DateTime;
 import org.openqa.selenium.Point;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -63,7 +61,7 @@ public class LineageGraphTest extends BaseUITestClass {
     private ColoHelper cluster = servers.get(0);
     private String baseTestDir = baseHDFSDir + "/LineageGraphTest";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    private Logger logger = Logger.getLogger(LineageGraphTest.class);
+    private static final Logger logger = Logger.getLogger(LineageGraphTest.class);
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + datePattern;
     private FileSystem clusterFS = serverFS.get(0);
@@ -82,9 +80,9 @@ public class LineageGraphTest extends BaseUITestClass {
     @BeforeClass
     public void setUp()
         throws IOException, JAXBException, URISyntaxException, AuthenticationException,
-        OozieClientException, InterruptedException {
+        OozieClientException {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -104,14 +102,9 @@ public class LineageGraphTest extends BaseUITestClass {
         logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime
-            (startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitBundle(prism);
 
@@ -121,7 +114,7 @@ public class LineageGraphTest extends BaseUITestClass {
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
         /**get process instances*/
         Vertex processVertex = lineageHelper.getVerticesByName(processName).getResults().get(0);
         piVertices = lineageHelper.getVerticesByDirection(processVertex.get_id(),
@@ -188,9 +181,8 @@ public class LineageGraphTest extends BaseUITestClass {
      */
     @Test
     public void testVerticesInfo()
-        throws JAXBException, URISyntaxException, AuthenticationException,
-        JSONException, IOException {
-        String clusterName = Util.readClusterName(bundles[0].getClusters().get(0));
+        throws JAXBException, URISyntaxException, AuthenticationException, IOException {
+        String clusterName = Util.readEntityName(bundles[0].getClusters().get(0));
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, processName);
         processPage.navigateTo();
         for (Vertex piVertex : piVertices) {
@@ -243,7 +235,7 @@ public class LineageGraphTest extends BaseUITestClass {
             /* check the main lineage title */
             Assert.assertEquals(processPage.getLineageTitle(), "Lineage information");
             /* check legends title */
-            Assert.assertEquals(processPage.getLegendsTitile(), "Legends");
+            Assert.assertEquals(processPage.getLegendsTitle(), "Legends");
             /* check that all legends are present and match to expected*/
             HashMap<String, String> legends = processPage.getLegends();
             for (Map.Entry<String, String> entry : legends.entrySet()) {

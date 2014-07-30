@@ -18,9 +18,9 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -54,7 +54,7 @@ public class PrismFeedSuspendTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -86,16 +86,16 @@ public class PrismFeedSuspendTest extends BaseTestClass {
         AssertUtil.assertFailed(prism.getFeedHelper()
             .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
         //verify
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper()
             .delete(Util.URLS.DELETE_URL, bundles[1].getDataSets().get(0)));
         //suspend on the other one
         AssertUtil.assertFailed(prism.getFeedHelper()
             .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.KILLED);
     }
 
     /**
@@ -116,8 +116,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
                     .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
             //verify
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
         }
         for (int i = 0; i < 2; i++) {
             //suspend on the other one
@@ -125,8 +125,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
                 prism.getFeedHelper()
                     .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
             );
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.SUSPENDED);
         }
     }
 
@@ -191,13 +191,13 @@ public class PrismFeedSuspendTest extends BaseTestClass {
                     .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
             //verify
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
 
             //suspend on the other one
             AssertUtil.assertSucceeded(
                 prism.getFeedHelper()
                     .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.SUSPENDED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
@@ -232,8 +232,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
                 prism.getFeedHelper()
                     .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
             //verify
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
 
             AssertUtil.assertSucceeded(
                 prism.getFeedHelper()
@@ -244,8 +244,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
                 prism.getFeedHelper()
                     .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0))
             );
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.KILLED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());
@@ -274,8 +274,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
                     .suspend(Util.URLS.SUSPEND_URL, bundles[0].getDataSets().get(0))
             );
             //verify
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
 
             Util.shutDownService(cluster1.getFeedHelper());
 
@@ -287,8 +287,8 @@ public class PrismFeedSuspendTest extends BaseTestClass {
             AssertUtil.assertSucceeded(
                 prism.getFeedHelper()
                     .suspend(Util.URLS.SUSPEND_URL, bundles[1].getDataSets().get(0)));
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.SUSPENDED);
         } catch (Exception e) {
             e.printStackTrace();
             throw new TestNGException(e.getCause());

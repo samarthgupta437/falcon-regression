@@ -20,10 +20,11 @@ package org.apache.falcon.regression.hcat;
 
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -62,7 +63,7 @@ import java.util.Map;
 
 public class HCatRetentionTest extends BaseTestClass {
 
-    static Logger logger = Logger.getLogger(HCatRetentionTest.class);
+    private static final Logger logger = Logger.getLogger(HCatRetentionTest.class);
 
     private Bundle bundle;
     public static HCatClient cli;
@@ -78,7 +79,7 @@ public class HCatRetentionTest extends BaseTestClass {
     public void setUp() throws Exception {
         HadoopUtil.createDir(baseTestHDFSDir, clusterFS);
         cli = cluster.getClusterHelper().getHCatClient();
-        bundle = new Bundle(BundleUtil.getHCat2Bundle(), cluster);
+        bundle = new Bundle(BundleUtil.readHCat2Bundle(), cluster);
         bundle.generateUniqueBundle();
         bundle.submitClusters(prism);
     }
@@ -117,8 +118,8 @@ public class HCatRetentionTest extends BaseTestClass {
             final List<String> dataDateStrings = TimeUtil.convertDatesToString(dataDates,
                 TimeUtil.getFormatStringForFeedType(feedType));
             AssertUtil.checkForListSizes(dataDates, dataDateStrings);
-            final List<String> dataFolders = HadoopUtil.createPeriodicDataset(dataDateStrings,
-                OSUtil.OOZIE_EXAMPLE_INPUT_LATE_INPUT, clusterFS, baseTestHDFSDir);
+            final List<String> dataFolders = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
+                OSUtil.OOZIE_EXAMPLE_INPUT_LATE_INPUT, baseTestHDFSDir, dataDateStrings);
             addPartitionsToExternalTable(cli, dBName, tableName, feedType, dataDates, dataFolders);
             List<String> initialData =
                 getHadoopDataFromDir(cluster, baseTestHDFSDir, testDir, feedType);
@@ -128,7 +129,7 @@ public class HCatRetentionTest extends BaseTestClass {
             AssertUtil.assertSucceeded(prism.getFeedHelper()
                 .submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feedElement.toString()));
             final String bundleId = OozieUtil.getBundles(clusterOC, feedElement.getName(),
-                ENTITY_TYPE.FEED).get(0);
+                EntityType.FEED).get(0);
             OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
             AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(URLS.SUSPEND_URL,
                 feedElement.toString()));
@@ -209,24 +210,24 @@ public class HCatRetentionTest extends BaseTestClass {
 
         //client.dropDatabase("sample_db", true, HCatClient.DropDBMode.CASCADE);
 
-        cols.add(new HCatFieldSchema("id", HCatFieldSchema.Type.STRING, "id comment"));
-        cols.add(new HCatFieldSchema("value", HCatFieldSchema.Type.STRING, "value comment"));
+        cols.add(HCatUtil.getStringSchema("id", "id comment"));
+        cols.add(HCatUtil.getStringSchema("value", "value comment"));
 
         switch (dataType) {
             case MINUTELY:
                 ptnCols.add(
-                    new HCatFieldSchema("minute", HCatFieldSchema.Type.STRING, "min prt"));
+                    HCatUtil.getStringSchema("minute", "min prt"));
             case HOURLY:
                 ptnCols.add(
-                    new HCatFieldSchema("hour", HCatFieldSchema.Type.STRING, "hour prt"));
+                    HCatUtil.getStringSchema("hour", "hour prt"));
             case DAILY:
-                ptnCols.add(new HCatFieldSchema("day", HCatFieldSchema.Type.STRING, "day prt"));
+                ptnCols.add(HCatUtil.getStringSchema("day", "day prt"));
             case MONTHLY:
                 ptnCols.add(
-                    new HCatFieldSchema("month", HCatFieldSchema.Type.STRING, "month prt"));
+                    HCatUtil.getStringSchema("month", "month prt"));
             case YEARLY:
                 ptnCols.add(
-                    new HCatFieldSchema("year", HCatFieldSchema.Type.STRING, "year prt"));
+                    HCatUtil.getStringSchema("year", "year prt"));
             default:
                 break;
         }
@@ -331,7 +332,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @DataProvider(name = "loopBelow")
-    public Object[][] getTestData(Method m) throws Exception {
+    public Object[][] getTestData(Method m) {
         RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS,
             RETENTION_UNITS.MONTHS};// "minutes","years",
         int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered

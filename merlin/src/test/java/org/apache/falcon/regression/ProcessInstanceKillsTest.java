@@ -19,11 +19,11 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency.TimeUnit;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult.WorkflowStatus;
+import org.apache.falcon.regression.core.response.InstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult.WorkflowStatus;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -34,7 +34,6 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
-import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -43,7 +42,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,60 +50,50 @@ import java.util.List;
 @Test(groups = "embedded")
 public class ProcessInstanceKillsTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    FileSystem clusterFS = serverFS.get(0);
-    String testDir = "/ProcessInstanceKillsTest";
-    String baseTestHDFSDir = baseHDFSDir + testDir;
-    String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
-    String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedOutputPath =
+    private ColoHelper cluster = servers.get(0);
+    private FileSystem clusterFS = serverFS.get(0);
+    private String testDir = "/ProcessInstanceKillsTest";
+    private String baseTestHDFSDir = baseHDFSDir + testDir;
+    private String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
+    private String feedInputPath = baseTestHDFSDir + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String feedOutputPath =
         baseTestHDFSDir + "/output-data/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    private static final Logger logger = Logger.getLogger(ProcessInstanceKillsTest.class);
+    private static final Logger LOGGER = Logger.getLogger(ProcessInstanceKillsTest.class);
 
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception {
-        logger.info("in @BeforeClass");
+        LOGGER.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         b.generateUniqueBundle();
         b = new Bundle(b, cluster);
 
-        String startDate = "2010-01-01T20:00Z";
-        String endDate = "2010-01-03T01:04Z";
+        String startDate = "2010-01-01T23:20Z";
+        String endDate = "2010-01-02T01:21Z";
 
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
-        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-
-        List<String> dataDates =
-            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-        for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
-        }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 20);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
     }
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
+        LOGGER.info("test name: " + method.getName());
 
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
+        bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[0].setInputFeedDataPath(feedInputPath);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown(Method method) {
-        logger.info("tearDown " + method.getName());
+        LOGGER.info("tearDown " + method.getName());
         removeBundles();
     }
 
@@ -116,14 +104,14 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_single() throws Exception {
+    public void testProcessInstanceKillSingle() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(1);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.KILLED);
@@ -137,7 +125,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_startAndEndSame() throws Exception {
+    public void testProcessInstanceKillStartAndEndSame() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T00:00Z", "2010-01-02T04:00Z");
         bundles[0].setProcessConcurrency(2);
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
@@ -146,7 +134,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(10);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T00:03Z&end=2010-01-02T00:03Z");
         InstanceUtil.validateResponse(r, 1, 0, 0, 0, 1);
@@ -160,7 +148,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_killNonMatrelized() throws Exception {
+    public void testProcessInstanceKillKillNonMatrelized() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T00:00Z", "2010-01-02T04:00Z");
         bundles[0].setProcessTimeOut(3, TimeUnit.minutes);
         bundles[0].setProcessPeriodicity(1, TimeUnit.minutes);
@@ -168,11 +156,11 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setOutputFeedLocationData(feedOutputPath);
         bundles[0].setProcessConcurrency(6);
         bundles[0].submitAndScheduleBundle(prism);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T00:03Z&end=2010-01-02T00:30Z");
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
-        logger.info(r.toString());
+        LOGGER.info(r.toString());
     }
 
     /**
@@ -182,17 +170,18 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception TODO amend test with validations
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_bothStartAndEndInFuture01() throws Exception {
+    public void testProcessInstanceKillBothStartAndEndInFuture01() throws Exception {
         /*
         both start and end r in future with respect to process start end
          */
         String startTime = TimeUtil.getTimeWrtSystemTime(-20);
         String endTime = TimeUtil.getTimeWrtSystemTime(400);
-        String startTimeData = TimeUtil.getTimeWrtSystemTime(-150);
+        String startTimeData = TimeUtil.getTimeWrtSystemTime(-50);
         String endTimeData = TimeUtil.getTimeWrtSystemTime(50);
-        TimeUtil.createDataWithinDatesAndPrefix(cluster,
-            TimeUtil.oozieDateToDate(startTimeData),
-            TimeUtil.oozieDateToDate(endTimeData), baseTestHDFSDir + "/", 1);
+
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startTimeData, endTimeData, 1);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.SINGLE_FILE,
+            baseTestHDFSDir + "/", dataDates);
         bundles[0].setProcessValidity(startTime, endTime);
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -201,10 +190,10 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         String startTimeRequest = TimeUtil.getTimeWrtSystemTime(-17);
         String endTimeRequest = TimeUtil.getTimeWrtSystemTime(23);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + startTimeRequest + "&end=" + endTimeRequest);
-        logger.info(r.toString());
+        LOGGER.info(r.toString());
     }
 
     /**
@@ -214,7 +203,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_bothStartAndEndInFuture() throws Exception {
+    public void testProcessInstanceKillBothStartAndEndInFuture() throws Exception {
         /*
          both start and end r in future with respect to current time
           */
@@ -226,10 +215,10 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].submitAndScheduleBundle(prism);
         String startTime = TimeUtil.getTimeWrtSystemTime(1);
         String endTime = TimeUtil.getTimeWrtSystemTime(40);
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=" + startTime + "&end=" + endTime);
-        logger.info(r.getMessage());
+        LOGGER.info(r.getMessage());
         Assert.assertEquals(r.getInstances(), null);
     }
 
@@ -241,7 +230,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_multipleInstance() throws Exception {
+    public void testProcessInstanceKillMultipleInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:21Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -251,7 +240,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:05Z&end=2010-01-02T01:15Z");
-        ProcessInstancesResult result = prism.getProcessHelper()
+        InstancesResult result = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 2, 0, 0, 3);
@@ -264,7 +253,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_lastInstance() throws Exception {
+    public void testProcessInstanceKillLastInstance() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:21Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -274,7 +263,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:20Z");
-        ProcessInstancesResult result = prism.getProcessHelper()
+        InstancesResult result = prism.getProcessHelper()
             .getProcessInstanceStatus(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z&end=2010-01-02T01:20Z");
         InstanceUtil.validateResponse(result, 5, 4, 0, 0, 1);
@@ -287,7 +276,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_suspended() throws Exception {
+    public void testProcessInstanceKillSuspended() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -297,7 +286,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         prism.getProcessHelper()
             .getProcessInstanceSuspend(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
-        ProcessInstancesResult r = prism.getProcessHelper()
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.KILLED);
@@ -310,7 +299,7 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
      * @throws Exception
      */
     @Test(groups = {"singleCluster"})
-    public void testProcessInstanceKill_succeeded() throws Exception {
+    public void testProcessInstanceKillSucceeded() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
@@ -318,8 +307,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
         bundles[0].setProcessConcurrency(1);
         bundles[0].submitAndScheduleBundle(prism);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(bundles[0]
-            .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 15, ENTITY_TYPE.PROCESS);
-        ProcessInstancesResult r = prism.getProcessHelper()
+            .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
+        InstancesResult r = prism.getProcessHelper()
             .getProcessInstanceKill(Util.readEntityName(bundles[0].getProcessData()),
                 "?start=2010-01-02T01:00Z");
         InstanceUtil.validateSuccess(r, bundles[0], WorkflowStatus.SUCCEEDED);
@@ -328,8 +317,8 @@ public class ProcessInstanceKillsTest extends BaseTestClass {
 
     @AfterClass(alwaysRun = true)
     public void deleteData() throws Exception {
-        logger.info("in @AfterClass");
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        LOGGER.info("in @AfterClass");
+        Bundle b = BundleUtil.readELBundle();
         b = new Bundle(b, cluster);
         b.setInputFeedDataPath(feedInputPath);
         String prefix = b.getFeedDataPathPrefix();

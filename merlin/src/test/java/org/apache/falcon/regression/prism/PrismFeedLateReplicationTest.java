@@ -19,10 +19,10 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -67,7 +67,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
@@ -108,29 +108,29 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "US/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "UK/${cluster.colo}");
 
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         List<String> replicationCoordIDTarget = InstanceUtil
@@ -145,10 +145,10 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 == WorkflowJob.Status.SUCCEEDED) {
                 break;
             }
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         List<String> inputFolderListForColo1 =
             InstanceUtil.getInputFoldersForInstanceForReplication(cluster1,
@@ -156,9 +156,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         List<String> inputFolderListForColo2 =
             InstanceUtil.getInputFoldersForInstanceForReplication(cluster1,
                 replicationCoordIDTarget.get(1), 1);
-
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
@@ -184,26 +181,26 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "US/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "UK/${cluster.colo}");
 
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         String postFix = "/US/" + cluster2.getClusterHelper().getColoName();
         String prefix = bundles[0].getFeedDataPathPrefix();
@@ -215,11 +212,11 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
         Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
-        Thread.sleep(60000);
+        TimeUtil.sleepSeconds(60);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId = InstanceUtil
-            .getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            .getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget = InstanceUtil.getReplicationCoordID(bundleId,
             cluster1.getFeedHelper());
@@ -234,7 +231,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
@@ -244,7 +241,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0),
             WorkflowJob.Status.SUCCEEDED);
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         List<String> inputFolderListForColo1 = InstanceUtil
             .getInputFoldersForInstanceForReplication(cluster1, replicationCoordIDTarget.get(0),
@@ -252,9 +249,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         List<String> inputFolderListForColo2 = InstanceUtil
             .getInputFoldersForInstanceForReplication(cluster1, replicationCoordIDTarget.get(1),
                 1);
-
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             HadoopUtil.getWriteLocations(cluster2, inputFolderListForColo1));
@@ -283,7 +277,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
                 replicationCoordIDTarget.get(0), 0),
@@ -292,7 +286,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0),
             WorkflowJob.Status.SUCCEEDED);
 
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         //put data for the second time
         InstanceUtil.putLateDataInFolders(cluster2,
@@ -351,19 +345,19 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         //create data in colos
@@ -371,13 +365,13 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         String postFix = "/ua1/ua2";
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
+        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua2/ua2";
-        Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
+        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua3/ua2";
-        Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
+        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         //put _SUCCESS in parent folder UA2
         Util.putFileInFolderHDFS(cluster2, 90, 1, prefix, "_SUCCESS");
@@ -399,11 +393,11 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());
@@ -418,7 +412,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
@@ -428,7 +422,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0), WorkflowJob.Status.SUCCEEDED,
             "Replication job should have succeeded.");
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
         // be present. both of them should have _success
@@ -456,9 +450,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1, outPutBaseLocation, "_SUCCESS"));
 
         Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
-
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);
@@ -488,11 +479,11 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 break;
             }
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
 
-        Thread.sleep(30000);
+        TimeUtil.sleepSeconds(30);
 
         //put data for the second time
         InstanceUtil.putLateDataInFolders(cluster2, inputFolderListForColo1, 2);
@@ -551,19 +542,19 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
             null);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "ua1/${cluster.colo}");
 
         //create data in colos
@@ -571,13 +562,13 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         String postFix = "/ua1/ua2";
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
+        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua2/ua2";
-        Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
+        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua3/ua2";
-        Util.lateDataReplenishWithout_Success(cluster2, 90, 1, prefix, postFix);
+        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         //put _SUCCESS in parent folder UA2
         Util.putFileInFolderHDFS(cluster2, 90, 1, prefix, "_SUCCESS");
@@ -595,17 +586,17 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         //put _SUCCESS in parent folder of UA3
         Util.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         //submit and schedule feed
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
 
         //wait till 1st instance of replication coord is SUCCEEDED
         String bundleId =
-            InstanceUtil.getLatestBundleID(cluster1, Util.readDatasetName(feed), ENTITY_TYPE.FEED);
+            InstanceUtil.getLatestBundleID(cluster1, Util.readEntityName(feed), EntityType.FEED);
 
         List<String> replicationCoordIDTarget =
             InstanceUtil.getReplicationCoordID(bundleId, cluster1.getFeedHelper());
@@ -621,7 +612,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
             }
 
             logger.info("still in for loop");
-            Thread.sleep(20000);
+            TimeUtil.sleepSeconds(20);
         }
 
         Assert.assertEquals(InstanceUtil.getInstanceStatusFromCoord(cluster1,
@@ -631,7 +622,7 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
                 replicationCoordIDTarget.get(1), 0), WorkflowJob.Status.SUCCEEDED,
             "Replication job did not succeed");
 
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         /* check for exact folders to be created in ua1 :  ua1/ua2 and ua1/ua3 no other should
            be present. both of
@@ -658,9 +649,6 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         Assert.assertFalse(HadoopUtil.isFilePresentHDFS(cluster1, outPutBaseLocation, "_SUCCESS"));
 
         Assert.assertTrue(HadoopUtil.isFilePresentHDFS(cluster1, outPutLocation, "_SUCCESS"));
-
-        logger.info("folder list 1: " + inputFolderListForColo1.toString());
-        logger.info("folder list 2: " + inputFolderListForColo2.toString());
 
         HadoopUtil.flattenAndPutDataInFolder(cluster2FS, OSUtil.NORMAL_INPUT,
             inputFolderListForColo1);

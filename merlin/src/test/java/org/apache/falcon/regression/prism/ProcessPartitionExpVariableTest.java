@@ -19,9 +19,9 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -49,7 +49,7 @@ import java.util.List;
 
 @Test(groups = "embedded")
 public class ProcessPartitionExpVariableTest extends BaseTestClass {
-    static Logger logger = Logger.getLogger(ProcessPartitionExpVariableTest.class);
+    private static final Logger logger = Logger.getLogger(ProcessPartitionExpVariableTest.class);
 
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
@@ -65,7 +65,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -90,8 +90,7 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         String startTime = TimeUtil.getTimeWrtSystemTime(-4);
         String endTime = TimeUtil.getTimeWrtSystemTime(30);
 
-        bundles[0] = bundles[0].getRequiredBundle(bundles[0], 1, 2, 1, baseTestDir, 1, startTime,
-            endTime);
+        bundles[0].generateRequiredBundle(1, 2, 1, baseTestDir, 1, startTime, endTime);
         bundles[0].setProcessData(bundles[0]
             .setProcessInputNames(bundles[0].getProcessData(), "inputData0", "inputData"));
         Property p = new Property();
@@ -103,32 +102,30 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
         bundles[0].setProcessData(bundles[0]
             .setProcessInputPartition(bundles[0].getProcessData(), "${var1}", "${fileTime}"));
 
-
         for (int i = 0; i < bundles[0].getDataSets().size(); i++)
             logger.info(Util.prettyPrintXml(bundles[0].getDataSets().get(i)));
 
         logger.info(Util.prettyPrintXml(bundles[0].getProcessData()));
+        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
 
         createDataWithinDatesAndPrefix(cluster,
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -25)),
             TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(endTime, 25)),
-            baseTestDir + "/input1/", 1);
-
-        bundles[0].submitAndScheduleBundle(bundles[0], prism, false);
+            baseTestDir + "/input1/", 5);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC,
             Util.getProcessName(bundles[0].getProcessData()), 2,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
     }
 
     /**
      * Generates list of remote directories between start and end date and then places data there.
      *
-     * @param colo colohelper for remote cluster
+     * @param colo          colohelper for remote cluster
      * @param startDateJoda start date
-     * @param endDateJoda end date
-     * @param prefix root path for all directories
-     * @param interval interval with which directories are created
+     * @param endDateJoda   end date
+     * @param prefix        root path for all directories
+     * @param interval      interval with which directories are created
      * @throws IOException
      */
     private static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
@@ -151,8 +148,8 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
      * Generates patterns of the form .../2014/03/06/21/57/2014-Mar-07 between two supplied dates.
      * There are two dates and the second date is one day after the first one
      *
-     * @param startDate start date
-     * @param endDate end date
+     * @param startDate  start date
+     * @param endDate    end date
      * @param minuteSkip interval with which directories are created
      * @return list of such dates
      */
@@ -176,6 +173,6 @@ public class ProcessPartitionExpVariableTest extends BaseTestClass {
     }
 
     //TODO: ProcessPartitionExpVariableTest_OptionalPartition()
-    //TODO: ProcessPartitionExpVariableTest_CompulsaryPartition()
+    //TODO: ProcessPartitionExpVariableTest_CompulsoryPartition()
     //TODO: ProcessPartitionExpVariableTest_moreThanOnceVariable()
 }

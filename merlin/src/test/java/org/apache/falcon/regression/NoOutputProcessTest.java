@@ -19,10 +19,10 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency.TimeUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
@@ -34,7 +34,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
-import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -42,7 +41,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -64,7 +62,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         logger.info("in @BeforeClass");
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        Bundle b = BundleUtil.readELBundles()[0][0];
+        Bundle b = BundleUtil.readELBundle();
         b.generateUniqueBundle();
         b = new Bundle(b, cluster);
 
@@ -75,26 +73,15 @@ public class NoOutputProcessTest extends BaseTestClass {
         String prefix = b.getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
 
-        DateTime startDateJoda = new DateTime(TimeUtil.oozieDateToDate(startDate));
-        DateTime endDateJoda = new DateTime(TimeUtil.oozieDateToDate(endDate));
-
-        List<String> dataDates =
-            TimeUtil.getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, 20);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        ArrayList<String> dataFolder = new ArrayList<String>();
-        for (String dataDate : dataDates) {
-            dataFolder.add(dataDate);
-        }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataFolder);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 20);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
     }
 
 
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -118,7 +105,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         //wait for all the instances to complete
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         Assert.assertEquals(consumer.getMessageData().size(), 3,
             " Message for all the 3 instance not found");
@@ -142,7 +129,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         //wait for all the instances to complete
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
-            CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
             " Message for all the 3 instance not found");

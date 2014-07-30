@@ -24,8 +24,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 
-public class HCatUtil {
+/**
+ * util methods for HCat.
+ */
+public final class HCatUtil {
+    private HCatUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
 
     public static HCatClient getHCatClient(String hCatEndPoint, String hiveMetaStorePrinciple)
         throws HCatException {
@@ -41,5 +48,10 @@ public class HCatUtil {
         hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
         hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
         return HCatClient.create(hcatConf);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static HCatFieldSchema getStringSchema(String fieldName, String comment) throws HCatException {
+        return new HCatFieldSchema(fieldName, HCatFieldSchema.Type.STRING, comment);
     }
 }

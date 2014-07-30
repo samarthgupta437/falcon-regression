@@ -19,15 +19,17 @@
 package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.core.util.XmlUtil;
@@ -172,7 +174,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+        Bundle bundle = BundleUtil.readLocalDCBundle();
 
         for (int i = 0; i < 3; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -212,24 +214,24 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, "",
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, "",
                 testBaseDir1 + dateTemplate);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, "",
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, "",
                 testBaseDir2 + dateTemplate);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertFailed(r, "submit of feed should have failed as the partition in source " +
             "is blank");
     }
@@ -260,29 +262,29 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), null, null);
+                Util.readEntityName(bundles[0].getClusters().get(0)), null, null);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
                 testBaseDir2 + dateTemplate);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("days(100000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+                Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
                 "${cluster.colo}", testBaseDir1 + dateTemplate);
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         HadoopUtil.createDir(testDirWithDate + "00/ua3/", cluster3FS);
         HadoopUtil.createDir(testDirWithDate + "05/ua3/", cluster3FS);
@@ -293,18 +295,18 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
             testFile2);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(
-            InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            InstanceUtil.checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
 
 
@@ -357,41 +359,41 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), null, null);
+                Util.readEntityName(bundles[0].getClusters().get(0)), null, null);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                 "${cluster.colo}", testBaseDir2 + dateTemplate);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null,
             testBaseDir1 + dateTemplate);
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r =
             prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster1.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "RETENTION"), 1);
 
 
@@ -451,35 +453,35 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                 "${cluster.colo}");
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                 "${cluster.colo}");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 3,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
 
         //check if data has been replicated correctly
 
@@ -555,20 +557,20 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null,
                 testBaseDir1 + dateTemplate);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                 "${cluster.colo}",
                 testBaseDir2 + dateTemplate);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, null);
 
         //clean target if old data exists
         logger.info("feed: " + Util.prettyPrintXml(feed));
@@ -577,7 +579,7 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         AssertUtil.assertFailed(r, "Submission of feed should have failed.");
         Assert.assertTrue(r.getMessage().contains(
                 "Partition expression has to be specified for cluster " +
-                    Util.readClusterName(bundles[0].getClusters().get(0)) +
+                    Util.readEntityName(bundles[0].getClusters().get(0)) +
                     " as there are more than one source clusters"),
             "Failed response has unexpected error message.");
     }
@@ -612,34 +614,34 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:11Z"),
                 XmlUtil.createRtention("days(10000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET, null,
                 testBaseDir1 + "/ua1" + dateTemplate);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:26Z"),
                 XmlUtil.createRtention("days(10000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
                 testBaseDir1 + "/ua2" + dateTemplate);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(10000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}");
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
 
         //check if data has been replicated correctly
 
@@ -718,34 +720,34 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
                 "${cluster.colo}",
                 testBaseDir_server1source + dateTemplate);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null,
                 testBaseDir2 + "/replicated" + dateTemplate);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}", testBaseDir1 + dateTemplate);
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         r = prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         AssertUtil.assertSucceeded(r);
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
 
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 14, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED,20);
 
         //check if data has been replicated correctly
 
@@ -802,33 +804,33 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2099-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.TARGET,
                 "${cluster.colo}", testBaseDir1 + "/ua1" + dateTemplate + "/");
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2099-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                 "${cluster.colo}", testBaseDir1 + "/ua2" + dateTemplate + "/");
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z")
             , XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE,
             "${cluster.colo}", testBaseDir4 + dateTemplate + "/");
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertSucceeded(r);
 
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed));
-        Thread.sleep(15000);
+        TimeUtil.sleepSeconds(15);
         InstanceUtil.waitTillInstanceReachState(cluster1OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 2,
-            CoordinatorAction.Status.SUCCEEDED, 7, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED, 20);
 
         //check if data has been replicated correctly
 
@@ -897,24 +899,24 @@ public class PrismFeedReplicationPartitionExpTest extends BaseTestClass {
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA1, "2012-10-01T12:10Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, "",
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, "",
                 testBaseDir1 + dateTemplate);
 
         feed = InstanceUtil
             .setFeedCluster(feed, XmlUtil.createValidity(startTimeUA2, "2012-10-01T12:25Z"),
                 XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-                Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.TARGET, "",
+                Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.TARGET, "",
                 testBaseDir2 + dateTemplate);
 
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity("2012-10-01T12:00Z", "2099-01-01T00:00Z"),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
+            Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.SOURCE, "");
 
         logger.info("feed: " + Util.prettyPrintXml(feed));
 
         ServiceResponse r = prism.getFeedHelper().submitEntity(URLS.SUBMIT_URL, feed);
-        Thread.sleep(10000);
+        TimeUtil.sleepSeconds(10);
         AssertUtil.assertFailed(r, "is defined more than once for feed");
         Assert.assertTrue(r.getMessage().contains("is defined more than once for feed"));
     }

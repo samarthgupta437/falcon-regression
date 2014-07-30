@@ -23,12 +23,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.Entity;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
 import org.apache.falcon.entity.v0.cluster.Cluster;
 import org.apache.falcon.entity.v0.cluster.Interface;
@@ -40,12 +37,10 @@ import org.apache.falcon.entity.v0.feed.Property;
 import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -65,16 +60,10 @@ import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 
@@ -87,23 +76,21 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-public class Util {
+/**
+ * util methods used across test.
+ */
+public final class Util {
 
-
-    static Logger logger = Logger.getLogger(Util.class);
-    static final String MERLIN_PROPERTIES = "Merlin.properties";
-    static final String PRISM_PREFIX = "prism";
-
-    static PrismHelper prismHelper = new PrismHelper(MERLIN_PROPERTIES, PRISM_PREFIX);
+    private Util() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(Util.class);
 
     public static ServiceResponse sendRequest(String url, String method)
         throws IOException, URISyntaxException, AuthenticationException {
@@ -124,20 +111,8 @@ public class Util {
         return new ServiceResponse(response);
     }
 
-    public static String getExpectedErrorMessage(String filename) throws IOException {
-
-        Properties properties = new Properties();
-        final InputStream resourceAsStream =
-            Util.class.getResourceAsStream("/" + "errorMapping.properties");
-        properties.load(resourceAsStream);
-        resourceAsStream.close();
-        return properties.getProperty(filename);
-    }
-
-    public static String getProcessName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
+    public static String getProcessName(String data) {
+        Process processElement = (Process) Entity.fromString(EntityType.PROCESS, data);
         return processElement.getName();
     }
 
@@ -181,165 +156,35 @@ public class Util {
         return temp;
     }
 
-    public static List<String> getProcessStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/PROCESS");
-    }
-
-    public static List<String> getDataSetStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/FEED");
-    }
-
-    public static List<String> getDataSetArchiveInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/FEED");
-    }
-
-    public static List<String> getArchiveStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/PROCESS");
-    }
-
-    public static List<String> getClusterStoreInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/CLUSTER");
-    }
-
-    public static List<String> getClusterArchiveInfo(IEntityManagerHelper helper)
-        throws IOException, JSchException {
-        return getStoreInfo(helper, "/archive/CLUSTER");
-    }
-
-    private static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
+    public static List<String> getStoreInfo(IEntityManagerHelper helper, String subPath)
         throws IOException, JSchException {
         if (helper.getStoreLocation().startsWith("hdfs:")) {
             return HadoopUtil.getAllFilesHDFS(helper.getStoreLocation(),
                 helper.getStoreLocation() + subPath);
         } else {
-            return runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
+            return ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
                 helper.getPassword(), "ls " + helper.getStoreLocation() + "/store" + subPath,
                 helper.getUsername(), helper.getIdentityFile());
         }
     }
 
-    public static File[] getFiles(String directoryPath) throws URISyntaxException {
-        directoryPath = directoryPath.replaceFirst("^.*test-classes[\\\\/]", "");
-        logger.info("directoryPath: " + directoryPath);
-        URL url = Util.class.getResource("/" + directoryPath);
-        logger.info("url" + url);
-        File dir = new File(url.toURI());
-        File[] files = dir.listFiles();
-        if (files != null) Arrays.sort(files);
-        return files;
-    }
-
-    public static String readEntityName(String data) throws JAXBException {
-
-        if (data.contains("uri:falcon:feed"))
-            return InstanceUtil.getFeedElement(data).getName();
-        else if (data.contains("uri:falcon:process"))
-            return InstanceUtil.getProcessElement(data).getName();
-        else
-            return InstanceUtil.getClusterElement(data).getName();
-    }
-
-    public static String readClusterName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Cluster clusterElement = (Cluster) u.unmarshal(new StringReader(data));
-
-        return clusterElement.getName();
-    }
-
-    public static String readDatasetName(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-
-        Feed datasetElement = (Feed) u.unmarshal((new StringReader(data)));
-
-        return datasetElement.getName();
-
-    }
-
-    /**
-     * Sets unique name for process.
-     *
-     * @param data process definition
-     * @return process definition with unique name
-     * @throws JAXBException
-     */
-    public static String generateUniqueProcessEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Process.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Process processElement = (Process) u.unmarshal((new StringReader(data)));
-        processElement.setName(processElement.getName() + "-" + UUID.randomUUID());
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(processElement, sw);
-        return sw.toString();
-    }
-
-    /**
-     * Sets unique name for cluster.
-     *
-     * @param data cluster definition
-     * @return cluster definition with unique name
-     * @throws JAXBException
-     */
-    public static String generateUniqueClusterEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Cluster clusterElement = (Cluster) u.unmarshal((new StringReader(data)));
-        clusterElement.setName(clusterElement.getName() + "-" + UUID.randomUUID());
-
-        //lets marshall it back and return
-        java.io.StringWriter sw = new StringWriter();
-        Marshaller marshaller = jc.createMarshaller();
-        marshaller.marshal(clusterElement, sw);
-        return sw.toString();
-    }
-
-    /**
-     * Sets unique name for feed.
-     *
-     * @param data feed definition
-     * @return feed definition with unique name
-     * @throws JAXBException
-     */
-    public static String generateUniqueDataEntity(String data) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Feed.class);
-        Unmarshaller u = jc.createUnmarshaller();
-        Feed dataElement = (Feed) u.unmarshal((new StringReader(data)));
-        dataElement.setName(dataElement.getName() + "-" + UUID.randomUUID());
-        return InstanceUtil.feedElementToString(dataElement);
-    }
-
-    public static String readPropertiesFile(String filename, String property) {
-        return readPropertiesFile(filename, property, null);
-    }
-
-    public static String readPropertiesFile(String filename, String property, String defaultValue) {
-        String desired_property;
-
-        try {
-            InputStream conf_stream = Util.class.getResourceAsStream("/" + filename);
-
-            Properties properties = new Properties();
-            properties.load(conf_stream);
-            desired_property = properties.getProperty(property, defaultValue);
-            conf_stream.close();
-
-            return desired_property;
-        } catch (Exception e) {
-            logger.info(e.getStackTrace());
+    public static String readEntityName(String data) {
+        if (data.contains("uri:falcon:feed")) {
+            return Entity.fromString(EntityType.FEED, data).getName();
+        } else if (data.contains("uri:falcon:process")) {
+            return Entity.fromString(EntityType.PROCESS, data).getName();
+        } else {
+            return Entity.fromString(EntityType.CLUSTER, data).getName();
         }
-        return null;
+    }
+
+    public static String getUniqueString() {
+
+        return "-" + UUID.randomUUID().toString().split("-")[0];
     }
 
     public static List<String> getHadoopDataFromDir(ColoHelper helper, String feed, String dir)
-        throws JAXBException, IOException {
+        throws IOException {
         List<String> finalResult = new ArrayList<String>();
 
         String feedPath = getFeedPath(feed);
@@ -358,19 +203,9 @@ public class Util {
     }
 
 
-    public static int executeCommandGetExitCode(String command) {
-        return executeCommand(command).getExitVal();
-    }
+    public static String setFeedProperty(String feed, String propertyName, String propertyValue) {
 
-
-    public static String executeCommandGetOutput(String command) {
-        return executeCommand(command).getOutput();
-    }
-
-    public static String setFeedProperty(String feed, String propertyName, String propertyValue)
-        throws JAXBException {
-
-        Feed feedObject = InstanceUtil.getFeedElement(feed);
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
 
         boolean found = false;
         for (Property prop : feedObject.getProperties().getProperties()) {
@@ -390,18 +225,15 @@ public class Util {
         }
 
 
-        return InstanceUtil.feedElementToString(feedObject);
+        return feedObject.toString();
 
     }
 
 
-    public static String getFeedPath(String feed) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
+    public static String getFeedPath(String feed) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType().equals(LocationType.DATA)) {
+            if (location.getType() == LocationType.DATA) {
                 return location.getPath();
             }
         }
@@ -409,60 +241,16 @@ public class Util {
         return null;
     }
 
-    public static ExecResult executeCommand(String command) {
-        logger.info("Command to be executed: " + command);
-        StringBuilder errors = new StringBuilder();
-        StringBuilder output = new StringBuilder();
-
-        try {
-            java.lang.Process process = Runtime.getRuntime().exec(command);
-
-            BufferedReader errorReader =
-                new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            BufferedReader consoleReader =
-                new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            String line;
-            while ((line = errorReader.readLine()) != null) {
-                errors.append(line).append("\n");
-            }
-
-            while ((line = consoleReader.readLine()) != null) {
-                output.append(line).append("\n");
-            }
-            final int exitVal = process.waitFor();
-            logger.info("exitVal: " + exitVal);
-            logger.info("output: " + output);
-            logger.info("errors: " + errors);
-            return new ExecResult(exitVal, output.toString().trim(), errors.toString().trim());
-        } catch (InterruptedException e) {
-            Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
-        } catch (IOException e) {
-            Assert.fail("Process execution failed:" + ExceptionUtils.getStackTrace(e));
-        }
-        return null;
-    }
-
-    public static String insertLateFeedValue(String feed, Frequency frequency)
-        throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-        Feed feedObject = (Feed) um.unmarshal(new StringReader(feed));
-
+    public static String insertLateFeedValue(String feed, Frequency frequency) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         feedObject.getLateArrival().setCutOff(frequency);
-
-        Marshaller m = context.createMarshaller();
-        StringWriter sw = new StringWriter();
-
-        m.marshal(feedObject, sw);
-
-        return sw.toString();
+        return feedObject.toString();
     }
 
-    public static void createLateDataFoldersWithRandom(PrismHelper prismHelper, String folderPrefix,
+    public static void createLateDataFoldersWithRandom(ColoHelper prismHelper, String folderPrefix,
                                                        List<String> folderList)
         throws IOException {
-        logger.info("creating late data folders.....");
+        LOGGER.info("creating late data folders.....");
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
 
@@ -474,13 +262,13 @@ public class Util {
             fs.mkdirs(new Path(folderPrefix + folder));
         }
 
-        logger.info("created all late data folders.....");
+        LOGGER.info("created all late data folders.....");
     }
 
-    public static void copyDataToFolders(PrismHelper prismHelper, List<String> folderList,
+    public static void copyDataToFolders(ColoHelper prismHelper, List<String> folderList,
                                          String directory, String folderPrefix)
         throws IOException {
-        logger.info("copying data into folders....");
+        LOGGER.info("copying data into folders....");
         List<String> fileLocations = new ArrayList<String>();
         File[] files = new File(directory).listFiles();
         if (files != null) {
@@ -492,7 +280,7 @@ public class Util {
             fileLocations.toArray(new String[fileLocations.size()]));
     }
 
-    public static void copyDataToFolders(PrismHelper prismHelper, final String folderPrefix,
+    public static void copyDataToFolders(ColoHelper prismHelper, final String folderPrefix,
                                          List<String> folderList,
                                          String... fileLocations)
         throws IOException {
@@ -503,14 +291,16 @@ public class Util {
 
         for (final String folder : folderList) {
             boolean r;
-            String folder_space = folder.replaceAll("/", "_");
+            String folderSpace = folder.replaceAll("/", "_");
             File f = new File(
-                OSUtil.NORMAL_INPUT + folder_space +
+                OSUtil.NORMAL_INPUT + folderSpace
+                        +
                     ".txt");
             if (!f.exists()) {
                 r = f.createNewFile();
-                if (!r)
-                    logger.info("file could not be created");
+                if (!r) {
+                    LOGGER.info("file could not be created");
+                }
             }
 
 
@@ -519,33 +309,28 @@ public class Util {
             fr.close();
             fs.copyFromLocalFile(new Path(f.getAbsolutePath()), new Path(folderPrefix + folder));
             r = f.delete();
-            if (!r)
-                logger.info("delete was not successful");
+            if (!r) {
+                LOGGER.info("delete was not successful");
+            }
 
             Path[] srcPaths = new Path[fileLocations.length];
             for (int i = 0; i < srcPaths.length; ++i) {
                 srcPaths[i] = new Path(fileLocations[i]);
             }
-            logger.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder);
+            LOGGER.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder);
             fs.copyFromLocalFile(false, true, srcPaths, new Path(folderPrefix + folder));
         }
     }
 
 
-    public static String setFeedPathValue(String feed, String pathValue) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject = (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feed));
-
-        //set the value
+    public static String setFeedPathValue(String feed, String pathValue) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
         for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType().equals(LocationType.DATA)) {
+            if (location.getType() == LocationType.DATA) {
                 location.setPath(pathValue);
             }
         }
-
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString();
+        return feedObject.toString();
     }
 
 
@@ -554,7 +339,8 @@ public class Util {
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
 
         for (String folder : folderList) {
-            if (folder.compareTo(formatter.print(startTime)) >= 0 &&
+            if (folder.compareTo(formatter.print(startTime)) >= 0
+                    &&
                 folder.compareTo(formatter.print(endTime)) <= 0) {
                 return folder;
             }
@@ -562,7 +348,7 @@ public class Util {
         return null;
     }
 
-    public static void lateDataReplenish(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenish(ColoHelper prismHelper, int interval,
                                          int minuteSkip, String folderPrefix) throws IOException {
         List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
@@ -571,8 +357,8 @@ public class Util {
             OSUtil.NORMAL_INPUT, folderPrefix);
     }
 
-    public static void createLateDataFolders(PrismHelper prismHelper, List<String> folderList,
-                                             final String FolderPrefix)
+    public static void createLateDataFolders(ColoHelper prismHelper, List<String> folderList,
+                                             final String folderPrefix)
         throws IOException {
         Configuration conf = new Configuration();
         conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
@@ -580,11 +366,11 @@ public class Util {
         final FileSystem fs = FileSystem.get(conf);
 
         for (final String folder : folderList) {
-            fs.mkdirs(new Path(FolderPrefix + folder));
+            fs.mkdirs(new Path(folderPrefix + folder));
         }
     }
 
-    public static void injectMoreData(PrismHelper prismHelper, final String remoteLocation,
+    public static void injectMoreData(ColoHelper prismHelper, final String remoteLocation,
                                       String localLocation)
         throws IOException {
         Configuration conf = new Configuration();
@@ -596,52 +382,40 @@ public class Util {
         assert files != null;
         for (final File file : files) {
             if (!file.isDirectory()) {
-                String path = remoteLocation + "/" +
+                String path = remoteLocation + "/"
+                        +
                     System.currentTimeMillis() / 1000 + "/";
-                logger.info("inserting data@ " + path);
+                LOGGER.info("inserting data@ " + path);
                 fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(path));
             }
         }
 
     }
 
-    public static String setFeedName(String feedString, String newName) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject =
-            (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
-
-        //set the value
+    public static String setFeedName(String feedString, String newName) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedString);
         feedObject.setName(newName);
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString().trim();
+        return feedObject.toString().trim();
     }
 
     public static String setClusterNameInFeed(String feedString, String clusterName,
-                                              int clusterIndex) throws JAXBException {
-        JAXBContext feedContext = JAXBContext.newInstance(Feed.class);
-        Feed feedObject =
-            (Feed) feedContext.createUnmarshaller().unmarshal(new StringReader(feedString));
-        //set the value
+                                              int clusterIndex) {
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedString);
         feedObject.getClusters().getClusters().get(clusterIndex).setName(clusterName);
-        StringWriter feedWriter = new StringWriter();
-        feedContext.createMarshaller().marshal(feedObject, feedWriter);
-        return feedWriter.toString().trim();
+        return feedObject.toString().trim();
     }
 
-    public static Cluster getClusterObject(
-        String clusterXML) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Cluster.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (Cluster) um.unmarshal(new StringReader(clusterXML));
+    public static Cluster getClusterObject(String clusterXML) {
+        return (Cluster) Entity.fromString(EntityType.CLUSTER, clusterXML);
     }
 
     public static List<String> getInstanceFinishTimes(ColoHelper coloHelper, String workflowId)
         throws IOException, JSchException {
-        List<String> raw = runRemoteScriptAsSudo(coloHelper.getProcessHelper()
+        List<String> raw = ExecUtil.runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
-            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
+            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep "
+                    +
                 "\"Received\" | awk '{print $2}'",
             coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getIdentityFile()
@@ -656,10 +430,11 @@ public class Util {
 
     public static List<String> getInstanceRetryTimes(ColoHelper coloHelper, String workflowId)
         throws IOException, JSchException {
-        List<String> raw = runRemoteScriptAsSudo(coloHelper.getProcessHelper()
+        List<String> raw = ExecUtil.runRemoteScriptAsSudo(coloHelper.getProcessHelper()
                 .getQaHost(), coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getPassword(),
-            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep " +
+            "cat /var/log/ivory/application.* | grep \"" + workflowId + "\" | grep "
+                    +
                 "\"Retrying attempt\" | awk '{print $2}'",
             coloHelper.getProcessHelper().getUsername(),
             coloHelper.getProcessHelper().getIdentityFile()
@@ -674,20 +449,16 @@ public class Util {
 
     public static void shutDownService(IEntityManagerHelper helper)
         throws IOException, JSchException {
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
+        ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
             helper.getPassword(), helper.getServiceStopCmd(),
             helper.getServiceUser(), helper.getIdentityFile());
-        try {
-            TimeUnit.SECONDS.sleep(10);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
+        TimeUtil.sleepSeconds(10);
     }
 
     public static void startService(IEntityManagerHelper helper)
         throws IOException, JSchException, AuthenticationException, URISyntaxException {
 
-        runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
+        ExecUtil.runRemoteScriptAsSudo(helper.getQaHost(), helper.getUsername(),
             helper.getPassword(), helper.getServiceStartCmd(), helper.getServiceUser(),
             helper.getIdentityFile());
         int statusCode = 0;
@@ -695,170 +466,51 @@ public class Util {
             try {
                 statusCode = Util.sendRequest(helper.getHostname(), "get").getCode();
             } catch (IOException e) {
-                logger.info(e.getMessage());
+                LOGGER.info(e.getMessage());
             }
-            if (statusCode == 200) return;
-            try {
-                TimeUnit.SECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                logger.error(e.getMessage());
+            if (statusCode == 200) {
+                return;
             }
+            TimeUtil.sleepSeconds(5);
         }
         throw new RuntimeException("Service on" + helper.getHostname() + " did not start!");
     }
 
     public static void restartService(IEntityManagerHelper helper)
         throws IOException, JSchException, AuthenticationException, URISyntaxException {
-        logger.info("restarting service for: " + helper.getQaHost());
+        LOGGER.info("restarting service for: " + helper.getQaHost());
 
         shutDownService(helper);
         startService(helper);
     }
 
-    private static List<String> runRemoteScriptAsSudo(String hostName,
-                                                      String userName,
-                                                      String password,
-                                                      String command,
-                                                      String runAs,
-                                                      String identityFile
-    ) throws JSchException, IOException {
-        JSch jsch = new JSch();
-        Session session = jsch.getSession(userName, hostName, 22);
-        // only set the password if its not empty
-        if (null != password && !password.isEmpty()) {
-            session.setUserInfo(new HardcodedUserInfo(password));
-        }
-        Properties config = new Properties();
-        config.setProperty("StrictHostKeyChecking", "no");
-        config.setProperty("UserKnownHostsFile", "/dev/null");
-        // only set the password if its not empty
-        if (null == password || password.isEmpty()) {
-            jsch.addIdentity(identityFile);
-        }
-        session.setConfig(config);
-        session.connect();
-        Assert.assertTrue(session.isConnected(), "The session was not connected correctly!");
-
-        List<String> data = new ArrayList<String>();
-
-        ChannelExec channel = (ChannelExec) session.openChannel("exec");
-        channel.setPty(true);
-        String runCmd;
-        if (null == runAs || runAs.isEmpty()) {
-            runCmd = "sudo -S -p '' " + command;
-        } else {
-            runCmd = String.format("sudo su - %s -c '%s'", runAs, command);
-        }
-        if (userName.equals(runAs)) runCmd = command;
-        logger.info(
-            "host_name: " + hostName + " user_name: " + userName + " password: " + password +
-                " command: " +
-                runCmd);
-        channel.setCommand(runCmd);
-        InputStream in = channel.getInputStream();
-        OutputStream out = channel.getOutputStream();
-        channel.setErrStream(System.err);
-        channel.connect();
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-        }
-        // only print the password if its not empty
-        if (null != password && !password.isEmpty()) {
-            out.write((password + "\n").getBytes());
-            out.flush();
-        }
-
-        //save console output to data
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
-        String line;
-        while (true) {
-            while ((line=r.readLine())!=null) {
-                logger.debug(line);
-                data.add(line);
-            }
-            if (channel.isClosed()) {
-                break;
-            }
-        }
-
-        byte[] tmp = new byte[1024];
-        while (true) {
-            while (in.available() > 0) {
-                int i = in.read(tmp, 0, 1024);
-                if (i < 0) break;
-                logger.info(new String(tmp, 0, i));
-            }
-            if (channel.isClosed()) {
-                logger.info("exit-status: " + channel.getExitStatus());
-                break;
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                logger.info(e.getMessage());
-            }
-        }
-
-        in.close();
-        channel.disconnect();
-        session.disconnect();
-        out.close();
-        return data;
-    }
-
-    public static Process getProcessObject(String processData) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Process.class);
-        Unmarshaller um = context.createUnmarshaller();
-        return (Process) um.unmarshal(new StringReader(processData));
-    }
-
-    public static Feed getFeedObject(String feedData) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance(Feed.class);
-        Unmarshaller um = context.createUnmarshaller();
-
-        return (Feed) um.unmarshal(new StringReader(feedData));
-    }
-
-    /**
-     * Sets unique names for each cluster entity in supplied list.
-     *
-     * @param clusterData list of cluster definitions to be modified
-     * @return list of unique cluster definitions
-     * @throws JAXBException
-     */
-    public static List<String> generateUniqueClusterEntity(List<String> clusterData)
-        throws JAXBException {
-        List<String> newList = new ArrayList<String>();
-        for (String cluster : clusterData) {
-            newList.add(generateUniqueClusterEntity(cluster));
-        }
-        return newList;
+    public static Process getProcessObject(String processData) {
+        return (Process) Entity.fromString(EntityType.PROCESS, processData);
     }
 
     public static void dumpConsumerData(Consumer consumer) {
-        logger.info("dumping all queue data:");
+        LOGGER.info("dumping all queue data:");
 
         for (HashMap<String, String> data : consumer.getMessageData()) {
-            logger.info("*************************************");
+            LOGGER.info("*************************************");
             for (String key : data.keySet()) {
-                logger.info(key + "=" + data.get(key));
+                LOGGER.info(key + "=" + data.get(key));
             }
-            logger.info("*************************************");
+            LOGGER.info("*************************************");
         }
     }
 
-    public static void lateDataReplenish(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenish(ColoHelper prismHelper, int interval,
                                          int minuteSkip,
                                          String folderPrefix, String postFix)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
-        logger.info("folderData: " + folderPaths.toString());
+        LOGGER.info("folderData: " + folderPaths.toString());
 
         if (postFix != null) {
-            for (int i = 0; i < folderPaths.size(); i++)
+            for (int i = 0; i < folderPaths.size(); i++) {
                 folderPaths.set(i, folderPaths.get(i) + postFix);
+            }
         }
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
@@ -867,16 +519,17 @@ public class Util {
             OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-    public static void lateDataReplenishWithout_Success(PrismHelper prismHelper, int interval,
+    public static void lateDataReplenishWithoutSuccess(ColoHelper prismHelper, int interval,
                                                         int minuteSkip, String folderPrefix,
                                                         String postFix)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
-        logger.info("folderData: " + folderPaths.toString());
+        LOGGER.info("folderData: " + folderPaths.toString());
 
         if (postFix != null) {
-            for (int i = 0; i < folderPaths.size(); i++)
+            for (int i = 0; i < folderPaths.size(); i++) {
                 folderPaths.set(i, folderPaths.get(i) + postFix);
+            }
         }
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
@@ -885,72 +538,55 @@ public class Util {
     }
 
 
-    public static void putFileInFolderHDFS(PrismHelper prismHelper, int interval, int minuteSkip,
+    public static void putFileInFolderHDFS(ColoHelper prismHelper, int interval, int minuteSkip,
                                            String folderPrefix, String fileToBePut)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
-        logger.info("folderData: " + folderPaths.toString());
+        LOGGER.info("folderData: " + folderPaths.toString());
 
         Util.createLateDataFolders(prismHelper, folderPaths, folderPrefix);
 
-        if (fileToBePut.equals("_SUCCESS"))
+        if (fileToBePut.equals("_SUCCESS")) {
             Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                OSUtil.NORMAL_INPUT + "_SUCCESS");
-
-        else
+                    OSUtil.NORMAL_INPUT + "_SUCCESS");
+        } else {
             Util.copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                OSUtil.NORMAL_INPUT + "log_01.txt");
-
-    }
-
-    public static Properties getPropertiesObj(String filename) {
-        try {
-            Properties properties = new Properties();
-
-            logger.info("filename: " + filename);
-            InputStream conf_stream =
-                Util.class.getResourceAsStream("/" + filename);
-            properties.load(conf_stream);
-            conf_stream.close();
-            return properties;
-
-        } catch (Exception e) {
-            logger.info(e.getStackTrace());
+                    OSUtil.NORMAL_INPUT + "log_01.txt");
         }
-        return null;
+
     }
 
-
-    public static String getEnvClusterXML(String filename, String cluster, String prefix)
-        throws JAXBException {
+    public static String getEnvClusterXML(String cluster, String prefix) {
 
         Cluster clusterObject =
             getClusterObject(cluster);
-        if ((null == prefix) || prefix.isEmpty())
+        if ((null == prefix) || prefix.isEmpty()) {
             prefix = "";
-        else prefix = prefix + ".";
+        } else {
+            prefix = prefix + ".";
+        }
 
-        String hcat_endpoint = readPropertiesFile(filename, prefix + "hcat_endpoint");
+        String hcatEndpoint = Config.getProperty(prefix + "hcat_endpoint");
 
         //now read and set relevant values
         for (Interface iface : clusterObject.getInterfaces().getInterfaces()) {
-            if (iface.getType().equals(Interfacetype.READONLY)) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_readonly"));
-            } else if (iface.getType().equals(Interfacetype.WRITE)) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_write"));
-            } else if (iface.getType().equals(Interfacetype.EXECUTE)) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "cluster_execute"));
-            } else if (iface.getType().equals(Interfacetype.WORKFLOW)) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "oozie_url"));
-            } else if (iface.getType().equals(Interfacetype.MESSAGING)) {
-                iface.setEndpoint(readPropertiesFile(filename, prefix + "activemq_url"));
-            } else if (iface.getType().equals(Interfacetype.REGISTRY)) {
-                iface.setEndpoint(hcat_endpoint);
+            if (iface.getType() == Interfacetype.READONLY) {
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_readonly"));
+            } else if (iface.getType() == Interfacetype.WRITE) {
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_write"));
+            } else if (iface.getType() == Interfacetype.EXECUTE) {
+                iface.setEndpoint(Config.getProperty(prefix + "cluster_execute"));
+            } else if (iface.getType() == Interfacetype.WORKFLOW) {
+                iface.setEndpoint(Config.getProperty(prefix + "oozie_url"));
+            } else if (iface.getType() == Interfacetype.MESSAGING) {
+                iface.setEndpoint(Config.getProperty(prefix + "activemq_url"));
+            } else if (iface.getType() == Interfacetype.REGISTRY) {
+                iface.setEndpoint(hcatEndpoint);
             }
         }
 
         //set colo name:
-        clusterObject.setColo(readPropertiesFile(filename, prefix + "colo"));
+        clusterObject.setColo(Config.getProperty(prefix + "colo"));
         // properties in the cluster needed when secure mode is on
         if (MerlinConstants.IS_SECURE) {
             // get the properties object for the cluster
@@ -959,13 +595,15 @@ public class Util {
             // add the namenode principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
                 "dfs.namenode.kerberos.principal",
-                readPropertiesFile(filename, prefix + "namenode.kerberos.principal", "none")));
+                Config.getProperty(prefix + "namenode.kerberos.principal", "none")));
 
             // add the hive meta store principal to the properties object
             clusterProperties.getProperties().add(getFalconClusterPropertyObject(
-                "hive.metastore.kerberos" +
+                "hive.metastore.kerberos"
+                        +
                     ".principal",
-                readPropertiesFile(filename, prefix + "hive.metastore.kerberos" +
+                Config.getProperty(prefix + "hive.metastore.kerberos"
+                        +
                     ".principal", "none")
             ));
 
@@ -973,28 +611,21 @@ public class Util {
             // falcon.
             // hive.metastore.sasl.enabled = true
             clusterProperties.getProperties()
-                .add(getFalconClusterPropertyObject("hive.metastore.sasl" +
+                .add(getFalconClusterPropertyObject("hive.metastore.sasl"
+                        +
                     ".enabled", "true"));
             // Only set the metastore uri if its not empty or null.
-            if (null != hcat_endpoint && !hcat_endpoint.isEmpty()) {
+            if (null != hcatEndpoint && !hcatEndpoint.isEmpty()) {
                 //hive.metastore.uris
                 clusterProperties.getProperties()
-                    .add(getFalconClusterPropertyObject("hive.metastore.uris", hcat_endpoint));
+                    .add(getFalconClusterPropertyObject("hive.metastore.uris", hcatEndpoint));
             }
         }
-
-
-        JAXBContext context = JAXBContext.newInstance(Cluster.class);
-        Marshaller m = context.createMarshaller();
-        StringWriter writer = new StringWriter();
-
-        m.marshal(clusterObject, writer);
-        return writer.toString();
+        return clusterObject.toString();
     }
 
     public static org.apache.falcon.entity.v0.cluster.Property
-    getFalconClusterPropertyObject
-        (String name, String value) {
+    getFalconClusterPropertyObject(String name, String value) {
         org.apache.falcon.entity.v0.cluster.Property property = new org
             .apache.falcon.entity.v0.cluster.Property();
         property.setName(name);
@@ -1002,21 +633,18 @@ public class Util {
         return property;
     }
 
-    public static ENTITY_TYPE getEntityType(String entity) {
-        if (
-            entity.contains("uri:falcon:process:0.1"))
-            return ENTITY_TYPE.PROCESS;
-        else if (
-            entity.contains("uri:falcon:cluster:0.1"))
-            return ENTITY_TYPE.CLUSTER;
-        else if (
-            entity.contains("uri:falcon:feed:0.1")) {
-            return ENTITY_TYPE.FEED;
+    public static EntityType getEntityType(String entity) {
+        if (entity.contains("uri:falcon:process:0.1")) {
+            return EntityType.PROCESS;
+        } else if (entity.contains("uri:falcon:cluster:0.1")) {
+            return EntityType.CLUSTER;
+        } else if (entity.contains("uri:falcon:feed:0.1")) {
+            return EntityType.FEED;
         }
         return null;
     }
 
-    public static boolean isDefinitionSame(PrismHelper server1, PrismHelper server2,
+    public static boolean isDefinitionSame(ColoHelper server1, ColoHelper server2,
                                            String entity)
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
         SAXException {
@@ -1024,6 +652,9 @@ public class Util {
             getEntityDefinition(server2, entity, true));
     }
 
+    /**
+     * emuns used for instance api.
+     */
     public enum URLS {
 
         LIST_URL("/api/entities/list"),
@@ -1034,6 +665,7 @@ public class Util {
         VALIDATE_URL("/api/entities/validate"),
         SUSPEND_URL("/api/entities/suspend"),
         RESUME_URL("/api/entities/resume"),
+        UPDATE("/api/entities/update"),
         STATUS_URL("/api/entities/status"),
         SUBMIT_AND_SCHEDULE_URL("/api/entities/submitAndSchedule"),
         INSTANCE_RUNNING("/api/instance/running"),
@@ -1041,10 +673,9 @@ public class Util {
         INSTANCE_KILL("/api/instance/kill"),
         INSTANCE_RESUME("/api/instance/resume"),
         INSTANCE_SUSPEND("/api/instance/suspend"),
-        PROCESS_UPDATE("/api/entities/update/process"),
         INSTANCE_RERUN("/api/instance/rerun"),
-        FEED_UPDATE("/api/entities/update/feed"),
-        INSTANCE_SUMMARY("/api/instance/summary");
+        INSTANCE_SUMMARY("/api/instance/summary"),
+        INSTANCE_PARAMS("/api/instance/params");
         private final String url;
 
         URLS(String url) {
@@ -1064,40 +695,6 @@ public class Util {
     public static String getFileNameFromPath(String path) {
 
         return path.substring(path.lastIndexOf("/") + 1, path.length());
-    }
-
-
-    private static class HardcodedUserInfo implements UserInfo {
-
-        private final String password;
-
-        private HardcodedUserInfo(String password) {
-            this.password = password;
-        }
-
-        public String getPassphrase() {
-            return null;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public boolean promptPassword(String s) {
-            return true;
-        }
-
-        public boolean promptPassphrase(String s) {
-            return true;
-        }
-
-        public boolean promptYesNo(String s) {
-            return true;
-        }
-
-        public void showMessage(String s) {
-            logger.info("message = " + s);
-        }
     }
 
 
@@ -1166,35 +763,39 @@ public class Util {
         }
         String cleanStr = str.trim();
         //taken from http://stackoverflow.com/questions/7256142/way-to-quickly-check-if-string-is-xml-or-json-in-c-sharp
-        if (cleanStr.startsWith("{") || cleanStr.startsWith("["))
+        if (cleanStr.startsWith("{") || cleanStr.startsWith("[")) {
             return prettyPrintJson(cleanStr);
-        if (cleanStr.startsWith("<"))
+        }
+        if (cleanStr.startsWith("<")) {
             return prettyPrintXml(cleanStr);
-        logger.warn("The string does not seem to be either json or xml: " + cleanStr);
+        }
+        LOGGER.warn("The string does not seem to be either json or xml: " + cleanStr);
         return str;
     }
 
-    public static String getEntityDefinition(PrismHelper cluster,
+    public static String getEntityDefinition(ColoHelper cluster,
                                              String entity,
                                              boolean shouldReturn) throws
         JAXBException,
         IOException, URISyntaxException, AuthenticationException {
-        ENTITY_TYPE type = getEntityType(entity);
+        EntityType type = getEntityType(entity);
         IEntityManagerHelper helper;
-        if (ENTITY_TYPE.PROCESS.equals(type))
+        if (EntityType.PROCESS == type) {
             helper = cluster.getProcessHelper();
-        else if (ENTITY_TYPE.FEED.equals(type))
+        } else if (EntityType.FEED == type) {
             helper = cluster.getFeedHelper();
-        else
+        } else {
             helper = cluster.getClusterHelper();
+        }
 
         ServiceResponse response = helper.getEntityDefinition(URLS
             .GET_ENTITY_DEFINITION, entity);
 
-        if (shouldReturn)
+        if (shouldReturn) {
             AssertUtil.assertSucceeded(response);
-        else
+        } else {
             AssertUtil.assertFailed(response);
+        }
         String result = response.getMessage();
         Assert.assertNotNull(result);
 

@@ -19,61 +19,71 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
-/*
+/**
 all time / date related util methods for merlin . need to move methods from
 instanceUtil to here , pending item.
  */
 
-public class TimeUtil {
+public final class TimeUtil {
+
+    private TimeUtil() {
+        throw new AssertionError("Instantiating utility class...");
+    }
+    private static final Logger LOGGER = Logger.getLogger(TimeUtil.class);
+
+    public static void sleepSeconds(double seconds) {
+        long ms = (long) (seconds * 1000);
+        try {
+            TimeUnit.MILLISECONDS.sleep(ms);
+        } catch (InterruptedException e) {
+            LOGGER.info("Sleep was interrupted");
+        }
+    }
+
     public static String get20roundedTime(String oozieBaseTime) {
         DateTime startTime =
             new DateTime(oozieDateToDate(oozieBaseTime), DateTimeZone.UTC);
 
-        if (startTime.getMinuteOfHour() < 20)
+        if (startTime.getMinuteOfHour() < 20) {
             startTime = startTime.minusMinutes(startTime.getMinuteOfHour());
-        else if (startTime.getMinuteOfHour() < 40)
+        } else if (startTime.getMinuteOfHour() < 40) {
             startTime = startTime.minusMinutes(startTime.getMinuteOfHour() + 20);
-        else
+        } else {
             startTime = startTime.minusMinutes(startTime.getMinuteOfHour() + 40);
+        }
         return dateToOozieDate(startTime.toDate());
 
     }
 
     public static List<String> getMinuteDatesOnEitherSide(int interval, int minuteSkip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        if (minuteSkip == 0) {
-            minuteSkip = 1;
-        }
         DateTime today = new DateTime(DateTimeZone.UTC);
-        Util.logger.info("today is: " + today.toString());
+        LOGGER.info("today is: " + today.toString());
 
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(today));
+        return getMinuteDatesOnEitherSide(today.minusMinutes(interval),
+            today.plusMinutes(interval), minuteSkip);
+    }
 
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += minuteSkip) {
-            dates.add(formatter.print(today.minusMinutes(backward)));
-        }
+    public static List<String> getMinuteDatesOnEitherSide(String startOozieDate, String endOozieDate,
+                                                          int minuteSkip) {
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
+        formatter.withZoneUTC();
 
-        //now the forward dates
-        for (int i = 0; i <= interval; i += minuteSkip) {
-            dates.add(formatter.print(today.plusMinutes(i)));
-        }
-
-        return dates;
+        return getMinuteDatesOnEitherSide(TimeUtil.oozieDateToDate(startOozieDate),
+            TimeUtil.oozieDateToDate(endOozieDate), minuteSkip, formatter);
     }
 
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
@@ -84,10 +94,18 @@ public class TimeUtil {
         return getMinuteDatesOnEitherSide(startDate, endDate, minuteSkip, formatter);
     }
 
+    public static List<String> getMinuteDatesOnEitherSide(String startOozieDate, String endOozieDate,
+                                                          int minuteSkip,
+                                                          DateTimeFormatter formatter) {
+        return getMinuteDatesOnEitherSide(TimeUtil.oozieDateToDate(startOozieDate),
+            TimeUtil.oozieDateToDate(endOozieDate), minuteSkip, formatter);
+    }
+
     public static List<String> getMinuteDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                           int minuteSkip,
                                                           DateTimeFormatter formatter) {
-        Util.logger.info("generating data between " + formatter.print(startDate) + " and " +
+        LOGGER.info("generating data between " + formatter.print(startDate) + " and "
+                +
             formatter.print(endDate));
         if (minuteSkip == 0) {
             minuteSkip = 1;
@@ -102,7 +120,7 @@ public class TimeUtil {
     }
 
     /**
-     * Get format string corresponding to the FEED_TYPE
+     * Get format string corresponding to the FEED_TYPE .
      *
      * @param feedType type of the feed
      * @return format string
@@ -126,7 +144,7 @@ public class TimeUtil {
     }
 
     /**
-     * Convert list of dates to list of string according to the supplied format
+     * Convert list of dates to list of string according to the supplied format.
      *
      * @param dates        list of dates
      * @param formatString format string to be used for converting dates
@@ -144,7 +162,7 @@ public class TimeUtil {
     }
 
     /**
-     * Get all possible dates between start and end date gap between subsequent dates be one unit
+     * Get all possible dates between start and end date gap between subsequent dates be one unit.
      * of feedType
      *
      * @param startDate start date
@@ -190,10 +208,11 @@ public class TimeUtil {
     public static String getTimeWrtSystemTime(int minutes) {
 
         DateTime jodaTime = new DateTime(DateTimeZone.UTC);
-        if (minutes > 0)
+        if (minutes > 0) {
             jodaTime = jodaTime.plusMinutes(minutes);
-        else
+        } else {
             jodaTime = jodaTime.minusMinutes(-1 * minutes);
+        }
 
         DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         DateTimeZone tz = DateTimeZone.getDefault();
@@ -217,7 +236,7 @@ public class TimeUtil {
     public static String dateToOozieDate(Date dt) {
 
         DateTime jodaTime = new DateTime(dt, DateTimeZone.UTC);
-        InstanceUtil.logger.info("SystemTime: " + jodaTime);
+        LOGGER.info("SystemTime: " + jodaTime);
         DateTimeFormatter fmt = OozieUtil.getOozieDateTimeFormatter();
         return fmt.print(jodaTime);
     }
@@ -229,56 +248,14 @@ public class TimeUtil {
         while (true) {
             DateTime sysDate = oozieDateToDate(getTimeWrtSystemTime(0));
             sysDate.withZoneRetainFields(DateTimeZone.UTC);
-            InstanceUtil.logger.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
-            if (sysDate.compareTo(finalDate) > 0)
+            LOGGER.info("sysDate: " + sysDate + "  finalDate: " + finalDate);
+            if (sysDate.compareTo(finalDate) > 0) {
                 break;
-
-            try {
-                Thread.sleep(15000);
-            } catch (InterruptedException e) {
-                InstanceUtil.logger.error(e.getMessage());
             }
+
+            TimeUtil.sleepSeconds(15);
         }
 
-    }
-
-    public static void createDataWithinDatesAndPrefix(ColoHelper colo, DateTime startDateJoda,
-                                                      DateTime endDateJoda, String prefix,
-                                                      int interval) throws IOException {
-        List<String> dataDates =
-            getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        if (!prefix.endsWith("/"))
-            prefix = prefix + "/";
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.putDataInFolders(colo, dataFolder, "oneFile");
-
-    }
-
-    public static List<String> createEmptyDirWithinDatesAndPrefix(ColoHelper colo,
-                                                                  DateTime startDateJoda,
-                                                                  DateTime endDateJoda,
-                                                                  String prefix,
-                                                                  int interval) throws IOException {
-        List<String> dataDates =
-            getMinuteDatesOnEitherSide(startDateJoda, endDateJoda, interval);
-
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-
-        List<String> dataFolder = new ArrayList<String>();
-
-        for (String dataDate : dataDates) dataFolder.add(dataDate);
-
-        InstanceUtil.createHDFSFolders(colo, dataFolder);
-        return dataFolder;
     }
 
     public static Date getMinutes(String expression, Calendar time) {

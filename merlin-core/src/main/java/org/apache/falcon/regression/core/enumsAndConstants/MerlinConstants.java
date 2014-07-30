@@ -19,20 +19,17 @@
 package org.apache.falcon.regression.core.enumsAndConstants;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.falcon.regression.core.util.InstanceUtil;
-import org.apache.falcon.regression.core.util.Util;
+import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
 import org.testng.Assert;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
-import java.util.Properties;
 
 public class MerlinConstants {
-    private static Logger logger = Logger.getLogger(MerlinConstants.class);
+    private static final Logger logger = Logger.getLogger(MerlinConstants.class);
 
-    public static final String MERLIN_PROPERTIES = "Merlin.properties";
     public final static boolean IS_SECURE =
         "kerberos".equals(new Configuration().get("hadoop.security.authentication", "simple"));
     public static final String CURRENT_USER_NAME = System.getProperty("user.name");
@@ -47,10 +44,9 @@ public class MerlinConstants {
 
     /* initialize keyTabMap */
     static {
-        Properties prop = Util.getPropertiesObj(MERLIN_PROPERTIES);
-        final String current_user_keytab = prop.getProperty(CURRENT_USER_KEYTAB_STR);
-        final String user2_name = prop.getProperty(USER_2_NAME_STR);
-        final String user2_keytab = prop.getProperty(USER_2_KEYTAB_STR);
+        final String current_user_keytab = Config.getProperty(CURRENT_USER_KEYTAB_STR);
+        final String user2_name = Config.getProperty(USER_2_NAME_STR);
+        final String user2_keytab = Config.getProperty(USER_2_KEYTAB_STR);
         logger.info("current_user_name: " + CURRENT_USER_NAME);
         logger.info("current_user_keytab: " + current_user_keytab);
         logger.info("user2_name: " + user2_name);
@@ -67,15 +63,15 @@ public class MerlinConstants {
     }
 
     public static String getAclOwner() {
-        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.OWNER")))
-            return Util.readPropertiesFile("Merlin.properties", "ACL.OWNER");
+        if(StringUtils.isNotEmpty(Config.getProperty("ACL.OWNER")))
+            return Config.getProperty("ACL.OWNER");
         else
             return RequestKeys.CURRENT_USER;
     }
 
     public static String getAclGroup() {
-        if(StringUtils.isNotEmpty(Util.readPropertiesFile("Merlin.properties", "ACL.GROUP")))
-            return Util.readPropertiesFile("Merlin.properties", "ACL.GROUP");
+        if(StringUtils.isNotEmpty(Config.getProperty("ACL.GROUP")))
+            return Config.getProperty("ACL.GROUP");
         else
             return "default";
     }

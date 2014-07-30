@@ -19,13 +19,14 @@
 package org.apache.falcon.regression;
 
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.util.AssertUtil;
+import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -55,28 +56,30 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.List;
 
+/**
+ * feed replication test.
+ */
 @Test(groups = "embedded")
 public class FeedReplicationTest extends BaseTestClass {
 
-    ColoHelper cluster1 = servers.get(0);
-    ColoHelper cluster2 = servers.get(1);
-    ColoHelper cluster3 = servers.get(2);
-    FileSystem cluster1FS = serverFS.get(0);
-    OozieClient cluster2OC = serverOC.get(1);
-    OozieClient cluster3OC = serverOC.get(2);
-    String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String baseTestDir = baseHDFSDir + "/FeedReplicationTest";
-    String sourcePath = baseTestDir + "/source";
-    String feedDataLocation = baseTestDir + "/source" + dateTemplate;
-    String targetPath = baseTestDir + "/target";
-    String targetDataLocation = targetPath + dateTemplate;
-    int defaultTimeout = OSUtil.IS_WINDOWS ? 6 : 3;
-    private static final Logger logger = Logger.getLogger(FeedReplicationTest.class);
+    private ColoHelper cluster1 = servers.get(0);
+    private ColoHelper cluster2 = servers.get(1);
+    private ColoHelper cluster3 = servers.get(2);
+    private FileSystem cluster1FS = serverFS.get(0);
+    private OozieClient cluster2OC = serverOC.get(1);
+    private OozieClient cluster3OC = serverOC.get(2);
+    private String dateTemplate = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String baseTestDir = baseHDFSDir + "/FeedReplicationTest";
+    private String sourcePath = baseTestDir + "/source";
+    private String feedDataLocation = baseTestDir + "/source" + dateTemplate;
+    private String targetPath = baseTestDir + "/target";
+    private String targetDataLocation = targetPath + dateTemplate;
+    private static final Logger LOGGER = Logger.getLogger(FeedReplicationTest.class);
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws JAXBException, IOException {
-        logger.info("test name: " + method.getName());
-        Bundle bundle = (Bundle) Bundle.readBundle("LocalDC_feedReplicaltion_BillingRC")[0][0];
+        LOGGER.info("test name: " + method.getName());
+        Bundle bundle = BundleUtil.readLocalDCBundle();
 
         bundles[0] = new Bundle(bundle, cluster1);
         bundles[1] = new Bundle(bundle, cluster2);
@@ -100,11 +103,11 @@ public class FeedReplicationTest extends BaseTestClass {
     @Test
     public void replicate1Source1Target()
         throws AuthenticationException, IOException, URISyntaxException, JAXBException,
-        InterruptedException, OozieClientException {
+        OozieClientException {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
-        logger.info("Time range between : " + startTime + " and " + endTime);
+        LOGGER.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
         String feed = bundles[0].getDataSets().get(0);
@@ -118,17 +121,17 @@ public class FeedReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)),
+            Util.readEntityName(bundles[0].getClusters().get(0)),
             ClusterType.SOURCE, null);
         //set cluster2 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)),
+            Util.readEntityName(bundles[1].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        logger.info("Feed : " + Util.prettyPrintXml(feed));
+        LOGGER.info("Feed : " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed));
@@ -148,15 +151,15 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if coordinator exists
-        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
 
         //replication should start, wait while it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -177,7 +180,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
-        logger.info("Time range between : " + startTime + " and " + endTime);
+        LOGGER.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
         String feed = bundles[0].getDataSets().get(0);
@@ -191,23 +194,23 @@ public class FeedReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)),
+            Util.readEntityName(bundles[0].getClusters().get(0)),
             ClusterType.SOURCE, null);
         //set cluster2 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)),
+            Util.readEntityName(bundles[1].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
         //set cluster3 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[2].getClusters().get(0)),
+            Util.readEntityName(bundles[2].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        logger.info("Feed : " + Util.prettyPrintXml(feed));
+        LOGGER.info("Feed : " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed));
@@ -227,23 +230,23 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check if all coordinators exist
-        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0);
 
-        InstanceUtil.waitTillInstancesAreCreated(cluster3, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster3, feed, 0);
 
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster2.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         Assert.assertEquals(InstanceUtil
-            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readDatasetName(feed),
+            .checkIfFeedCoordExist(cluster3.getFeedHelper(), Util.readEntityName(feed),
                 "REPLICATION"), 1);
         //replication on cluster 2 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //replication on cluster 3 should start, wait till it ends
         InstanceUtil.waitTillInstanceReachState(cluster3OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //check if data has been replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
@@ -270,7 +273,7 @@ public class FeedReplicationTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1]);
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
-        logger.info("Time range between : " + startTime + " and " + endTime);
+        LOGGER.info("Time range between : " + startTime + " and " + endTime);
 
         //configure feed
         String availabilityFlagName = "README.md";
@@ -289,17 +292,17 @@ public class FeedReplicationTest extends BaseTestClass {
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)),
+            Util.readEntityName(bundles[0].getClusters().get(0)),
             ClusterType.SOURCE, null);
         //set cluster2 as target
         feed = InstanceUtil.setFeedCluster(feed,
             XmlUtil.createValidity(startTime, endTime),
             XmlUtil.createRtention("days(1000000)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)),
+            Util.readEntityName(bundles[1].getClusters().get(0)),
             ClusterType.TARGET, null, targetDataLocation);
 
         //submit and schedule feed
-        logger.info("Feed : " + Util.prettyPrintXml(feed));
+        LOGGER.info("Feed : " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().submitAndSchedule(Util.URLS.SUBMIT_AND_SCHEDULE_URL,
                 feed));
@@ -319,37 +322,37 @@ public class FeedReplicationTest extends BaseTestClass {
         HadoopUtil.copyDataToFolder(cluster1, toSource, OSUtil.RESOURCES + "log_01.txt");
 
         //check while instance is got created
-        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0, defaultTimeout);
+        InstanceUtil.waitTillInstancesAreCreated(cluster2, feed, 0);
 
         //check if coordinator exists
         Assert.assertEquals(InstanceUtil
             .checkIfFeedCoordExist(cluster2.getFeedHelper(), feedName, "REPLICATION"), 1);
 
         //replication should not start even after time
-        Thread.sleep(60000);
-        ProcessInstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
+        TimeUtil.sleepSeconds(60);
+        InstancesResult r = prism.getFeedHelper().getProcessInstanceStatus(feedName,
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 1, 0, 0, 1, 0);
-        logger.info("Replication didn't start.");
+        LOGGER.info("Replication didn't start.");
 
         //create availability flag on source
         HadoopUtil.copyDataToFolder(cluster1, toSource, availabilityFlagName);
 
         //check if instance become running
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.RUNNING, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.RUNNING, EntityType.FEED);
 
         //wait till instance succeed
         InstanceUtil.waitTillInstanceReachState(cluster2OC, Util.readEntityName(feed), 1,
-            CoordinatorAction.Status.SUCCEEDED, defaultTimeout, ENTITY_TYPE.FEED);
+            CoordinatorAction.Status.SUCCEEDED, EntityType.FEED);
 
         //check if data was replicated correctly
         List<Path> cluster1ReplicatedData = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster1, toSource);
-        logger.info("Data on source cluster: " + cluster1ReplicatedData);
+        LOGGER.info("Data on source cluster: " + cluster1ReplicatedData);
         List<Path> cluster2ReplicatedData = HadoopUtil
             .getAllFilesRecursivelyHDFS(cluster2, toTarget, "_SUCCESS");
-        logger.info("Data on target cluster: " + cluster2ReplicatedData);
+        LOGGER.info("Data on target cluster: " + cluster2ReplicatedData);
         AssertUtil.checkForListSizes(cluster1ReplicatedData, cluster2ReplicatedData);
     }
 

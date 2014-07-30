@@ -16,17 +16,51 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.helpers;
 
-public class ColoHelper extends PrismHelper {
+import org.apache.falcon.entity.v0.EntityType;
+import org.apache.falcon.regression.core.interfaces.EntityHelperFactory;
+import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
+import org.apache.log4j.Logger;
 
+public class ColoHelper {
+    private static final Logger logger = Logger.getLogger(ColoHelper.class);
+    protected IEntityManagerHelper clusterHelper;
+    protected IEntityManagerHelper processHelper;
+    protected IEntityManagerHelper feedHelper;
+    protected String prefix;
 
-    public ColoHelper(String envFileName, String prefix) {
-        super(envFileName, prefix);
+    public ColoHelper(String prefix) {
+        try {
+            this.prefix = prefix;
+            clusterHelper =
+                EntityHelperFactory.getEntityHelper(EntityType.CLUSTER,
+                    prefix);
+            processHelper =
+                EntityHelperFactory
+                    .getEntityHelper(EntityType.PROCESS, prefix);
+            feedHelper =
+                EntityHelperFactory.getEntityHelper(EntityType.FEED, prefix);
+
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+
     }
 
+    public IEntityManagerHelper getClusterHelper() {
+        return clusterHelper;
+    }
+
+    public IEntityManagerHelper getFeedHelper() {
+        return feedHelper;
+    }
+
+    public IEntityManagerHelper getProcessHelper() {
+        return processHelper;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
 }

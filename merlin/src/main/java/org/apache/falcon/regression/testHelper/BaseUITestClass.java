@@ -21,7 +21,6 @@ package org.apache.falcon.regression.testHelper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class BaseUITestClass extends BaseTestClass{
 
@@ -34,14 +33,9 @@ public class BaseUITestClass extends BaseTestClass{
     protected void openBrowser() {
 
         FirefoxProfile profile = new FirefoxProfile();
+        profile.setPreference("network.negotiate-auth.trusted-uris", "http://, https://");
 
-        String host = prism.getClusterHelper().getHostname()
-            .replaceFirst("https*://", "").split(":")[0];
-        profile.setPreference("network.negotiate-auth.trusted-uris", host);
-        profile.setPreference("network.negotiate-auth.delegation-uris", host);
         DRIVER = new FirefoxDriver(profile);
-        DesiredCapabilities capability = DesiredCapabilities.firefox();
-        capability.setCapability(FirefoxDriver.PROFILE, profile);
         DRIVER.manage().window().maximize();
 
     }

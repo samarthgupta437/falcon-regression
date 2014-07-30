@@ -47,6 +47,8 @@ import java.util.List;
 
 public class BaseRequest {
 
+    private static final Logger logger = Logger.getLogger(BaseRequest.class);
+
     private String method;
     private String url;
     private List<Header> headers;
@@ -104,10 +106,8 @@ public class BaseRequest {
         return execute(request);
     }
 
-    private static final Logger LOGGER = Logger.getLogger(BaseRequest.class);
-
     private HttpResponse execute(HttpRequest request)
-        throws IOException, AuthenticationException, URISyntaxException {
+        throws IOException, AuthenticationException {
         // add headers to the request
         if (null != headers && headers.size() > 0) {
             for (Header header : headers) {
@@ -123,11 +123,11 @@ public class BaseRequest {
             request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
         }
         DefaultHttpClient client = new DefaultHttpClient();
-        LOGGER.info("Request Url: " + request.getRequestLine().getUri());
-        LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
+        logger.info("Request Url: " + request.getRequestLine().getUri());
+        logger.info("Request Method: " + request.getRequestLine().getMethod());
 
         for (Header header : request.getAllHeaders()) {
-            LOGGER.info(String.format("Request Header: Name=%s Value=%s", header.getName(),
+            logger.info(String.format("Request Header: Name=%s Value=%s", header.getName(),
                 header.getValue()));
         }
         HttpResponse response = client.execute(target, request);
@@ -144,10 +144,10 @@ public class BaseRequest {
                     request.removeHeaders(RequestKeys.COOKIE);
                     request.addHeader(RequestKeys.COOKIE, RequestKeys.AUTH_COOKIE_EQ + token);
             	}
-                LOGGER.info("Request Url: " + request.getRequestLine().getUri());
-                LOGGER.info("Request Method: " + request.getRequestLine().getMethod());
+                logger.info("Request Url: " + request.getRequestLine().getUri());
+                logger.info("Request Method: " + request.getRequestLine().getMethod());
                 for (Header header : request.getAllHeaders()) {
-                    LOGGER.info(
+                    logger.info(
                         String.format("Request Header: Name=%s Value=%s", header.getName(),
                             header.getValue())
                     );
@@ -155,9 +155,9 @@ public class BaseRequest {
                 response = client.execute(target, request);
             }
         }
-        LOGGER.info("Response Status: " + response.getStatusLine());
+        logger.info("Response Status: " + response.getStatusLine());
         for (Header header : response.getAllHeaders()) {
-            LOGGER.info(String.format("Response Header: Name=%s Value=%s", header.getName(),
+            logger.info(String.format("Response Header: Name=%s Value=%s", header.getName(),
                 header.getValue()));
         }
         return response;

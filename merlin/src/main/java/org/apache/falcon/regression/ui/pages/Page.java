@@ -18,7 +18,8 @@
 
 package org.apache.falcon.regression.ui.pages;
 
-import org.apache.falcon.regression.core.helpers.PrismHelper;
+import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.SearchContext;
@@ -37,9 +38,9 @@ public abstract class Page {
     protected String expectedElement;
     protected String notFoundMsg;
 
-    private Logger logger = Logger.getLogger(Page.class);
+    private static final Logger logger = Logger.getLogger(Page.class);
 
-    Page(WebDriver driver, PrismHelper helper) {
+    Page(WebDriver driver, ColoHelper helper) {
         this.driver = driver;
         URL = helper.getClusterHelper().getHostname();
     }
@@ -48,6 +49,7 @@ public abstract class Page {
      * Go to page in browser
      */
     public void navigateTo() {
+        logger.info("Navigating to " + URL);
         driver.get(URL);
         waitForElement(expectedElement, DEFAULT_TIMEOUT, notFoundMsg);
     }
@@ -56,6 +58,7 @@ public abstract class Page {
      * Refresh page
      */
     public void refresh() {
+        logger.info("Refreshing page " + URL);
         driver.navigate().refresh();
     }
 
@@ -102,11 +105,7 @@ public abstract class Page {
         WebElement element = driver.findElement(By.xpath(xpath));
         for (int i = 0; i < timeoutSeconds * 10; i++) {
             if (element.isDisplayed()) return;
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                logger.info("Sleep was interrupted");
-            }
+            TimeUtil.sleepSeconds(0.1);
         }
         throw new TimeoutException(errMessage);
     }
@@ -123,7 +122,7 @@ public abstract class Page {
         }
     }
 
-    public static class Condition implements ExpectedCondition<Boolean> {
+    static class Condition implements ExpectedCondition<Boolean> {
 
         private final boolean isPresent;
         private String xpath;

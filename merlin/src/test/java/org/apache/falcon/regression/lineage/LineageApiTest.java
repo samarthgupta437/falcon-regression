@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.lineage;
 
-import com.sun.tools.javac.util.Pair;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.falcon.regression.Entities.ClusterMerlin;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
@@ -40,7 +40,6 @@ import org.apache.falcon.regression.core.util.Generator;
 import org.apache.falcon.regression.core.util.GraphAssert;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
-import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.http.HttpResponse;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
@@ -49,13 +48,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.ws.rs.core.Response;
-import javax.xml.bind.JAXBException;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 @Test(groups = "lineage-rest")
 public class LineageApiTest extends BaseTestClass {
@@ -69,7 +65,6 @@ public class LineageApiTest extends BaseTestClass {
     LineageHelper lineageHelper;
     final ColoHelper cluster = servers.get(0);
     final String baseTestHDFSDir = baseHDFSDir + "/LineageApiTest";
-    final String aggregateWorkflowDir = baseTestHDFSDir + "/aggregator";
     final String feedInputPath = baseTestHDFSDir + "/input";
     final String feedOutputPath = baseTestHDFSDir + "/output";
     // use 5 <= x < 10 input feeds
@@ -81,14 +76,14 @@ public class LineageApiTest extends BaseTestClass {
     FeedMerlin[] outputFeeds;
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() {
         lineageHelper = new LineageHelper(prism);
     }
 
     @BeforeMethod(alwaysRun = true, firstTimeOnly = true)
     public void setUp() throws Exception {
         CleanupUtil.cleanAllEntities(prism);
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         bundle.generateUniqueBundle();
         bundles[0] = new Bundle(bundle, cluster);
         final List<String> clusterStrings = bundles[0].getClusters();
@@ -123,9 +118,7 @@ public class LineageApiTest extends BaseTestClass {
     public static FeedMerlin[] generateFeeds(final int numInputFeeds,
                                              final FeedMerlin originalFeedMerlin,
                                              final Generator nameGenerator,
-                                             final Generator pathGenerator)
-        throws JAXBException, NoSuchMethodException, InvocationTargetException,
-        IllegalAccessException, IOException, URISyntaxException, AuthenticationException {
+                                             final Generator pathGenerator) {
         FeedMerlin[] inputFeeds = new FeedMerlin[numInputFeeds];
         //submit all input feeds
         for(int count = 0; count < numInputFeeds; ++count) {
@@ -193,7 +186,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertNotEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+            HttpStatus.SC_INTERNAL_SERVER_ERROR,
             "We should not get internal server error");
     }
 
@@ -222,7 +215,7 @@ public class LineageApiTest extends BaseTestClass {
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "We should get http not found error");
     }
 
@@ -276,7 +269,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(), "We should get http not found error");
+            HttpStatus.SC_NOT_FOUND, "We should get http not found error");
     }
 
     /**
@@ -305,7 +298,7 @@ public class LineageApiTest extends BaseTestClass {
             responseString.matches(String.format(VERTEX_NOT_FOUND_REGEX, invalidVertexId)),
             "Unexpected responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "We should get http not found error");
     }
 
@@ -380,14 +373,15 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testVerticesFilterBlankValue() throws Exception {
+        Map<String, String> params = new TreeMap<String, String>();
+        params.put("key", Vertex.FilterKey.name.toString());
+        params.put("value", "");
         HttpResponse response = lineageHelper
-            .runGetRequest(lineageHelper.getUrl(LineageHelper.URL.VERTICES,
-                new Pair<String, String>("key", Vertex.FilterKey.name.toString()),
-                new Pair<String, String>("value", "")));
+            .runGetRequest(lineageHelper.getUrl(LineageHelper.URL.VERTICES, params));
         String responseString = lineageHelper.getResponseString(response);
         logger.info(responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.BAD_REQUEST.getStatusCode(),
+            HttpStatus.SC_BAD_REQUEST,
             "The get request was a bad request");
         Assert.assertTrue(responseString.contains(inValidArgumentStr),
             "Result should contain string Invalid argument");
@@ -395,14 +389,15 @@ public class LineageApiTest extends BaseTestClass {
 
     @Test
     public void testVerticesFilterBlankKey() throws Exception {
+        Map<String, String> params = new TreeMap<String, String>();
+        params.put("key", "");
+        params.put("value", "someValue");
         HttpResponse response = lineageHelper.runGetRequest(
-            lineageHelper.getUrl(LineageHelper.URL.VERTICES,
-                new Pair<String, String>("key", ""),
-                new Pair<String, String>("value", "somevalue")));
+            lineageHelper.getUrl(LineageHelper.URL.VERTICES, params));
         String responseString = lineageHelper.getResponseString(response);
         logger.info(responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.BAD_REQUEST.getStatusCode(),
+            HttpStatus.SC_BAD_REQUEST,
             "The get request was a bad request");
         Assert.assertTrue(responseString.contains(inValidArgumentStr),
             "Result should contain string Invalid argument");
@@ -553,7 +548,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info("response: " + response);
         logger.info("responseString: " + responseString);
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.BAD_REQUEST.getStatusCode(),
+            HttpStatus.SC_BAD_REQUEST,
             "We should not get internal server error");
     }
 
@@ -594,7 +589,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info(httpResponse.toString());
         logger.info(lineageHelper.getResponseString(httpResponse));
         Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "Expecting not-found error.");
     }
 
@@ -605,7 +600,7 @@ public class LineageApiTest extends BaseTestClass {
         logger.info(response.toString());
         logger.info(lineageHelper.getResponseString(response));
         Assert.assertEquals(response.getStatusLine().getStatusCode(),
-            Response.Status.NOT_FOUND.getStatusCode(),
+            HttpStatus.SC_NOT_FOUND,
             "Expecting not-found error.");
     }
 

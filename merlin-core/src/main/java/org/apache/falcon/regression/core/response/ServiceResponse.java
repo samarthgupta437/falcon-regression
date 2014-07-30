@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.response;
 
 import org.apache.falcon.regression.core.util.Util;
@@ -31,7 +27,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ServiceResponse {
-    Logger logger = Logger.getLogger(ServiceResponse.class);
+    private static final Logger logger = Logger.getLogger(ServiceResponse.class);
 
     public String message;
     int code;

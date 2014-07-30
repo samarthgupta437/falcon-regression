@@ -19,11 +19,11 @@
 package org.apache.falcon.regression;
 
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -47,10 +47,10 @@ public class FeedResumeTest extends BaseTestClass {
 
     private final IEntityManagerHelper feedHelper = prism.getFeedHelper();
     private String feed;
-    ColoHelper cluster = servers.get(0);
-    OozieClient clusterOC = serverOC.get(0);
-    String aggregateWorkflowDir = baseHDFSDir + "/FeedResumeTest/aggregator";
-    private static final Logger logger = Logger.getLogger(FeedResumeTest.class);
+    private ColoHelper cluster = servers.get(0);
+    private OozieClient clusterOC = serverOC.get(0);
+    private String aggregateWorkflowDir = baseHDFSDir + "/FeedResumeTest/aggregator";
+    private static final Logger LOGGER = Logger.getLogger(FeedResumeTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -58,8 +58,8 @@ public class FeedResumeTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        LOGGER.info("test name: " + method.getName());
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -82,14 +82,12 @@ public class FeedResumeTest extends BaseTestClass {
         AssertUtil
             .assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.assertSucceeded(feedHelper.suspend(URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.SUSPENDED);
         AssertUtil.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
-
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
-
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
     }
 
 
@@ -112,9 +110,7 @@ public class FeedResumeTest extends BaseTestClass {
     public void resumeDeletedFeed() throws Exception {
         AssertUtil
             .assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
         AssertUtil.assertSucceeded(feedHelper.delete(URLS.DELETE_URL, feed));
-
         AssertUtil.assertFailed(feedHelper.resume(URLS.RESUME_URL, feed));
     }
 
@@ -127,14 +123,11 @@ public class FeedResumeTest extends BaseTestClass {
     public void resumeScheduledFeed() throws Exception {
         AssertUtil
             .assertSucceeded(feedHelper.submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
         AssertUtil.assertSucceeded(feedHelper.resume(URLS.RESUME_URL, feed));
-
-
         ServiceResponse response = feedHelper.getStatus(URLS.STATUS_URL, feed);
         String colo = feedHelper.getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
     }
 }

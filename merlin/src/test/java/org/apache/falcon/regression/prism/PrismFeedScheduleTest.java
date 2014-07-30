@@ -18,8 +18,8 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -34,7 +34,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
@@ -52,9 +51,9 @@ public class PrismFeedScheduleTest extends BaseTestClass {
     }
 
     @BeforeMethod(alwaysRun = true)
-    public void setUp(Method method) throws IOException, JAXBException {
+    public void setUp(Method method) throws IOException {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readBundles("LateDataBundles")[0][0];
+        Bundle bundle = BundleUtil.readLateDataBundle();
 
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -83,11 +82,11 @@ public class PrismFeedScheduleTest extends BaseTestClass {
         bundles[0].submitAndScheduleFeed();
         AssertUtil.assertSucceeded(prism.getFeedHelper()
             .suspend(URLS.SUSPEND_URL, bundles[0].getDataSets().get(0)));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
         bundles[1].submitAndScheduleFeed();
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
-        AssertUtil.checkNotStatus(cluster2OC, ENTITY_TYPE.PROCESS, bundles[0], Job.Status.RUNNING);
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.SUSPENDED);
-        AssertUtil.checkNotStatus(cluster1OC, ENTITY_TYPE.PROCESS, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(cluster2OC, EntityType.PROCESS, bundles[0], Job.Status.RUNNING);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.SUSPENDED);
+        AssertUtil.checkNotStatus(cluster1OC, EntityType.PROCESS, bundles[1], Job.Status.RUNNING);
     }
 }

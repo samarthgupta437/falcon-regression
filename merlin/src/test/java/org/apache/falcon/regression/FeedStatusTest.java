@@ -19,10 +19,10 @@
 package org.apache.falcon.regression;
 
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -45,11 +45,11 @@ import java.lang.reflect.Method;
 @Test(groups = "embedded")
 public class FeedStatusTest extends BaseTestClass {
 
-    ColoHelper cluster = servers.get(0);
-    OozieClient clusterOC = serverOC.get(0);
+    private ColoHelper cluster = servers.get(0);
+    private OozieClient clusterOC = serverOC.get(0);
     private String feed;
-    String aggregateWorkflowDir = baseHDFSDir + "/FeedStatusTest/aggregator";
-    private static final Logger logger = Logger.getLogger(FeedStatusTest.class);
+    private String aggregateWorkflowDir = baseHDFSDir + "/FeedStatusTest/aggregator";
+    private static final Logger LOGGER = Logger.getLogger(FeedStatusTest.class);
 
     public void uploadWorkflow() throws Exception {
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
@@ -57,8 +57,8 @@ public class FeedStatusTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        LOGGER.info("test name: " + method.getName());
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0].generateUniqueBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -85,7 +85,7 @@ public class FeedStatusTest extends BaseTestClass {
     public void getStatusForScheduledFeed() throws Exception {
         ServiceResponse response =
             prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed);
-        logger.info("Feed: " + Util.prettyPrintXml(feed));
+        LOGGER.info("Feed: " + Util.prettyPrintXml(feed));
         AssertUtil.assertSucceeded(response);
 
         response = prism.getFeedHelper().getStatus(URLS.STATUS_URL, feed);
@@ -94,7 +94,7 @@ public class FeedStatusTest extends BaseTestClass {
 
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/RUNNING"));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
     }
 
     /**
@@ -118,7 +118,7 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.assertSucceeded(response);
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUSPENDED"));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.SUSPENDED);
     }
 
     /**
@@ -138,7 +138,7 @@ public class FeedStatusTest extends BaseTestClass {
         AssertUtil.assertSucceeded(response);
         String colo = prism.getFeedHelper().getColo();
         Assert.assertTrue(response.getMessage().contains(colo + "/SUBMITTED"));
-        AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkNotStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
     }
 
     /**
@@ -160,7 +160,7 @@ public class FeedStatusTest extends BaseTestClass {
 
         Assert.assertTrue(
             response.getMessage().contains(Util.readEntityName(feed) + " (FEED) not found"));
-        AssertUtil.checkNotStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.KILLED);
+        AssertUtil.checkNotStatus(clusterOC, EntityType.FEED, feed, Job.Status.KILLED);
     }
 
     /**

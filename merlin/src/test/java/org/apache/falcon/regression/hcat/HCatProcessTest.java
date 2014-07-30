@@ -22,12 +22,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.cluster.Interfacetype;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.process.EngineType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
+import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -62,7 +63,7 @@ import java.util.Map;
 
 @Test(groups = "embedded")
 public class HCatProcessTest extends BaseTestClass {
-    private static Logger logger = Logger.getLogger(HCatProcessTest.class);
+    private static final Logger logger = Logger.getLogger(HCatProcessTest.class);
     ColoHelper cluster = servers.get(0);
     FileSystem clusterFS = serverFS.get(0);
     OozieClient clusterOC = serverOC.get(0);
@@ -98,7 +99,6 @@ public class HCatProcessTest extends BaseTestClass {
     private static final String hcatDir = OSUtil.getPath("src", "test", "resources", "hcat");
     private static final String localHCatData = OSUtil.getPath(hcatDir, "data");
     private static final String hiveScript = OSUtil.getPath(hcatDir, "hivescript");
-    private static final int defaultTimeOut = OSUtil.IS_WINDOWS ? 10 : 5;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception {
@@ -137,16 +137,15 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -185,7 +184,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
@@ -200,18 +199,17 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
+        final List<String> dataset2 = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir2, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -272,7 +270,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         final ContentSummary inputContentSummary =
             clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -297,16 +295,15 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -362,7 +359,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);
@@ -380,18 +377,17 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
-        final ArrayList<String> dataset2 = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir2);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
+        final List<String> dataset2 = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir2, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -466,7 +462,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         final ContentSummary inputContentSummary =
             clusterFS.getContentSummary(new Path(inputHDFSDir + "/" + dataDates.get(0)));
@@ -498,16 +494,15 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil
-            .createPeriodicDataset(dataDates, localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil
+            .flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, inputTableName, cols)
             .partCols(partitionCols)
@@ -527,7 +522,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedValidity(startDate, endDate);
 
         //
-        String nonHCatFeed = BundleUtil.getOutputFeedFromBundle(BundleUtil.readELBundles()[0][0]);
+        String nonHCatFeed = BundleUtil.getOutputFeedFromBundle(BundleUtil.readELBundle());
         final String outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
         nonHCatFeed = Util.setFeedName(nonHCatFeed, outputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();
@@ -548,7 +543,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut, ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/" + dataDates.get(0), clusterFS);
@@ -563,16 +558,15 @@ public class HCatProcessTest extends BaseTestClass {
             StringUtils.join(new String[]{"yyyy", "MM", "dd", "HH"}, separator);
         List<String> dataDates = getDatesList(startDate, endDate, datePattern, 60);
 
-        final ArrayList<String> dataset = HadoopUtil.createPeriodicDataset(dataDates,
-            localHCatData, clusterFS, inputHDFSDir);
+        final List<String> dataset = HadoopUtil.
+            flattenAndPutDataInFolder(clusterFS, localHCatData, inputHDFSDir, dataDates);
 
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
-        cols.add(new HCatFieldSchema(col1Name, HCatFieldSchema.Type.STRING, col1Name + " comment"));
-        cols.add(new HCatFieldSchema(col2Name, HCatFieldSchema.Type.STRING, col2Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col1Name, col1Name + " comment"));
+        cols.add(HCatUtil.getStringSchema(col2Name, col2Name + " comment"));
         ArrayList<HCatFieldSchema> partitionCols = new ArrayList<HCatFieldSchema>();
 
-        partitionCols.add(new HCatFieldSchema(partitionColumn, HCatFieldSchema.Type.STRING,
-            partitionColumn + " partition"));
+        partitionCols.add(HCatUtil.getStringSchema(partitionColumn, partitionColumn + " partition"));
         clusterHC.createTable(HCatCreateTableDesc
             .create(dbName, outputTableName, cols)
             .partCols(partitionCols)
@@ -581,7 +575,7 @@ public class HCatProcessTest extends BaseTestClass {
             .location(outputHDFSDir)
             .build());
 
-        String nonHCatFeed = BundleUtil.getInputFeedFromBundle(BundleUtil.readELBundles()[0][0]);
+        String nonHCatFeed = BundleUtil.getInputFeedFromBundle(BundleUtil.readELBundle());
         final String inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
         nonHCatFeed = Util.setFeedName(nonHCatFeed, inputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();
@@ -609,8 +603,7 @@ public class HCatProcessTest extends BaseTestClass {
 
         InstanceUtil.waitTillInstanceReachState(
             clusterOC, bundles[0].getProcessName(), 1, CoordinatorAction.Status.SUCCEEDED,
-            defaultTimeOut,
-            ENTITY_TYPE.PROCESS);
+            EntityType.PROCESS);
 
         AssertUtil.checkContentSize(inputHDFSDir + "/" + dataDates.get(0),
             outputHDFSDir + "/dt=" + dataDates.get(0), clusterFS);

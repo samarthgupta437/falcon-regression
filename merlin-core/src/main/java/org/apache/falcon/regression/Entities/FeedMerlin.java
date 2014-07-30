@@ -19,115 +19,156 @@
 package org.apache.falcon.regression.Entities;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
+import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.Cluster;
-import org.apache.falcon.entity.v0.feed.ClusterType;
+import org.apache.falcon.entity.v0.feed.Clusters;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
-import org.apache.falcon.regression.core.util.HCatUtil;
-import org.apache.falcon.regression.core.util.HadoopUtil;
-import org.apache.falcon.regression.core.util.InstanceUtil;
+import org.apache.falcon.entity.v0.feed.Locations;
+import org.apache.falcon.entity.v0.feed.Property;
+import org.apache.falcon.entity.v0.feed.Retention;
+import org.apache.falcon.entity.v0.feed.RetentionType;
+import org.apache.falcon.entity.v0.feed.Validity;
 import org.apache.falcon.regression.core.util.TimeUtil;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hive.hcatalog.api.HCatClient;
+import org.apache.falcon.regression.core.util.Util;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 
 import javax.xml.bind.JAXBException;
-import java.lang.reflect.Field;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FeedMerlin extends Feed {
 
-    private static Logger logger = Logger.getLogger(FeedMerlin.class);
+    private static final Logger logger = Logger.getLogger(FeedMerlin.class);
 
-    public FeedMerlin(String entity) throws JAXBException {
-        this(InstanceUtil.getFeedElement(entity));
+    public FeedMerlin(String feedData) {
+        this((Feed) fromString(EntityType.FEED, feedData));
     }
 
-    public FeedMerlin(Feed element) {
-        Field[] fields = Feed.class.getDeclaredFields();
-        for (Field fld : fields) {
-            if ("acl".equals(fld.getName())) {
-                this.setACL(element.getACL());
-                continue;
-            }
-            try {
-                PropertyUtils.setProperty(this, fld.getName(),
-                    PropertyUtils.getProperty(element, fld.getName()));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                Assert.fail(e.getMessage());
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-                Assert.fail(e.getMessage());
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-                Assert.fail(e.getMessage());
-            }
+    public FeedMerlin(final Feed feed) {
+        try {
+            PropertyUtils.copyProperties(this, feed);
+        } catch (IllegalAccessException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+        } catch (InvocationTargetException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
+        } catch (NoSuchMethodException e) {
+            Assert.fail("Can't create ClusterMerlin: " + ExceptionUtils.getStackTrace(e));
         }
     }
 
-    /*
-    all Merlin specific operations
+    public static List<FeedMerlin> fromString(List<String> feedStrings) {
+        List <FeedMerlin> feeds = new ArrayList<FeedMerlin>();
+        for (String feedString : feedStrings) {
+            feeds.add(new FeedMerlin(feedString));
+        }
+        return feeds;
+    }
+
+    /**
+     * Method sets a number of clusters to feed definition
+     *
+     * @param newClusters list of definitions of clusters which are to be set to feed
+     * @param location location of data on every cluster
+     * @param startTime start of feed validity on every cluster
+     * @param endTime end of feed validity on every cluster
      */
-    public String getTargetCluster() {
-        for (Cluster c : getClusters().getClusters()) {
-            if (c.getType().equals(ClusterType.TARGET))
-                return c.getName();
+    public void setFeedClusters(List<String> newClusters, String location, String startTime,
+                                String endTime) {
+        Clusters cs = new Clusters();
+        setFrequency(new Frequency("" + 5, Frequency.TimeUnit.minutes));
+
+        for (String newCluster : newClusters) {
+            Cluster c = new Cluster();
+            c.setName(new ClusterMerlin(newCluster).getName());
+            Location l = new Location();
+            l.setType(LocationType.DATA);
+            l.setPath(location + "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
+            Locations ls = new Locations();
+            ls.getLocations().add(l);
+            c.setLocations(ls);
+            Validity v = new Validity();
+            startTime = TimeUtil.addMinsToTime(startTime, -180);
+            endTime = TimeUtil.addMinsToTime(endTime, 180);
+            v.setStart(TimeUtil.oozieDateToDate(startTime).toDate());
+            v.setEnd(TimeUtil.oozieDateToDate(endTime).toDate());
+            c.setValidity(v);
+            Retention r = new Retention();
+            r.setAction(ActionType.DELETE);
+            Frequency f1 = new Frequency("" + 20, Frequency.TimeUnit.hours);
+            r.setLimit(f1);
+            r.setType(RetentionType.INSTANCE);
+            c.setRetention(r);
+            cs.getClusters().add(c);
         }
-        return "";
+        setClusters(cs);
     }
 
-    public String insertRetentionValueInFeed(String retentionValue) {
-        //insert retentionclause
-        getClusters().getClusters().get(0).getRetention()
-            .setLimit(new Frequency(retentionValue));
-
-        for (org.apache.falcon.entity.v0.feed.Cluster cluster :
-            getClusters().getClusters()) {
+    public void insertRetentionValueInFeed(String retentionValue) {
+        for (org.apache.falcon.entity.v0.feed.Cluster cluster : getClusters().getClusters()) {
             cluster.getRetention().setLimit(new Frequency(retentionValue));
         }
-        return toString();
     }
 
-    public String setTableValue(String dBName, String tableName, String pathValue) {
+    public void setTableValue(String dBName, String tableName, String pathValue) {
         getTable().setUri("catalog:" + dBName + ":" + tableName + "#" + pathValue);
-        //set the value
-        return toString();
     }
 
     @Override
     public String toString() {
         try {
-            return InstanceUtil.feedElementToString(this);
+            StringWriter sw = new StringWriter();
+            EntityType.FEED.getMarshaller().marshal(this, sw);
+            return sw.toString();
         } catch (JAXBException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return null;
-    }
-
-    public String getLocation(LocationType locationType) {
-        for (Location location : getLocations().getLocations()) {
-            if(location.getType() == locationType) {
-                return location.getPath();
-            }
-        }
-        Assert.fail("Unexpected locationType: " + locationType);
-        return null;
     }
 
     public void setLocation(LocationType locationType, String feedInputPath) {
         for (Location location : getLocations().getLocations()) {
             if(location.getType() == locationType) {
                 location.setPath(feedInputPath);
+            }
+        }
+    }
+
+    public void addProperty(String someProp, String someVal) {
+            Property property = new Property();
+            property.setName(someProp);
+            property.setValue(someVal);
+            this.getProperties().getProperties().add(property);
+    }
+
+    /**
+     * Sets unique names for the feed
+     * @return mapping of old name to new name
+     */
+    public Map<? extends String, ? extends String> setUniqueName() {
+        final String oldName = getName();
+        final String newName =  oldName + Util.getUniqueString();
+        setName(newName);
+        final HashMap<String, String> nameMap = new HashMap<String, String>(1);
+        nameMap.put(oldName, newName);
+        return nameMap;
+    }
+
+    public void renameClusters(Map<String, String> clusterNameMap) {
+        for (Cluster cluster : getClusters().getClusters()) {
+            final String oldName = cluster.getName();
+            final String newName = clusterNameMap.get(oldName);
+            if(!StringUtils.isEmpty(newName)) {
+                cluster.setName(newName);
             }
         }
     }

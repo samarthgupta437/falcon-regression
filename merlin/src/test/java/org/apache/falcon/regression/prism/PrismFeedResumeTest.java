@@ -18,9 +18,9 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
@@ -56,7 +56,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void testName(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readBundles("LateDataBundles")[0][0];
+        Bundle bundle = BundleUtil.readLateDataBundle();
 
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
@@ -130,21 +130,21 @@ public class PrismFeedResumeTest extends BaseTestClass {
         AssertUtil.assertFailed(
             prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[0].getDataSets().get(0)));
         //verify
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
         checkAndCompareStatus(cluster2, bundles[1], Job.Status.RUNNING);
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundles[1].getDataSets().get(0)));
         //suspend on the other one
         AssertUtil.assertFailed(
             prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.KILLED);
         AssertUtil.assertFailed(
             cluster1.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[0].getDataSets().get(0)));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
         AssertUtil.assertFailed(
             cluster2.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.KILLED);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -182,8 +182,8 @@ public class PrismFeedResumeTest extends BaseTestClass {
             //suspend on the other one
             AssertUtil.assertSucceeded(prism.getFeedHelper()
                 .resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
-            AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.RUNNING);
-            AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.RUNNING);
+            AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.RUNNING);
         }
 
         for (int i = 0; i < 2; i++) {
@@ -276,29 +276,29 @@ public class PrismFeedResumeTest extends BaseTestClass {
         AssertUtil.assertFailed(
             prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[0].getDataSets().get(0)));
         //verify
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
         checkAndCompareStatus(cluster2, bundles[1], Job.Status.RUNNING);
 
         //suspend using prismHelper
         AssertUtil.assertFailed(
             prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[0].getDataSets().get(0)));
         //verify
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
         checkAndCompareStatus(cluster2, bundles[1], Job.Status.RUNNING);
         AssertUtil.assertSucceeded(
             prism.getFeedHelper().delete(Util.URLS.DELETE_URL, bundles[1].getDataSets().get(0)));
         //suspend on the other one
         AssertUtil.assertFailed(
             prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.KILLED);
 
         AssertUtil.assertFailed(
             cluster2.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
         AssertUtil.assertFailed(
             prism.getFeedHelper().resume(Util.URLS.RESUME_URL, bundles[1].getDataSets().get(0)));
-        AssertUtil.checkStatus(cluster1OC, ENTITY_TYPE.FEED, bundles[0], Job.Status.KILLED);
-        AssertUtil.checkStatus(cluster2OC, ENTITY_TYPE.FEED, bundles[1], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster1OC, EntityType.FEED, bundles[0], Job.Status.KILLED);
+        AssertUtil.checkStatus(cluster2OC, EntityType.FEED, bundles[1], Job.Status.KILLED);
     }
 
     @Test(groups = {"prism", "0.2"})
@@ -336,7 +336,7 @@ public class PrismFeedResumeTest extends BaseTestClass {
     private void checkAndCompareStatus(ColoHelper coloHelper, Bundle bundle,
                                        Job.Status expectedStatus) throws Exception {
         AssertUtil
-            .checkStatus(coloHelper.getFeedHelper().getOozieClient(), ENTITY_TYPE.FEED, bundle,
+            .checkStatus(coloHelper.getFeedHelper().getOozieClient(), EntityType.FEED, bundle,
                 expectedStatus);
         String entity = bundle.getDataSets().get(0);
         Assert.assertEquals(

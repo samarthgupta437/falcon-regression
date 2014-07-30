@@ -20,14 +20,11 @@ package org.apache.falcon.regression;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
-import org.apache.falcon.entity.v0.process.Input;
-import org.apache.falcon.entity.v0.process.Inputs;
-import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -47,7 +44,6 @@ import org.apache.oozie.client.CoordinatorJob;
 import org.apache.oozie.client.Job;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -61,17 +57,20 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.List;
 
+/**
+ * test for Authorization in falcon .
+ */
 @Test(groups = "embedded")
 public class AuthorizationTest extends BaseTestClass {
-    private static final Logger logger = Logger.getLogger(AuthorizationTest.class);
+    private static final Logger LOGGER = Logger.getLogger(AuthorizationTest.class);
 
-    ColoHelper cluster = servers.get(0);
-    FileSystem clusterFS = serverFS.get(0);
-    OozieClient clusterOC = serverOC.get(0);
-    String baseTestDir = baseHDFSDir + "/AuthorizationTest";
-    String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
-    String feedInputPath = baseTestDir + datePattern;
+    private ColoHelper cluster = servers.get(0);
+    private FileSystem clusterFS = serverFS.get(0);
+    private OozieClient clusterOC = serverOC.get(0);
+    private String baseTestDir = baseHDFSDir + "/AuthorizationTest";
+    private String aggregateWorkflowDir = baseTestDir + "/aggregator";
+    private String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
+    private String feedInputPath = baseTestDir + datePattern;
 
     @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
@@ -80,20 +79,20 @@ public class AuthorizationTest extends BaseTestClass {
 
     @BeforeMethod(alwaysRun = true)
     public void setup(Method method) throws Exception {
-        logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        LOGGER.info("test name: " + method.getName());
+        Bundle bundle = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundle, cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
     }
 
     /**
-     * U2Delete test cases
+     * U2Delete test cases.
      */
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SubmitU2DeleteCluster() throws Exception {
+    public void u1SubmitU2DeleteCluster() throws Exception {
         bundles[0].submitClusters(prism);
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getClusterHelper().delete(
@@ -105,7 +104,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SubmitU2DeleteProcess() throws Exception {
+    public void u1SubmitU2DeleteProcess() throws Exception {
         bundles[0].submitClusters(prism);
         bundles[0].submitProcess(true);
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -118,7 +117,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SubmitU2DeleteFeed() throws Exception {
+    public void u1SubmitU2DeleteFeed() throws Exception {
         bundles[0].submitClusters(prism);
         bundles[0].submitFeed();
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -131,11 +130,11 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleU2DeleteProcess()
+    public void u1ScheduleU2DeleteProcess()
         throws Exception {
         //submit, schedule process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //try to delete process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -148,13 +147,13 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleU2DeleteFeed() throws Exception {
+    public void u1ScheduleU2DeleteFeed() throws Exception {
         String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule feed by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
         //delete feed by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().delete(Util.URLS
@@ -166,14 +165,14 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SuspendU2DeleteProcess() throws Exception {
+    public void u1SuspendU2DeleteProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         //try to delete process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -186,14 +185,14 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SuspendU2DeleteFeed() throws Exception {
+    public void u1SuspendU2DeleteFeed() throws Exception {
         String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule, suspend feed by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.SUSPENDED);
         //delete feed by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().delete(Util.URLS
@@ -203,18 +202,18 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     /**
-     * U2Suspend test cases
+     * U2Suspend test cases.
      */
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleU2SuspendFeed() throws Exception {
+    public void u1ScheduleU2SuspendFeed() throws Exception {
         String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
         //try to suspend by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().suspend(Util.URLS
@@ -226,9 +225,9 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleU2SuspendProcess() throws Exception {
+    public void u1ScheduleU2SuspendProcess() throws Exception {
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //try to suspend process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -239,19 +238,19 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     /**
-     * U2Resume test cases
+     * U2Resume test cases.
      */
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SuspendU2ResumeFeed() throws Exception {
+    public void u1SuspendU2ResumeFeed() throws Exception {
         String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit, schedule and then suspend feed by User1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
         AssertUtil.assertSucceeded(prism.getFeedHelper().suspend(Util.URLS.SUSPEND_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.SUSPENDED);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.SUSPENDED);
         //try to resume feed by User2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         final ServiceResponse serviceResponse = prism.getFeedHelper().resume(Util.URLS
@@ -263,12 +262,12 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SuspendU2ResumeProcess() throws Exception {
+    public void u1SuspendU2ResumeProcess() throws Exception {
         //submit, schedule, suspend process by U1
         bundles[0].submitAndScheduleBundle(prism);
         AssertUtil.assertSucceeded(prism.getProcessHelper().suspend(Util.URLS.SUSPEND_URL,
             bundles[0].getProcessData()));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         //try to resume process by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
@@ -281,11 +280,11 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SuspendU2ResumeProcessInstances() throws Exception {
+    public void u1SuspendU2ResumeProcessInstances() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
         String midTime = TimeUtil.addMinsToTime(startTime, 2);
-        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
+        LOGGER.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -296,32 +295,27 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessInput("now(0,0)", "now(0,4)");
 
         //provide necessary data for first 3 instances to run
-        logger.info("Creating necessary data...");
+        LOGGER.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime
-            (startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
+        LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 2, CoordinatorAction.Status.WAITING, 1, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 2, CoordinatorAction.Status.WAITING, EntityType.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
@@ -349,15 +343,15 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     /**
-     * U2Kill test cases
+     * U2Kill test cases.
      */
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleU2KillProcessInstances() throws Exception {
+    public void u1ScheduleU2KillProcessInstances() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
-        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
+        LOGGER.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -368,28 +362,23 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessInput("now(0,0)", "now(0,4)");
 
         //provide necessary data for first 3 instances to run
-        logger.info("Creating necessary data...");
+        LOGGER.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime
-            (startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
+        LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
@@ -407,11 +396,11 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SuspendU2KillProcessInstances() throws Exception {
+    public void u1SuspendU2KillProcessInstances() throws Exception {
         String startTime = TimeUtil.getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
         String midTime = TimeUtil.addMinsToTime(startTime, 2);
-        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
+        LOGGER.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -422,32 +411,27 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessInput("now(0,0)", "now(0,4)");
 
         //provide necessary data for first 3 instances to run
-        logger.info("Creating necessary data...");
+        LOGGER.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime
-            (startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
+        LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 3 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 3, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //check that there are 2 waiting instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 2, CoordinatorAction.Status.WAITING, 1, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 2, CoordinatorAction.Status.WAITING, EntityType.PROCESS);
 
         //3 instances should be running , other 2 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 3, 0, 2, 0);
@@ -469,18 +453,20 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     /**
-     * U2Rerun test cases
+     * U2Rerun test cases.
      */
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1KillSomeU2RerunAllProcessInstances()
-        throws IOException, JAXBException, InterruptedException,
+    public void u1KillSomeU2RerunAllProcessInstances()
+        throws IOException, JAXBException,
+
         AuthenticationException, URISyntaxException, OozieClientException {
-        String startTime = TimeUtil.getTimeWrtSystemTime(0);
+        String startTime = TimeUtil
+            .getTimeWrtSystemTime(0);
         String endTime = TimeUtil.addMinsToTime(startTime, 5);
         String midTime = TimeUtil.addMinsToTime(startTime, 2);
-        logger.info("Start time: " + startTime + "\tEnd time: " + endTime);
+        LOGGER.info("Start time: " + startTime + "\tEnd time: " + endTime);
 
         //prepare process definition
         bundles[0].setProcessValidity(startTime, endTime);
@@ -491,35 +477,31 @@ public class AuthorizationTest extends BaseTestClass {
         bundles[0].setProcessInput("now(0,0)", "now(0,3)");
 
         //provide necessary data for first 4 instances to run
-        logger.info("Creating necessary data...");
+        LOGGER.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime
-            (startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        logger.info("Creating data in folders: \n" + dataDates);
-        for (int i = 0; i < dataDates.size(); i++)
-            dataDates.set(i, prefix + dataDates.get(i));
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataDates);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
         //submit, schedule process by U1
-        logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
+        LOGGER.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         bundles[0].submitAndScheduleBundle(prism);
 
         //check that there are 4 running instances
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-            .getProcessData()), 4, CoordinatorAction.Status.RUNNING, 3, ENTITY_TYPE.PROCESS);
+            .getProcessData()), 4, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         //4 instances should be running , 1 should be waiting
-        ProcessInstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
+        InstancesResult r = prism.getProcessHelper().getProcessInstanceStatus(Util
                 .readEntityName(bundles[0].getProcessData()),
             "?start=" + startTime + "&end=" + endTime);
         InstanceUtil.validateResponse(r, 5, 4, 0, 1, 0);
 
         //kill 3 running instances
         r = prism.getProcessHelper().getProcessInstanceKill(Util
-            .readEntityName(bundles[0].getProcessData()), "?start=" + startTime + "&end=" +
+            .readEntityName(bundles[0].getProcessData()), "?start=" + startTime + "&end="
+                +
             midTime);
         InstanceUtil.validateResponse(r, 3, 0, 0, 0, 3);
 
@@ -528,7 +510,8 @@ public class AuthorizationTest extends BaseTestClass {
         //try to rerun instances by U2
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         r = prism.getProcessHelper().getProcessInstanceRerun(Util
-            .readEntityName(bundles[0].getProcessData()), "?start=" + startTime + "&end=" +
+            .readEntityName(bundles[0].getProcessData()), "?start=" + startTime + "&end="
+                +
             midTime, MerlinConstants.USER2_NAME);
 
         //instances should still be killed
@@ -536,12 +519,12 @@ public class AuthorizationTest extends BaseTestClass {
     }
 
     /**
-     * U2Update test cases
+     * U2Update test cases.
      */
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SubmitU2UpdateFeed()
+    public void u1SubmitU2UpdateFeed()
         throws URISyntaxException, IOException, AuthenticationException, JAXBException {
         String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit feed
@@ -568,13 +551,13 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleU2UpdateFeed() throws Exception {
+    public void u1ScheduleU2UpdateFeed() throws Exception {
         String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         //submit and schedule feed
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
             Util.URLS.SUBMIT_AND_SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
         //update feed definition
         String newFeed = Util.setFeedPathValue(feed,
             baseHDFSDir + "/randomPath/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}/");
@@ -590,7 +573,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1SubmitU2UpdateProcess() throws Exception {
+    public void u1SubmitU2UpdateProcess() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         String processName = bundles[0].getProcessName();
         //submit process
@@ -598,7 +581,8 @@ public class AuthorizationTest extends BaseTestClass {
         String definition = prism.getProcessHelper()
             .getEntityDefinition(Util.URLS.GET_ENTITY_DEFINITION,
                 bundles[0].getProcessData()).getMessage();
-        Assert.assertTrue(definition.contains(processName) &&
+        Assert.assertTrue(definition.contains(processName)
+                &&
             !definition.contains("(process) not found"), "Process should be already submitted");
         //update process definition
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2020-01-02T01:04Z");
@@ -615,11 +599,11 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleU2UpdateProcess() throws Exception {
+    public void u1ScheduleU2UpdateProcess() throws Exception {
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2010-01-02T01:04Z");
         //submit, schedule process by U1
         bundles[0].submitAndScheduleBundle(prism);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, bundles[0].getProcessData(),
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.RUNNING);
         //update process definition
         bundles[0].setProcessValidity("2010-01-02T01:00Z", "2020-01-02T01:04Z");
@@ -636,7 +620,7 @@ public class AuthorizationTest extends BaseTestClass {
     //disabled since, falcon does not have authorization https://issues.apache
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
-    public void U1ScheduleFeedU2ScheduleDependantProcessU1UpdateFeed() throws Exception {
+    public void u1ScheduleFeedU2ScheduleDependantProcessU1UpdateFeed() throws Exception {
         String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
         String process = bundles[0].getProcessData();
         //submit both feeds
@@ -645,25 +629,25 @@ public class AuthorizationTest extends BaseTestClass {
         //schedule input feed by U1
         AssertUtil.assertSucceeded(prism.getFeedHelper().schedule(
             Util.URLS.SCHEDULE_URL, feed));
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.FEED, feed, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.FEED, feed, Job.Status.RUNNING);
 
         //by U2 schedule process dependant on scheduled feed by U1
         KerberosHelper.loginFromKeytab(MerlinConstants.USER2_NAME);
         ServiceResponse serviceResponse = prism.getProcessHelper().submitAndSchedule(Util
             .URLS.SUBMIT_AND_SCHEDULE_URL, process, MerlinConstants.USER2_NAME);
         AssertUtil.assertSucceeded(serviceResponse);
-        AssertUtil.checkStatus(clusterOC, ENTITY_TYPE.PROCESS, process, Job.Status.RUNNING);
+        AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, process, Job.Status.RUNNING);
 
         //get old process details
         String oldProcessBundleId = InstanceUtil
-            .getLatestBundleID(cluster, Util.readEntityName(process), ENTITY_TYPE.PROCESS);
+            .getLatestBundleID(cluster, Util.readEntityName(process), EntityType.PROCESS);
 
         String oldProcessUser =
-            getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+            getBundleUser(cluster, bundles[0].getProcessName(), EntityType.PROCESS);
 
         //get old feed details
         String oldFeedBundleId = InstanceUtil
-            .getLatestBundleID(cluster, Util.readEntityName(feed), ENTITY_TYPE.FEED);
+            .getLatestBundleID(cluster, Util.readEntityName(feed), EntityType.FEED);
 
         //update feed definition
         String newFeed = Util.setFeedPathValue(feed,
@@ -681,17 +665,16 @@ public class AuthorizationTest extends BaseTestClass {
         //new process bundle should be created by U2
         OozieUtil.verifyNewBundleCreation(cluster, oldProcessBundleId, null, process, true, false);
         String newProcessUser =
-            getBundleUser(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+            getBundleUser(cluster, bundles[0].getProcessName(), EntityType.PROCESS);
         Assert.assertEquals(oldProcessUser, newProcessUser, "User should be the same");
     }
 
-    private String getBundleUser(ColoHelper coloHelper, String entityName, ENTITY_TYPE entityType)
+    private String getBundleUser(ColoHelper coloHelper, String entityName, EntityType entityType)
         throws OozieClientException {
         String newProcessBundleId = InstanceUtil.getLatestBundleID(coloHelper, entityName,
             entityType);
         BundleJob newProcessBundlejob =
-            coloHelper.getClusterHelper().getOozieClient().getBundleJobInfo
-                (newProcessBundleId);
+            coloHelper.getClusterHelper().getOozieClient().getBundleJobInfo(newProcessBundleId);
         CoordinatorJob coordinatorJob = null;
         for (CoordinatorJob coord : newProcessBundlejob.getCoordinators()) {
             if (coord.getAppName().contains("DEFAULT")) {

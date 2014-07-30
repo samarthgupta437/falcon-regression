@@ -20,7 +20,7 @@ package org.apache.falcon.regression.ui;
 
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.process.Input;
 import org.apache.falcon.entity.v0.process.Inputs;
@@ -46,7 +46,6 @@ import org.apache.log4j.Logger;
 import org.apache.oozie.client.CoordinatorAction;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
-import org.joda.time.DateTime;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -57,7 +56,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +67,7 @@ public class ProcessUITest extends BaseUITestClass {
     private ColoHelper cluster = servers.get(0);
     private String baseTestDir = baseHDFSDir + "/TestProcessUI";
     private String aggregateWorkflowDir = baseTestDir + "/aggregator";
-    private Logger logger = Logger.getLogger(ProcessUITest.class);
+    private static final Logger logger = Logger.getLogger(ProcessUITest.class);
     String datePattern = "/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
     String feedInputPath = baseTestDir + "/input";
     final String feedOutputPath = baseTestDir + "/output";
@@ -84,7 +82,7 @@ public class ProcessUITest extends BaseUITestClass {
         CleanupUtil.cleanAllEntities(prism);
         uploadDirToClusters(aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
         openBrowser();
-        bundles[0] = BundleUtil.readELBundles()[0][0];
+        bundles[0] = BundleUtil.readELBundle();
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
@@ -108,32 +106,27 @@ public class ProcessUITest extends BaseUITestClass {
         inputs.getInputs().add(input);
         process.setInputs(inputs);
 
-        bundles[0].setProcessData(InstanceUtil.processToString(process));
+        bundles[0].setProcessData(process.toString());
 
         //provide necessary data for first 3 instances to run
         logger.info("Creating necessary data...");
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
-        DateTime startDate = new DateTime(TimeUtil.oozieDateToDate(TimeUtil.addMinsToTime(startTime, -2)));
-        DateTime endDate = new DateTime(TimeUtil.oozieDateToDate(endTime));
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(startDate, endDate, 0);
-        List<String> dataPaths = new ArrayList<String>();
-        logger.info("Creating data in folders: \n" + dataDates);
-        prefix = prefix.substring(0, prefix.length()-1);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
+            TimeUtil.addMinsToTime(startTime, -2), endTime, 0);
 
         // use 5 <= x < 10 input feeds
         final int numInputFeeds = 5 + new Random().nextInt(5);
         // use 5 <= x < 10 output feeds
         final int numOutputFeeds = 5 + new Random().nextInt(5);
 
-        for (String dataDate : dataDates) {
-            dataPaths.add(prefix + "/" + dataDate);
-            for (int k = 1; k <= numInputFeeds; k++) {
-                dataPaths.add(prefix + "_00" + k + "/" + dataDate);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, prefix, dataDates);
 
-            }
+        prefix = prefix.substring(0, prefix.length()-1);
+        for (int k = 1; k <= numInputFeeds; k++) {
+            HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT,
+                prefix + "_00" + k + "/", dataDates);
         }
-        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, dataPaths);
 
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         FeedMerlin[] inputFeeds;
@@ -177,10 +170,10 @@ public class ProcessUITest extends BaseUITestClass {
     @Test
     public void testProcessUI()
         throws URISyntaxException, IOException, AuthenticationException, JAXBException,
-        OozieClientException, InterruptedException {
+        OozieClientException {
 
         //check Process statuses via UI
-        EntitiesPage page = new EntitiesPage(DRIVER, cluster, ENTITY_TYPE.PROCESS);
+        EntitiesPage page = new EntitiesPage(DRIVER, cluster, EntityType.PROCESS);
         page.navigateTo();
 
         softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
@@ -188,7 +181,7 @@ public class ProcessUITest extends BaseUITestClass {
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, 5, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.RUNNING, EntityType.PROCESS);
 
         softAssert.assertEquals(page.getEntityStatus(bundles[0].getProcessName()),
                 EntitiesPage.EntityStatus.RUNNING, "Process status should be RUNNING");
@@ -196,16 +189,16 @@ public class ProcessUITest extends BaseUITestClass {
         ProcessPage processPage = new ProcessPage(DRIVER, cluster, bundles[0].getProcessName());
         processPage.navigateTo();
 
-        String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), ENTITY_TYPE.PROCESS);
+        String bundleID = InstanceUtil.getLatestBundleID(cluster, bundles[0].getProcessName(), EntityType.PROCESS);
         Map<Date, CoordinatorAction.Status> actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID,
-                ENTITY_TYPE.PROCESS);
+                EntityType.PROCESS);
         checkActions(actions, processPage);
 
         InstanceUtil.waitTillInstanceReachState(clusterOC, Util.readEntityName(bundles[0]
-                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, 20, ENTITY_TYPE.PROCESS);
+                .getProcessData()), 1, CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
         processPage.refresh();
-        actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, ENTITY_TYPE.PROCESS);
+        actions = OozieUtil.getActionsNominalTimeAndStatus(prism, bundleID, EntityType.PROCESS);
         checkActions(actions, processPage);
 
         softAssert.assertAll();

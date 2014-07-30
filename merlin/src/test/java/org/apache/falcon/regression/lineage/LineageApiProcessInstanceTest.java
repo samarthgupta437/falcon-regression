@@ -22,7 +22,7 @@ import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.helpers.LineageHelper;
-import org.apache.falcon.regression.core.response.ProcessInstancesResult;
+import org.apache.falcon.regression.core.response.InstancesResult;
 import org.apache.falcon.regression.core.response.lineage.Direction;
 import org.apache.falcon.regression.core.response.lineage.Vertex;
 import org.apache.falcon.regression.core.response.lineage.VerticesResult;
@@ -38,7 +38,6 @@ import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.Job;
-import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
@@ -48,7 +47,6 @@ import org.testng.annotations.Test;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Test(groups = "lineage-rest")
 public class LineageApiProcessInstanceTest extends BaseTestClass {
@@ -72,7 +70,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
 
 
     @BeforeClass(alwaysRun = true)
-    public void init() throws Exception {
+    public void init() {
         lineageHelper = new LineageHelper(prism);
     }
 
@@ -81,18 +79,16 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         HadoopUtil.deleteDirIfExists(baseTestHDFSDir, clusterFS);
         HadoopUtil.uploadDir(clusterFS, aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
 
-        bundles[0] = new Bundle(BundleUtil.readELBundles()[0][0], cluster);
+        bundles[0] = new Bundle(BundleUtil.readELBundle(), cluster);
         bundles[0].generateUniqueBundle();
 
         bundles[0].setInputFeedDataPath(feedInputPath);
 
         // data set creation
-        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(
-            new DateTime(TimeUtil.oozieDateToDate(dataStartDate)),
-            new DateTime(TimeUtil.oozieDateToDate(endDate)), 5);
+        List<String> dataDates = TimeUtil.getMinuteDatesOnEitherSide(dataStartDate, endDate, 5);
         logger.info("dataDates = " + dataDates);
-        HadoopUtil.createPeriodicDataset(dataDates, OSUtil.NORMAL_INPUT, clusterFS,
-            feedInputPrefix);
+        HadoopUtil.flattenAndPutDataInFolder(clusterFS, OSUtil.NORMAL_INPUT, feedInputPrefix,
+            dataDates);
 
         // running process
         bundles[0].setInputFeedDataPath(feedInputPath);
@@ -112,7 +108,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
                 Util.getProcessName(bundles[0].getProcessData()), 0);
             if (status == Job.Status.SUCCEEDED || status == Job.Status.KILLED)
                 break;
-            TimeUnit.SECONDS.sleep(30);
+            TimeUtil.sleepSeconds(30);
         }
         Assert.assertNotNull(status);
         Assert.assertEquals(status, Job.Status.SUCCEEDED,
@@ -139,7 +135,7 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         final List<Vertex> processInstanceVertices =
             processIncoming.filterByType(Vertex.VERTEX_TYPE.PROCESS_INSTANCE);
         logger.info("process instances = " + processInstanceVertices);
-        ProcessInstancesResult result = prism.getProcessHelper()
+        InstancesResult result = prism.getProcessHelper()
             .getProcessInstanceStatus(processName, "?start=" + processStartDate +
                 "&end=" + endDate);
         Assert.assertEquals(processInstanceVertices.size(), result.getInstances().length,
@@ -165,14 +161,14 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         logger.info("process instance vertex = " + piVertices);
 
         // fetching process instances info
-        ProcessInstancesResult piResult = prism.getProcessHelper()
+        InstancesResult piResult = prism.getProcessHelper()
             .getProcessInstanceStatus(processName, "?start=" + processStartDate +
                 "&end=" + endDate);
         Assert.assertEquals(piVertices.size(), piResult.getInstances().length,
             "Number of process instances should be same weather it is retrieved from lineage api " +
                 "or falcon rest api");
         final List<String> allowedPITimes = new ArrayList<String>();
-        for (ProcessInstancesResult.ProcessInstance processInstance : piResult.getInstances()) {
+        for (InstancesResult.Instance processInstance : piResult.getInstances()) {
             allowedPITimes.add(processInstance.getInstance());
         }
 

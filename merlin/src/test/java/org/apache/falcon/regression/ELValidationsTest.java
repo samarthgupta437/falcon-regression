@@ -18,14 +18,14 @@
 
 package org.apache.falcon.regression;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.falcon.regression.core.helpers.PrismHelper;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.log4j.Logger;
@@ -95,7 +95,7 @@ public class ELValidationsTest extends BaseTestClass {
     }
 
     @DataProvider(name = "EL-DP")
-    public Object[][] getELData(Method m) throws Exception {
+    public Object[][] getELData(Method m) {
         return new Object[][]{
             {"now(-3,0)", "now(4,20)"},
             {"yesterday(22,0)", "now(4,20)"},
@@ -122,16 +122,15 @@ public class ELValidationsTest extends BaseTestClass {
         Assert.fail("Response is not valid");
     }
 
-    private String testWith(PrismHelper prismHelper, ColoHelper server, String feedStart,
+    private String testWith(ColoHelper prismHelper, ColoHelper server, String feedStart,
                             String feedEnd, String processStart,
                             String processEnd,
                             String startInstance, String endInstance, boolean isMatch)
-        throws IOException, JAXBException, ParseException, URISyntaxException,
-        InterruptedException {
+        throws IOException, JAXBException, ParseException, URISyntaxException {
         HadoopUtil.uploadDir(server.getClusterHelper().getHadoopFS(),
             aggregateWorkflowDir, OSUtil.RESOURCES_OOZIE);
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
-        bundle = new Bundle(bundle, server.getEnvFileName(), server.getPrefix());
+        Bundle bundle = BundleUtil.readELBundle();
+        bundle = new Bundle(bundle, server.getPrefix());
         bundle.generateUniqueBundle();
         bundle.setProcessWorkflow(aggregateWorkflowDir);
         if (feedStart != null && feedEnd != null) {
@@ -147,7 +146,7 @@ public class ELValidationsTest extends BaseTestClass {
             bundle.setDatasetInstances(startInstance, endInstance);
             String submitResponse = bundle.submitAndScheduleBundle(prismHelper);
             logger.info("processData in try is: " + Util.prettyPrintXml(bundle.getProcessData()));
-            Thread.sleep(45000);
+            TimeUtil.sleepSeconds(45);
             if (isMatch)
                 getAndMatchDependencies(server, bundle);
             return submitResponse;
@@ -160,16 +159,16 @@ public class ELValidationsTest extends BaseTestClass {
         }
     }
 
-    private void getAndMatchDependencies(PrismHelper prismHelper, Bundle bundle) {
+    private void getAndMatchDependencies(ColoHelper prismHelper, Bundle bundle) {
         try {
             List<String> bundles = null;
             for (int i = 0; i < 10; ++i) {
                 bundles = OozieUtil.getBundles(prismHelper.getFeedHelper().getOozieClient(),
-                    Util.getProcessName(bundle.getProcessData()), ENTITY_TYPE.PROCESS);
+                    Util.getProcessName(bundle.getProcessData()), EntityType.PROCESS);
                 if (bundles.size() > 0) {
                     break;
                 }
-                Thread.sleep(30000);
+                TimeUtil.sleepSeconds(30);
             }
             Assert.assertTrue(bundles != null && bundles.size() > 0, "Bundle job not created.");
             String coordID = bundles.get(0);
@@ -177,7 +176,7 @@ public class ELValidationsTest extends BaseTestClass {
             List<String> missingDependencies =
                 OozieUtil.getMissingDependencies(prismHelper, coordID);
             for (int i = 0; i < 10 && missingDependencies == null; ++i) {
-                Thread.sleep(30000);
+                TimeUtil.sleepSeconds(30);
                 missingDependencies = OozieUtil.getMissingDependencies(prismHelper, coordID);
             }
             Assert.assertNotNull(missingDependencies, "Missing dependencies not found.");
@@ -231,7 +230,7 @@ public class ELValidationsTest extends BaseTestClass {
 
     private List<String> getQADepedencyList(Calendar nominalTime, Date startRef,
                                             Date endRef, int frequency,
-                                            Bundle bundle) throws JAXBException {
+                                            Bundle bundle) {
         logger.info("start ref:" + startRef);
         logger.info("end ref:" + endRef);
         Calendar initialTime = Calendar.getInstance();

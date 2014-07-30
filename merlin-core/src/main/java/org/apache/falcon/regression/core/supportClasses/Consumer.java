@@ -16,10 +16,6 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.supportClasses;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -47,7 +43,7 @@ public class Consumer extends Thread {
 
     String url;
     String subject;
-    Logger logger = Logger.getLogger(this.getClass());
+    private static final Logger logger = Logger.getLogger(Consumer.class);
 
     List<HashMap<String, String>> messageData;
 

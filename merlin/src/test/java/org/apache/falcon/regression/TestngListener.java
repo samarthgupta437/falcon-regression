@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 public class TestngListener implements ITestListener {
-    private Logger logger = Logger.getLogger(TestngListener.class);
+    private static final Logger logger = Logger.getLogger(TestngListener.class);
 
     @Override
     public void onTestStart(ITestResult result) {

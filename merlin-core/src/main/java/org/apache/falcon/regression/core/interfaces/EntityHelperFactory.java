@@ -16,33 +16,26 @@
  * limitations under the License.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apache.falcon.regression.core.interfaces;
 
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.helpers.ClusterEntityHelperImpl;
 import org.apache.falcon.regression.core.helpers.DataEntityHelperImpl;
 import org.apache.falcon.regression.core.helpers.ProcessEntityHelperImpl;
-import org.apache.falcon.regression.core.enumsAndConstants.ENTITY_TYPE;
 
 public class EntityHelperFactory {
 
-    public static IEntityManagerHelper getEntityHelper(ENTITY_TYPE type, String envFileName,
+    public static IEntityManagerHelper getEntityHelper(EntityType type,
                                                        String prefix) {
-        if (type.equals(ENTITY_TYPE.DATA)) {
-            return new DataEntityHelperImpl(envFileName, prefix);
+        switch (type) {
+            case FEED:
+                return new DataEntityHelperImpl(prefix);
+            case CLUSTER:
+                return new ClusterEntityHelperImpl(prefix);
+            case PROCESS:
+                return new ProcessEntityHelperImpl(prefix);
+            default:
+                return null;
         }
-
-        if (type.equals(ENTITY_TYPE.CLUSTER)) {
-            return new ClusterEntityHelperImpl(envFileName, prefix);
-        }
-
-        if (type.equals(ENTITY_TYPE.PROCESS)) {
-            return new ProcessEntityHelperImpl(envFileName, prefix);
-        }
-
-        return null;
     }
 }

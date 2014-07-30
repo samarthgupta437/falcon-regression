@@ -18,20 +18,28 @@
 
 package org.apache.falcon.regression.prism;
 
+import org.apache.falcon.regression.Entities.FeedMerlin;
+import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.entity.v0.feed.ActionType;
 import org.apache.falcon.entity.v0.feed.ClusterType;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
+import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
+import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.XmlUtil;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
+import org.apache.oozie.client.Job;
+import org.apache.oozie.client.OozieClient;
+import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -49,11 +57,14 @@ public class PrismFeedUpdateTest extends BaseTestClass {
     ColoHelper cluster1 = servers.get(0);
     ColoHelper cluster2 = servers.get(1);
     FileSystem server1FS = serverFS.get(0);
+    OozieClient OC1 = serverOC.get(0);
     String baseTestDir = baseHDFSDir + "/PrismFeedUpdateTest";
     String aggregateWorkflowDir = baseTestDir + "/aggregator";
     public final String cluster1colo = cluster1.getClusterHelper().getColoName();
     public final String cluster2colo = cluster2.getClusterHelper().getColoName();
     private static final Logger logger = Logger.getLogger(PrismFeedUpdateTest.class);
+    String feedInputTimedOutPath =
+        baseTestDir + "/timedout/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}";
 
     @BeforeClass(alwaysRun = true)
     public void uploadWorkflow() throws Exception {
@@ -63,11 +74,12 @@ public class PrismFeedUpdateTest extends BaseTestClass {
     @BeforeMethod(alwaysRun = true)
     public void setUp(Method method) throws Exception {
         logger.info("test name: " + method.getName());
-        Bundle bundle = BundleUtil.readELBundles()[0][0];
+        Bundle bundle = BundleUtil.readELBundle();
         for (int i = 0; i < 2; i++) {
             bundles[i] = new Bundle(bundle, servers.get(i));
             bundles[i].generateUniqueBundle();
             bundles[i].setProcessWorkflow(aggregateWorkflowDir);
+            bundles[i].setInputFeedDataPath(feedInputTimedOutPath);
         }
     }
 
@@ -129,23 +141,23 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
+                Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE,
                 null);
         feed01 = InstanceUtil
             .setFeedCluster(feed01, XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
                 XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-                Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
+                Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET,
                 null);
 
         //set clusters for output feed
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
+            Util.readEntityName(bundles[0].getClusters().get(0)), ClusterType.SOURCE, null);
         outputFeed = InstanceUtil.setFeedCluster(outputFeed,
             XmlUtil.createValidity(startTime, "2099-01-01T00:00Z"),
             XmlUtil.createRtention("hours(10)", ActionType.DELETE),
-            Util.readClusterName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
+            Util.readEntityName(bundles[1].getClusters().get(0)), ClusterType.TARGET, null);
 
 
         //submit and schedule feeds
@@ -167,10 +179,10 @@ public class PrismFeedUpdateTest extends BaseTestClass {
             .setProcessCluster(process01, null,
                 XmlUtil.createProcessValidity(startTime, "2099-01-01T00:00Z"));
         process01 = InstanceUtil
-            .setProcessCluster(process01, Util.readClusterName(bundles[0].getClusters().get(0)),
+            .setProcessCluster(process01, Util.readEntityName(bundles[0].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
         process01 = InstanceUtil
-            .setProcessCluster(process01, Util.readClusterName(bundles[1].getClusters().get(0)),
+            .setProcessCluster(process01, Util.readEntityName(bundles[1].getClusters().get(0)),
                 XmlUtil.createProcessValidity(processStartTime, processEndTime));
 
         //get 2nd process :
@@ -179,7 +191,9 @@ public class PrismFeedUpdateTest extends BaseTestClass {
             .setProcessName(process02, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
         feed.add(outputFeed);
-        process02 = bundles[0].setProcessFeeds(process02, feed, 0, 0, 1);
+        final ProcessMerlin processMerlin = new ProcessMerlin(process02);
+        processMerlin.setProcessFeeds(feed, 0, 0, 1);
+        process02 = processMerlin.toString();
 
 
         //submit and schedule both process
@@ -196,6 +210,61 @@ public class PrismFeedUpdateTest extends BaseTestClass {
 
         //update feed first time
         prism.getFeedHelper().update(outputFeed, outputFeed);
+    }
+
+
+    /**
+     * schedules a feed and dependent process. Process start and end are in past
+     * Test for bug https://issues.apache.org/jira/browse/FALCON-500
+     */
+    @Test
+    public void dependentProcessSucceeded()
+        throws Exception {
+        bundles[0].setProcessValidity("2014-06-01T04:00Z","2014-06-01T04:02Z");
+        bundles[0].submitAndScheduleAllFeeds();
+        bundles[0].submitAndScheduleProcess();
+
+        InstanceUtil.waitTillInstancesAreCreated(cluster1, bundles[0].getProcessData(), 0);
+        OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS, bundles[0].getProcessName(),
+            0, 0);
+        InstanceUtil.waitForBundleToReachState(cluster1, bundles[0].getProcessName(),
+            Job.Status.SUCCEEDED, 20);
+
+        FeedMerlin feed = new FeedMerlin(bundles[0].getDataSets().get(0));
+        feed.addProperty("someProp","someVal");
+        AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed.toString(), feed.toString()));
+        //check for new feed bundle creation
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(prism, EntityType.FEED,
+            feed.getName()),2);
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.PROCESS,
+            bundles[0].getProcessName()),1);
+    }
+
+    /**
+     * schedules a feed and dependent process. Update availability flag and check for process update
+     * Test for bug https://issues.apache.org/jira/browse/FALCON-278
+     */
+    @Test
+    public void updateAvailabilityFlag()
+        throws Exception {
+        String startTime = TimeUtil.getTimeWrtSystemTime(3);
+        String endTime = TimeUtil.getTimeWrtSystemTime(30);
+        bundles[0].setProcessValidity(startTime, endTime);
+        bundles[0].submitAndScheduleAllFeeds();
+        bundles[0].submitAndScheduleProcess();
+
+        InstanceUtil.waitTillInstancesAreCreated(cluster1, bundles[0].getProcessData(), 0);
+        OozieUtil.createMissingDependencies(cluster1, EntityType.PROCESS, bundles[0].getProcessName(),
+            0, 0);
+
+        FeedMerlin feed = new FeedMerlin(bundles[0].getDataSets().get(0));
+        feed.setAvailabilityFlag("mytestflag");
+        AssertUtil.assertSucceeded(prism.getFeedHelper().update(feed.toString(), feed.toString()));
+        //check for new feed bundle creation
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.FEED,
+            feed.getName()),2);
+        Assert.assertEquals(OozieUtil.getNumberOfBundle(cluster1, EntityType.PROCESS,
+            bundles[0].getProcessName()),2);
     }
 
 }
