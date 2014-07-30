@@ -280,7 +280,7 @@ public class FeedReplicationTest extends BaseTestClass {
         //configure feed
         String availabilityFlagName = "README.md";
         String feedName = Util.readEntityName(bundles[0].getDataSets().get(0));
-        Feed feedElement = InstanceUtil.getFeedElement(bundles[0], feedName);
+        Feed feedElement = bundles[0].getFeedElement(feedName);
         feedElement.setAvailabilityFlag(availabilityFlagName);
         InstanceUtil.writeFeedElement(bundles[0], feedElement, feedName);
         String feed = bundles[0].getDataSets().get(0);

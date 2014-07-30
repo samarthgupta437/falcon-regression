@@ -323,7 +323,7 @@ public class Bundle {
 
 
     public void setFeedValidity(String feedStart, String feedEnd, String feedName) {
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         feedElement.getClusters().getClusters().get(0).getValidity()
             .setStart(TimeUtil.oozieDateToDate(feedStart).toDate());
         feedElement.getClusters().getClusters().get(0).getValidity()
@@ -454,6 +454,10 @@ public class Bundle {
         return (Process) Entity.fromString(EntityType.PROCESS, getProcessData());
     }
 
+    public Feed getFeedElement(String feedName) {
+        return  (Feed) Entity.fromString(EntityType.FEED, getFeed(feedName));
+    }
+
 
     public String getFeed(String feedName) {
         for (String feed : getDataSets()) {
@@ -467,7 +471,7 @@ public class Bundle {
 
     public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         Frequency frq = new Frequency("" + frequency, periodicity);
         feedElement.setFrequency(frq);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
@@ -486,14 +490,14 @@ public class Bundle {
 
     public void setInputFeedDataPath(String path) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         feedElement.getLocations().getLocations().get(0).setPath(path);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }
 
     public String getFeedDataPathPrefix() {
         Feed feedElement =
-            InstanceUtil.getFeedElement(this, BundleUtil.getInputFeedNameFromBundle(this));
+            getFeedElement(BundleUtil.getInputFeedNameFromBundle(this));
         return Util.getPathPrefix(feedElement.getLocations().getLocations().get(0)
             .getPath());
     }
@@ -596,7 +600,7 @@ public class Bundle {
 
     public void setInputFeedAvailabilityFlag(String flag) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         feedElement.setAvailabilityFlag(flag);
         InstanceUtil.writeFeedElement(this, feedElement, feedName);
     }

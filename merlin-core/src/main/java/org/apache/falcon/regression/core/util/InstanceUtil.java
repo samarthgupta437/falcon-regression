@@ -248,14 +248,6 @@ public final class InstanceUtil {
                 "Parameter start is empty should have the response");
     }
 
-    public static Feed getFeedElement(Bundle bundle, String feedName) {
-        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
-        if (!feedElement.getName().contains(feedName)) {
-            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(1));
-        }
-        return feedElement;
-    }
-
     public static void writeFeedElement(Bundle bundle, Feed feedElement,
             String feedName) {
         writeFeedElement(bundle, feedElement.toString(), feedName);
