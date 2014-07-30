@@ -45,7 +45,6 @@ import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -116,7 +115,7 @@ public class HCatRetentionTest extends BaseTestClass {
             final List<DateTime> dataDates =
                 TimeUtil.getDatesOnEitherSide(dataStartTime, dataEndTime, feedType);
             final List<String> dataDateStrings = TimeUtil.convertDatesToString(dataDates,
-                TimeUtil.getFormatStringForFeedType(feedType));
+                    feedType.getFormatter());
             AssertUtil.checkForListSizes(dataDates, dataDateStrings);
             final List<String> dataFolders = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
                 OSUtil.OOZIE_EXAMPLE_INPUT_LATE_INPUT, baseTestHDFSDir, dataDateStrings);
@@ -186,13 +185,11 @@ public class HCatRetentionTest extends BaseTestClass {
                                                   FeedType feedType,
                                                   DateTime endDateUTC,
                                                   List<String> inputData) {
-        DateTimeFormatter formatter =
-            DateTimeFormat.forPattern(TimeUtil.getFormatStringForFeedType(feedType));
         List<String> finalData = new ArrayList<String>();
 
         //convert the end date to the same format
         final String endLimit =
-            formatter.print(getEndLimit(retentionPeriod, retentionUnit, endDateUTC));
+            feedType.getFormatter().print(getEndLimit(retentionPeriod, retentionUnit, endDateUTC));
         //now to actually check!
         for (String testDate : inputData) {
             if (testDate.compareTo(endLimit) >= 0) {

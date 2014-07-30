@@ -120,40 +120,15 @@ public final class TimeUtil {
     }
 
     /**
-     * Get format string corresponding to the FeedType .
-     *
-     * @param feedType type of the feed
-     * @return format string
-     */
-    public static String getFormatStringForFeedType(FeedType feedType) {
-        switch (feedType) {
-            case MINUTELY:
-                return "yyyy/MM/dd/HH/mm";
-            case HOURLY:
-                return "yyyy/MM/dd/HH";
-            case DAILY:
-                return "yyyy/MM/dd";
-            case MONTHLY:
-                return "yyyy/MM";
-            case YEARLY:
-                return "yyyy";
-            default:
-                Assert.fail("Unexpected feedType = " + feedType);
-        }
-        return null;
-    }
-
-    /**
      * Convert list of dates to list of string according to the supplied format.
      *
      * @param dates        list of dates
-     * @param formatString format string to be used for converting dates
+     * @param formatter formatter to be used for converting dates
      * @return list of strings corresponding to given dates
      */
     public static List<String> convertDatesToString(List<DateTime> dates,
-                                                    String formatString) {
+                                                    DateTimeFormatter formatter) {
         List<String> dateString = new ArrayList<String>();
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(formatString);
         formatter.withZoneUTC();
         for (DateTime date : dates) {
             dateString.add(formatter.print(date));

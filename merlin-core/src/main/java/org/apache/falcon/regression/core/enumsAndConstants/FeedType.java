@@ -18,21 +18,26 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 /**
  * Enum to represent different feed periodicity.
  */
 public enum FeedType {
-    MINUTELY("minutely", "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"),
-    HOURLY("hourly", "${YEAR}/${MONTH}/${DAY}/${HOUR}"),
-    DAILY("daily", "${YEAR}/${MONTH}/${DAY}"),
-    MONTHLY("monthly", "${YEAR}/${MONTH}"),
-    YEARLY("yearly", "${YEAR}");
+    MINUTELY("minutely", "yyyy/MM/dd/HH/mm", "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"),
+    HOURLY("hourly",     "yyyy/MM/dd/HH",    "${YEAR}/${MONTH}/${DAY}/${HOUR}"),
+    DAILY("daily",       "yyyy/MM/dd",       "${YEAR}/${MONTH}/${DAY}"),
+    MONTHLY("monthly",   "yyyy/MM",          "${YEAR}/${MONTH}"),
+    YEARLY("yearly",     "yyyy",             "${YEAR}");
 
     private final String value;
     private final String pathValue;
+    private final DateTimeFormatter formatter;
 
-    private FeedType(String value, String pathValue) {
+    private FeedType(String value, String format, String pathValue) {
         this.value = value;
+        formatter = DateTimeFormat.forPattern(format);
         this.pathValue = pathValue;
     }
 
@@ -42,5 +47,9 @@ public enum FeedType {
 
     public String getPathValue() {
         return pathValue;
+    }
+
+    public DateTimeFormatter getFormatter() {
+        return formatter;
     }
 }
