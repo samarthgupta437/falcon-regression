@@ -18,7 +18,7 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -120,12 +120,12 @@ public final class TimeUtil {
     }
 
     /**
-     * Get format string corresponding to the FEED_TYPE .
+     * Get format string corresponding to the FeedType .
      *
      * @param feedType type of the feed
      * @return format string
      */
-    public static String getFormatStringForFeedType(FEED_TYPE feedType) {
+    public static String getFormatStringForFeedType(FeedType feedType) {
         switch (feedType) {
             case MINUTELY:
                 return "yyyy/MM/dd/HH/mm";
@@ -171,7 +171,7 @@ public final class TimeUtil {
      * @return list of dates
      */
     public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                      FEED_TYPE feedType) {
+                                                      FeedType feedType) {
         final List<DateTime> dates = new ArrayList<DateTime>();
         if (!startDate.isAfter(endDate)) {
             dates.add(startDate);

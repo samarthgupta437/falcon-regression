@@ -18,12 +18,12 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
-public enum RETENTION_UNITS {
+public enum RetentionUnit {
     MINUTES("minutes"), HOURS("hours"), DAYS("days"), MONTHS("months"), YEARS("years");
 
     private String value;
 
-    private RETENTION_UNITS(String value) {
+    private RetentionUnit(String value) {
         this.value = value;
     }
 

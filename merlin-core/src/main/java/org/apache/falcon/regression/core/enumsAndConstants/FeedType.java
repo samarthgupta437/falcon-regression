@@ -21,12 +21,12 @@ package org.apache.falcon.regression.core.enumsAndConstants;
 /**
  * Enum to represent different feed periodicity.
  */
-public enum FEED_TYPE {
+public enum FeedType {
     MINUTELY("minutely"), HOURLY("hourly"), DAILY("daily"), MONTHLY("monthly"), YEARLY("yearly");
 
     private String value;
 
-    private FEED_TYPE(String value) {
+    private FeedType(String value) {
         this.value = value;
     }
 

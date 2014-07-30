@@ -21,6 +21,8 @@ package org.apache.falcon.regression.hcat;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.EntityType;
+import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
+import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -28,8 +30,6 @@ import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
-import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -91,8 +91,8 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
-    public void testHCatRetention(int retentionPeriod, RETENTION_UNITS retentionUnit,
-                                  FEED_TYPE feedType) throws Exception {
+    public void testHCatRetention(int retentionPeriod, RetentionUnit retentionUnit,
+                                  FeedType feedType) throws Exception {
 
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
@@ -153,7 +153,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static List<String> getHadoopDataFromDir(FileSystem fs, String hadoopPath,
-                                                     String dir, FEED_TYPE feedType)
+                                                     String dir, FeedType feedType)
         throws IOException {
         List<String> finalResult = new ArrayList<String>();
         final int dirDepth = getDirDepthForFeedType(feedType);
@@ -182,8 +182,8 @@ public class HCatRetentionTest extends BaseTestClass {
      * @return expected output of the retention
      */
     private static List<String> getExpectedOutput(int retentionPeriod,
-                                                  RETENTION_UNITS retentionUnit,
-                                                  FEED_TYPE feedType,
+                                                  RetentionUnit retentionUnit,
+                                                  FeedType feedType,
                                                   DateTime endDateUTC,
                                                   List<String> inputData) {
         DateTimeFormatter formatter =
@@ -203,7 +203,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static void createPartitionedTable(HCatClient client, String dbName, String tableName,
-                                               String tableLoc, FEED_TYPE dataType)
+                                               String tableLoc, FeedType dataType)
         throws HCatException {
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
@@ -244,7 +244,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static void addPartitionsToExternalTable(HCatClient client, String dbName,
-                                                     String tableName, FEED_TYPE feedType,
+                                                     String tableName, FeedType feedType,
                                                      List<DateTime> dataDates,
                                                      List<String> dataFolders)
         throws HCatException {
@@ -276,7 +276,7 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    private static String getFeedPathValue(FEED_TYPE feedType) {
+    private static String getFeedPathValue(FeedType feedType) {
         switch (feedType) {
             case YEARLY:
                 return "year=${YEAR}";
@@ -294,7 +294,7 @@ public class HCatRetentionTest extends BaseTestClass {
         return null;
     }
 
-    private static int getDirDepthForFeedType(FEED_TYPE feedType) {
+    private static int getDirDepthForFeedType(FeedType feedType) {
         switch (feedType) {
             case MINUTELY:
                 return 4;
@@ -312,7 +312,7 @@ public class HCatRetentionTest extends BaseTestClass {
         return -1;
     }
 
-    private static DateTime getEndLimit(int time, RETENTION_UNITS interval,
+    private static DateTime getEndLimit(int time, RetentionUnit interval,
                                         DateTime today) {
         switch (interval) {
             case MINUTES:
@@ -333,22 +333,22 @@ public class HCatRetentionTest extends BaseTestClass {
 
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) {
-        RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS,
-            RETENTION_UNITS.MONTHS};// "minutes","years",
+        RetentionUnit[] units = new RetentionUnit[]{RetentionUnit.HOURS, RetentionUnit.DAYS,
+            RetentionUnit.MONTHS};// "minutes","years",
         int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered
         // in validation scenarios.
-        FEED_TYPE[] dataTypes =
-            new FEED_TYPE[]{
+        FeedType[] dataTypes =
+            new FeedType[]{
                 //disabling since falcon has support is for only for single hcat partition
-                //FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY,
-                FEED_TYPE.YEARLY};
+                //FeedType.DAILY, FeedType.MINUTELY, FeedType.HOURLY, FeedType.MONTHLY,
+                FeedType.YEARLY};
         Object[][] testData = new Object[units.length * periods.length * dataTypes.length][3];
 
         int i = 0;
 
-        for (RETENTION_UNITS unit : units) {
+        for (RetentionUnit unit : units) {
             for (int period : periods) {
-                for (FEED_TYPE dataType : dataTypes) {
+                for (FeedType dataType : dataTypes) {
                     testData[i][0] = period;
                     testData[i][1] = unit;
                     testData[i][2] = dataType;
