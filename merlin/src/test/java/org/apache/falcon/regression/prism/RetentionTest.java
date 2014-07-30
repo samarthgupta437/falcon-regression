@@ -478,19 +478,19 @@ public class RetentionTest extends BaseTestClass {
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) {
         // a negative value like -4 should be covered in validation scenarios.
-        int[] periods = new int[]{0, 10080, 60, 8, 24};
-        String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
+        int[] retentionPeriods = new int[]{0, 10080, 60, 8, 24};
+        String[] retentionUnits = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
-        String[] dataTypes = new String[]{"daily", "yearly", "monthly"};
-        Object[][] testData = new Object[periods.length * units.length *
-            gaps.length * dataTypes.length][5];
+        String[] feedType = new String[]{"daily", "yearly", "monthly"};
+        Object[][] testData = new Object[retentionPeriods.length * retentionUnits.length *
+            gaps.length * feedType.length][5];
 
         int i = 0;
 
-        for (String unit : units) {
-            for (int period : periods) {
+        for (String unit : retentionUnits) {
+            for (int period : retentionPeriods) {
                 for (boolean gap : gaps) {
-                    for (String dataType : dataTypes) {
+                    for (String dataType : feedType) {
                         testData[i][0] = period;
                         testData[i][1] = unit;
                         testData[i][2] = gap;
