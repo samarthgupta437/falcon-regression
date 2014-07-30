@@ -784,10 +784,8 @@ public final class InstanceUtil {
      * @param validity    - cluster validity
      * @return - string representation of modified process
      */
-    public static String setProcessCluster(String process,
-            String clusterName,
-            org.apache.falcon.entity.v0.process
-                    .Validity validity) {
+    public static String setProcessCluster(String process, String clusterName,
+            org.apache.falcon.entity.v0.process.Validity validity) {
         org.apache.falcon.entity.v0.process.Cluster c =
                 new org.apache.falcon.entity.v0.process.Cluster();
         c.setName(clusterName);
@@ -809,8 +807,7 @@ public final class InstanceUtil {
      * @param feed    - feed which will be used as input feed
      * @return - string representation of process definition
      */
-    public static String addProcessInputFeed(String process, String feed,
-            String feedName) {
+    public static String addProcessInputFeed(String process, String feed, String feedName) {
         Process processElement = (Process) Entity.fromString(EntityType.PROCESS, process);
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
@@ -824,9 +821,7 @@ public final class InstanceUtil {
     }
 
     public static org.apache.oozie.client.WorkflowJob.Status getInstanceStatusFromCoord(
-            ColoHelper ua1,
-            String coordID,
-            int instanceNumber) throws OozieClientException {
+            ColoHelper ua1, String coordID, int instanceNumber) throws OozieClientException {
         OozieClient oozieClient = ua1.getProcessHelper().getOozieClient();
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
         String jobId = coordInfo.getActions().get(instanceNumber).getExternalId();
@@ -847,8 +842,7 @@ public final class InstanceUtil {
         return InstanceUtil.getReplicationFolderFromInstanceRunConf(wfJob.getConf());
     }
 
-    public static List<String> getReplicationFolderFromInstanceRunConf(
-            String runConf) {
+    public static List<String> getReplicationFolderFromInstanceRunConf(String runConf) {
         String conf;
         conf = runConf.substring(runConf.indexOf("falconInPaths</name>") + 20);
         conf = conf.substring(conf.indexOf("<value>") + 7);
@@ -856,8 +850,7 @@ public final class InstanceUtil {
         return new ArrayList<String>(Arrays.asList(conf.split(",")));
     }
 
-    public static int getInstanceRunIdFromCoord(ColoHelper colo,
-            String coordID, int instanceNumber)
+    public static int getInstanceRunIdFromCoord(ColoHelper colo, String coordID, int instanceNumber)
         throws OozieClientException {
         OozieClient oozieClient = colo.getProcessHelper().getOozieClient();
         CoordinatorJob coordInfo = oozieClient.getCoordJobInfo(coordID);
@@ -882,8 +875,7 @@ public final class InstanceUtil {
     }
 
     public static int checkIfFeedCoordExist(IEntityManagerHelper helper,
-            String feedName, String coordType)
-        throws OozieClientException {
+            String feedName, String coordType) throws OozieClientException {
         LOGGER.info("feedName: " + feedName);
         int numberOfCoord = 0;
 
