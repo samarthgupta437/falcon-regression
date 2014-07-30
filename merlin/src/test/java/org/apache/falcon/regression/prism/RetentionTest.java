@@ -96,11 +96,11 @@ public class RetentionTest extends BaseTestClass {
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
         // test for https://issues.apache.org/jira/browse/FALCON-321
-        testRetention("24", "hours", true, "daily", false);
+        testRetention(24, "hours", true, "daily", false);
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
-    public void testRetention(String period, String unit, boolean gaps, String dataType,
+    public void testRetention(int period, String unit, boolean gaps, String dataType,
                               boolean withData) throws Exception {
         String inputFeed = setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]),
             getFeedPathValue(dataType));
@@ -110,12 +110,12 @@ public class RetentionTest extends BaseTestClass {
 
         final ServiceResponse response = prism.getFeedHelper()
             .submitEntity(URLS.SUBMIT_URL, inputFeed);
-        if (Integer.parseInt(period) > 0) {
+        if (period > 0) {
             AssertUtil.assertSucceeded(response);
 
             replenishData(dataType, gaps, withData);
 
-            commonDataRetentionWorkflow(inputFeed, Integer.parseInt(period), unit);
+            commonDataRetentionWorkflow(inputFeed, period, unit);
         } else {
             AssertUtil.assertFailed(response);
         }
@@ -480,8 +480,8 @@ public class RetentionTest extends BaseTestClass {
 
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) {
-        String[] periods = new String[]{"0", "10080", "60", "8",
-            "24"}; // a negative value like -4 should be covered in validation scenarios.
+        // a negative value like -4 should be covered in validation scenarios.
+        int[] periods = new int[]{0, 10080, 60, 8, 24};
         String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
         boolean[] gaps = new boolean[]{false, true};
         String[] dataTypes = new String[]{"daily", "yearly", "monthly"};
@@ -491,7 +491,7 @@ public class RetentionTest extends BaseTestClass {
         int i = 0;
 
         for (String unit : units) {
-            for (String period : periods) {
+            for (int period : periods) {
                 for (boolean gap : gaps) {
                     for (String dataType : dataTypes) {
                         testData[i][0] = period;
