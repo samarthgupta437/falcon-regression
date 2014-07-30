@@ -152,30 +152,8 @@ public final class TimeUtil {
             dates.add(startDate);
         }
         for (int counter = 0; !startDate.isAfter(endDate) && counter < 1000; ++counter) {
-            switch (feedType) {
-                case MINUTELY:
-                    startDate = startDate.plusMinutes(1);
-                    dates.add(startDate);
-                    break;
-                case HOURLY:
-                    startDate = startDate.plusHours(1);
-                    dates.add(startDate);
-                    break;
-                case DAILY:
-                    startDate = startDate.plusDays(1);
-                    dates.add(startDate);
-                    break;
-                case MONTHLY:
-                    startDate = startDate.plusMonths(1);
-                    dates.add(startDate);
-                    break;
-                case YEARLY:
-                    startDate = startDate.plusYears(1);
-                    dates.add(startDate);
-                    break;
-                default:
-                    Assert.fail("Unexpected feedType = " + feedType);
-            }//end of switch
+            startDate = feedType.addTime(startDate, 1);
+            dates.add(startDate);
         }//end of for
         return dates;
     }

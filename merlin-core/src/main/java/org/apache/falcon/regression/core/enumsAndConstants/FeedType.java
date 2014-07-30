@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -25,11 +26,35 @@ import org.joda.time.format.DateTimeFormatter;
  * Enum to represent different feed periodicity.
  */
 public enum FeedType {
-    MINUTELY("minutely", "yyyy/MM/dd/HH/mm", "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}"),
-    HOURLY("hourly",     "yyyy/MM/dd/HH",    "${YEAR}/${MONTH}/${DAY}/${HOUR}"),
-    DAILY("daily",       "yyyy/MM/dd",       "${YEAR}/${MONTH}/${DAY}"),
-    MONTHLY("monthly",   "yyyy/MM",          "${YEAR}/${MONTH}"),
-    YEARLY("yearly",     "yyyy",             "${YEAR}");
+    MINUTELY("minutely", "yyyy/MM/dd/HH/mm", "${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}") {
+        public DateTime addTime(DateTime dateTime, int amount) {
+            return dateTime.plusMinutes(amount);
+        }
+    },
+    HOURLY("hourly", "yyyy/MM/dd/HH", "${YEAR}/${MONTH}/${DAY}/${HOUR}") {
+        @Override
+        public DateTime addTime(DateTime dateTime, int amount) {
+            return dateTime.plusHours(amount);
+        }
+    },
+    DAILY("daily", "yyyy/MM/dd", "${YEAR}/${MONTH}/${DAY}") {
+        @Override
+        public DateTime addTime(DateTime dateTime, int amount) {
+            return dateTime.plusDays(amount);
+        }
+    },
+    MONTHLY("monthly", "yyyy/MM", "${YEAR}/${MONTH}") {
+        @Override
+        public DateTime addTime(DateTime dateTime, int amount) {
+            return dateTime.plusMonths(amount);
+        }
+    },
+    YEARLY("yearly", "yyyy", "${YEAR}") {
+        @Override
+        public DateTime addTime(DateTime dateTime, int amount) {
+            return dateTime.plusYears(amount);
+        }
+    };
 
     private final String value;
     private final String pathValue;
@@ -52,4 +77,6 @@ public enum FeedType {
     public DateTimeFormatter getFormatter() {
         return formatter;
     }
+
+    public abstract DateTime addTime(DateTime dateTime, int amount);
 }
