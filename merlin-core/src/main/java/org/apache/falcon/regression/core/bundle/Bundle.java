@@ -187,6 +187,16 @@ public class Bundle {
         setClusterData(clusters);
     }
 
+    /**
+     * Wraps bundle cluster in a Cluster object.
+     *
+     * @return cluster definition in a form of Cluster object
+     */
+    public org.apache.falcon.entity.v0.cluster.Cluster getClusterElement() {
+        return (org.apache.falcon.entity.v0.cluster.Cluster)
+                Entity.fromString(EntityType.CLUSTER, getClusters().get(0));
+    }
+
 
     public List<String> getClusterNames() {
         List<String> clusterNames = new ArrayList<String>();
@@ -618,7 +628,7 @@ public class Bundle {
 
     public void setCLusterColo(String colo) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
-            InstanceUtil.getClusterElement(this);
+            getClusterElement();
         c.setColo(colo);
         writeClusterElement(c);
 
@@ -626,7 +636,7 @@ public class Bundle {
 
     public void setClusterInterface(Interfacetype interfacetype, String value) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
-            InstanceUtil.getClusterElement(this);
+            getClusterElement();
         final Interfaces interfaces = c.getInterfaces();
         final List<Interface> interfaceList = interfaces.getInterfaces();
         for (final Interface anInterface : interfaceList) {

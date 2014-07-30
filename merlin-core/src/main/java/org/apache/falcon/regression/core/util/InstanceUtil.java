@@ -662,17 +662,6 @@ public final class InstanceUtil {
     }
 
     /**
-     * Wraps bundle cluster in a Cluster object.
-     *
-     * @param bundle target bundle
-     * @return cluster definition in a form of Cluster object
-     */
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle) {
-        return (org.apache.falcon.entity.v0.cluster.Cluster)
-                Entity.fromString(EntityType.CLUSTER, bundle.getClusters().get(0));
-    }
-
-    /**
      * Sets one more cluster to feed.
      *
      * @param feed          feed which is to be modified
