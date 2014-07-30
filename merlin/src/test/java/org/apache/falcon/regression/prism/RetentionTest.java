@@ -105,7 +105,7 @@ public class RetentionTest extends BaseTestClass {
     public void testRetention(final int retentionPeriod, final RetentionUnit retentionUnit,
         final boolean gaps, final FeedType feedType, final boolean withData) throws Exception {
         String inputFeed = setFeedPathValue(bundles[0].getInputFeedFromBundle(),
-            getFeedPathValue(feedType));
+            testHDFSDir + feedType.getPathValue());
         inputFeed = insertRetentionValueInFeed(inputFeed,
             retentionUnit.getValue() + "(" + retentionPeriod + ")");
 
@@ -148,19 +148,6 @@ public class RetentionTest extends BaseTestClass {
         } else if (feedType == FeedType.MONTHLY) {
             replenishData(getMonthlyDatesOnEitherSide(30, skip), withData);
         }
-    }
-
-    private String getFeedPathValue(final FeedType feedType) {
-        if (feedType == FeedType.MONTHLY) {
-            return testHDFSDir + "${YEAR}/${MONTH}";
-        }
-        if (feedType == FeedType.DAILY) {
-            return testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}";
-        }
-        if (feedType == FeedType.YEARLY) {
-            return testHDFSDir + "${YEAR}";
-        }
-        return null;
     }
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
