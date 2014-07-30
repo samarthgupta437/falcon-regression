@@ -361,14 +361,14 @@ public class Bundle {
         Process processElement = getProcessObject();
         processElement.getInputs().getInputs().get(0).setStart(startInstance);
         processElement.getInputs().getInputs().get(0).setEnd(endInstance);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessPeriodicity(int frequency, TimeUnit periodicity) {
         Process processElement = getProcessObject();
         Frequency frq = new Frequency("" + frequency, periodicity);
         processElement.setFrequency(frq);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessInputStartEnd(String start, String end) {
@@ -377,7 +377,7 @@ public class Bundle {
             input.setStart(start);
             input.setEnd(end);
         }
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setOutputFeedPeriodicity(int frequency, TimeUnit periodicity) {
@@ -425,7 +425,7 @@ public class Bundle {
     public void setProcessConcurrency(int concurrency) {
         Process processElement = getProcessObject();
         processElement.setParallel((concurrency));
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessWorkflow(String wfPath) {
@@ -447,7 +447,7 @@ public class Bundle {
         }
         w.setPath(wfPath);
         processElement.setWorkflow(w);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public Process getProcessObject() {
@@ -576,13 +576,13 @@ public class Bundle {
         in2.setPartition(in1.getPartition());
         in2.setStart(in1.getStart());
         processElement.getInputs().getInputs().add(in2);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessName(String newName) {
         Process processElement = getProcessObject();
         processElement.setName(newName);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
 
     }
 
@@ -760,7 +760,7 @@ public class Bundle {
         Workflow wf = processElement.getWorkflow();
         wf.setLib(libPath);
         processElement.setWorkflow(wf);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
 
     }
 
@@ -768,7 +768,7 @@ public class Bundle {
         Process processElement = getProcessObject();
         Frequency frq = new Frequency("" + magnitude, unit);
         processElement.setTimeout(frq);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public static void submitCluster(Bundle... bundles)
@@ -931,7 +931,7 @@ public class Bundle {
         newInput.setEnd(templateInput.getEnd());
         newInput.setPartition(templateInput.getPartition());
         processInputs.add(newInput);
-        InstanceUtil.writeProcessElement(this, processObject);
+        setProcessData(processObject.toString());
     }
 
     public void addOutputFeedToBundle(String feedRefName, String feed, int templateOutputIdx) {
@@ -945,7 +945,7 @@ public class Bundle {
         newOutput.setName(feedRefName);
         newOutput.setInstance(templateOutput.getInstance());
         processOutputs.add(newOutput);
-        InstanceUtil.writeProcessElement(this, processObject);
+        setProcessData(processObject.toString());
     }
 
     public void setProcessProperty(String property, String value) {
