@@ -148,7 +148,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void u1ScheduleU2DeleteFeed() throws Exception {
-        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed = bundles[0].getInputFeedFromBundle();
         //submit, schedule feed by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -186,7 +186,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void u1SuspendU2DeleteFeed() throws Exception {
-        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed = bundles[0].getInputFeedFromBundle();
         //submit, schedule, suspend feed by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -208,7 +208,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void u1ScheduleU2SuspendFeed() throws Exception {
-        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed = bundles[0].getInputFeedFromBundle();
         //submit, schedule by U1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -244,7 +244,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void u1SuspendU2ResumeFeed() throws Exception {
-        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed = bundles[0].getInputFeedFromBundle();
         //submit, schedule and then suspend feed by User1
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -526,7 +526,7 @@ public class AuthorizationTest extends BaseTestClass {
     @Test(enabled = false)
     public void u1SubmitU2UpdateFeed()
         throws URISyntaxException, IOException, AuthenticationException, JAXBException {
-        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed = bundles[0].getInputFeedFromBundle();
         //submit feed
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitEntity(Util.URLS.SUBMIT_URL, feed));
@@ -552,7 +552,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void u1ScheduleU2UpdateFeed() throws Exception {
-        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed = bundles[0].getInputFeedFromBundle();
         //submit and schedule feed
         bundles[0].submitClusters(prism);
         AssertUtil.assertSucceeded(prism.getFeedHelper().submitAndSchedule(
@@ -621,7 +621,7 @@ public class AuthorizationTest extends BaseTestClass {
     // .org/jira/browse/FALCON-388
     @Test(enabled = false)
     public void u1ScheduleFeedU2ScheduleDependantProcessU1UpdateFeed() throws Exception {
-        String feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        String feed = bundles[0].getInputFeedFromBundle();
         String process = bundles[0].getProcessData();
         //submit both feeds
         bundles[0].submitClusters(prism);

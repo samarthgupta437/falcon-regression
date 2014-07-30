@@ -946,8 +946,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
                 EntityType.PROCESS);
 
-        String newFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[1]) + "2";
-        String inputFeed = BundleUtil.getInputFeedFromBundle(bundles[1]);
+        String newFeedName = bundles[1].getInputFeedNameFromBundle() + "2";
+        String inputFeed = bundles[1].getInputFeedFromBundle();
 
         bundles[1].addProcessInput(newFeedName, "inputData2");
         inputFeed = Util.setFeedName(inputFeed, newFeedName);
@@ -999,8 +999,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
         List<String> oldNominalTimes = OozieUtil.getActionsNominalTime(cluster3, oldBundleId,
                 EntityType.PROCESS);
 
-        String newFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[1]) + "2";
-        String inputFeed = BundleUtil.getInputFeedFromBundle(bundles[1]);
+        String newFeedName = bundles[1].getInputFeedNameFromBundle() + "2";
+        String inputFeed = bundles[1].getInputFeedFromBundle();
 
         bundles[1].addProcessInput(newFeedName, "inputData2");
         inputFeed = Util.setFeedName(inputFeed, newFeedName);
@@ -1045,8 +1045,8 @@ public class NewPrismProcessUpdateTest extends BaseTestClass {
 
         bundles[1].submitBundle(prism);
         String originalProcess = bundles[1].getProcessData();
-        String newFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[1]) + "2";
-        String inputFeed = BundleUtil.getInputFeedFromBundle(bundles[1]);
+        String newFeedName = bundles[1].getInputFeedNameFromBundle() + "2";
+        String inputFeed = bundles[1].getInputFeedFromBundle();
         bundles[1].addProcessInput(newFeedName, "inputData2");
         inputFeed = Util.setFeedName(inputFeed, newFeedName);
         String updatedProcess = bundles[1].getProcessData();

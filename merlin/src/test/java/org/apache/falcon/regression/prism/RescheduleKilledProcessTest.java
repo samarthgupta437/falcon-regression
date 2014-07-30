@@ -82,7 +82,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         String process = bundles[0].getProcessData();
         process = InstanceUtil.setProcessName(process, "zeroInputProcess" + new Random().nextInt());
         List<String> feed = new ArrayList<String>();
-        feed.add(BundleUtil.getOutputFeedFromBundle(bundles[0]));
+        feed.add(bundles[0].getOutputFeedFromBundle());
         final ProcessMerlin processMerlin = new ProcessMerlin(process);
         processMerlin.setProcessFeeds(feed, 0, 0, 1);
         process = processMerlin.toString();
@@ -117,7 +117,7 @@ public class RescheduleKilledProcessTest extends BaseTestClass {
         bundles[0].setInputFeedDataPath(
             baseHDFSDir + "/rawLogs/${YEAR}/${MONTH}/${DAY}/${HOUR}/${MINUTE}");
 
-        String prefix = InstanceUtil.getFeedPrefix(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        String prefix = InstanceUtil.getFeedPrefix(bundles[0].getInputFeedFromBundle());
         HadoopUtil.deleteDirIfExists(prefix.substring(1), clusterFS);
         HadoopUtil.lateDataReplenish(cluster, 40, 1, prefix, null);
 

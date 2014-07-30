@@ -99,13 +99,13 @@ public class HCatRetentionTest extends BaseTestClass {
         tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(),
             retentionPeriod);
         createPartitionedTable(cli, dBName, tableName, baseTestHDFSDir, feedType);
-        FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
+        FeedMerlin feedElement = new FeedMerlin(bundle.getInputFeedFromBundle());
         feedElement.setTableValue(dBName, tableName, getFeedPathValue(feedType));
         feedElement
             .insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
         if (retentionPeriod <= 0) {
             AssertUtil.assertFailed(prism.getFeedHelper()
-                .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
+                .submitEntity(URLS.SUBMIT_URL, bundle.getInputFeedFromBundle()));
         } else {
             final DateTime dataStartTime = new DateTime(
                 feedElement.getClusters().getClusters().get(0).getValidity().getStart(),

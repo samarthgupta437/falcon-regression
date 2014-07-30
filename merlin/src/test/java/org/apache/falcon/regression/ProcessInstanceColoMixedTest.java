@@ -106,9 +106,9 @@ public class ProcessInstanceColoMixedTest extends BaseTestClass {
     public void mixed01C1sC2sC1eC2e() throws Exception {
         //ua1 and ua3 are source. ua2 target.   feed01 on ua1 , feed02 on ua3
         //get 2 unique feeds
-        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
-        String feed02 = BundleUtil.getInputFeedFromBundle(bundles[1]);
-        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = bundles[0].getInputFeedFromBundle();
+        String feed02 = bundles[1].getInputFeedFromBundle();
+        String outputFeed = bundles[0].getOutputFeedFromBundle();
         //set source and target for the 2 feeds
 
         //set clusters to null;

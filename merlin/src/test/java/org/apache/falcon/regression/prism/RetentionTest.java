@@ -55,7 +55,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
@@ -89,8 +88,8 @@ public class RetentionTest extends BaseTestClass {
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
         prism.getFeedHelper()
-            .delete(URLS.DELETE_URL, BundleUtil.getInputFeedFromBundle(bundles[0]));
-        verifyFeedDeletion(BundleUtil.getInputFeedFromBundle(bundles[0]));
+            .delete(URLS.DELETE_URL, bundles[0].getInputFeedFromBundle());
+        verifyFeedDeletion(bundles[0].getInputFeedFromBundle());
         removeBundles();
     }
 
@@ -103,7 +102,7 @@ public class RetentionTest extends BaseTestClass {
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(final int retentionPeriod, final String retentionUnit,
         final boolean gaps, final String feedType, final boolean withData) throws Exception {
-        String inputFeed = setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]),
+        String inputFeed = setFeedPathValue(bundles[0].getInputFeedFromBundle(),
             getFeedPathValue(feedType));
         inputFeed = insertRetentionValueInFeed(inputFeed, retentionUnit + "(" + retentionPeriod + ")");
 

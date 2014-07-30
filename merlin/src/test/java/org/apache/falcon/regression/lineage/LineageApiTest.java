@@ -94,7 +94,7 @@ public class LineageApiTest extends BaseTestClass {
             prism.getClusterHelper().submitEntity(Util.URLS.SUBMIT_URL, clusterMerlin.toString()));
         logger.info("numInputFeeds = " + numInputFeeds);
         logger.info("numOutputFeeds = " + numOutputFeeds);
-        final FeedMerlin inputMerlin = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        final FeedMerlin inputMerlin = new FeedMerlin(bundles[0].getInputFeedFromBundle());
         inputMerlin.setTags(testTag);
         inputFeeds = generateFeeds(numInputFeeds, inputMerlin,
             Generator.getNameGenerator("infeed", inputMerlin.getName()),
@@ -104,7 +104,7 @@ public class LineageApiTest extends BaseTestClass {
                 feed.toString()));
         }
 
-        FeedMerlin outputMerlin = new FeedMerlin(BundleUtil.getOutputFeedFromBundle(bundles[0]));
+        FeedMerlin outputMerlin = new FeedMerlin(bundles[0].getOutputFeedFromBundle());
         outputMerlin.setTags(testTag);
         outputFeeds = generateFeeds(numOutputFeeds, outputMerlin,
             Generator.getNameGenerator("outfeed", outputMerlin.getName()),

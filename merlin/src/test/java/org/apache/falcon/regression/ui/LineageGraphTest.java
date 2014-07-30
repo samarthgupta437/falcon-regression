@@ -109,8 +109,8 @@ public class LineageGraphTest extends BaseUITestClass {
         bundles[0].submitBundle(prism);
 
         processName = bundles[0].getProcessName();
-        inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
-        outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
+        inputFeedName = bundles[0].getInputFeedNameFromBundle();
+        outputFeedName = bundles[0].getOutputFeedNameFromBundle();
         /**schedule process, wait for instances to succeed*/
         prism.getProcessHelper().schedule(Util.URLS.SCHEDULE_URL, bundles[0].getProcessData());
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,

@@ -100,8 +100,8 @@ public class LineageApiProcessInstanceTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, Frequency.TimeUnit.minutes);
         bundles[0].submitFeedsScheduleProcess(prism);
         processName = bundles[0].getProcessName();
-        inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
-        outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
+        inputFeedName = bundles[0].getInputFeedNameFromBundle();
+        outputFeedName = bundles[0].getOutputFeedNameFromBundle();
         Job.Status status = null;
         for (int i = 0; i < 20; i++) {
             status = InstanceUtil.getDefaultCoordinatorStatus(cluster,

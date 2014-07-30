@@ -93,9 +93,9 @@ public class NewRetryTest extends BaseTestClass {
         bundles[0].setProcessValidity(startDate, endDate);
 
         String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
+            Util.setFeedPathValue(bundles[0].getInputFeedFromBundle(), latePath);
         feed = Util.insertLateFeedValue(feed, new Frequency("minutes(8)"));
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        bundles[0].getDataSets().remove(bundles[0].getInputFeedFromBundle());
         bundles[0].getDataSets().add(feed);
 
         bundles[0].submitClusters(prism);
@@ -679,9 +679,9 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInSuspendedAndResumeCaseWithLateData(Retry retry) throws Exception {
 
         String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
+            Util.setFeedPathValue(bundles[0].getInputFeedFromBundle(), latePath);
         feed = Util.insertLateFeedValue(feed, new Frequency("minutes(10)"));
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        bundles[0].getDataSets().remove(bundles[0].getInputFeedFromBundle());
         bundles[0].getDataSets().add(feed);
         bundles[0].setRetry(retry);
 
@@ -773,11 +773,11 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInLateDataCase(Retry retry) throws Exception {
 
         String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
+            Util.setFeedPathValue(bundles[0].getInputFeedFromBundle(), latePath);
 
         feed = Util.insertLateFeedValue(feed, getFrequency(retry));
 
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        bundles[0].getDataSets().remove(bundles[0].getInputFeedFromBundle());
         bundles[0].getDataSets().add(feed);
 
         bundles[0].setRetry(retry);
@@ -797,7 +797,7 @@ public class NewRetryTest extends BaseTestClass {
             HadoopUtil.deleteDirIfExists(lateDir, clusterFS);
             HadoopUtil.lateDataReplenish(cluster, 20, 0, lateDir);
             List<String> initialData =
-                Util.getHadoopDataFromDir(clusterFS, BundleUtil.getInputFeedFromBundle(bundles[0]),
+                Util.getHadoopDataFromDir(clusterFS, bundles[0].getInputFeedFromBundle(),
                     lateDir);
             AssertUtil.assertSucceeded(
                 prism.getProcessHelper().schedule(URLS.SCHEDULE_URL, bundles[0].getProcessData()));
@@ -853,9 +853,9 @@ public class NewRetryTest extends BaseTestClass {
     public void testRetryInDeleteAfterPartialRetryCase(Retry retry) throws Exception {
 
         String feed =
-            Util.setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]), latePath);
+            Util.setFeedPathValue(bundles[0].getInputFeedFromBundle(), latePath);
         feed = Util.insertLateFeedValue(feed, new Frequency("minutes(1)"));
-        bundles[0].getDataSets().remove(BundleUtil.getInputFeedFromBundle(bundles[0]));
+        bundles[0].getDataSets().remove(bundles[0].getInputFeedFromBundle());
         bundles[0].getDataSets().add(feed);
 
         bundles[0].setRetry(retry);

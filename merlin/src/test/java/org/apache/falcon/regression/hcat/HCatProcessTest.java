@@ -246,7 +246,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedTableUri(inputTableUri);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
-        final String inputFeed1 = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        final String inputFeed1 = bundles[0].getInputFeedFromBundle();
         final String inputFeed2Name = "second-" + Util.readEntityName(inputFeed1);
 
         FeedMerlin feedObj = new FeedMerlin(inputFeed1);
@@ -344,7 +344,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
-        final String outputFeed1 = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        final String outputFeed1 = bundles[0].getInputFeedFromBundle();
         final String outputFeed2Name = "second-" + Util.readEntityName(outputFeed1);
         FeedMerlin feedObj = new FeedMerlin(outputFeed1);
         feedObj.setName(outputFeed2Name);
@@ -432,7 +432,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedTableUri(inputTableUri);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setInputFeedValidity(startDate, endDate);
-        final String inputFeed1 = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        final String inputFeed1 = bundles[0].getInputFeedFromBundle();
         final String inputFeed2Name = "second-" + Util.readEntityName(inputFeed1);
         FeedMerlin feedObj = new FeedMerlin(inputFeed1);
         feedObj.setName(inputFeed2Name);
@@ -447,7 +447,7 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setOutputFeedTableUri(outputTableUri);
         bundles[0].setOutputFeedPeriodicity(1, Frequency.TimeUnit.hours);
         bundles[0].setOutputFeedValidity(startDate, endDate);
-        final String outputFeed1 = BundleUtil.getOutputFeedFromBundle(bundles[0]);
+        final String outputFeed1 = bundles[0].getOutputFeedFromBundle();
         final String outputFeed2Name = "second-" + Util.readEntityName(outputFeed1);
         FeedMerlin feedObj2 = new FeedMerlin(outputFeed1);
         feedObj2.setName(outputFeed2Name);
@@ -522,8 +522,8 @@ public class HCatProcessTest extends BaseTestClass {
         bundles[0].setInputFeedValidity(startDate, endDate);
 
         //
-        String nonHCatFeed = BundleUtil.getOutputFeedFromBundle(BundleUtil.readELBundle());
-        final String outputFeedName = BundleUtil.getOutputFeedNameFromBundle(bundles[0]);
+        String nonHCatFeed = BundleUtil.readELBundle().getOutputFeedFromBundle();
+        final String outputFeedName = bundles[0].getOutputFeedNameFromBundle();
         nonHCatFeed = Util.setFeedName(nonHCatFeed, outputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();
         Assert.assertEquals(clusterNames.size(), 1, "Expected only one cluster in the bundle.");
@@ -575,8 +575,8 @@ public class HCatProcessTest extends BaseTestClass {
             .location(outputHDFSDir)
             .build());
 
-        String nonHCatFeed = BundleUtil.getInputFeedFromBundle(BundleUtil.readELBundle());
-        final String inputFeedName = BundleUtil.getInputFeedNameFromBundle(bundles[0]);
+        String nonHCatFeed = BundleUtil.readELBundle().getInputFeedFromBundle();
+        final String inputFeedName = bundles[0].getInputFeedNameFromBundle();
         nonHCatFeed = Util.setFeedName(nonHCatFeed, inputFeedName);
         final List<String> clusterNames = bundles[0].getClusterNames();
         Assert.assertEquals(clusterNames.size(), 1, "Expected only one cluster in the bundle.");

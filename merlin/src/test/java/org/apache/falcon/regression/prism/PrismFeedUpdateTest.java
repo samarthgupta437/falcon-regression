@@ -107,8 +107,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //submit 3 clusters
 
         //get 2 unique feeds
-        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
-        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = bundles[0].getInputFeedFromBundle();
+        String outputFeed = bundles[0].getOutputFeedFromBundle();
 
         //set source and target for the 2 feeds
 

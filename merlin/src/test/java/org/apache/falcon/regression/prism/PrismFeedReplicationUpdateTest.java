@@ -191,9 +191,9 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
         //get 2 unique feeds
-        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
-        String feed02 = BundleUtil.getInputFeedFromBundle(bundles[1]);
-        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = bundles[0].getInputFeedFromBundle();
+        String feed02 = bundles[1].getInputFeedFromBundle();
+        String outputFeed = bundles[0].getOutputFeedFromBundle();
 
         //set clusters to null;
         feed01 = InstanceUtil.setFeedCluster(feed01,

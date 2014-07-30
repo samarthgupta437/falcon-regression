@@ -99,7 +99,7 @@ public class ProcessUITest extends BaseUITestClass {
         Process process = bundles[0].getProcessObject();
         Inputs inputs = new Inputs();
         Input input = new Input();
-        input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(bundles[0])));
+        input.setFeed(Util.readEntityName(bundles[0].getInputFeedFromBundle()));
         input.setStart("now(0,0)");
         input.setEnd("now(0,4)");
         input.setName("inputData");
@@ -131,8 +131,8 @@ public class ProcessUITest extends BaseUITestClass {
         logger.info("Process data: " + Util.prettyPrintXml(bundles[0].getProcessData()));
         FeedMerlin[] inputFeeds;
         FeedMerlin[] outputFeeds;
-        final FeedMerlin inputMerlin = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundles[0]));
-        final FeedMerlin outputMerlin = new FeedMerlin(BundleUtil.getOutputFeedFromBundle(bundles[0]));
+        final FeedMerlin inputMerlin = new FeedMerlin(bundles[0].getInputFeedFromBundle());
+        final FeedMerlin outputMerlin = new FeedMerlin(bundles[0].getOutputFeedFromBundle());
 
 
         inputFeeds = LineageApiTest.generateFeeds(numInputFeeds, inputMerlin,
