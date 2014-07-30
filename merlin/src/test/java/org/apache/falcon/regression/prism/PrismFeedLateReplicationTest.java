@@ -95,13 +95,13 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         String postFix = "/US/" + cluster2.getClusterHelper().getColoName();
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
 
 
         postFix = "/UK/" + cluster3.getClusterHelper().getColoName();
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-30);
 
@@ -205,12 +205,12 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         String postFix = "/US/" + cluster2.getClusterHelper().getColoName();
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/UK/" + cluster3.getClusterHelper().getColoName();
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         TimeUtil.sleepSeconds(60);
 
@@ -365,29 +365,29 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         String postFix = "/ua1/ua2";
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua2/ua2";
-        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua3/ua2";
-        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         //put _SUCCESS in parent folder UA2
-        Util.putFileInFolderHDFS(cluster2, 90, 1, prefix, "_SUCCESS");
+        HadoopUtil.putFileInFolderHDFS(cluster2, 90, 1, prefix, "_SUCCESS");
 
         postFix = "/ua1/ua3";
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         postFix = "/ua2/ua3";
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         postFix = "/ua3/ua3";
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         //put _SUCCESS in parent folder of UA3
-        Util.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
+        HadoopUtil.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
 
         //submit and schedule feed
         logger.info("feed: " + Util.prettyPrintXml(feed));
@@ -565,29 +565,29 @@ public class PrismFeedLateReplicationTest extends BaseTestClass {
         String postFix = "/ua1/ua2";
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua2/ua2";
-        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         postFix = "/ua3/ua2";
-        Util.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenishWithoutSuccess(cluster2, 90, 1, prefix, postFix);
 
         //put _SUCCESS in parent folder UA2
-        Util.putFileInFolderHDFS(cluster2, 90, 1, prefix, "_SUCCESS");
+        HadoopUtil.putFileInFolderHDFS(cluster2, 90, 1, prefix, "_SUCCESS");
 
         postFix = "/ua1/ua3";
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         postFix = "/ua2/ua3";
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         postFix = "/ua3/ua3";
-        Util.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 90, 1, prefix, postFix);
 
         //put _SUCCESS in parent folder of UA3
-        Util.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
+        HadoopUtil.putFileInFolderHDFS(cluster3, 90, 1, prefix, "_SUCCESS");
 
         TimeUtil.sleepSeconds(15);
 

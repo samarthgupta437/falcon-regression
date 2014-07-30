@@ -111,13 +111,13 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         String postFix = "/US/" + cluster2Colo;
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenish(cluster2, 5, 80, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster2, 5, 80, prefix, postFix);
 
         // use the colo string here so that the test works in embedded and distributed mode.
         postFix = "/UK/" + cluster3Colo;
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 5, 80, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3, 5, 80, prefix, postFix);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-30);
 
@@ -220,11 +220,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(cluster1, 23, 1, prefix, null);
+        HadoopUtil.lateDataReplenish(cluster1, 23, 1, prefix, null);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 23, 1, prefix, null);
+        HadoopUtil.lateDataReplenish(cluster3, 23, 1, prefix, null);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 
