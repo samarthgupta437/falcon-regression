@@ -26,6 +26,7 @@ import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
 import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -97,12 +98,12 @@ public class RetentionTest extends BaseTestClass {
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
         // test for https://issues.apache.org/jira/browse/FALCON-321
-        testRetention(24, RetentionUnit.HOURS, true, "daily", false);
+        testRetention(24, RetentionUnit.HOURS, true, FeedType.DAILY, false);
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(final int retentionPeriod, final RetentionUnit retentionUnit,
-        final boolean gaps, final String feedType, final boolean withData) throws Exception {
+        final boolean gaps, final FeedType feedType, final boolean withData) throws Exception {
         String inputFeed = setFeedPathValue(bundles[0].getInputFeedFromBundle(),
             getFeedPathValue(feedType));
         inputFeed = insertRetentionValueInFeed(inputFeed,
@@ -131,7 +132,7 @@ public class RetentionTest extends BaseTestClass {
         return feedObject.toString();
     }
 
-    private void replenishData(String dataType, boolean gap, boolean withData) throws Exception {
+    private void replenishData(FeedType feedType, boolean gap, boolean withData) throws Exception {
         int skip = 0;
 
         if (gap) {
@@ -139,24 +140,24 @@ public class RetentionTest extends BaseTestClass {
             skip = gaps[r.nextInt(gaps.length)];
         }
 
-        if (dataType.equalsIgnoreCase("daily")) {
+        if (feedType == FeedType.DAILY) {
             replenishData(
                 convertDatesToFolders(getDailyDatesOnEitherSide(36, skip), skip), withData);
-        } else if (dataType.equalsIgnoreCase("yearly")) {
+        } else if (feedType == FeedType.YEARLY) {
             replenishData(getYearlyDatesOnEitherSide(10, skip), withData);
-        } else if (dataType.equalsIgnoreCase("monthly")) {
+        } else if (feedType == FeedType.MONTHLY) {
             replenishData(getMonthlyDatesOnEitherSide(30, skip), withData);
         }
     }
 
-    private String getFeedPathValue(final String feedType) {
-        if (feedType.equalsIgnoreCase("monthly")) {
+    private String getFeedPathValue(final FeedType feedType) {
+        if (feedType == FeedType.MONTHLY) {
             return testHDFSDir + "${YEAR}/${MONTH}";
         }
-        if (feedType.equalsIgnoreCase("daily")) {
+        if (feedType == FeedType.DAILY) {
             return testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}";
         }
-        if (feedType.equalsIgnoreCase("yearly")) {
+        if (feedType == FeedType.YEARLY) {
             return testHDFSDir + "${YEAR}";
         }
         return null;
@@ -483,20 +484,20 @@ public class RetentionTest extends BaseTestClass {
         RetentionUnit[] retentionUnits = new RetentionUnit[]{RetentionUnit.HOURS,
             RetentionUnit.DAYS};// "minutes","hours", "days",
         boolean[] gaps = new boolean[]{false, true};
-        String[] feedType = new String[]{"daily", "yearly", "monthly"};
+        FeedType[] feedTypes = new FeedType[]{FeedType.DAILY, FeedType.YEARLY, FeedType.MONTHLY};
         Object[][] testData = new Object[retentionPeriods.length * retentionUnits.length *
-            gaps.length * feedType.length][5];
+            gaps.length * feedTypes.length][5];
 
         int i = 0;
 
         for (RetentionUnit retentionUnit : retentionUnits) {
             for (int period : retentionPeriods) {
                 for (boolean gap : gaps) {
-                    for (String dataType : feedType) {
+                    for (FeedType feedType : feedTypes) {
                         testData[i][0] = period;
                         testData[i][1] = retentionUnit;
                         testData[i][2] = gap;
-                        testData[i][3] = dataType;
+                        testData[i][3] = feedType;
                         testData[i][4] = true;
                         i++;
                     }
