@@ -310,7 +310,8 @@ public final class Util {
             for (int i = 0; i < srcPaths.length; ++i) {
                 srcPaths[i] = new Path(fileLocations[i]);
             }
-            LOGGER.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder);
+            LOGGER.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder
+            + " on " + fs.getUri());
             fs.copyFromLocalFile(false, true, srcPaths, new Path(folderPrefix + folder));
         }
     }
