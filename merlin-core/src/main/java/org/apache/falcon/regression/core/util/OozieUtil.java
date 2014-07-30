@@ -399,7 +399,7 @@ public final class OozieUtil {
         initialNominalTimes.removeAll(nominalTimesOriginalAndNew);
 
         if (initialNominalTimes.size() != 0) {
-            LOGGER.debug("Missing instance are : " + getListElements(initialNominalTimes));
+            LOGGER.debug("Missing instance are : " + initialNominalTimes);
             LOGGER.debug("Original Bundle ID   : " + originalBundleId);
             LOGGER.debug("New Bundle ID        : " + newBundleId);
 
@@ -407,15 +407,6 @@ public final class OozieUtil {
                     +
                 "update");
         }
-    }
-
-    private static String getListElements(List<String> list) {
-
-        String concatenated = "";
-        for (String curr : list) {
-            concatenated = concatenated + " , " + curr;
-        }
-        return concatenated;
     }
 
     public static String getCoordStartTime(ColoHelper colo, String entity,
