@@ -1306,8 +1306,8 @@ public final class InstanceUtil {
     public static String setFeedACL(String feed, String... ownerGroup) {
         FeedMerlin feedObject = new FeedMerlin(feed);
         ACL acl = feedObject.getACL();
-        acl.setOwner(MerlinConstants.aclOwner);
-        acl.setGroup(MerlinConstants.aclGroup);
+        acl.setOwner(MerlinConstants.ACL_OWNER);
+        acl.setGroup(MerlinConstants.ACL_GROUP);
         if (ownerGroup.length > 0) {
             acl.setOwner(ownerGroup[0]);
             if (ownerGroup.length == 2) {
