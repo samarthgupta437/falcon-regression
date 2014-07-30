@@ -939,7 +939,8 @@ public class Bundle {
     }
 
     /**
-     * Sets name(s) of the process output(s)
+     * Sets name(s) of the process output(s).
+     *
      * @param names new names of the outputs
      */
     public void setProcessOutputNames(String... names) {

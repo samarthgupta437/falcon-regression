@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
@@ -27,7 +26,7 @@ import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 
-public class MerlinConstants {
+public final class MerlinConstants {
     private MerlinConstants() {
     }
 
