@@ -248,21 +248,6 @@ public final class InstanceUtil {
                 "Parameter start is empty should have the response");
     }
 
-    public static void writeFeedElement(Bundle bundle, Feed feedElement,
-            String feedName) {
-        writeFeedElement(bundle, feedElement.toString(), feedName);
-    }
-
-    public static void writeFeedElement(Bundle bundle, String feedString,
-            String feedName) {
-        int index = 0;
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
-        if (!dataElement.getName().contains(feedName)) {
-            index = 1;
-        }
-        bundle.getDataSets().set(index, feedString);
-    }
-
     /**
      * Checks that API action succeed and the instance on which it has been performed on has
      * expected status.

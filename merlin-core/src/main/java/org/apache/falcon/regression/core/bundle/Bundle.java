@@ -49,7 +49,6 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -82,6 +81,21 @@ public class Bundle {
     private List<String> clusters;
     private List<String> dataSets;
     private String processData;
+
+    public void writeFeedElement(Feed feedElement,
+                                        String feedName) {
+        writeFeedElement(feedElement.toString(), feedName);
+    }
+
+    public void writeFeedElement(String feedString,
+                                        String feedName) {
+        int index = 0;
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(0));
+        if (!dataElement.getName().contains(feedName)) {
+            index = 1;
+        }
+        dataSets.set(index, feedString);
+    }
 
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
@@ -349,7 +363,7 @@ public class Bundle {
             .setStart(TimeUtil.oozieDateToDate(feedStart).toDate());
         feedElement.getClusters().getClusters().get(0).getValidity()
             .setEnd(TimeUtil.oozieDateToDate(feedEnd).toDate());
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
     }
 
     public int getInitialDatasetFrequency() {
@@ -495,7 +509,7 @@ public class Bundle {
         Feed feedElement = getFeedElement(feedName);
         Frequency frq = new Frequency("" + frequency, periodicity);
         feedElement.setFrequency(frq);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
 
     }
 
@@ -513,7 +527,7 @@ public class Bundle {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = getFeedElement(feedName);
         feedElement.getLocations().getLocations().get(0).setPath(path);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
     }
 
     public String getFeedDataPathPrefix() {
@@ -623,7 +637,7 @@ public class Bundle {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
         Feed feedElement = getFeedElement(feedName);
         feedElement.setAvailabilityFlag(flag);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
     }
 
     public void setCLusterColo(String colo) {
@@ -653,7 +667,7 @@ public class Bundle {
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
-        InstanceUtil.writeFeedElement(this, feed, feed.getName());
+        writeFeedElement(feed, feed.getName());
     }
 
     public void setOutputFeedTableUri(String tableUri) {
@@ -662,7 +676,7 @@ public class Bundle {
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
-        InstanceUtil.writeFeedElement(this, feed, feed.getName());
+        writeFeedElement(feed, feed.getName());
     }
 
     public void setCLusterWorkingPath(String clusterData, String path) {

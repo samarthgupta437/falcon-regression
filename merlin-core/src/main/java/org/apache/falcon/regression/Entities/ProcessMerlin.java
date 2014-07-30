@@ -32,7 +32,6 @@ import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.entity.v0.process.Properties;
 import org.apache.falcon.entity.v0.process.Property;
 import org.apache.falcon.regression.core.bundle.Bundle;
-import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.hadoop.fs.FileSystem;
@@ -101,7 +100,7 @@ public class ProcessMerlin extends Process {
                 .setStart(TimeUtil.oozieDateToDate(startDate).toDate());
             feedElement.getClusters().getClusters().get(0).getValidity()
                 .setEnd(TimeUtil.oozieDateToDate(endDate).toDate());
-            InstanceUtil.writeFeedElement(b, feedElement, feedElement.getName());
+            b.writeFeedElement(feedElement, feedElement.getName());
         }
         return b;
     }

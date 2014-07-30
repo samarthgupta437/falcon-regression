@@ -282,7 +282,7 @@ public class FeedReplicationTest extends BaseTestClass {
         String feedName = Util.readEntityName(bundles[0].getDataSets().get(0));
         Feed feedElement = bundles[0].getFeedElement(feedName);
         feedElement.setAvailabilityFlag(availabilityFlagName);
-        InstanceUtil.writeFeedElement(bundles[0], feedElement, feedName);
+        bundles[0].writeFeedElement(feedElement, feedName);
         String feed = bundles[0].getDataSets().get(0);
         feed = InstanceUtil.setFeedFilePath(feed, feedDataLocation);
         //erase all clusters from feed definition
