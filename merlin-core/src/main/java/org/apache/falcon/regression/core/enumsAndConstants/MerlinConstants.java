@@ -26,6 +26,9 @@ import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 
+/**
+ * Class for test contants.
+ */
 public final class MerlinConstants {
     private MerlinConstants() {
     }
