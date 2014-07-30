@@ -21,11 +21,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache.falcon</groupId>
-        <artifactId>falcon-regression</artifactId>
+        <groupId>org.apache.falcon.regression</groupId>
+        <artifactId>falcon-regression-inmobi</artifactId>
         <version>0.5-incubating-SNAPSHOT</version>
     </parent>
-    <artifactId>falcon-merlin</artifactId>
+    <artifactId>falcon-merlin-inmobi</artifactId>
     <description>Merlin - Regression test suite for Apache Falcon</description>
     <name>Apache Falcon Regression Suite</name>
     <packaging>jar</packaging>
@@ -116,8 +116,8 @@
     </profiles>
     <dependencies>
         <dependency>
-            <groupId>org.apache.falcon</groupId>
-            <artifactId>falcon-merlin-core</artifactId>
+            <groupId>org.apache.falcon.regression</groupId>
+            <artifactId>falcon-merlin-core-inmobi</artifactId>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
