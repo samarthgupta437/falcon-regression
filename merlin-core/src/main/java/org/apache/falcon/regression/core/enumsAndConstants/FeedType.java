@@ -18,6 +18,7 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -76,6 +77,10 @@ public enum FeedType {
 
     public DateTimeFormatter getFormatter() {
         return formatter;
+    }
+
+    public int getDirDepth() {
+        return StringUtils.countMatches(pathValue, "/");
     }
 
     public abstract DateTime addTime(DateTime dateTime, int amount);
