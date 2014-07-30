@@ -96,7 +96,7 @@ public class ProcessUITest extends BaseUITestClass {
         bundles[0].setProcessConcurrency(5);
         bundles[0].setInputFeedPeriodicity(1, Frequency.TimeUnit.minutes);
         bundles[0].setInputFeedDataPath(feedInputPath + datePattern);
-        Process process = InstanceUtil.getProcessElement(bundles[0]);
+        Process process = bundles[0].getProcessObject();
         Inputs inputs = new Inputs();
         Input input = new Input();
         input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(bundles[0])));

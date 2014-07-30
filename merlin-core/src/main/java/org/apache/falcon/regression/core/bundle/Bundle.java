@@ -290,7 +290,7 @@ public class Bundle {
      * @param endEl its end in terms of EL expression
      */
     public void setProcessInput(String startEl, String endEl) {
-        Process process = InstanceUtil.getProcessElement(this);
+        Process process = getProcessObject();
         Inputs inputs = new Inputs();
         Input input = new Input();
         input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(this)));
@@ -344,13 +344,13 @@ public class Bundle {
     }
 
     public Date getStartInstanceProcess(Calendar time) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         LOGGER.info("start instance: " + processElement.getInputs().getInputs().get(0).getStart());
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getStart(), time);
     }
 
     public Date getEndInstanceProcess(Calendar time) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         LOGGER.info("end instance: " + processElement.getInputs().getInputs().get(0).getEnd());
         LOGGER.info("timezone in getendinstance: " + time.getTimeZone().toString());
         LOGGER.info("time in getendinstance: " + time.getTime());
@@ -358,21 +358,21 @@ public class Bundle {
     }
 
     public void setDatasetInstances(String startInstance, String endInstance) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         processElement.getInputs().getInputs().get(0).setStart(startInstance);
         processElement.getInputs().getInputs().get(0).setEnd(endInstance);
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
     public void setProcessPeriodicity(int frequency, TimeUnit periodicity) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Frequency frq = new Frequency("" + frequency, periodicity);
         processElement.setFrequency(frq);
         InstanceUtil.writeProcessElement(this, processElement);
     }
 
     public void setProcessInputStartEnd(String start, String end) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         for (Input input : processElement.getInputs().getInputs()) {
             input.setStart(start);
             input.setEnd(end);
@@ -399,7 +399,7 @@ public class Bundle {
     }
 
     public int getProcessConcurrency() {
-        return InstanceUtil.getProcessElement(this).getParallel();
+        return getProcessObject().getParallel();
     }
 
     public void setOutputFeedLocationData(String path) {
@@ -423,7 +423,7 @@ public class Bundle {
     }
 
     public void setProcessConcurrency(int concurrency) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         processElement.setParallel((concurrency));
         InstanceUtil.writeProcessElement(this, processElement);
     }
@@ -437,7 +437,7 @@ public class Bundle {
     }
 
     public void setProcessWorkflow(String wfPath, String libPath, EngineType engineType) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Workflow w = processElement.getWorkflow();
         if (engineType != null) {
             w.setEngine(engineType);
@@ -567,7 +567,7 @@ public class Bundle {
     }
 
     public void addProcessInput(String feed, String feedName) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
         in2.setEnd(in1.getEnd());
@@ -580,7 +580,7 @@ public class Bundle {
     }
 
     public void setProcessName(String newName) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         processElement.setName(newName);
         InstanceUtil.writeProcessElement(this, processElement);
 
@@ -756,7 +756,7 @@ public class Bundle {
     }
 
     public void setProcessLibPath(String libPath) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Workflow wf = processElement.getWorkflow();
         wf.setLib(libPath);
         processElement.setWorkflow(wf);
@@ -765,7 +765,7 @@ public class Bundle {
     }
 
     public void setProcessTimeOut(int magnitude, TimeUnit unit) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Frequency frq = new Frequency("" + magnitude, unit);
         processElement.setTimeout(frq);
         InstanceUtil.writeProcessElement(this, processElement);

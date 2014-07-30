@@ -252,10 +252,6 @@ public final class InstanceUtil {
         bundle.setProcessData(processElement.toString());
     }
 
-    public static Process getProcessElement(Bundle bundle) {
-        return (Process) Entity.fromString(EntityType.PROCESS, bundle.getProcessData());
-    }
-
     public static Feed getFeedElement(Bundle bundle, String feedName) {
         Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
         if (!feedElement.getName().contains(feedName)) {

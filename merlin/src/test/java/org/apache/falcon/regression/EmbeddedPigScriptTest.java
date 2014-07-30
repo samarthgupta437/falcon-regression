@@ -109,7 +109,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
         bundles[0].setProcessPeriodicity(5, TimeUnit.minutes);
         bundles[0].setOutputFeedPeriodicity(5, TimeUnit.minutes);
 
-        final Process processElement = InstanceUtil.getProcessElement(bundles[0]);
+        final Process processElement = bundles[0].getProcessObject();
         final Properties properties = new Properties();
         final Property property = new Property();
         property.setName("queueName");
