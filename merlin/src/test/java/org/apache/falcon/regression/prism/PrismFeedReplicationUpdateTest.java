@@ -184,11 +184,8 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
         bundles[0].setCLusterColo(cluster1Colo);
-        logger.info("cluster bundles[0]: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         bundles[1].setCLusterColo(cluster2Colo);
-        logger.info("cluster bundles[1]: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         bundles[2].setCLusterColo(cluster3Colo);
-        logger.info("cluster bundles[2]: " + Util.prettyPrintXml(bundles[2].getClusters().get(0)));
 
         //submit 3 clusters
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
@@ -269,10 +266,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
-        logger.info("feed01: " + Util.prettyPrintXml(feed01));
-        logger.info("feed02: " + Util.prettyPrintXml(feed02));
-        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
-
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, outputFeed);
@@ -300,8 +293,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readEntityName(feed02));
 
         //submit and schedule process
-        logger.info("process: " + Util.prettyPrintXml(process));
-
         AssertUtil.assertSucceeded(prism.getProcessHelper().submitAndSchedule(URLS
             .SUBMIT_AND_SCHEDULE_URL, process));
 
