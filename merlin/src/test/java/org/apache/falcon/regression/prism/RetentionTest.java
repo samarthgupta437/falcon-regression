@@ -77,12 +77,13 @@ public class RetentionTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws IOException, JAXBException {
+    public void testName(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         Bundle bundle = BundleUtil.readRetentionBundle();
         bundles[0] = new Bundle(bundle, cluster);
         bundles[0].setInputFeedDataPath(testHDFSDir);
         bundles[0].generateUniqueBundle();
+        bundles[0].submitClusters(prism);
     }
 
     @AfterMethod(alwaysRun = true)
@@ -105,8 +106,6 @@ public class RetentionTest extends BaseTestClass {
         String inputFeed = setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]),
             getFeedPathValue(dataType));
         inputFeed = insertRetentionValueInFeed(inputFeed, unit + "(" + period + ")");
-
-        bundles[0].submitClusters(prism);
 
         final ServiceResponse response = prism.getFeedHelper()
             .submitEntity(URLS.SUBMIT_URL, inputFeed);
