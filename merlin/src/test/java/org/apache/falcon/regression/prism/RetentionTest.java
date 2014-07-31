@@ -141,9 +141,7 @@ public class RetentionTest extends BaseTestClass {
         }
 
         if (feedType == FeedType.DAILY) {
-            replenishData(
-                convertDatesToFolders(getDailyDatesOnEitherSide(36, skip, feedType.getFormatter()),
-                    skip), withData);
+            replenishData(getDailyDatesOnEitherSide(36, skip, feedType.getFormatter()), withData);
         } else if (feedType == FeedType.YEARLY) {
             replenishData(getYearlyDatesOnEitherSide(10, skip, feedType.getFormatter()), withData);
         } else if (feedType == FeedType.MONTHLY) {
@@ -310,19 +308,6 @@ public class RetentionTest extends BaseTestClass {
         //make sure feed bundle is not there
         Assert.assertFalse(clusterFS.isDirectory(new Path(directory)),
             "Feed " + Util.readEntityName(feed) + " did not have its bundle removed!!!!");
-    }
-
-    private static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {
-        logger.info("converting dates to folders....");
-        List<String> folderList = new ArrayList<String>();
-
-        for (String date : dateList) {
-            for (int i = 0; i < 24; i += skipInterval + 1) {
-                folderList.add(date + String.format("/%02d", i));
-            }
-        }
-
-        return folderList;
     }
 
     private static List<String> getDailyDatesOnEitherSide(int interval, int skip,
