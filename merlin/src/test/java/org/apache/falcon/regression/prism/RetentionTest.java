@@ -99,9 +99,8 @@ public class RetentionTest extends BaseTestClass {
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
     public void testRetention(final int retentionPeriod, final RetentionUnit retentionUnit,
         final boolean gaps, final FeedType feedType, final boolean withData) throws Exception {
-        String inputFeed = setFeedPathValue(bundles[0].getInputFeedFromBundle(),
-            testHDFSDir + feedType.getPathValue());
-        inputFeed = insertRetentionValueInFeed(inputFeed,
+        bundles[0].setInputFeedDataPath(testHDFSDir + feedType.getPathValue());
+        String inputFeed = insertRetentionValueInFeed(bundles[0].getInputFeedFromBundle(),
             retentionUnit.getValue() + "(" + retentionPeriod + ")");
 
         final ServiceResponse response = prism.getFeedHelper()
@@ -115,16 +114,6 @@ public class RetentionTest extends BaseTestClass {
         } else {
             AssertUtil.assertFailed(response);
         }
-    }
-
-    private String setFeedPathValue(String feed, String pathValue) {
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
-        for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType() == LocationType.DATA) {
-                location.setPath(pathValue);
-            }
-        }
-        return feedObject.toString();
     }
 
     private void replenishData(FeedType feedType, boolean gap, boolean withData) throws Exception {
@@ -146,17 +135,13 @@ public class RetentionTest extends BaseTestClass {
                                              RetentionUnit interval)
         throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
         //get Data created in the cluster
-        List<String> initialData =
-            Util.getHadoopDataFromDir(clusterFS, inputFeed,
-                testHDFSDir);
+        List<String> initialData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
 
-        cluster.getFeedHelper()
-            .schedule(URLS.SCHEDULE_URL, inputFeed);
+        cluster.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
         final String inputDataSetName = Util.readEntityName(inputFeed);
         logger.info(inputDataSetName);
-        Consumer consumer =
-            new Consumer("FALCON." + inputDataSetName,
+        Consumer consumer = new Consumer("FALCON." + inputDataSetName,
                 cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 

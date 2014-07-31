@@ -144,7 +144,7 @@ public class Bundle {
         submitFeeds(prismHelper);
 
         AssertUtil.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(
-            URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+                URLS.SUBMIT_AND_SCHEDULE_URL, processData));
     }
 
 
@@ -159,7 +159,7 @@ public class Bundle {
         submitProcess(true);
 
         AssertUtil.assertSucceeded(
-            coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
+                coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
     }
 
     public List<String> getClusters() {
@@ -525,7 +525,12 @@ public class Bundle {
     public void setInputFeedDataPath(String path) {
         String feedName = getInputFeedNameFromBundle();
         Feed feedElement = getFeedElement(feedName);
-        feedElement.getLocations().getLocations().get(0).setPath(path);
+        final List<Location> locations = feedElement.getLocations().getLocations();
+        for (Location location : locations) {
+            if(location.getType() == LocationType.DATA) {
+                locations.get(0).setPath(path);
+            }
+        }
         writeFeedElement(feedElement, feedName);
     }
 
