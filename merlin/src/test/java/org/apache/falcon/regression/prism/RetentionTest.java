@@ -318,11 +318,7 @@ public class RetentionTest extends BaseTestClass {
 
         for (String date : dateList) {
             for (int i = 0; i < 24; i += skipInterval + 1) {
-                if (i < 10) {
-                    folderList.add(date + "/0" + i);
-                } else {
-                    folderList.add(date + "/" + i);
-                }
+                folderList.add(date + String.format("/%02d", i));
             }
         }
 
@@ -377,7 +373,7 @@ public class RetentionTest extends BaseTestClass {
         logger.info("today is: " + today.toString());
 
         List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print((today)));
+        dates.add(formatter.print(today));
 
         //first lets get all dates before today
         for (int backward = 1; backward <= interval; backward += skip + 1) {
