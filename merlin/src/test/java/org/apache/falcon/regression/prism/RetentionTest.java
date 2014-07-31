@@ -89,9 +89,6 @@ public class RetentionTest extends BaseTestClass {
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        prism.getFeedHelper()
-            .delete(URLS.DELETE_URL, bundles[0].getInputFeedFromBundle());
-        verifyFeedDeletion(bundles[0].getInputFeedFromBundle());
         removeBundles();
     }
 
@@ -293,15 +290,6 @@ public class RetentionTest extends BaseTestClass {
 
         return feedObject.toString();
 
-    }
-
-    private void verifyFeedDeletion(String feed)
-        throws IOException {
-        String directory = "/projects/ivory/staging/" + cluster.getFeedHelper().getServiceUser()
-            + "/workflows/feed/" + Util.readEntityName(feed);
-        //make sure feed bundle is not there
-        Assert.assertFalse(clusterFS.isDirectory(new Path(directory)),
-            "Feed " + Util.readEntityName(feed) + " did not have its bundle removed!!!!");
     }
 
     private static List<String> getDatesOnEitherSide(FeedType feedType, int interval, int skip) {
