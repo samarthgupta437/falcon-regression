@@ -24,7 +24,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.testng.Assert;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -147,12 +146,27 @@ public final class TimeUtil {
      */
     public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
                                                       FeedType feedType) {
+        return getDatesOnEitherSide(startDate, endDate, 1, feedType);
+    }
+
+    /**
+     * Get all possible dates between start and end date gap between subsequent dates be one unit.
+     * of feedType
+     *
+     * @param startDate start date
+     * @param endDate   end date
+     * @param skip      amount of skipping
+     * @param feedType  type of the feed
+     * @return list of dates
+     */
+    public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
+                                                      int skip, FeedType feedType) {
         final List<DateTime> dates = new ArrayList<DateTime>();
         if (!startDate.isAfter(endDate)) {
             dates.add(startDate);
         }
         for (int counter = 0; !startDate.isAfter(endDate) && counter < 1000; ++counter) {
-            startDate = feedType.addTime(startDate, 1);
+            startDate = feedType.addTime(startDate, skip);
             dates.add(startDate);
         }//end of for
         return dates;

@@ -36,6 +36,7 @@ import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -130,7 +131,7 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void replenishData(FeedType feedType, boolean gap, boolean withData) throws Exception {
-        int skip = 0;
+        int skip = 1;
 
         if (gap) {
             Random r = new Random();
@@ -293,24 +294,12 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private static List<String> getDatesOnEitherSide(FeedType feedType, int interval, int skip) {
-        final DateTimeFormatter formatter = feedType.getFormatter();
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(today));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(feedType.addTime(today, -backward)));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(feedType.addTime(today, i)));
-        }
-
-        return dates;
+        final DateTime today = new DateTime(DateTimeZone.UTC);
+        final List<DateTime> times = TimeUtil.getDatesOnEitherSide(
+            feedType.addTime(today, -interval), feedType.addTime(today, interval), skip, feedType);
+        final List<String> dataDates = TimeUtil.convertDatesToString(times, feedType.getFormatter());
+        logger.info("dataDates = " + dataDates);
+        return dataDates;
     }
 
     private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,
