@@ -19,7 +19,6 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -260,11 +259,9 @@ public final class HadoopUtil {
         return locations;
     }
 
-    public static void createLateDataFoldersWithRandom(ColoHelper prismHelper, String folderPrefix,
-                                                       List<String> folderList) throws IOException {
+    public static void createLateDataFoldersWithRandom(FileSystem fs, String folderPrefix,
+        List<String> folderList) throws IOException {
         LOGGER.info("creating late data folders.....");
-        final FileSystem fs = prismHelper.getProcessHelper().getHadoopFS();
-
         folderList.add("somethingRandom");
 
         for (final String folder : folderList) {
@@ -274,9 +271,8 @@ public final class HadoopUtil {
         LOGGER.info("created all late data folders.....");
     }
 
-    public static void copyDataToFolders(ColoHelper prismHelper, List<String> folderList,
-                                         String directory, String folderPrefix)
-        throws IOException {
+    public static void copyDataToFolders(FileSystem fs, List<String> folderList,
+        String directory, String folderPrefix) throws IOException {
         LOGGER.info("copying data into folders....");
         List<String> fileLocations = new ArrayList<String>();
         File[] files = new File(directory).listFiles();
@@ -285,15 +281,12 @@ public final class HadoopUtil {
                 fileLocations.add(file.toString());
             }
         }
-        copyDataToFolders(prismHelper, folderPrefix, folderList,
+        copyDataToFolders(fs, folderPrefix, folderList,
                 fileLocations.toArray(new String[fileLocations.size()]));
     }
 
-    public static void copyDataToFolders(ColoHelper prismHelper, final String folderPrefix,
-                                         List<String> folderList, String... fileLocations)
-        throws IOException {
-        final FileSystem fs = prismHelper.getProcessHelper().getHadoopFS();
-
+    public static void copyDataToFolders(FileSystem fs, final String folderPrefix,
+        List<String> folderList, String... fileLocations) throws IOException {
         for (final String folder : folderList) {
             boolean r;
             String folderSpace = folder.replaceAll("/", "_");
@@ -318,34 +311,29 @@ public final class HadoopUtil {
             for (int i = 0; i < srcPaths.length; ++i) {
                 srcPaths[i] = new Path(fileLocations[i]);
             }
-            LOGGER.info("copying  " + Arrays.toString(srcPaths) + " to " + folderPrefix + folder
-            + " on " + fs.getUri());
+            LOGGER.info(String.format("copying  %s to %s%s on %s", Arrays.toString(srcPaths),
+                folderPrefix, folder, fs.getUri()));
             fs.copyFromLocalFile(false, true, srcPaths, new Path(folderPrefix + folder));
         }
     }
 
-    public static void lateDataReplenish(ColoHelper prismHelper, int interval,
-                                         int minuteSkip, String folderPrefix) throws IOException {
+    public static void lateDataReplenish(FileSystem fs, int interval,
+        int minuteSkip, String folderPrefix) throws IOException {
         List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
 
-        createLateDataFoldersWithRandom(prismHelper, folderPrefix, folderData);
-        copyDataToFolders(prismHelper, folderData,
-                OSUtil.NORMAL_INPUT, folderPrefix);
+        createLateDataFoldersWithRandom(fs, folderPrefix, folderData);
+        copyDataToFolders(fs, folderData, OSUtil.NORMAL_INPUT, folderPrefix);
     }
 
-    public static void createLateDataFolders(ColoHelper prismHelper, List<String> folderList,
-                                             final String folderPrefix) throws IOException {
-        final FileSystem fs = prismHelper.getProcessHelper().getHadoopFS();
-
+    public static void createLateDataFolders(FileSystem fs, final String folderPrefix,
+                                             List<String> folderList) throws IOException {
         for (final String folder : folderList) {
             fs.mkdirs(new Path(folderPrefix + folder));
         }
     }
 
-    public static void injectMoreData(ColoHelper prismHelper, final String remoteLocation,
+    public static void injectMoreData(FileSystem fs, final String remoteLocation,
                                       String localLocation) throws IOException {
-        final FileSystem fs = prismHelper.getClusterHelper().getHadoopFS();
-
         File[] files = new File(localLocation).listFiles();
         assert files != null;
         for (final File file : files) {
@@ -358,27 +346,24 @@ public final class HadoopUtil {
 
     }
 
-    public static void putFileInFolderHDFS(ColoHelper prismHelper, int interval, int minuteSkip,
+    public static void putFileInFolderHDFS(FileSystem fs, int interval, int minuteSkip,
                                            String folderPrefix, String fileToBePut)
         throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
         LOGGER.info("folderData: " + folderPaths.toString());
 
-        createLateDataFolders(prismHelper, folderPaths, folderPrefix);
+        createLateDataFolders(fs, folderPrefix, folderPaths);
 
         if (fileToBePut.equals("_SUCCESS")) {
-            copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                    OSUtil.NORMAL_INPUT + "_SUCCESS");
+            copyDataToFolders(fs, folderPrefix, folderPaths, OSUtil.NORMAL_INPUT + "_SUCCESS");
         } else {
-            copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                    OSUtil.NORMAL_INPUT + "log_01.txt");
+            copyDataToFolders(fs, folderPrefix, folderPaths, OSUtil.NORMAL_INPUT + "log_01.txt");
         }
 
     }
 
-    public static void lateDataReplenishWithoutSuccess(ColoHelper prismHelper, int interval,
-                                                        int minuteSkip, String folderPrefix,
-                                                        String postFix) throws IOException {
+    public static void lateDataReplenishWithoutSuccess(FileSystem fs, int interval,
+        int minuteSkip, String folderPrefix, String postFix) throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
         LOGGER.info("folderData: " + folderPaths.toString());
 
@@ -388,12 +373,12 @@ public final class HadoopUtil {
             }
         }
 
-        createLateDataFolders(prismHelper, folderPaths, folderPrefix);
-        copyDataToFolders(prismHelper, folderPrefix, folderPaths,
+        createLateDataFolders(fs, folderPrefix, folderPaths);
+        copyDataToFolders(fs, folderPrefix, folderPaths,
                 OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
-    public static void lateDataReplenish(ColoHelper prismHelper, int interval, int minuteSkip,
+    public static void lateDataReplenish(FileSystem fs, int interval, int minuteSkip,
                                          String folderPrefix, String postFix) throws IOException {
         List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
         LOGGER.info("folderData: " + folderPaths.toString());
@@ -404,10 +389,9 @@ public final class HadoopUtil {
             }
         }
 
-        createLateDataFolders(prismHelper, folderPaths, folderPrefix);
-        copyDataToFolders(prismHelper, folderPrefix, folderPaths,
-                OSUtil.NORMAL_INPUT + "_SUCCESS",
-                OSUtil.NORMAL_INPUT + "log_01.txt");
+        createLateDataFolders(fs, folderPrefix, folderPaths);
+        copyDataToFolders(fs, folderPrefix, folderPaths,
+            OSUtil.NORMAL_INPUT + "_SUCCESS", OSUtil.NORMAL_INPUT + "log_01.txt");
     }
 
     public static void replenishData(FileSystem fileSystem, String prefix, List<String> folderList,

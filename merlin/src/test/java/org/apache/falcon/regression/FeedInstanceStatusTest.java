@@ -172,12 +172,12 @@ public class FeedInstanceStatusTest extends BaseTestClass {
         String postFix = "/US/" + cluster2.getClusterHelper().getColo();
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        HadoopUtil.lateDataReplenish(cluster2, 80, 20, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster2FS, 80, 20, prefix, postFix);
 
-        postFix = "/UK/" + cluster3.getClusterHelper().getColo();;
+        postFix = "/UK/" + cluster3.getClusterHelper().getColo();
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        HadoopUtil.lateDataReplenish(cluster3, 80, 20, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3FS, 80, 20, prefix, postFix);
 
         // both replication instances
         prism.getFeedHelper()
