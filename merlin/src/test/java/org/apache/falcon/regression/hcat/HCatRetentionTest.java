@@ -188,7 +188,7 @@ public class HCatRetentionTest extends BaseTestClass {
 
         //convert the end date to the same format
         final String endLimit =
-            feedType.getFormatter().print(getEndLimit(retentionPeriod, retentionUnit, endDateUTC));
+            feedType.getFormatter().print(retentionUnit.minusTime(endDateUTC, retentionPeriod));
         //now to actually check!
         for (String testDate : inputData) {
             if (testDate.compareTo(endLimit) >= 0) {
@@ -270,25 +270,6 @@ public class HCatRetentionTest extends BaseTestClass {
             client.addPartition(addPtn);
             ptn.clear();
         }
-    }
-
-    private static DateTime getEndLimit(int time, RetentionUnit interval,
-                                        DateTime today) {
-        switch (interval) {
-            case MINUTES:
-                return today.minusMinutes(time);
-            case HOURS:
-                return today.minusHours(time);
-            case DAYS:
-                return today.minusDays(time);
-            case MONTHS:
-                return today.minusMonths(time);
-            case YEARS:
-                return today.minusYears(time);
-            default:
-                Assert.fail("Unexpected value of interval: " + interval);
-        }
-        return null;
     }
 
     @DataProvider(name = "loopBelow")

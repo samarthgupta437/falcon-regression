@@ -18,8 +18,35 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
+import org.joda.time.DateTime;
+
 public enum RetentionUnit {
-    MINUTES("minutes"), HOURS("hours"), DAYS("days"), MONTHS("months"), YEARS("years");
+    MINUTES("minutes") {
+        @Override
+        public DateTime minusTime(DateTime dateTime, int amount) {
+            return dateTime.minusMinutes(amount);
+        }
+    }, HOURS("hours") {
+        @Override
+        public DateTime minusTime(DateTime dateTime, int amount) {
+            return dateTime.minusHours(amount);
+        }
+    }, DAYS("days") {
+        @Override
+        public DateTime minusTime(DateTime dateTime, int amount) {
+            return dateTime.minusDays(amount);
+        }
+    }, MONTHS("months") {
+        @Override
+        public DateTime minusTime(DateTime dateTime, int amount) {
+            return dateTime.minusMonths(amount);
+        }
+    }, YEARS("years") {
+        @Override
+        public DateTime minusTime(DateTime dateTime, int amount) {
+            return dateTime.minusYears(amount);
+        }
+    };
 
     private String value;
 
@@ -30,4 +57,7 @@ public enum RetentionUnit {
     public String getValue() {
         return value;
     }
+
+    public abstract DateTime minusTime(DateTime dateTime, int amount);
+
 }
