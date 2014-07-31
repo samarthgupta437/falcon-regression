@@ -34,21 +34,18 @@ import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
-import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
@@ -132,13 +129,17 @@ public class RetentionTest extends BaseTestClass {
 
     private void replenishData(FeedType feedType, boolean gap, boolean withData) throws Exception {
         int skip = 1;
-
         if (gap) {
-            Random r = new Random();
-            skip = gaps[r.nextInt(gaps.length)];
+            skip = gaps[new Random().nextInt(gaps.length)];
         }
 
-        replenishData(getDatesOnEitherSide(feedType, 36, skip), withData);
+        final DateTime today = new DateTime(DateTimeZone.UTC);
+        final List<DateTime> times = TimeUtil.getDatesOnEitherSide(
+            feedType.addTime(today, -36), feedType.addTime(today, 36), skip, feedType);
+        final List<String> dataDates = TimeUtil.convertDatesToString(times, feedType.getFormatter());
+        logger.info("dataDates = " + dataDates);
+
+        HadoopUtil.replenishData(clusterFS, testHDFSDir, dataDates, withData);
     }
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
@@ -215,24 +216,6 @@ public class RetentionTest extends BaseTestClass {
             expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
-    private void replenishData(List<String> folderList, boolean uploadData)
-        throws IOException {
-        //purge data first
-        HadoopUtil.deleteDirIfExists(testHDFSDir, clusterFS);
-
-        folderList.add("somethingRandom");
-
-        for (final String folder : folderList) {
-            final String pathString = testHDFSDir + folder;
-            logger.info(pathString);
-            clusterFS.mkdirs(new Path(pathString));
-            if (uploadData) {
-                clusterFS.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"),
-                    new Path(pathString));
-            }
-        }
-    }
-
     private void validateDataFromFeedQueue(String feedName,
                                            List<HashMap<String, String>> queueData,
                                            List<String> expectedOutput,
@@ -291,15 +274,6 @@ public class RetentionTest extends BaseTestClass {
 
         return feedObject.toString();
 
-    }
-
-    private static List<String> getDatesOnEitherSide(FeedType feedType, int interval, int skip) {
-        final DateTime today = new DateTime(DateTimeZone.UTC);
-        final List<DateTime> times = TimeUtil.getDatesOnEitherSide(
-            feedType.addTime(today, -interval), feedType.addTime(today, interval), skip, feedType);
-        final List<String> dataDates = TimeUtil.convertDatesToString(times, feedType.getFormatter());
-        logger.info("dataDates = " + dataDates);
-        return dataDates;
     }
 
     private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,
