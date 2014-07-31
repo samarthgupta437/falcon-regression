@@ -26,12 +26,12 @@ import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.regression.core.util.ExecUtil;
 import org.apache.falcon.regression.core.util.HCatUtil;
-import org.apache.falcon.regression.core.util.HadoopUtil;
 import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.commons.lang.StringUtils;
@@ -162,8 +162,11 @@ public abstract class IEntityManagerHelper {
     protected AuthOozieClient oozieClient;
 
     public FileSystem getHadoopFS() throws IOException {
-        if (null == this.hadoopFS)
-            this.hadoopFS = HadoopUtil.getFileSystem(this.hadoopURL);
+        if (null == this.hadoopFS) {
+            Configuration conf = new Configuration();
+            conf.set("fs.default.name", "hdfs://" + this.hadoopURL);
+            this.hadoopFS = FileSystem.get(conf);
+        }
         return this.hadoopFS;
     }
 

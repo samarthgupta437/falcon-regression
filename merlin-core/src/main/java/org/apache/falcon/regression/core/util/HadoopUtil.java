@@ -20,7 +20,6 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -121,8 +120,7 @@ public final class HadoopUtil {
                                         final String srcFileLocation)
         throws IOException {
         LOGGER.info(String.format("Copying local dir %s to hdfs location %s on %s",
-            srcFileLocation,
-            dstHdfsDir, fs.getConf().get("fs.default.name")));
+            srcFileLocation, dstHdfsDir, fs.getUri()));
         fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
     }
 
@@ -208,22 +206,13 @@ public final class HadoopUtil {
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
         if (fs.exists(path)) {
-            LOGGER.info(String.format("Deleting HDFS path: %s on %s", path,
-                fs.getConf().get("fs.default.name")));
+            LOGGER.info(String.format("Deleting HDFS path: %s on %s", path, fs.getUri()));
             fs.delete(path, true);
         } else {
             LOGGER.info(String.format(
-                "Not deleting non-existing HDFS path: %s on %s", path,
-                fs.getConf().get("fs.default.name")));
+                "Not deleting non-existing HDFS path: %s on %s", path, fs.getUri()));
         }
     }
-
-    public static FileSystem getFileSystem(String fs) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + fs);
-        return FileSystem.get(conf);
-    }
-
 
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  List<String> remoteLocations) throws IOException {
@@ -274,10 +263,7 @@ public final class HadoopUtil {
     public static void createLateDataFoldersWithRandom(ColoHelper prismHelper, String folderPrefix,
                                                        List<String> folderList) throws IOException {
         LOGGER.info("creating late data folders.....");
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
+        final FileSystem fs = prismHelper.getProcessHelper().getHadoopFS();
 
         folderList.add("somethingRandom");
 
@@ -306,10 +292,7 @@ public final class HadoopUtil {
     public static void copyDataToFolders(ColoHelper prismHelper, final String folderPrefix,
                                          List<String> folderList, String... fileLocations)
         throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL());
-
-        final FileSystem fs = FileSystem.get(conf);
+        final FileSystem fs = prismHelper.getProcessHelper().getHadoopFS();
 
         for (final String folder : folderList) {
             boolean r;
@@ -352,10 +335,7 @@ public final class HadoopUtil {
 
     public static void createLateDataFolders(ColoHelper prismHelper, List<String> folderList,
                                              final String folderPrefix) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getProcessHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
+        final FileSystem fs = prismHelper.getProcessHelper().getHadoopFS();
 
         for (final String folder : folderList) {
             fs.mkdirs(new Path(folderPrefix + folder));
@@ -364,10 +344,7 @@ public final class HadoopUtil {
 
     public static void injectMoreData(ColoHelper prismHelper, final String remoteLocation,
                                       String localLocation) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + prismHelper.getClusterHelper().getHadoopURL() + "");
-
-        final FileSystem fs = FileSystem.get(conf);
+        final FileSystem fs = prismHelper.getClusterHelper().getHadoopFS();
 
         File[] files = new File(localLocation).listFiles();
         assert files != null;
