@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -93,7 +94,10 @@ public final class BundleUtil {
         } catch (URISyntaxException e) {
             Assert.fail("could not find dir: " + folderPath);
         }
-        final Collection<File> files = FileUtils.listFiles(directory, new String[] {"xml"}, true);
+        final Collection<File> list = FileUtils.listFiles(directory, new String[] {"xml"}, true);
+        List<File> files = new ArrayList<File>();
+        files.addAll(list);
+        Collections.sort(files);
         String clusterData = "";
         final List<String> dataSets = new ArrayList<String>();
         String processData = "";
