@@ -142,11 +142,12 @@ public class RetentionTest extends BaseTestClass {
 
         if (feedType == FeedType.DAILY) {
             replenishData(
-                convertDatesToFolders(getDailyDatesOnEitherSide(36, skip), skip), withData);
+                convertDatesToFolders(getDailyDatesOnEitherSide(36, skip, feedType.getFormatter()),
+                    skip), withData);
         } else if (feedType == FeedType.YEARLY) {
-            replenishData(getYearlyDatesOnEitherSide(10, skip), withData);
+            replenishData(getYearlyDatesOnEitherSide(10, skip, feedType.getFormatter()), withData);
         } else if (feedType == FeedType.MONTHLY) {
-            replenishData(getMonthlyDatesOnEitherSide(30, skip), withData);
+            replenishData(getMonthlyDatesOnEitherSide(30, skip, feedType.getFormatter()), withData);
         }
     }
 
@@ -328,10 +329,8 @@ public class RetentionTest extends BaseTestClass {
         return folderList;
     }
 
-    private static List<String> getDailyDatesOnEitherSide(int interval, int skip) {
-
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-
+    private static List<String> getDailyDatesOnEitherSide(int interval, int skip,
+                                                          DateTimeFormatter formatter) {
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
@@ -351,8 +350,8 @@ public class RetentionTest extends BaseTestClass {
         return dates;
     }
 
-    private static List<String> getYearlyDatesOnEitherSide(int interval, int skip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
+    private static List<String> getYearlyDatesOnEitherSide(int interval, int skip,
+                                                           DateTimeFormatter formatter) {
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
@@ -372,8 +371,8 @@ public class RetentionTest extends BaseTestClass {
         return dates;
     }
 
-    private static List<String> getMonthlyDatesOnEitherSide(int interval, int skip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM");
+    private static List<String> getMonthlyDatesOnEitherSide(int interval, int skip,
+                                                            DateTimeFormatter formatter) {
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
