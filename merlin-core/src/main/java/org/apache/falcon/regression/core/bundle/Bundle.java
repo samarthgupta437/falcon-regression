@@ -49,7 +49,6 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
-import org.apache.falcon.regression.core.util.InstanceUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -82,6 +81,21 @@ public class Bundle {
     private List<String> clusters;
     private List<String> dataSets;
     private String processData;
+
+    public void writeFeedElement(Feed feedElement,
+                                        String feedName) {
+        writeFeedElement(feedElement.toString(), feedName);
+    }
+
+    public void writeFeedElement(String feedString,
+                                        String feedName) {
+        int index = 0;
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(0));
+        if (!dataElement.getName().contains(feedName)) {
+            index = 1;
+        }
+        dataSets.set(index, feedString);
+    }
 
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
@@ -176,6 +190,27 @@ public class Bundle {
     public void setClusterData(List<String> pClusters) {
         this.clusters = new ArrayList<String>(pClusters);
     }
+    /**
+     * Unwraps cluster element to string and writes it to bundle.
+     *
+     * @param c      Cluster object to be unwrapped and set into bundle
+     */
+    public void writeClusterElement(org.apache.falcon.entity.v0.cluster.Cluster c) {
+        final List<String> clusters = new ArrayList<String>();
+        clusters.add(c.toString());
+        setClusterData(clusters);
+    }
+
+    /**
+     * Wraps bundle cluster in a Cluster object.
+     *
+     * @return cluster definition in a form of Cluster object
+     */
+    public org.apache.falcon.entity.v0.cluster.Cluster getClusterElement() {
+        return (org.apache.falcon.entity.v0.cluster.Cluster)
+                Entity.fromString(EntityType.CLUSTER, getClusters().get(0));
+    }
+
 
     public List<String> getClusterNames() {
         List<String> clusterNames = new ArrayList<String>();
@@ -290,7 +325,7 @@ public class Bundle {
      * @param endEl its end in terms of EL expression
      */
     public void setProcessInput(String startEl, String endEl) {
-        Process process = InstanceUtil.getProcessElement(this);
+        Process process = getProcessObject();
         Inputs inputs = new Inputs();
         Input input = new Input();
         input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(this)));
@@ -323,12 +358,12 @@ public class Bundle {
 
 
     public void setFeedValidity(String feedStart, String feedEnd, String feedName) {
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         feedElement.getClusters().getClusters().get(0).getValidity()
             .setStart(TimeUtil.oozieDateToDate(feedStart).toDate());
         feedElement.getClusters().getClusters().get(0).getValidity()
             .setEnd(TimeUtil.oozieDateToDate(feedEnd).toDate());
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
     }
 
     public int getInitialDatasetFrequency() {
@@ -344,13 +379,13 @@ public class Bundle {
     }
 
     public Date getStartInstanceProcess(Calendar time) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         LOGGER.info("start instance: " + processElement.getInputs().getInputs().get(0).getStart());
         return TimeUtil.getMinutes(processElement.getInputs().getInputs().get(0).getStart(), time);
     }
 
     public Date getEndInstanceProcess(Calendar time) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         LOGGER.info("end instance: " + processElement.getInputs().getInputs().get(0).getEnd());
         LOGGER.info("timezone in getendinstance: " + time.getTimeZone().toString());
         LOGGER.info("time in getendinstance: " + time.getTime());
@@ -358,26 +393,26 @@ public class Bundle {
     }
 
     public void setDatasetInstances(String startInstance, String endInstance) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         processElement.getInputs().getInputs().get(0).setStart(startInstance);
         processElement.getInputs().getInputs().get(0).setEnd(endInstance);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessPeriodicity(int frequency, TimeUnit periodicity) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Frequency frq = new Frequency("" + frequency, periodicity);
         processElement.setFrequency(frq);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessInputStartEnd(String start, String end) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         for (Input input : processElement.getInputs().getInputs()) {
             input.setStart(start);
             input.setEnd(end);
         }
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setOutputFeedPeriodicity(int frequency, TimeUnit periodicity) {
@@ -399,7 +434,7 @@ public class Bundle {
     }
 
     public int getProcessConcurrency() {
-        return InstanceUtil.getProcessElement(this).getParallel();
+        return getProcessObject().getParallel();
     }
 
     public void setOutputFeedLocationData(String path) {
@@ -423,9 +458,9 @@ public class Bundle {
     }
 
     public void setProcessConcurrency(int concurrency) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         processElement.setParallel((concurrency));
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessWorkflow(String wfPath) {
@@ -437,7 +472,7 @@ public class Bundle {
     }
 
     public void setProcessWorkflow(String wfPath, String libPath, EngineType engineType) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Workflow w = processElement.getWorkflow();
         if (engineType != null) {
             w.setEngine(engineType);
@@ -447,11 +482,15 @@ public class Bundle {
         }
         w.setPath(wfPath);
         processElement.setWorkflow(w);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public Process getProcessObject() {
         return (Process) Entity.fromString(EntityType.PROCESS, getProcessData());
+    }
+
+    public Feed getFeedElement(String feedName) {
+        return  (Feed) Entity.fromString(EntityType.FEED, getFeed(feedName));
     }
 
 
@@ -467,10 +506,10 @@ public class Bundle {
 
     public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         Frequency frq = new Frequency("" + frequency, periodicity);
         feedElement.setFrequency(frq);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
 
     }
 
@@ -486,14 +525,14 @@ public class Bundle {
 
     public void setInputFeedDataPath(String path) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         feedElement.getLocations().getLocations().get(0).setPath(path);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
     }
 
     public String getFeedDataPathPrefix() {
         Feed feedElement =
-            InstanceUtil.getFeedElement(this, BundleUtil.getInputFeedNameFromBundle(this));
+            getFeedElement(BundleUtil.getInputFeedNameFromBundle(this));
         return Util.getPathPrefix(feedElement.getLocations().getLocations().get(0)
             .getPath());
     }
@@ -567,7 +606,7 @@ public class Bundle {
     }
 
     public void addProcessInput(String feed, String feedName) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Input in1 = processElement.getInputs().getInputs().get(0);
         Input in2 = new Input();
         in2.setEnd(in1.getEnd());
@@ -576,13 +615,13 @@ public class Bundle {
         in2.setPartition(in1.getPartition());
         in2.setStart(in1.getStart());
         processElement.getInputs().getInputs().add(in2);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public void setProcessName(String newName) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         processElement.setName(newName);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
 
     }
 
@@ -596,22 +635,22 @@ public class Bundle {
 
     public void setInputFeedAvailabilityFlag(String flag) {
         String feedName = BundleUtil.getInputFeedNameFromBundle(this);
-        Feed feedElement = InstanceUtil.getFeedElement(this, feedName);
+        Feed feedElement = getFeedElement(feedName);
         feedElement.setAvailabilityFlag(flag);
-        InstanceUtil.writeFeedElement(this, feedElement, feedName);
+        writeFeedElement(feedElement, feedName);
     }
 
     public void setCLusterColo(String colo) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
-            InstanceUtil.getClusterElement(this);
+            getClusterElement();
         c.setColo(colo);
-        InstanceUtil.writeClusterElement(this, c);
+        writeClusterElement(c);
 
     }
 
     public void setClusterInterface(Interfacetype interfacetype, String value) {
         org.apache.falcon.entity.v0.cluster.Cluster c =
-            InstanceUtil.getClusterElement(this);
+            getClusterElement();
         final Interfaces interfaces = c.getInterfaces();
         final List<Interface> interfaceList = interfaces.getInterfaces();
         for (final Interface anInterface : interfaceList) {
@@ -619,7 +658,7 @@ public class Bundle {
                 anInterface.setEndpoint(value);
             }
         }
-        InstanceUtil.writeClusterElement(this, c);
+        writeClusterElement(c);
     }
 
     public void setInputFeedTableUri(String tableUri) {
@@ -628,7 +667,7 @@ public class Bundle {
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
-        InstanceUtil.writeFeedElement(this, feed, feed.getName());
+        writeFeedElement(feed, feed.getName());
     }
 
     public void setOutputFeedTableUri(String tableUri) {
@@ -637,7 +676,7 @@ public class Bundle {
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
         feed.setTable(catalogTable);
-        InstanceUtil.writeFeedElement(this, feed, feed.getName());
+        writeFeedElement(feed, feed.getName());
     }
 
     public void setCLusterWorkingPath(String clusterData, String path) {
@@ -653,7 +692,7 @@ public class Bundle {
         }
 
         //this.setClusterData(clusterData)
-        InstanceUtil.writeClusterElement(this, c);
+        writeClusterElement(c);
     }
 
 
@@ -756,19 +795,19 @@ public class Bundle {
     }
 
     public void setProcessLibPath(String libPath) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Workflow wf = processElement.getWorkflow();
         wf.setLib(libPath);
         processElement.setWorkflow(wf);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
 
     }
 
     public void setProcessTimeOut(int magnitude, TimeUnit unit) {
-        Process processElement = InstanceUtil.getProcessElement(this);
+        Process processElement = getProcessObject();
         Frequency frq = new Frequency("" + magnitude, unit);
         processElement.setTimeout(frq);
-        InstanceUtil.writeProcessElement(this, processElement);
+        setProcessData(processElement.toString());
     }
 
     public static void submitCluster(Bundle... bundles)
@@ -931,7 +970,7 @@ public class Bundle {
         newInput.setEnd(templateInput.getEnd());
         newInput.setPartition(templateInput.getPartition());
         processInputs.add(newInput);
-        InstanceUtil.writeProcessElement(this, processObject);
+        setProcessData(processObject.toString());
     }
 
     public void addOutputFeedToBundle(String feedRefName, String feed, int templateOutputIdx) {
@@ -945,7 +984,7 @@ public class Bundle {
         newOutput.setName(feedRefName);
         newOutput.setInstance(templateOutput.getInstance());
         processOutputs.add(newOutput);
-        InstanceUtil.writeProcessElement(this, processObject);
+        setProcessData(processObject.toString());
     }
 
     public void setProcessProperty(String property, String value) {

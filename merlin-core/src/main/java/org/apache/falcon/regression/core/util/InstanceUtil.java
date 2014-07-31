@@ -248,37 +248,6 @@ public final class InstanceUtil {
                 "Parameter start is empty should have the response");
     }
 
-    public static void writeProcessElement(Bundle bundle, Process processElement) {
-        bundle.setProcessData(processElement.toString());
-    }
-
-    public static Process getProcessElement(Bundle bundle) {
-        return (Process) Entity.fromString(EntityType.PROCESS, bundle.getProcessData());
-    }
-
-    public static Feed getFeedElement(Bundle bundle, String feedName) {
-        Feed feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
-        if (!feedElement.getName().contains(feedName)) {
-            feedElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(1));
-        }
-        return feedElement;
-    }
-
-    public static void writeFeedElement(Bundle bundle, Feed feedElement,
-            String feedName) {
-        writeFeedElement(bundle, feedElement.toString(), feedName);
-    }
-
-    public static void writeFeedElement(Bundle bundle, String feedString,
-            String feedName) {
-        int index = 0;
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
-        if (!dataElement.getName().contains(feedName)) {
-            index = 1;
-        }
-        bundle.getDataSets().set(index, feedString);
-    }
-
     /**
      * Checks that API action succeed and the instance on which it has been performed on has
      * expected status.
@@ -675,30 +644,6 @@ public final class InstanceUtil {
             }
         }
         LOGGER.info("created folders.....");
-    }
-
-    /**
-     * Wraps bundle cluster in a Cluster object.
-     *
-     * @param bundle target bundle
-     * @return cluster definition in a form of Cluster object
-     */
-    public static org.apache.falcon.entity.v0.cluster.Cluster getClusterElement(Bundle bundle) {
-        return (org.apache.falcon.entity.v0.cluster.Cluster)
-                Entity.fromString(EntityType.CLUSTER, bundle.getClusters().get(0));
-    }
-
-    /**
-     * Unwraps cluster element to string and writes it to bundle.
-     *
-     * @param bundle target bundle
-     * @param c      Cluster object to be unwrapped and set into bundle
-     */
-    public static void writeClusterElement(Bundle bundle,
-            org.apache.falcon.entity.v0.cluster.Cluster c) {
-        final ArrayList<String> clusters = new ArrayList<String>();
-        clusters.add(c.toString());
-        bundle.setClusterData(clusters);
     }
 
     /**
