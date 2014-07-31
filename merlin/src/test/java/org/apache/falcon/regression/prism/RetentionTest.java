@@ -140,13 +140,7 @@ public class RetentionTest extends BaseTestClass {
             skip = gaps[r.nextInt(gaps.length)];
         }
 
-        if (feedType == FeedType.DAILY) {
-            replenishData(getDailyDatesOnEitherSide(36, skip, feedType.getFormatter()), withData);
-        } else if (feedType == FeedType.YEARLY) {
-            replenishData(getYearlyDatesOnEitherSide(10, skip, feedType.getFormatter()), withData);
-        } else if (feedType == FeedType.MONTHLY) {
-            replenishData(getMonthlyDatesOnEitherSide(30, skip, feedType.getFormatter()), withData);
-        }
+        replenishData(getDatesOnEitherSide(feedType, 36, skip), withData);
     }
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
@@ -310,8 +304,8 @@ public class RetentionTest extends BaseTestClass {
             "Feed " + Util.readEntityName(feed) + " did not have its bundle removed!!!!");
     }
 
-    private static List<String> getDailyDatesOnEitherSide(int interval, int skip,
-                                                          DateTimeFormatter formatter) {
+    private static List<String> getDatesOnEitherSide(FeedType feedType, int interval, int skip) {
+        final DateTimeFormatter formatter = feedType.getFormatter();
         DateTime today = new DateTime(DateTimeZone.UTC);
         logger.info("today is: " + today.toString());
 
@@ -320,54 +314,12 @@ public class RetentionTest extends BaseTestClass {
 
         //first lets get all dates before today
         for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(today.minusDays(backward)));
+            dates.add(formatter.print(feedType.addTime(today, -backward)));
         }
 
         //now the forward dates
         for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(today.plusDays(i)));
-        }
-
-        return dates;
-    }
-
-    private static List<String> getYearlyDatesOnEitherSide(int interval, int skip,
-                                                           DateTimeFormatter formatter) {
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(new LocalDate(today)));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.minusYears(backward))));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.plusYears(i))));
-        }
-
-        return dates;
-    }
-
-    private static List<String> getMonthlyDatesOnEitherSide(int interval, int skip,
-                                                            DateTimeFormatter formatter) {
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(today));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.minusMonths(backward))));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.plusMonths(i))));
+            dates.add(formatter.print(feedType.addTime(today, i)));
         }
 
         return dates;
