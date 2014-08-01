@@ -111,7 +111,7 @@ public class RetentionTest extends BaseTestClass {
 
             replenishData(feedType, gaps, withData);
 
-            commonDataRetentionWorkflow(feedObject.toString(), retentionPeriod, retentionUnit);
+            commonDataRetentionWorkflow(feedObject.toString(), retentionUnit, retentionPeriod);
         } else {
             AssertUtil.assertFailed(response);
         }
@@ -132,9 +132,9 @@ public class RetentionTest extends BaseTestClass {
         HadoopUtil.replenishData(clusterFS, testHDFSDir, dataDates, withData);
     }
 
-    private void commonDataRetentionWorkflow(String feed, int time, RetentionUnit interval)
-    throws OozieClientException, IOException, URISyntaxException, AuthenticationException,
-    JMSException {
+    private void commonDataRetentionWorkflow(String feed, RetentionUnit retentionUnit,
+        int retentionPeriod) throws OozieClientException, IOException, URISyntaxException,
+        AuthenticationException, JMSException {
         //get Data created in the cluster
         List<String> initialData = Util.getHadoopDataFromDir(clusterFS, feed, testHDFSDir);
 
@@ -146,7 +146,7 @@ public class RetentionTest extends BaseTestClass {
                 cluster.getClusterHelper().getActiveMQ());
         messageConsumer.start();
 
-        DateTime currentTime = new DateTime(DateTimeZone.UTC);
+        final DateTime currentTime = new DateTime(DateTimeZone.UTC);
         String bundleId = OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0);
 
         List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
@@ -158,8 +158,8 @@ public class RetentionTest extends BaseTestClass {
         List<String> finalData = Util.getHadoopDataFromDir(clusterFS, feed, testHDFSDir);
 
         //now see if retention value was matched to as expected
-        List<String> expectedOutput = filterDataOnRetention(feed, time, interval,
-            currentTime, initialData);
+        List<String> expectedOutput = filterDataOnRetention(initialData, currentTime, retentionUnit,
+            retentionPeriod, feed);
 
         logger.info("initialData = " + initialData);
         logger.info("finalData = " + finalData);
@@ -214,9 +214,8 @@ public class RetentionTest extends BaseTestClass {
                         "not same!");
     }
 
-    private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,
-                                               DateTime endDate,
-                                               List<String> inputData) {
+    private List<String> filterDataOnRetention(List<String> inputData, DateTime currentTime,
+        RetentionUnit retentionUnit, int retentionPeriod, String feed) {
         String locationType = "";
         String appender = "";
 
@@ -252,19 +251,21 @@ public class RetentionTest extends BaseTestClass {
 
 
         //end date is today's date
-        formatter.print(endDate);
+        formatter.print(currentTime);
         String startLimit = "";
 
-        if (interval == RetentionUnit.MINUTES) {
-            startLimit =
-                formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
-        } else if (interval == RetentionUnit.HOURS) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
-        } else if (interval == RetentionUnit.DAYS) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
-        } else if (interval == RetentionUnit.MONTHS) {
-            startLimit =
-                formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
+        if (retentionUnit == RetentionUnit.MINUTES) {
+            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusMinutes(
+                    retentionPeriod));
+        } else if (retentionUnit == RetentionUnit.HOURS) {
+            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusHours(
+                    retentionPeriod));
+        } else if (retentionUnit == RetentionUnit.DAYS) {
+            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusDays(
+                    retentionPeriod));
+        } else if (retentionUnit == RetentionUnit.MONTHS) {
+            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusDays(31 *
+                    retentionPeriod));
         }
 
 
