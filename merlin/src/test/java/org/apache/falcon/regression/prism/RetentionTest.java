@@ -219,7 +219,7 @@ public class RetentionTest extends BaseTestClass {
 
         //now to actually check!
         for (String testDate : inputData) {
-            if (testDate.equalsIgnoreCase("somethingRandom")
+            if (testDate.equals(HadoopUtil.SOMETHING_RANDOM)
                     || testDate.compareTo(startLimit) > 0) {
                 finalData.add(testDate);
             }

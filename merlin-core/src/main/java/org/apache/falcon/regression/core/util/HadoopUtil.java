@@ -38,11 +38,12 @@ import java.util.regex.Pattern;
  */
 public final class HadoopUtil {
 
+    public static final String SOMETHING_RANDOM = "somethingRandom";
+    private static final Logger LOGGER = Logger.getLogger(HadoopUtil.class);
+
     private HadoopUtil() {
         throw new AssertionError("Instantiating utility class...");
     }
-    private static final Logger LOGGER = Logger.getLogger(HadoopUtil.class);
-
     public static List<String> getAllFilesHDFS(FileSystem fs, Path location) throws IOException {
 
         List<String> files = new ArrayList<String>();
@@ -262,7 +263,7 @@ public final class HadoopUtil {
     public static void createLateDataFoldersWithRandom(FileSystem fs, String folderPrefix,
         List<String> folderList) throws IOException {
         LOGGER.info("creating late data folders.....");
-        folderList.add("somethingRandom");
+        folderList.add(SOMETHING_RANDOM);
 
         for (final String folder : folderList) {
             fs.mkdirs(new Path(folderPrefix + folder));
@@ -399,7 +400,7 @@ public final class HadoopUtil {
         //purge data first
         deleteDirIfExists(prefix, fileSystem);
 
-        folderList.add("somethingRandom");
+        folderList.add(SOMETHING_RANDOM);
 
         for (final String folder : folderList) {
             final String pathString = prefix + folder;
