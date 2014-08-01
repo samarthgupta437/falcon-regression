@@ -212,28 +212,15 @@ public class RetentionTest extends BaseTestClass {
 
     private List<String> filterDataOnRetention(List<String> inputData, DateTime currentTime,
         RetentionUnit retentionUnit, int retentionPeriod, FeedType feedType) {
-        String appender = "";
-
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         List<String> finalData = new ArrayList<String>();
-
-        if (feedType == FeedType.YEARLY) {
-            appender = "/01/01/00/01";
-        } else if (feedType == FeedType.MONTHLY) {
-            appender = "/01/00/01";
-        } else if (feedType == FeedType.DAILY) {
-            appender = "/00/01";
-        } else if (feedType == FeedType.HOURLY) {
-            appender = "/01";
-        }
-
         //end date is today's date
-        String startLimit = formatter.print(retentionUnit.minusTime(currentTime, retentionPeriod));
+        String startLimit = feedType.getFormatter().print(
+            retentionUnit.minusTime(currentTime,retentionPeriod));
 
         //now to actually check!
         for (String testDate : inputData) {
             if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if ((testDate + appender).compareTo(startLimit) > 0) {
+                if (testDate.compareTo(startLimit) > 0) {
                     finalData.add(testDate);
                 }
             } else {
