@@ -114,7 +114,7 @@ public class NoOutputProcessTest extends BaseTestClass {
 
         messageConsumer.interrupt();
 
-        Util.dumpConsumerData(messageConsumer);
+        Util.printMessageData(messageConsumer);
     }
 
 
@@ -141,8 +141,8 @@ public class NoOutputProcessTest extends BaseTestClass {
         consumerEntityMsg.interrupt();
         consumerProcessMsg.interrupt();
 
-        Util.dumpConsumerData(consumerEntityMsg);
-        Util.dumpConsumerData(consumerProcessMsg);
+        Util.printMessageData(consumerEntityMsg);
+        Util.printMessageData(consumerProcessMsg);
     }
 
 }

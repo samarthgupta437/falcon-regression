@@ -153,7 +153,7 @@ public class RetentionTest extends BaseTestClass {
         logger.info("workflows: " + workflows);
 
         consumer.interrupt();
-        Util.dumpConsumerData(consumer);
+        Util.printMessageData(consumer);
         //now look for cluster data
         List<String> finalData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
 

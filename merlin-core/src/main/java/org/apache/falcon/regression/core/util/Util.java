@@ -360,7 +360,7 @@ public final class Util {
         return (Process) Entity.fromString(EntityType.PROCESS, processData);
     }
 
-    public static void dumpConsumerData(JmsMessageConsumer messageConsumer) throws JMSException {
+    public static void printMessageData(JmsMessageConsumer messageConsumer) throws JMSException {
         LOGGER.info("dumping all queue data:");
         for (MapMessage mapMessage : messageConsumer.getReceivedMessages()) {
             StringBuilder stringBuilder = new StringBuilder();

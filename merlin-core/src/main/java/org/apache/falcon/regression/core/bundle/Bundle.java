@@ -311,7 +311,6 @@ public class Bundle {
         //lets schedule the damn thing now :)
         ServiceResponse scheduleResult =
                 helper.getProcessHelper().schedule(URLS.SCHEDULE_URL, getProcessData());
-        LOGGER.info("process schedule result=" + scheduleResult.getMessage());
         AssertUtil.assertSucceeded(scheduleResult);
         TimeUtil.sleepSeconds(7);
         return scheduleResult.getMessage();
