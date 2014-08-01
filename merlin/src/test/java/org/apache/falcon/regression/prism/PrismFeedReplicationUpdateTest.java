@@ -180,7 +180,7 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
      *
      * @throws Exception
      */
-    @Test(enabled = true, timeOut = 1200000)
+    @Test(enabled = true, timeOut = 3600000)
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
         bundles[0].setCLusterColo(cluster1Colo);
@@ -220,11 +220,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        HadoopUtil.lateDataReplenish(cluster1FS, 23, 1, prefix, null);
+        HadoopUtil.lateDataReplenish(cluster1FS, 25, 1, prefix, null);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        HadoopUtil.lateDataReplenish(cluster3FS, 23, 1, prefix, null);
+        HadoopUtil.lateDataReplenish(cluster3FS, 25, 1, prefix, null);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 
@@ -298,10 +298,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
 
         logger.info("Wait till process goes into running ");
 
+        int timeout = OSUtil.IS_WINDOWS ? 50 : 25;
         InstanceUtil.waitTillInstanceReachState(serverOC.get(0), Util.getProcessName(process), 1,
-            Status.RUNNING, EntityType.PROCESS);
+            Status.RUNNING, EntityType.PROCESS, timeout);
         InstanceUtil.waitTillInstanceReachState(serverOC.get(2), Util.getProcessName(process), 1,
-            Status.RUNNING, EntityType.PROCESS);
+            Status.RUNNING, EntityType.PROCESS, timeout);
 
         feed01 = InstanceUtil.setFeedFilePath(feed01, alternativeInputPath);
         logger.info("updated feed: " + Util.prettyPrintXml(feed01));
