@@ -19,11 +19,7 @@
 package org.apache.falcon.regression.prism;
 
 
-import org.apache.falcon.entity.v0.Entity;
 import org.apache.falcon.entity.v0.EntityType;
-import org.apache.falcon.entity.v0.feed.Feed;
-import org.apache.falcon.entity.v0.feed.Location;
-import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
@@ -49,7 +45,6 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
-import org.testng.TestNGException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -160,7 +155,7 @@ public class RetentionTest extends BaseTestClass {
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput = filterDataOnRetention(initialData, currentTime, retentionUnit,
-            retentionPeriod, feed, feedType);
+            retentionPeriod, feedType);
 
         logger.info("initialData = " + initialData);
         logger.info("finalData = " + finalData);
@@ -216,25 +211,11 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private List<String> filterDataOnRetention(List<String> inputData, DateTime currentTime,
-        RetentionUnit retentionUnit, int retentionPeriod, String feed, FeedType feedType) {
-        String locationType = "";
+        RetentionUnit retentionUnit, int retentionPeriod, FeedType feedType) {
         String appender = "";
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
         List<String> finalData = new ArrayList<String>();
-
-        //determine what kind of data is there in the feed!
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
-
-        for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType() == LocationType.DATA) {
-                locationType = location.getPath();
-            }
-        }
-
-        if (locationType.equalsIgnoreCase("") || locationType.equalsIgnoreCase(null)) {
-            throw new TestNGException("location type was not mentioned in your feed!");
-        }
 
         if (feedType == FeedType.YEARLY) {
             appender = "/01/01/00/01";
