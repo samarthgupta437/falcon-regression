@@ -236,17 +236,15 @@ public class RetentionTest extends BaseTestClass {
             throw new TestNGException("location type was not mentioned in your feed!");
         }
 
-        if (feedType == FeedType.MONTHLY) {
+        if (feedType == FeedType.YEARLY) {
+            appender = "/01/01/00/01";
+        } else if (feedType == FeedType.MONTHLY) {
             appender = "/01/00/01";
         } else if (feedType == FeedType.DAILY) {
             appender = "/01"; //because we already take care of that!
         } else if (feedType == FeedType.HOURLY) {
             appender = "/01";
-        } else if (feedType == FeedType.YEARLY) {
-            appender = "/01/01/00/01";
         }
-
-        //convert the start and end date boundaries to the same format
 
 
         //end date is today's date
