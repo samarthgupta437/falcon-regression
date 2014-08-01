@@ -76,11 +76,8 @@ public final class AssertUtil {
     public static void checkForListSizes(List<?> expected, List<?> actual) {
         if (expected.size() != actual.size()) {
             LOGGER.info("expected = " + expected);
-            LOGGER.info("actual = " + actual);
-            LOGGER.info("expected.size() = " + expected.size());
-            LOGGER.info("actual.size() = " + actual.size());
-            Assert.fail("Size of expected and actual list don't match.");
         }
+        checkForListSize(actual, expected.size());
     }
 
     /**
@@ -94,8 +91,9 @@ public final class AssertUtil {
             LOGGER.info("expectedSize = " + expectedSize);
             LOGGER.info("elements.size() = " + elements.size());
             LOGGER.info("elements = " + elements);
-            Assert.fail("Size of expected and actual list don't match.");
         }
+        Assert.assertEquals(elements.size(), expectedSize,
+            "Size of expected and actual list don't match.");
     }
 
     /**

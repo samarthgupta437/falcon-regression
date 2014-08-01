@@ -167,29 +167,15 @@ public class RetentionTest extends BaseTestClass {
             logger.info("Message data was empty!");
         }
         //now look for cluster data
-        List<String> finalData =
-            Util.getHadoopDataFromDir(clusterFS, inputFeed,
-                testHDFSDir);
+        List<String> finalData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
 
         //now see if retention value was matched to as expected
-        List<String> expectedOutput =
-            filterDataOnRetention(inputFeed, time, interval,
+        List<String> expectedOutput = filterDataOnRetention(inputFeed, time, interval,
                 currentTime, initialData);
 
-        logger.info("initial data in system was:");
-        for (String line : initialData) {
-            logger.info(line);
-        }
-
-        logger.info("system output is:");
-        for (String line : finalData) {
-            logger.info(line);
-        }
-
-        logger.info("actual output is:");
-        for (String line : expectedOutput) {
-            logger.info(line);
-        }
+        logger.info("initialData = " + initialData);
+        logger.info("finalData = " + finalData);
+        logger.info("expectedOutput = " + expectedOutput);
 
         validateDataFromFeedQueue(
             inputDataSetName,

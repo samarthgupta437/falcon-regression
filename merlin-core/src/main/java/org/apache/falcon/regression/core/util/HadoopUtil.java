@@ -403,7 +403,7 @@ public final class HadoopUtil {
 
         for (final String folder : folderList) {
             final String pathString = prefix + folder;
-            LOGGER.info(pathString);
+            LOGGER.info(fileSystem.getUri() + pathString);
             fileSystem.mkdirs(new Path(pathString));
             if (uploadData) {
                 fileSystem.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"),
