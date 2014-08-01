@@ -39,6 +39,7 @@ public class Consumer extends Thread {
     String subject = "IVORY.TOPIC";*/
 
     private static final Logger logger = Logger.getLogger(Consumer.class);
+    private static final int MAX_MESSAGE_COUNT = 1000;
 
     final String url;
     final String subject;
@@ -69,12 +70,18 @@ public class Consumer extends Thread {
 
             try {
                 logger.info("Starting to receive messages.");
-                while (true) {
+                int count = 0;
+                for (; count < MAX_MESSAGE_COUNT; ++ count) {
                     Message message = consumer.receive(); //blocking call
-                    if (message != null) {
-                        logger.info(message);
+                    if (message == null) {
+                        logger.info("Received empty message, count = " + count);
+                    } else {
+                        logger.info("Received message, id = " + message.getJMSMessageID());
                         receivedMessages.add((MapMessage) message);
                     }
+                }
+                if (count >= MAX_MESSAGE_COUNT) {
+                    logger.warn("Not reading more messages, already read " + count + " messages.");
                 }
             } finally {
                 logger.info("Stopping to receive messages.");
