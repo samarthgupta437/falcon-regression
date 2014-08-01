@@ -64,7 +64,7 @@ public class FeedResumeTest extends BaseTestClass {
         bundles[0] = new Bundle(bundles[0], cluster);
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         bundles[0].submitClusters(prism);
-        feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        feed = bundles[0].getInputFeedFromBundle();
     }
 
     @AfterMethod(alwaysRun = true)

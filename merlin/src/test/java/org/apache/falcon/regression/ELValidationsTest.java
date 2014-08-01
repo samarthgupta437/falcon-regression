@@ -135,8 +135,8 @@ public class ELValidationsTest extends BaseTestClass {
         bundle.setProcessWorkflow(aggregateWorkflowDir);
         if (feedStart != null && feedEnd != null) {
             bundle.setFeedValidity(feedStart, feedEnd,
-                BundleUtil.getInputFeedNameFromBundle
-                    (bundle));
+                bundle.getInputFeedNameFromBundle
+                        ());
         }
         if (processStart != null && processEnd != null) {
             bundle.setProcessValidity(processStart, processEnd);
@@ -238,7 +238,7 @@ public class ELValidationsTest extends BaseTestClass {
         Calendar finalTime = Calendar.getInstance();
 
         finalTime.setTime(endRef);
-        String path = BundleUtil.getDatasetPath(bundle);
+        String path = bundle.getDatasetPath();
 
         TimeZone tz = TimeZone.getTimeZone("GMT");
         nominalTime.setTimeZone(tz);

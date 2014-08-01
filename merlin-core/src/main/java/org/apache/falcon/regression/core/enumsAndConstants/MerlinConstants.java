@@ -18,7 +18,6 @@
 
 package org.apache.falcon.regression.core.enumsAndConstants;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.regression.core.util.Config;
 import org.apache.falcon.request.RequestKeys;
 import org.apache.hadoop.conf.Configuration;
@@ -27,13 +26,16 @@ import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 
-public class MerlinConstants {
+/**
+ * Class for test contants.
+ */
+public final class MerlinConstants {
     private MerlinConstants() {
     }
 
-    private static final Logger logger = Logger.getLogger(MerlinConstants.class);
+    private static final Logger LOGGER = Logger.getLogger(MerlinConstants.class);
 
-    public final static boolean IS_SECURE =
+    public static final boolean IS_SECURE =
         "kerberos".equals(new Configuration().get("hadoop.security.authentication", "simple"));
     public static final String CURRENT_USER_NAME = System.getProperty("user.name");
     private static final String CURRENT_USER_KEYTAB_STR =
@@ -42,22 +44,22 @@ public class MerlinConstants {
     private static final String USER_2_KEYTAB_STR = "user2_keytab";
     public static final String USER2_NAME;
     private static HashMap<String, String> keyTabMap;
-    public static final String aclOwner = Config.getProperty("ACL.OWNER", RequestKeys.CURRENT_USER);
-    public static final String aclGroup = Config.getProperty("ACL.GROUP", "default");
+    public static final String ACL_OWNER = Config.getProperty("ACL.OWNER", RequestKeys.CURRENT_USER);
+    public static final String ACL_GROUP = Config.getProperty("ACL.GROUP", "default");
 
     /* initialize keyTabMap */
     static {
-        final String current_user_keytab = Config.getProperty(CURRENT_USER_KEYTAB_STR);
-        final String user2_name = Config.getProperty(USER_2_NAME_STR);
-        final String user2_keytab = Config.getProperty(USER_2_KEYTAB_STR);
-        logger.info("current_user_name: " + CURRENT_USER_NAME);
-        logger.info("current_user_keytab: " + current_user_keytab);
-        logger.info("user2_name: " + user2_name);
-        logger.info("user2_keytab: " + user2_keytab);
-        USER2_NAME = user2_name;
+        final String currentUserKeytab = Config.getProperty(CURRENT_USER_KEYTAB_STR);
+        final String user2Name = Config.getProperty(USER_2_NAME_STR);
+        final String user2Keytab = Config.getProperty(USER_2_KEYTAB_STR);
+        LOGGER.info("CURRENT_USER_NAME: " + CURRENT_USER_NAME);
+        LOGGER.info("currentUserKeytab: " + currentUserKeytab);
+        LOGGER.info("user2Name: " + user2Name);
+        LOGGER.info("user2Keytab: " + user2Keytab);
+        USER2_NAME = user2Name;
         keyTabMap = new HashMap<String, String>();
-        keyTabMap.put(CURRENT_USER_NAME, current_user_keytab);
-        keyTabMap.put(user2_name, user2_keytab);
+        keyTabMap.put(CURRENT_USER_NAME, currentUserKeytab);
+        keyTabMap.put(user2Name, user2Keytab);
     }
 
     public static String getKeytabForUser(String user) {

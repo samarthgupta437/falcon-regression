@@ -60,7 +60,7 @@ public class FeedScheduleTest extends BaseTestClass {
         bundles[0].generateUniqueBundle();
         bundles[0].setProcessWorkflow(aggregateWorkflowDir);
         Bundle.submitCluster(bundles[0]);
-        feed = BundleUtil.getInputFeedFromBundle(bundles[0]);
+        feed = bundles[0].getInputFeedFromBundle();
     }
 
     @AfterMethod(alwaysRun = true)

@@ -18,13 +18,12 @@
 
 package org.apache.falcon.regression.core.util;
 
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
+import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.testng.Assert;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -120,40 +119,15 @@ public final class TimeUtil {
     }
 
     /**
-     * Get format string corresponding to the FEED_TYPE .
-     *
-     * @param feedType type of the feed
-     * @return format string
-     */
-    public static String getFormatStringForFeedType(FEED_TYPE feedType) {
-        switch (feedType) {
-            case MINUTELY:
-                return "yyyy/MM/dd/HH/mm";
-            case HOURLY:
-                return "yyyy/MM/dd/HH";
-            case DAILY:
-                return "yyyy/MM/dd";
-            case MONTHLY:
-                return "yyyy/MM";
-            case YEARLY:
-                return "yyyy";
-            default:
-                Assert.fail("Unexpected feedType = " + feedType);
-        }
-        return null;
-    }
-
-    /**
      * Convert list of dates to list of string according to the supplied format.
      *
      * @param dates        list of dates
-     * @param formatString format string to be used for converting dates
+     * @param formatter formatter to be used for converting dates
      * @return list of strings corresponding to given dates
      */
     public static List<String> convertDatesToString(List<DateTime> dates,
-                                                    String formatString) {
+                                                    DateTimeFormatter formatter) {
         List<String> dateString = new ArrayList<String>();
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(formatString);
         formatter.withZoneUTC();
         for (DateTime date : dates) {
             dateString.add(formatter.print(date));
@@ -171,36 +145,29 @@ public final class TimeUtil {
      * @return list of dates
      */
     public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
-                                                      FEED_TYPE feedType) {
+                                                      FeedType feedType) {
+        return getDatesOnEitherSide(startDate, endDate, 1, feedType);
+    }
+
+    /**
+     * Get all possible dates between start and end date gap between subsequent dates be one unit.
+     * of feedType
+     *
+     * @param startDate start date
+     * @param endDate   end date
+     * @param skip      amount of skipping
+     * @param feedType  type of the feed
+     * @return list of dates
+     */
+    public static List<DateTime> getDatesOnEitherSide(DateTime startDate, DateTime endDate,
+                                                      int skip, FeedType feedType) {
         final List<DateTime> dates = new ArrayList<DateTime>();
         if (!startDate.isAfter(endDate)) {
             dates.add(startDate);
         }
         for (int counter = 0; !startDate.isAfter(endDate) && counter < 1000; ++counter) {
-            switch (feedType) {
-                case MINUTELY:
-                    startDate = startDate.plusMinutes(1);
-                    dates.add(startDate);
-                    break;
-                case HOURLY:
-                    startDate = startDate.plusHours(1);
-                    dates.add(startDate);
-                    break;
-                case DAILY:
-                    startDate = startDate.plusDays(1);
-                    dates.add(startDate);
-                    break;
-                case MONTHLY:
-                    startDate = startDate.plusMonths(1);
-                    dates.add(startDate);
-                    break;
-                case YEARLY:
-                    startDate = startDate.plusYears(1);
-                    dates.add(startDate);
-                    break;
-                default:
-                    Assert.fail("Unexpected feedType = " + feedType);
-            }//end of switch
+            startDate = feedType.addTime(startDate, skip);
+            dates.add(startDate);
         }//end of for
         return dates;
     }

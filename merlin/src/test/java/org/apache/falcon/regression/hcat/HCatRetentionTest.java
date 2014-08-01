@@ -21,6 +21,8 @@ package org.apache.falcon.regression.hcat;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.entity.v0.EntityType;
+import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
+import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
@@ -28,8 +30,6 @@ import org.apache.falcon.regression.core.util.HCatUtil;
 import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
-import org.apache.falcon.regression.core.enumsAndConstants.FEED_TYPE;
-import org.apache.falcon.regression.core.enumsAndConstants.RETENTION_UNITS;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
@@ -44,8 +44,6 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.oozie.client.OozieClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -91,21 +89,21 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     @Test(enabled = true, dataProvider = "loopBelow", timeOut = 900000, groups = "embedded")
-    public void testHCatRetention(int retentionPeriod, RETENTION_UNITS retentionUnit,
-                                  FEED_TYPE feedType) throws Exception {
+    public void testHCatRetention(int retentionPeriod, RetentionUnit retentionUnit,
+                                  FeedType feedType) throws Exception {
 
         /*the hcatalog table that is created changes tablename characters to lowercase. So the
           name in the feed should be the same.*/
         tableName = String.format("testhcatretention_%s_%d", retentionUnit.getValue(),
             retentionPeriod);
         createPartitionedTable(cli, dBName, tableName, baseTestHDFSDir, feedType);
-        FeedMerlin feedElement = new FeedMerlin(BundleUtil.getInputFeedFromBundle(bundle));
-        feedElement.setTableValue(dBName, tableName, getFeedPathValue(feedType));
+        FeedMerlin feedElement = new FeedMerlin(bundle.getInputFeedFromBundle());
+        feedElement.setTableValue(dBName, tableName, feedType.getHcatPathValue());
         feedElement
-            .insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
+            .setRetentionValue(retentionUnit.getValue() + "(" + retentionPeriod + ")");
         if (retentionPeriod <= 0) {
             AssertUtil.assertFailed(prism.getFeedHelper()
-                .submitEntity(URLS.SUBMIT_URL, BundleUtil.getInputFeedFromBundle(bundle)));
+                .submitEntity(URLS.SUBMIT_URL, bundle.getInputFeedFromBundle()));
         } else {
             final DateTime dataStartTime = new DateTime(
                 feedElement.getClusters().getClusters().get(0).getValidity().getStart(),
@@ -116,7 +114,7 @@ public class HCatRetentionTest extends BaseTestClass {
             final List<DateTime> dataDates =
                 TimeUtil.getDatesOnEitherSide(dataStartTime, dataEndTime, feedType);
             final List<String> dataDateStrings = TimeUtil.convertDatesToString(dataDates,
-                TimeUtil.getFormatStringForFeedType(feedType));
+                    feedType.getFormatter());
             AssertUtil.checkForListSizes(dataDates, dataDateStrings);
             final List<String> dataFolders = HadoopUtil.flattenAndPutDataInFolder(clusterFS,
                 OSUtil.OOZIE_EXAMPLE_INPUT_LATE_INPUT, baseTestHDFSDir, dataDateStrings);
@@ -153,10 +151,10 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static List<String> getHadoopDataFromDir(FileSystem fs, String hadoopPath,
-                                                     String dir, FEED_TYPE feedType)
+                                                     String dir, FeedType feedType)
         throws IOException {
         List<String> finalResult = new ArrayList<String>();
-        final int dirDepth = getDirDepthForFeedType(feedType);
+        final int dirDepth = feedType.getDirDepth();
 
         List<Path> results = HadoopUtil.getAllDirsRecursivelyHDFS(fs,
             new Path(hadoopPath), dirDepth);
@@ -182,17 +180,15 @@ public class HCatRetentionTest extends BaseTestClass {
      * @return expected output of the retention
      */
     private static List<String> getExpectedOutput(int retentionPeriod,
-                                                  RETENTION_UNITS retentionUnit,
-                                                  FEED_TYPE feedType,
+                                                  RetentionUnit retentionUnit,
+                                                  FeedType feedType,
                                                   DateTime endDateUTC,
                                                   List<String> inputData) {
-        DateTimeFormatter formatter =
-            DateTimeFormat.forPattern(TimeUtil.getFormatStringForFeedType(feedType));
         List<String> finalData = new ArrayList<String>();
 
         //convert the end date to the same format
         final String endLimit =
-            formatter.print(getEndLimit(retentionPeriod, retentionUnit, endDateUTC));
+            feedType.getFormatter().print(retentionUnit.minusTime(endDateUTC, retentionPeriod));
         //now to actually check!
         for (String testDate : inputData) {
             if (testDate.compareTo(endLimit) >= 0) {
@@ -203,7 +199,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static void createPartitionedTable(HCatClient client, String dbName, String tableName,
-                                               String tableLoc, FEED_TYPE dataType)
+                                               String tableLoc, FeedType dataType)
         throws HCatException {
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         ArrayList<HCatFieldSchema> ptnCols = new ArrayList<HCatFieldSchema>();
@@ -244,7 +240,7 @@ public class HCatRetentionTest extends BaseTestClass {
     }
 
     private static void addPartitionsToExternalTable(HCatClient client, String dbName,
-                                                     String tableName, FEED_TYPE feedType,
+                                                     String tableName, FeedType feedType,
                                                      List<DateTime> dataDates,
                                                      List<String> dataFolders)
         throws HCatException {
@@ -276,81 +272,26 @@ public class HCatRetentionTest extends BaseTestClass {
         }
     }
 
-    private static String getFeedPathValue(FEED_TYPE feedType) {
-        switch (feedType) {
-            case YEARLY:
-                return "year=${YEAR}";
-            case MONTHLY:
-                return "year=${YEAR};month=${MONTH}";
-            case DAILY:
-                return "year=${YEAR};month=${MONTH};day=${DAY}";
-            case HOURLY:
-                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR}";
-            case MINUTELY:
-                return "year=${YEAR};month=${MONTH};day=${DAY};hour=${HOUR};minute=${MINUTELY}";
-            default:
-                Assert.fail("Unexpected feedType=" + feedType);
-        }
-        return null;
-    }
-
-    private static int getDirDepthForFeedType(FEED_TYPE feedType) {
-        switch (feedType) {
-            case MINUTELY:
-                return 4;
-            case HOURLY:
-                return 3;
-            case DAILY:
-                return 2;
-            case MONTHLY:
-                return 1;
-            case YEARLY:
-                return 0;
-            default:
-                Assert.fail("Unexpected feedType=" + feedType);
-        }
-        return -1;
-    }
-
-    private static DateTime getEndLimit(int time, RETENTION_UNITS interval,
-                                        DateTime today) {
-        switch (interval) {
-            case MINUTES:
-                return today.minusMinutes(time);
-            case HOURS:
-                return today.minusHours(time);
-            case DAYS:
-                return today.minusDays(time);
-            case MONTHS:
-                return today.minusMonths(time);
-            case YEARS:
-                return today.minusYears(time);
-            default:
-                Assert.fail("Unexpected value of interval: " + interval);
-        }
-        return null;
-    }
-
     @DataProvider(name = "loopBelow")
     public Object[][] getTestData(Method m) {
-        RETENTION_UNITS[] units = new RETENTION_UNITS[]{RETENTION_UNITS.HOURS, RETENTION_UNITS.DAYS,
-            RETENTION_UNITS.MONTHS};// "minutes","years",
+        RetentionUnit[] retentionUnits = new RetentionUnit[]{RetentionUnit.HOURS, RetentionUnit.DAYS,
+            RetentionUnit.MONTHS};// "minutes","years",
         int[] periods = new int[]{7, 824, 43}; // a negative value like -4 should be covered
         // in validation scenarios.
-        FEED_TYPE[] dataTypes =
-            new FEED_TYPE[]{
+        FeedType[] dataTypes =
+            new FeedType[]{
                 //disabling since falcon has support is for only for single hcat partition
-                //FEED_TYPE.DAILY, FEED_TYPE.MINUTELY, FEED_TYPE.HOURLY, FEED_TYPE.MONTHLY,
-                FEED_TYPE.YEARLY};
-        Object[][] testData = new Object[units.length * periods.length * dataTypes.length][3];
+                //FeedType.DAILY, FeedType.MINUTELY, FeedType.HOURLY, FeedType.MONTHLY,
+                FeedType.YEARLY};
+        Object[][] testData = new Object[retentionUnits.length * periods.length * dataTypes.length][3];
 
         int i = 0;
 
-        for (RETENTION_UNITS unit : units) {
+        for (RetentionUnit retentionUnit : retentionUnits) {
             for (int period : periods) {
-                for (FEED_TYPE dataType : dataTypes) {
+                for (FeedType dataType : dataTypes) {
                     testData[i][0] = period;
-                    testData[i][1] = unit;
+                    testData[i][1] = retentionUnit;
                     testData[i][2] = dataType;
                     i++;
                 }

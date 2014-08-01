@@ -19,7 +19,6 @@
 package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -27,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,8 +119,7 @@ public final class HadoopUtil {
                                         final String srcFileLocation)
         throws IOException {
         LOGGER.info(String.format("Copying local dir %s to hdfs location %s on %s",
-            srcFileLocation,
-            dstHdfsDir, fs.getConf().get("fs.default.name")));
+            srcFileLocation, dstHdfsDir, fs.getUri()));
         fs.copyFromLocalFile(new Path(srcFileLocation), new Path(dstHdfsDir));
     }
 
@@ -206,22 +205,13 @@ public final class HadoopUtil {
     public static void deleteDirIfExists(String hdfsPath, FileSystem fs) throws IOException {
         Path path = new Path(hdfsPath);
         if (fs.exists(path)) {
-            LOGGER.info(String.format("Deleting HDFS path: %s on %s", path,
-                fs.getConf().get("fs.default.name")));
+            LOGGER.info(String.format("Deleting HDFS path: %s on %s", path, fs.getUri()));
             fs.delete(path, true);
         } else {
             LOGGER.info(String.format(
-                "Not deleting non-existing HDFS path: %s on %s", path,
-                fs.getConf().get("fs.default.name")));
+                "Not deleting non-existing HDFS path: %s on %s", path, fs.getUri()));
         }
     }
-
-    public static FileSystem getFileSystem(String fs) throws IOException {
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", "hdfs://" + fs);
-        return FileSystem.get(conf);
-    }
-
 
     public static void flattenAndPutDataInFolder(FileSystem fs, String inputPath,
                                                  List<String> remoteLocations) throws IOException {
@@ -269,4 +259,156 @@ public final class HadoopUtil {
         return locations;
     }
 
+    public static void createLateDataFoldersWithRandom(FileSystem fs, String folderPrefix,
+        List<String> folderList) throws IOException {
+        LOGGER.info("creating late data folders.....");
+        folderList.add("somethingRandom");
+
+        for (final String folder : folderList) {
+            fs.mkdirs(new Path(folderPrefix + folder));
+        }
+
+        LOGGER.info("created all late data folders.....");
+    }
+
+    public static void copyDataToFolders(FileSystem fs, List<String> folderList,
+        String directory, String folderPrefix) throws IOException {
+        LOGGER.info("copying data into folders....");
+        List<String> fileLocations = new ArrayList<String>();
+        File[] files = new File(directory).listFiles();
+        if (files != null) {
+            for (final File file : files) {
+                fileLocations.add(file.toString());
+            }
+        }
+        copyDataToFolders(fs, folderPrefix, folderList,
+                fileLocations.toArray(new String[fileLocations.size()]));
+    }
+
+    public static void copyDataToFolders(FileSystem fs, final String folderPrefix,
+        List<String> folderList, String... fileLocations) throws IOException {
+        for (final String folder : folderList) {
+            boolean r;
+            String folderSpace = folder.replaceAll("/", "_");
+            File f = new File(OSUtil.NORMAL_INPUT + folderSpace + ".txt");
+            if (!f.exists()) {
+                r = f.createNewFile();
+                if (!r) {
+                    LOGGER.info("file could not be created");
+                }
+            }
+
+            FileWriter fr = new FileWriter(f);
+            fr.append("folder");
+            fr.close();
+            fs.copyFromLocalFile(new Path(f.getAbsolutePath()), new Path(folderPrefix + folder));
+            r = f.delete();
+            if (!r) {
+                LOGGER.info("delete was not successful");
+            }
+
+            Path[] srcPaths = new Path[fileLocations.length];
+            for (int i = 0; i < srcPaths.length; ++i) {
+                srcPaths[i] = new Path(fileLocations[i]);
+            }
+            LOGGER.info(String.format("copying  %s to %s%s on %s", Arrays.toString(srcPaths),
+                folderPrefix, folder, fs.getUri()));
+            fs.copyFromLocalFile(false, true, srcPaths, new Path(folderPrefix + folder));
+        }
+    }
+
+    public static void lateDataReplenish(FileSystem fs, int interval,
+        int minuteSkip, String folderPrefix) throws IOException {
+        List<String> folderData = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
+
+        createLateDataFoldersWithRandom(fs, folderPrefix, folderData);
+        copyDataToFolders(fs, folderData, OSUtil.NORMAL_INPUT, folderPrefix);
+    }
+
+    public static void createLateDataFolders(FileSystem fs, final String folderPrefix,
+                                             List<String> folderList) throws IOException {
+        for (final String folder : folderList) {
+            fs.mkdirs(new Path(folderPrefix + folder));
+        }
+    }
+
+    public static void injectMoreData(FileSystem fs, final String remoteLocation,
+                                      String localLocation) throws IOException {
+        File[] files = new File(localLocation).listFiles();
+        assert files != null;
+        for (final File file : files) {
+            if (!file.isDirectory()) {
+                String path = remoteLocation + "/" + System.currentTimeMillis() / 1000 + "/";
+                LOGGER.info("inserting data@ " + path);
+                fs.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(path));
+            }
+        }
+
+    }
+
+    public static void putFileInFolderHDFS(FileSystem fs, int interval, int minuteSkip,
+                                           String folderPrefix, String fileToBePut)
+        throws IOException {
+        List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        LOGGER.info("folderData: " + folderPaths.toString());
+
+        createLateDataFolders(fs, folderPrefix, folderPaths);
+
+        if (fileToBePut.equals("_SUCCESS")) {
+            copyDataToFolders(fs, folderPrefix, folderPaths, OSUtil.NORMAL_INPUT + "_SUCCESS");
+        } else {
+            copyDataToFolders(fs, folderPrefix, folderPaths, OSUtil.NORMAL_INPUT + "log_01.txt");
+        }
+
+    }
+
+    public static void lateDataReplenishWithoutSuccess(FileSystem fs, int interval,
+        int minuteSkip, String folderPrefix, String postFix) throws IOException {
+        List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        LOGGER.info("folderData: " + folderPaths.toString());
+
+        if (postFix != null) {
+            for (int i = 0; i < folderPaths.size(); i++) {
+                folderPaths.set(i, folderPaths.get(i) + postFix);
+            }
+        }
+
+        createLateDataFolders(fs, folderPrefix, folderPaths);
+        copyDataToFolders(fs, folderPrefix, folderPaths,
+                OSUtil.NORMAL_INPUT + "log_01.txt");
+    }
+
+    public static void lateDataReplenish(FileSystem fs, int interval, int minuteSkip,
+                                         String folderPrefix, String postFix) throws IOException {
+        List<String> folderPaths = TimeUtil.getMinuteDatesOnEitherSide(interval, minuteSkip);
+        LOGGER.info("folderData: " + folderPaths.toString());
+
+        if (postFix != null) {
+            for (int i = 0; i < folderPaths.size(); i++) {
+                folderPaths.set(i, folderPaths.get(i) + postFix);
+            }
+        }
+
+        createLateDataFolders(fs, folderPrefix, folderPaths);
+        copyDataToFolders(fs, folderPrefix, folderPaths,
+            OSUtil.NORMAL_INPUT + "_SUCCESS", OSUtil.NORMAL_INPUT + "log_01.txt");
+    }
+
+    public static void replenishData(FileSystem fileSystem, String prefix, List<String> folderList,
+        boolean uploadData) throws IOException {
+        //purge data first
+        deleteDirIfExists(prefix, fileSystem);
+
+        folderList.add("somethingRandom");
+
+        for (final String folder : folderList) {
+            final String pathString = prefix + folder;
+            LOGGER.info(pathString);
+            fileSystem.mkdirs(new Path(pathString));
+            if (uploadData) {
+                fileSystem.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"),
+                        new Path(pathString));
+            }
+        }
+    }
 }

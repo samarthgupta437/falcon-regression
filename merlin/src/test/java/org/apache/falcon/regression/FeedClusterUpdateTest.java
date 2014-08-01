@@ -75,10 +75,10 @@ public class FeedClusterUpdateTest extends BaseTestClass {
         try {
             String postFix = "/US/" + servers.get(1).getClusterHelper().getColoName();
             HadoopUtil.deleteDirIfExists(baseTestDir, cluster2FS);
-            Util.lateDataReplenish(cluster2, 80, 1, baseTestDir, postFix);
+            HadoopUtil.lateDataReplenish(cluster2FS, 80, 1, baseTestDir, postFix);
             postFix = "/UK/" + servers.get(2).getClusterHelper().getColoName();
             HadoopUtil.deleteDirIfExists(baseTestDir, cluster3FS);
-            Util.lateDataReplenish(cluster3, 80, 1, baseTestDir, postFix);
+            HadoopUtil.lateDataReplenish(cluster3FS, 80, 1, baseTestDir, postFix);
         } finally {
             removeBundles();
         }

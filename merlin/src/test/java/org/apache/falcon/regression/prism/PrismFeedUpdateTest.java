@@ -107,8 +107,8 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //submit 3 clusters
 
         //get 2 unique feeds
-        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
-        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = bundles[0].getInputFeedFromBundle();
+        String outputFeed = bundles[0].getOutputFeedFromBundle();
 
         //set source and target for the 2 feeds
 
@@ -133,7 +133,7 @@ public class PrismFeedUpdateTest extends BaseTestClass {
         //generate data in both the colos cluster1colo and cluster2colo
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), server1FS);
-        Util.lateDataReplenish(cluster1, 70, 1, prefix, null);
+        HadoopUtil.lateDataReplenish(server1FS, 70, 1, prefix, null);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 

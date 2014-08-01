@@ -111,13 +111,13 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         String postFix = "/US/" + cluster2Colo;
         String prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster2FS);
-        Util.lateDataReplenish(cluster2, 5, 80, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster2FS, 5, 80, prefix, postFix);
 
         // use the colo string here so that the test works in embedded and distributed mode.
         postFix = "/UK/" + cluster3Colo;
         prefix = bundles[0].getFeedDataPathPrefix();
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 5, 80, prefix, postFix);
+        HadoopUtil.lateDataReplenish(cluster3FS, 5, 80, prefix, postFix);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-30);
 
@@ -184,19 +184,16 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
     public void updateFeed_dependentProcessTest() throws Exception {
         //set cluster colos
         bundles[0].setCLusterColo(cluster1Colo);
-        logger.info("cluster bundles[0]: " + Util.prettyPrintXml(bundles[0].getClusters().get(0)));
         bundles[1].setCLusterColo(cluster2Colo);
-        logger.info("cluster bundles[1]: " + Util.prettyPrintXml(bundles[1].getClusters().get(0)));
         bundles[2].setCLusterColo(cluster3Colo);
-        logger.info("cluster bundles[2]: " + Util.prettyPrintXml(bundles[2].getClusters().get(0)));
 
         //submit 3 clusters
         Bundle.submitCluster(bundles[0], bundles[1], bundles[2]);
 
         //get 2 unique feeds
-        String feed01 = BundleUtil.getInputFeedFromBundle(bundles[0]);
-        String feed02 = BundleUtil.getInputFeedFromBundle(bundles[1]);
-        String outputFeed = BundleUtil.getOutputFeedFromBundle(bundles[0]);
+        String feed01 = bundles[0].getInputFeedFromBundle();
+        String feed02 = bundles[1].getInputFeedFromBundle();
+        String outputFeed = bundles[0].getOutputFeedFromBundle();
 
         //set clusters to null;
         feed01 = InstanceUtil.setFeedCluster(feed01,
@@ -223,11 +220,11 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
         //generate data in both the colos ua1 and ua3
         String prefix = InstanceUtil.getFeedPrefix(feed01);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster1FS);
-        Util.lateDataReplenish(cluster1, 23, 1, prefix, null);
+        HadoopUtil.lateDataReplenish(cluster1FS, 23, 1, prefix, null);
 
         prefix = InstanceUtil.getFeedPrefix(feed02);
         HadoopUtil.deleteDirIfExists(prefix.substring(1), cluster3FS);
-        Util.lateDataReplenish(cluster3, 23, 1, prefix, null);
+        HadoopUtil.lateDataReplenish(cluster3FS, 23, 1, prefix, null);
 
         String startTime = TimeUtil.getTimeWrtSystemTime(-50);
 
@@ -269,10 +266,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readEntityName(bundles[2].getClusters().get(0)), ClusterType.TARGET, null);
 
         //submit and schedule feeds
-        logger.info("feed01: " + Util.prettyPrintXml(feed01));
-        logger.info("feed02: " + Util.prettyPrintXml(feed02));
-        logger.info("outputFeed: " + Util.prettyPrintXml(outputFeed));
-
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed01);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_AND_SCHEDULE_URL, feed02);
         prism.getFeedHelper().submitAndSchedule(URLS.SUBMIT_URL, outputFeed);
@@ -300,8 +293,6 @@ public class PrismFeedReplicationUpdateTest extends BaseTestClass {
             Util.readEntityName(feed02));
 
         //submit and schedule process
-        logger.info("process: " + Util.prettyPrintXml(process));
-
         AssertUtil.assertSucceeded(prism.getProcessHelper().submitAndSchedule(URLS
             .SUBMIT_AND_SCHEDULE_URL, process));
 

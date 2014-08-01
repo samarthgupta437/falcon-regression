@@ -48,7 +48,6 @@ import org.apache.falcon.regression.Entities.ProcessMerlin;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.util.AssertUtil;
-import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
@@ -145,7 +144,7 @@ public class Bundle {
         submitFeeds(prismHelper);
 
         AssertUtil.assertSucceeded(prismHelper.getProcessHelper().submitAndSchedule(
-            URLS.SUBMIT_AND_SCHEDULE_URL, processData));
+                URLS.SUBMIT_AND_SCHEDULE_URL, processData));
     }
 
 
@@ -160,7 +159,7 @@ public class Bundle {
         submitProcess(true);
 
         AssertUtil.assertSucceeded(
-            coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
+                coloHelper.getProcessHelper().schedule(URLS.SCHEDULE_URL, processData));
     }
 
     public List<String> getClusters() {
@@ -328,7 +327,7 @@ public class Bundle {
         Process process = getProcessObject();
         Inputs inputs = new Inputs();
         Input input = new Input();
-        input.setFeed(Util.readEntityName(BundleUtil.getInputFeedFromBundle(this)));
+        input.setFeed(Util.readEntityName(getInputFeedFromBundle()));
         input.setStart(startEl);
         input.setEnd(endEl);
         input.setName("inputData");
@@ -505,7 +504,7 @@ public class Bundle {
     }
 
     public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) {
-        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
+        String feedName = getInputFeedNameFromBundle();
         Feed feedElement = getFeedElement(feedName);
         Frequency frq = new Frequency("" + frequency, periodicity);
         feedElement.setFrequency(frq);
@@ -514,25 +513,30 @@ public class Bundle {
     }
 
     public void setInputFeedValidity(String startInstance, String endInstance) {
-        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
+        String feedName = getInputFeedNameFromBundle();
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
     public void setOutputFeedValidity(String startInstance, String endInstance) {
-        String feedName = BundleUtil.getOutputFeedNameFromBundle(this);
+        String feedName = getOutputFeedNameFromBundle();
         this.setFeedValidity(startInstance, endInstance, feedName);
     }
 
     public void setInputFeedDataPath(String path) {
-        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
+        String feedName = getInputFeedNameFromBundle();
         Feed feedElement = getFeedElement(feedName);
-        feedElement.getLocations().getLocations().get(0).setPath(path);
+        final List<Location> locations = feedElement.getLocations().getLocations();
+        for (Location location : locations) {
+            if(location.getType() == LocationType.DATA) {
+                locations.get(0).setPath(path);
+            }
+        }
         writeFeedElement(feedElement, feedName);
     }
 
     public String getFeedDataPathPrefix() {
         Feed feedElement =
-            getFeedElement(BundleUtil.getInputFeedNameFromBundle(this));
+            getFeedElement(getInputFeedNameFromBundle());
         return Util.getPathPrefix(feedElement.getLocations().getLocations().get(0)
             .getPath());
     }
@@ -634,7 +638,7 @@ public class Bundle {
     }
 
     public void setInputFeedAvailabilityFlag(String flag) {
-        String feedName = BundleUtil.getInputFeedNameFromBundle(this);
+        String feedName = getInputFeedNameFromBundle();
         Feed feedElement = getFeedElement(feedName);
         feedElement.setAvailabilityFlag(flag);
         writeFeedElement(feedElement, feedName);
@@ -662,7 +666,7 @@ public class Bundle {
     }
 
     public void setInputFeedTableUri(String tableUri) {
-        final String feedStr = BundleUtil.getInputFeedFromBundle(this);
+        final String feedStr = getInputFeedFromBundle();
         Feed feed = (Feed) Entity.fromString(EntityType.FEED, feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
@@ -671,7 +675,7 @@ public class Bundle {
     }
 
     public void setOutputFeedTableUri(String tableUri) {
-        final String feedStr = BundleUtil.getOutputFeedFromBundle(this);
+        final String feedStr = getOutputFeedFromBundle();
         Feed feed = (Feed) Entity.fromString(EntityType.FEED, feedStr);
         final CatalogTable catalogTable = new CatalogTable();
         catalogTable.setUri(tableUri);
@@ -939,7 +943,8 @@ public class Bundle {
     }
 
     /**
-     * Sets name(s) of the process output(s)
+     * Sets name(s) of the process output(s).
+     *
      * @param names new names of the outputs
      */
     public void setProcessOutputNames(String... names) {
@@ -988,10 +993,57 @@ public class Bundle {
     }
 
     public void setProcessProperty(String property, String value) {
-
         ProcessMerlin process = new ProcessMerlin(this.getProcessData());
         process.setProperty(property, value);
         this.setProcessData(process.toString());
 
     }
+
+    public String getDatasetPath() {
+        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, getDataSets().get(0));
+        if (!dataElement.getName().contains("raaw-logs16")) {
+            dataElement = (Feed) Entity.fromString(EntityType.FEED, getDataSets().get(1));
+        }
+        return dataElement.getLocations().getLocations().get(0).getPath();
+    }
+
+    public String getInputFeedFromBundle() {
+        String processData = getProcessData();
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
+        for (Input input : processObject.getInputs().getInputs()) {
+            for (String feed : getDataSets()) {
+                if (Util.readEntityName(feed).equalsIgnoreCase(input.getFeed())) {
+                    return feed;
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getOutputFeedFromBundle() {
+        String processData = getProcessData();
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
+
+        for (Output output : processObject.getOutputs().getOutputs()) {
+            for (String feed : getDataSets()) {
+                if (Util.readEntityName(feed).equalsIgnoreCase(output.getFeed())) {
+                    return feed;
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getOutputFeedNameFromBundle() {
+        String feedData = getOutputFeedFromBundle();
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedData);
+        return feedObject.getName();
+    }
+
+    public String getInputFeedNameFromBundle() {
+        String feedData = getInputFeedFromBundle();
+        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedData);
+        return feedObject.getName();
+    }
+
 }

@@ -25,27 +25,28 @@ import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
+import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
+import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
 import org.apache.falcon.regression.core.supportClasses.Consumer;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
-import org.apache.falcon.regression.core.util.OSUtil;
 import org.apache.falcon.regression.core.util.OozieUtil;
+import org.apache.falcon.regression.core.util.TimeUtil;
 import org.apache.falcon.regression.core.util.Util;
 import org.apache.falcon.regression.core.util.Util.URLS;
 import org.apache.falcon.regression.testHelper.BaseTestClass;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.authentication.client.AuthenticationException;
 import org.apache.log4j.Logger;
 import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
@@ -55,7 +56,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
@@ -77,107 +77,72 @@ public class RetentionTest extends BaseTestClass {
     OozieClient clusterOC = serverOC.get(0);
 
     @BeforeMethod(alwaysRun = true)
-    public void testName(Method method) throws IOException, JAXBException {
+    public void testName(Method method) throws Exception {
         logger.info("test name: " + method.getName());
         Bundle bundle = BundleUtil.readRetentionBundle();
         bundles[0] = new Bundle(bundle, cluster);
         bundles[0].setInputFeedDataPath(testHDFSDir);
         bundles[0].generateUniqueBundle();
+        bundles[0].submitClusters(prism);
     }
 
     @AfterMethod(alwaysRun = true)
     public void tearDown() throws Exception {
-        prism.getFeedHelper()
-            .delete(URLS.DELETE_URL, BundleUtil.getInputFeedFromBundle(bundles[0]));
-        verifyFeedDeletion(BundleUtil.getInputFeedFromBundle(bundles[0]));
         removeBundles();
     }
 
     @Test
     public void testRetentionWithEmptyDirectories() throws Exception {
         // test for https://issues.apache.org/jira/browse/FALCON-321
-        testRetention("24", "hours", true, "daily", false);
+        testRetention(24, RetentionUnit.HOURS, true, FeedType.DAILY, false);
     }
 
     @Test(groups = {"0.1", "0.2", "prism"}, dataProvider = "betterDP", priority = -1)
-    public void testRetention(String period, String unit, boolean gaps, String dataType,
-                              boolean withData) throws Exception {
-        String inputFeed = setFeedPathValue(BundleUtil.getInputFeedFromBundle(bundles[0]),
-            getFeedPathValue(dataType));
-        inputFeed = insertRetentionValueInFeed(inputFeed, unit + "(" + period + ")");
-
-        bundles[0].submitClusters(prism);
+    public void testRetention(final int retentionPeriod, final RetentionUnit retentionUnit,
+        final boolean gaps, final FeedType feedType, final boolean withData) throws Exception {
+        bundles[0].setInputFeedDataPath(testHDFSDir + feedType.getPathValue());
+        final FeedMerlin feedObject = new FeedMerlin(bundles[0].getInputFeedFromBundle());
+        feedObject.setRetentionValue(retentionUnit.getValue() + "(" + retentionPeriod + ")");
 
         final ServiceResponse response = prism.getFeedHelper()
-            .submitEntity(URLS.SUBMIT_URL, inputFeed);
-        if (Integer.parseInt(period) > 0) {
+            .submitEntity(URLS.SUBMIT_URL, feedObject.toString());
+        if (retentionPeriod > 0) {
             AssertUtil.assertSucceeded(response);
 
-            replenishData(dataType, gaps, withData);
+            replenishData(feedType, gaps, withData);
 
-            commonDataRetentionWorkflow(inputFeed, Integer.parseInt(period), unit);
+            commonDataRetentionWorkflow(feedObject.toString(), retentionPeriod, retentionUnit);
         } else {
             AssertUtil.assertFailed(response);
         }
     }
 
-    private String setFeedPathValue(String feed, String pathValue) {
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
-        for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType() == LocationType.DATA) {
-                location.setPath(pathValue);
-            }
-        }
-        return feedObject.toString();
-    }
-
-    private void replenishData(String dataType, boolean gap,
-                               boolean withData) throws Exception {
-        int skip = 0;
-
+    private void replenishData(FeedType feedType, boolean gap, boolean withData) throws Exception {
+        int skip = 1;
         if (gap) {
-            Random r = new Random();
-            skip = gaps[r.nextInt(gaps.length)];
+            skip = gaps[new Random().nextInt(gaps.length)];
         }
 
-        if (dataType.equalsIgnoreCase("daily")) {
-            replenishData(
-                convertDatesToFolders(getDailyDatesOnEitherSide(36, skip), skip), withData);
-        } else if (dataType.equalsIgnoreCase("yearly")) {
-            replenishData(getYearlyDatesOnEitherSide(10, skip), withData);
-        } else if (dataType.equalsIgnoreCase("monthly")) {
-            replenishData(getMonthlyDatesOnEitherSide(30, skip), withData);
-        }
-    }
+        final DateTime today = new DateTime(DateTimeZone.UTC);
+        final List<DateTime> times = TimeUtil.getDatesOnEitherSide(
+            feedType.addTime(today, -36), feedType.addTime(today, 36), skip, feedType);
+        final List<String> dataDates = TimeUtil.convertDatesToString(times, feedType.getFormatter());
+        logger.info("dataDates = " + dataDates);
 
-    private String getFeedPathValue(String dataType) {
-        if (dataType.equalsIgnoreCase("monthly")) {
-            return testHDFSDir + "${YEAR}/${MONTH}";
-        }
-        if (dataType.equalsIgnoreCase("daily")) {
-            return testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}";
-        }
-        if (dataType.equalsIgnoreCase("yearly")) {
-            return testHDFSDir + "${YEAR}";
-        }
-        return null;
+        HadoopUtil.replenishData(clusterFS, testHDFSDir, dataDates, withData);
     }
 
     private void commonDataRetentionWorkflow(String inputFeed, int time,
-                                             String interval)
+                                             RetentionUnit interval)
         throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
         //get Data created in the cluster
-        List<String> initialData =
-            Util.getHadoopDataFromDir(clusterFS, inputFeed,
-                testHDFSDir);
+        List<String> initialData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
 
-        cluster.getFeedHelper()
-            .schedule(URLS.SCHEDULE_URL, inputFeed);
+        cluster.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
         final String inputDataSetName = Util.readEntityName(inputFeed);
         logger.info(inputDataSetName);
-        Consumer consumer =
-            new Consumer("FALCON." + inputDataSetName,
+        Consumer consumer = new Consumer("FALCON." + inputDataSetName,
                 cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 
@@ -237,24 +202,6 @@ public class RetentionTest extends BaseTestClass {
             expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
-    private void replenishData(List<String> folderList, boolean uploadData)
-        throws IOException {
-        //purge data first
-        HadoopUtil.deleteDirIfExists(testHDFSDir, clusterFS);
-
-        folderList.add("somethingRandom");
-
-        for (final String folder : folderList) {
-            final String pathString = testHDFSDir + folder;
-            logger.info(pathString);
-            clusterFS.mkdirs(new Path(pathString));
-            if (uploadData) {
-                clusterFS.copyFromLocalFile(new Path(OSUtil.RESOURCES + "log_01.txt"),
-                    new Path(pathString));
-            }
-        }
-    }
-
     private void validateDataFromFeedQueue(String feedName,
                                            List<HashMap<String, String>> queueData,
                                            List<String> expectedOutput,
@@ -299,114 +246,7 @@ public class RetentionTest extends BaseTestClass {
                 "not same!");
     }
 
-    private static String insertRetentionValueInFeed(String feed, String retentionValue) {
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
-
-        //insert retentionclause
-        feedObject.getClusters().getClusters().get(0).getRetention()
-            .setLimit(new Frequency(retentionValue));
-
-        for (org.apache.falcon.entity.v0.feed.Cluster cluster : feedObject
-            .getClusters().getClusters()) {
-            cluster.getRetention().setLimit(new Frequency(retentionValue));
-        }
-
-        return feedObject.toString();
-
-    }
-
-    private void verifyFeedDeletion(String feed)
-        throws IOException {
-        String directory = "/projects/ivory/staging/" + cluster.getFeedHelper().getServiceUser()
-            + "/workflows/feed/" + Util.readEntityName(feed);
-        //make sure feed bundle is not there
-        Assert.assertFalse(clusterFS.isDirectory(new Path(directory)),
-            "Feed " + Util.readEntityName(feed) + " did not have its bundle removed!!!!");
-    }
-
-    private static List<String> convertDatesToFolders(List<String> dateList, int skipInterval) {
-        logger.info("converting dates to folders....");
-        List<String> folderList = new ArrayList<String>();
-
-        for (String date : dateList) {
-            for (int i = 0; i < 24; i += skipInterval + 1) {
-                if (i < 10) {
-                    folderList.add(date + "/0" + i);
-                } else {
-                    folderList.add(date + "/" + i);
-                }
-            }
-        }
-
-        return folderList;
-    }
-
-    private static List<String> getDailyDatesOnEitherSide(int interval, int skip) {
-
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd");
-
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(today));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(today.minusDays(backward)));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(today.plusDays(i)));
-        }
-
-        return dates;
-    }
-
-    private static List<String> getYearlyDatesOnEitherSide(int interval, int skip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy");
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print(new LocalDate(today)));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.minusYears(backward))));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.plusYears(i))));
-        }
-
-        return dates;
-    }
-
-    private static List<String> getMonthlyDatesOnEitherSide(int interval, int skip) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM");
-        DateTime today = new DateTime(DateTimeZone.UTC);
-        logger.info("today is: " + today.toString());
-
-        List<String> dates = new ArrayList<String>();
-        dates.add(formatter.print((today)));
-
-        //first lets get all dates before today
-        for (int backward = 1; backward <= interval; backward += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.minusMonths(backward))));
-        }
-
-        //now the forward dates
-        for (int i = 1; i <= interval; i += skip + 1) {
-            dates.add(formatter.print(new LocalDate(today.plusMonths(i))));
-        }
-
-        return dates;
-    }
-
-    private List<String> filterDataOnRetention(String feed, int time, String interval,
+    private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,
                                                DateTime endDate,
                                                List<String> inputData) {
         String locationType = "";
@@ -447,17 +287,16 @@ public class RetentionTest extends BaseTestClass {
         formatter.print(endDate);
         String startLimit = "";
 
-        if (interval.equalsIgnoreCase("minutes")) {
+        if (interval == RetentionUnit.MINUTES) {
             startLimit =
                 formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
-        } else if (interval.equalsIgnoreCase("hours")) {
+        } else if (interval == RetentionUnit.HOURS) {
             startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
-        } else if (interval.equalsIgnoreCase("days")) {
+        } else if (interval == RetentionUnit.DAYS) {
             startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
-        } else if (interval.equalsIgnoreCase("months")) {
+        } else if (interval == RetentionUnit.MONTHS) {
             startLimit =
                 formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
-
         }
 
 
@@ -480,24 +319,25 @@ public class RetentionTest extends BaseTestClass {
 
     @DataProvider(name = "betterDP")
     public Object[][] getTestData(Method m) {
-        String[] periods = new String[]{"0", "10080", "60", "8",
-            "24"}; // a negative value like -4 should be covered in validation scenarios.
-        String[] units = new String[]{"hours", "days"};// "minutes","hours","days",
+        // a negative value like -4 should be covered in validation scenarios.
+        int[] retentionPeriods = new int[]{0, 10080, 60, 8, 24};
+        RetentionUnit[] retentionUnits = new RetentionUnit[]{RetentionUnit.HOURS,
+            RetentionUnit.DAYS};// "minutes","hours", "days",
         boolean[] gaps = new boolean[]{false, true};
-        String[] dataTypes = new String[]{"daily", "yearly", "monthly"};
-        Object[][] testData = new Object[periods.length * units.length *
-            gaps.length * dataTypes.length][5];
+        FeedType[] feedTypes = new FeedType[]{FeedType.DAILY, FeedType.YEARLY, FeedType.MONTHLY};
+        Object[][] testData = new Object[retentionPeriods.length * retentionUnits.length *
+            gaps.length * feedTypes.length][5];
 
         int i = 0;
 
-        for (String unit : units) {
-            for (String period : periods) {
+        for (RetentionUnit retentionUnit : retentionUnits) {
+            for (int period : retentionPeriods) {
                 for (boolean gap : gaps) {
-                    for (String dataType : dataTypes) {
+                    for (FeedType feedType : feedTypes) {
                         testData[i][0] = period;
-                        testData[i][1] = unit;
+                        testData[i][1] = retentionUnit;
                         testData[i][2] = gap;
-                        testData[i][3] = dataType;
+                        testData[i][3] = feedType;
                         testData[i][4] = true;
                         i++;
                     }

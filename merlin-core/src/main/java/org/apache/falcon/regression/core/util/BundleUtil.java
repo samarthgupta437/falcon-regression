@@ -20,12 +20,6 @@ package org.apache.falcon.regression.core.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.falcon.entity.v0.Entity;
-import org.apache.falcon.entity.v0.EntityType;
-import org.apache.falcon.entity.v0.feed.Feed;
-import org.apache.falcon.entity.v0.process.Input;
-import org.apache.falcon.entity.v0.process.Output;
-import org.apache.falcon.entity.v0.process.Process;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
@@ -136,51 +130,4 @@ public final class BundleUtil {
         }
     }
 
-    public static String getInputFeedNameFromBundle(Bundle b) {
-        String feedData = getInputFeedFromBundle(b);
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedData);
-        return feedObject.getName();
-    }
-
-    public static String getOutputFeedNameFromBundle(Bundle b) {
-        String feedData = getOutputFeedFromBundle(b);
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feedData);
-        return feedObject.getName();
-    }
-
-    public static String getOutputFeedFromBundle(Bundle bundle) {
-        String processData = bundle.getProcessData();
-        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
-
-        for (Output output : processObject.getOutputs().getOutputs()) {
-            for (String feed : bundle.getDataSets()) {
-                if (Util.readEntityName(feed).equalsIgnoreCase(output.getFeed())) {
-                    return feed;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static String getDatasetPath(Bundle bundle) {
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(0));
-        if (!dataElement.getName().contains("raaw-logs16")) {
-            dataElement = (Feed) Entity.fromString(EntityType.FEED, bundle.getDataSets().get(1));
-        }
-        return dataElement.getLocations().getLocations().get(0).getPath();
-    }
-
-    //needs to be rewritten to randomly pick an input feed
-    public static String getInputFeedFromBundle(Bundle bundle) {
-        String processData = bundle.getProcessData();
-        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
-        for (Input input : processObject.getInputs().getInputs()) {
-            for (String feed : bundle.getDataSets()) {
-                if (Util.readEntityName(feed).equalsIgnoreCase(input.getFeed())) {
-                    return feed;
-                }
-            }
-        }
-        return null;
-    }
 }

@@ -148,7 +148,7 @@ public class EmbeddedPigScriptTest extends BaseTestClass {
     @Test(groups = {"singleCluster"})
     public void getSuspendedProcessInstance() throws Exception {
         prism.getProcessHelper().suspend(URLS.SUSPEND_URL, bundles[0].getProcessData());
-        TimeUtil.sleepSeconds(10);
+        TimeUtil.sleepSeconds(15);
         AssertUtil.checkStatus(clusterOC, EntityType.PROCESS, bundles[0].getProcessData(),
             Job.Status.SUSPENDED);
         InstancesResult r = prism.getProcessHelper()
