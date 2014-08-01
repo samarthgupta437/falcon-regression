@@ -111,7 +111,8 @@ public class RetentionTest extends BaseTestClass {
 
             replenishData(feedType, gaps, withData);
 
-            commonDataRetentionWorkflow(feedObject.toString(), retentionUnit, retentionPeriod);
+            commonDataRetentionWorkflow(feedObject.toString(), feedType, retentionUnit,
+                retentionPeriod);
         } else {
             AssertUtil.assertFailed(response);
         }
@@ -132,9 +133,9 @@ public class RetentionTest extends BaseTestClass {
         HadoopUtil.replenishData(clusterFS, testHDFSDir, dataDates, withData);
     }
 
-    private void commonDataRetentionWorkflow(String feed, RetentionUnit retentionUnit,
-        int retentionPeriod) throws OozieClientException, IOException, URISyntaxException,
-        AuthenticationException, JMSException {
+    private void commonDataRetentionWorkflow(String feed, FeedType feedType,
+        RetentionUnit retentionUnit, int retentionPeriod) throws OozieClientException,
+        IOException, URISyntaxException, AuthenticationException, JMSException {
         //get Data created in the cluster
         List<String> initialData = Util.getHadoopDataFromDir(clusterFS, feed, testHDFSDir);
 
@@ -159,7 +160,7 @@ public class RetentionTest extends BaseTestClass {
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput = filterDataOnRetention(initialData, currentTime, retentionUnit,
-            retentionPeriod, feed);
+            retentionPeriod, feed, feedType);
 
         logger.info("initialData = " + initialData);
         logger.info("finalData = " + finalData);
@@ -215,7 +216,7 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private List<String> filterDataOnRetention(List<String> inputData, DateTime currentTime,
-        RetentionUnit retentionUnit, int retentionPeriod, String feed) {
+        RetentionUnit retentionUnit, int retentionPeriod, String feed, FeedType feedType) {
         String locationType = "";
         String appender = "";
 
@@ -235,15 +236,13 @@ public class RetentionTest extends BaseTestClass {
             throw new TestNGException("location type was not mentioned in your feed!");
         }
 
-        if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}")) {
+        if (feedType == FeedType.MONTHLY) {
             appender = "/01/00/01";
-        } else if (locationType
-            .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}")) {
+        } else if (feedType == FeedType.DAILY) {
             appender = "/01"; //because we already take care of that!
-        } else if (locationType
-            .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
+        } else if (feedType == FeedType.HOURLY) {
             appender = "/01";
-        } else if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}")) {
+        } else if (feedType == FeedType.YEARLY) {
             appender = "/01/01/00/01";
         }
 
