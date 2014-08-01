@@ -241,7 +241,7 @@ public class RetentionTest extends BaseTestClass {
         } else if (feedType == FeedType.MONTHLY) {
             appender = "/01/00/01";
         } else if (feedType == FeedType.DAILY) {
-            appender = "/01"; //because we already take care of that!
+            appender = "/00/01";
         } else if (feedType == FeedType.HOURLY) {
             appender = "/01";
         }
