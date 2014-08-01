@@ -495,12 +495,7 @@ public class Bundle {
 
 
     public void writeFeedElement(String feedString, String feedName) {
-        int index = 0;
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(0));
-        if (!dataElement.getName().contains(feedName)) {
-            index = 1;
-        }
-        dataSets.set(index, feedString);
+        dataSets.set(dataSets.indexOf(getFeed(feedName)), feedString);
     }
 
 
