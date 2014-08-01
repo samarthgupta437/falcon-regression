@@ -30,7 +30,7 @@ import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
 import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.Consumer;
+import org.apache.falcon.regression.core.supportClasses.JmsMessageConsumer;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -142,7 +142,7 @@ public class RetentionTest extends BaseTestClass {
         logger.info(cluster.getClusterHelper().getActiveMQ());
         final String inputDataSetName = Util.readEntityName(inputFeed);
         logger.info(inputDataSetName);
-        Consumer consumer = new Consumer("FALCON." + inputDataSetName,
+        JmsMessageConsumer consumer = new JmsMessageConsumer("FALCON." + inputDataSetName,
                 cluster.getClusterHelper().getActiveMQ());
         consumer.start();
 

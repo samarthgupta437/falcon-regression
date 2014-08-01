@@ -26,19 +26,18 @@ import javax.jms.Connection;
 import javax.jms.Destination;
 import javax.jms.MapMessage;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Consumer extends Thread {
+public class JmsMessageConsumer extends Thread {
     /*URL of the JMS server
     url = "tcp://host:61616?daemon=true";
     ActiveMQConnection.DEFAULT_BROKER_URL;
     Name of the queue we will receive messages from
     String subject = "IVORY.TOPIC";*/
 
-    private static final Logger logger = Logger.getLogger(Consumer.class);
+    private static final Logger logger = Logger.getLogger(JmsMessageConsumer.class);
     private static final int MAX_MESSAGE_COUNT = 1000;
 
     final String url;
@@ -49,7 +48,7 @@ public class Consumer extends Thread {
         return receivedMessages;
     }
 
-    public Consumer(String subject, String url) {
+    public JmsMessageConsumer(String subject, String url) {
         super(subject);
         this.subject = subject;
         this.url = url;
@@ -66,7 +65,7 @@ public class Consumer extends Thread {
             // Creating session for sending messages
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Destination destination = session.createTopic(subject);
-            MessageConsumer consumer = session.createConsumer(destination);
+            javax.jms.MessageConsumer consumer = session.createConsumer(destination);
 
             try {
                 logger.info("Starting to receive messages.");

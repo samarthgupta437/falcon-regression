@@ -40,7 +40,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.Consumer;
+import org.apache.falcon.regression.core.supportClasses.JmsMessageConsumer;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.http.HttpResponse;
@@ -360,9 +360,9 @@ public final class Util {
         return (Process) Entity.fromString(EntityType.PROCESS, processData);
     }
 
-    public static void dumpConsumerData(Consumer consumer) throws JMSException {
+    public static void dumpConsumerData(JmsMessageConsumer messageConsumer) throws JMSException {
         LOGGER.info("dumping all queue data:");
-        for (MapMessage mapMessage : consumer.getReceivedMessages()) {
+        for (MapMessage mapMessage : messageConsumer.getReceivedMessages()) {
             StringBuilder stringBuilder = new StringBuilder();
             final Enumeration mapNames = mapMessage.getMapNames();
             while (mapNames.hasMoreElements()) {
