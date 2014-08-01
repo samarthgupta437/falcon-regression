@@ -81,21 +81,6 @@ public class Bundle {
     private List<String> dataSets;
     private String processData;
 
-    public void writeFeedElement(Feed feedElement,
-                                        String feedName) {
-        writeFeedElement(feedElement.toString(), feedName);
-    }
-
-    public void writeFeedElement(String feedString,
-                                        String feedName) {
-        int index = 0;
-        Feed dataElement = (Feed) Entity.fromString(EntityType.FEED, dataSets.get(0));
-        if (!dataElement.getName().contains(feedName)) {
-            index = 1;
-        }
-        dataSets.set(index, feedString);
-    }
-
     public void submitFeed() throws Exception {
         submitClusters(prismHelper);
 
@@ -502,6 +487,17 @@ public class Bundle {
 
         return null;
     }
+
+
+    public void writeFeedElement(Feed feedElement, String feedName) {
+        writeFeedElement(feedElement.toString(), feedName);
+    }
+
+
+    public void writeFeedElement(String feedString, String feedName) {
+        dataSets.set(dataSets.indexOf(getFeed(feedName)), feedString);
+    }
+
 
     public void setInputFeedPeriodicity(int frequency, TimeUnit periodicity) {
         String feedName = getInputFeedNameFromBundle();
