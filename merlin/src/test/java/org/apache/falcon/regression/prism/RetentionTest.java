@@ -212,18 +212,15 @@ public class RetentionTest extends BaseTestClass {
 
     private List<String> filterDataOnRetention(List<String> inputData, DateTime currentTime,
         RetentionUnit retentionUnit, int retentionPeriod, FeedType feedType) {
-        List<String> finalData = new ArrayList<String>();
+        final List<String> finalData = new ArrayList<String>();
         //end date is today's date
-        String startLimit = feedType.getFormatter().print(
-            retentionUnit.minusTime(currentTime,retentionPeriod));
+        final String startLimit = feedType.getFormatter().print(
+                retentionUnit.minusTime(currentTime, retentionPeriod));
 
         //now to actually check!
         for (String testDate : inputData) {
-            if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if (testDate.compareTo(startLimit) > 0) {
-                    finalData.add(testDate);
-                }
-            } else {
+            if (testDate.equalsIgnoreCase("somethingRandom")
+                    || testDate.compareTo(startLimit) > 0) {
                 finalData.add(testDate);
             }
         }
