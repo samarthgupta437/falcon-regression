@@ -100,7 +100,7 @@ public class HCatRetentionTest extends BaseTestClass {
         FeedMerlin feedElement = new FeedMerlin(bundle.getInputFeedFromBundle());
         feedElement.setTableValue(dBName, tableName, feedType.getHcatPathValue());
         feedElement
-            .insertRetentionValueInFeed(retentionUnit.getValue() + "(" + retentionPeriod + ")");
+            .setRetentionValue(retentionUnit.getValue() + "(" + retentionPeriod + ")");
         if (retentionPeriod <= 0) {
             AssertUtil.assertFailed(prism.getFeedHelper()
                 .submitEntity(URLS.SUBMIT_URL, bundle.getInputFeedFromBundle()));

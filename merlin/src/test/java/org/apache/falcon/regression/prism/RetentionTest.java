@@ -25,6 +25,7 @@ import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
+import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
 import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
@@ -100,17 +101,17 @@ public class RetentionTest extends BaseTestClass {
     public void testRetention(final int retentionPeriod, final RetentionUnit retentionUnit,
         final boolean gaps, final FeedType feedType, final boolean withData) throws Exception {
         bundles[0].setInputFeedDataPath(testHDFSDir + feedType.getPathValue());
-        String inputFeed = insertRetentionValueInFeed(bundles[0].getInputFeedFromBundle(),
-            retentionUnit.getValue() + "(" + retentionPeriod + ")");
+        final FeedMerlin feedObject = new FeedMerlin(bundles[0].getInputFeedFromBundle());
+        feedObject.setRetentionValue(retentionUnit.getValue() + "(" + retentionPeriod + ")");
 
         final ServiceResponse response = prism.getFeedHelper()
-            .submitEntity(URLS.SUBMIT_URL, inputFeed);
+            .submitEntity(URLS.SUBMIT_URL, feedObject.toString());
         if (retentionPeriod > 0) {
             AssertUtil.assertSucceeded(response);
 
             replenishData(feedType, gaps, withData);
 
-            commonDataRetentionWorkflow(inputFeed, retentionPeriod, retentionUnit);
+            commonDataRetentionWorkflow(feedObject.toString(), retentionPeriod, retentionUnit);
         } else {
             AssertUtil.assertFailed(response);
         }
@@ -243,22 +244,6 @@ public class RetentionTest extends BaseTestClass {
                 deletedFolders.toArray(new String[deletedFolders.size()])),
             "It appears that the data that is received from queue and the data deleted are " +
                 "not same!");
-    }
-
-    private static String insertRetentionValueInFeed(String feed, String retentionValue) {
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
-
-        //insert retentionclause
-        feedObject.getClusters().getClusters().get(0).getRetention()
-            .setLimit(new Frequency(retentionValue));
-
-        for (org.apache.falcon.entity.v0.feed.Cluster cluster : feedObject
-            .getClusters().getClusters()) {
-            cluster.getRetention().setLimit(new Frequency(retentionValue));
-        }
-
-        return feedObject.toString();
-
     }
 
     private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,

@@ -114,7 +114,7 @@ public class FeedMerlin extends Feed {
         setClusters(cs);
     }
 
-    public void insertRetentionValueInFeed(String retentionValue) {
+    public void setRetentionValue(String retentionValue) {
         for (org.apache.falcon.entity.v0.feed.Cluster cluster : getClusters().getClusters()) {
             cluster.getRetention().setLimit(new Frequency(retentionValue));
         }
