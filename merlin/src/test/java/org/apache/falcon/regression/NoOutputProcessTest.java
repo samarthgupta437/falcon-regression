@@ -109,7 +109,7 @@ public class NoOutputProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
             CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
-        Assert.assertEquals(consumer.getMessageData().size(), 3,
+        Assert.assertEquals(consumer.getReceivedMessages().size(), 3,
             " Message for all the 3 instance not found");
 
         consumer.interrupt();
@@ -133,9 +133,9 @@ public class NoOutputProcessTest extends BaseTestClass {
         InstanceUtil.waitTillInstanceReachState(clusterOC, bundles[0].getProcessName(), 3,
             CoordinatorAction.Status.SUCCEEDED, EntityType.PROCESS);
 
-        Assert.assertEquals(consumerInternalMsg.getMessageData().size(), 3,
+        Assert.assertEquals(consumerInternalMsg.getReceivedMessages().size(), 3,
             " Message for all the 3 instance not found");
-        Assert.assertEquals(consumerProcess.getMessageData().size(), 3,
+        Assert.assertEquals(consumerProcess.getReceivedMessages().size(), 3,
             " Message for all the 3 instance not found");
 
         consumerInternalMsg.interrupt();

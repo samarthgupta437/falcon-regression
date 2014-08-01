@@ -19,19 +19,16 @@
 package org.apache.falcon.regression.core.supportClasses;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 
 public class Consumer extends Thread {
@@ -41,70 +38,51 @@ public class Consumer extends Thread {
     Name of the queue we will receive messages from
     String subject = "IVORY.TOPIC";*/
 
-    String url;
-    String subject;
     private static final Logger logger = Logger.getLogger(Consumer.class);
 
-    List<HashMap<String, String>> messageData;
+    final String url;
+    final String subject;
+    final List<MapMessage> receivedMessages;
 
-    public List<HashMap<String, String>> getMessageData() {
-        return messageData;
+    public List<MapMessage> getReceivedMessages() {
+        return receivedMessages;
     }
 
     public Consumer(String subject, String url) {
         super(subject);
         this.subject = subject;
         this.url = url;
-        messageData = new ArrayList<HashMap<String, String>>();
+        receivedMessages = new ArrayList<MapMessage>();
     }
 
+    @Override
     public void run() {
         try {
-            readMessage();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+            // Getting JMS connection from the server
+            Connection connection = new ActiveMQConnectionFactory(url).createConnection();
+            connection.start();
 
-    public void readMessage() throws JMSException {
-        // Getting JMS connection from the server
-        ConnectionFactory connectionFactory
-            = new ActiveMQConnectionFactory(url);
-        Connection connection = connectionFactory.createConnection();
-        connection.start();
+            // Creating session for sending messages
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            Destination destination = session.createTopic(subject);
+            MessageConsumer consumer = session.createConsumer(destination);
 
-        // Creating session for sending messages
-        Session session = connection.createSession(false,
-            Session.AUTO_ACKNOWLEDGE);
-
-        // Getting the queue 'TESTQUEUE'
-        Destination destination = session.createTopic(subject);
-
-        // MessageConsumer is used for receiving (consuming) messages
-        MessageConsumer consumer = session.createConsumer(destination);
-
-        /*Here we receive the message.
-        By default this call is blocking, which means it will wait
-        for a message to arrive on the queue.*/
-        try {
-            logger.info("Starting to receive messages.");
-            while (true) {
-                Message m = consumer.receive();
-                logger.info(m);
-                if (m != null) {
-                    MapMessage message = (MapMessage) m;
-                    Enumeration mapNames = message.getMapNames();
-                    HashMap<String, String> temp = new HashMap<String, String>();
-                    while (mapNames.hasMoreElements()) {
-                        String objectName = mapNames.nextElement().toString();
-                        temp.put(objectName, message.getString(objectName));
+            try {
+                logger.info("Starting to receive messages.");
+                while (true) {
+                    Message message = consumer.receive(); //blocking call
+                    if (message != null) {
+                        logger.info(message);
+                        receivedMessages.add((MapMessage) message);
                     }
-                    messageData.add(temp);
                 }
+            } finally {
+                logger.info("Stopping to receive messages.");
+                connection.close();
             }
-        } finally {
-            logger.info("Stopping to receive messages.");
-            connection.close();
+        } catch (Exception e) {
+            logger.info("caught exception: " + ExceptionUtils.getStackTrace(e));
         }
     }
+
 }

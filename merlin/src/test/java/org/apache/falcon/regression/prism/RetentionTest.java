@@ -21,7 +21,6 @@ package org.apache.falcon.regression.prism;
 
 import org.apache.falcon.entity.v0.Entity;
 import org.apache.falcon.entity.v0.EntityType;
-import org.apache.falcon.entity.v0.Frequency;
 import org.apache.falcon.entity.v0.feed.Feed;
 import org.apache.falcon.entity.v0.feed.Location;
 import org.apache.falcon.entity.v0.feed.LocationType;
@@ -56,12 +55,13 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -132,9 +132,9 @@ public class RetentionTest extends BaseTestClass {
         HadoopUtil.replenishData(clusterFS, testHDFSDir, dataDates, withData);
     }
 
-    private void commonDataRetentionWorkflow(String inputFeed, int time,
-                                             RetentionUnit interval)
-        throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
+    private void commonDataRetentionWorkflow(String inputFeed, int time, RetentionUnit interval)
+    throws OozieClientException, IOException, URISyntaxException, AuthenticationException,
+    JMSException {
         //get Data created in the cluster
         List<String> initialData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
 
@@ -147,39 +147,26 @@ public class RetentionTest extends BaseTestClass {
         consumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = OozieUtil.getBundles(clusterOC,
-            inputDataSetName, EntityType.FEED).get(0);
+        String bundleId = OozieUtil.getBundles(clusterOC, inputDataSetName, EntityType.FEED).get(0);
 
         List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
         logger.info("workflows: " + workflows);
 
         consumer.interrupt();
-
-        logger.info("deleted data which has been received from messaging queue:");
-        for (HashMap<String, String> data : consumer.getMessageData()) {
-            logger.info("*************************************");
-            for (String key : data.keySet()) {
-                logger.info(key + "=" + data.get(key));
-            }
-            logger.info("*************************************");
-        }
-        if (consumer.getMessageData().isEmpty()) {
-            logger.info("Message data was empty!");
-        }
+        Util.dumpConsumerData(consumer);
         //now look for cluster data
         List<String> finalData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
 
         //now see if retention value was matched to as expected
         List<String> expectedOutput = filterDataOnRetention(inputFeed, time, interval,
-                currentTime, initialData);
+            currentTime, initialData);
 
         logger.info("initialData = " + initialData);
         logger.info("finalData = " + finalData);
         logger.info("expectedOutput = " + expectedOutput);
 
-        validateDataFromFeedQueue(
-            inputDataSetName,
-            consumer.getMessageData(), expectedOutput, initialData);
+        validateDataFromFeedQueue(inputDataSetName, consumer.getReceivedMessages(),
+            expectedOutput, initialData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
             "sizes of outputs are different! please check");
@@ -189,9 +176,10 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void validateDataFromFeedQueue(String feedName,
-                                           List<HashMap<String, String>> queueData,
+                                           List<MapMessage> queueData,
                                            List<String> expectedOutput,
-                                           List<String> input) throws OozieClientException {
+                                           List<String> input)
+    throws OozieClientException, JMSException {
 
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
@@ -204,20 +192,20 @@ public class RetentionTest extends BaseTestClass {
         //create queuedata folderList:
         List<String> deletedFolders = new ArrayList<String>();
 
-        for (HashMap<String, String> data : queueData) {
+        for (MapMessage data : queueData) {
             if (data != null) {
-                Assert.assertEquals(data.get("entityName"), feedName);
-                String[] splitData = data.get("feedInstancePaths").split(TEST_FOLDERS);
+                Assert.assertEquals(data.getString("entityName"), feedName);
+                String[] splitData = data.getString("feedInstancePaths").split(TEST_FOLDERS);
                 deletedFolders.add(splitData[splitData.length - 1]);
-                Assert.assertEquals(data.get("operation"), "DELETE");
-                Assert.assertEquals(data.get("workflowId"), jobIds.get(0));
+                Assert.assertEquals(data.getString("operation"), "DELETE");
+                Assert.assertEquals(data.getString("workflowId"), jobIds.get(0));
 
                 //verify other data also
-                Assert.assertEquals(data.get("topicName"), "FALCON." + feedName);
-                Assert.assertEquals(data.get("brokerImplClass"),
+                Assert.assertEquals(data.getString("topicName"), "FALCON." + feedName);
+                Assert.assertEquals(data.getString("brokerImplClass"),
                     "org.apache.activemq.ActiveMQConnectionFactory");
-                Assert.assertEquals(data.get("status"), "SUCCEEDED");
-                Assert.assertEquals(data.get("brokerUrl"),
+                Assert.assertEquals(data.getString("status"), "SUCCEEDED");
+                Assert.assertEquals(data.getString("brokerUrl"),
                     cluster.getFeedHelper().getActiveMQ());
 
             }
