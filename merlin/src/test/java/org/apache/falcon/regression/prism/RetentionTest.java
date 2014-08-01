@@ -132,40 +132,40 @@ public class RetentionTest extends BaseTestClass {
         HadoopUtil.replenishData(clusterFS, testHDFSDir, dataDates, withData);
     }
 
-    private void commonDataRetentionWorkflow(String inputFeed, int time, RetentionUnit interval)
+    private void commonDataRetentionWorkflow(String feed, int time, RetentionUnit interval)
     throws OozieClientException, IOException, URISyntaxException, AuthenticationException,
     JMSException {
         //get Data created in the cluster
-        List<String> initialData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
+        List<String> initialData = Util.getHadoopDataFromDir(clusterFS, feed, testHDFSDir);
 
-        cluster.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed);
+        cluster.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
-        final String inputDataSetName = Util.readEntityName(inputFeed);
-        logger.info(inputDataSetName);
-        JmsMessageConsumer consumer = new JmsMessageConsumer("FALCON." + inputDataSetName,
+        final String feedName = Util.readEntityName(feed);
+        logger.info(feedName);
+        JmsMessageConsumer messageConsumer = new JmsMessageConsumer("FALCON." + feedName,
                 cluster.getClusterHelper().getActiveMQ());
-        consumer.start();
+        messageConsumer.start();
 
         DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = OozieUtil.getBundles(clusterOC, inputDataSetName, EntityType.FEED).get(0);
+        String bundleId = OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0);
 
         List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
         logger.info("workflows: " + workflows);
 
-        consumer.interrupt();
-        Util.printMessageData(consumer);
+        messageConsumer.interrupt();
+        Util.printMessageData(messageConsumer);
         //now look for cluster data
-        List<String> finalData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
+        List<String> finalData = Util.getHadoopDataFromDir(clusterFS, feed, testHDFSDir);
 
         //now see if retention value was matched to as expected
-        List<String> expectedOutput = filterDataOnRetention(inputFeed, time, interval,
+        List<String> expectedOutput = filterDataOnRetention(feed, time, interval,
             currentTime, initialData);
 
         logger.info("initialData = " + initialData);
         logger.info("finalData = " + finalData);
         logger.info("expectedOutput = " + expectedOutput);
 
-        validateDataFromFeedQueue(inputDataSetName, consumer.getReceivedMessages(),
+        validateDataFromFeedQueue(feedName, messageConsumer.getReceivedMessages(),
             expectedOutput, initialData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
@@ -175,49 +175,43 @@ public class RetentionTest extends BaseTestClass {
             expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
-    private void validateDataFromFeedQueue(String feedName,
-                                           List<MapMessage> queueData,
-                                           List<String> expectedOutput,
-                                           List<String> input)
-    throws OozieClientException, JMSException {
-
+    private void validateDataFromFeedQueue(String feedName, List<MapMessage> messages,
+        List<String> expectedOutput, List<String> input) throws OozieClientException, JMSException {
         //just verify that each element in queue is same as deleted data!
         input.removeAll(expectedOutput);
 
         List<String> jobIds = OozieUtil.getCoordinatorJobs(cluster,
-            OozieUtil.getBundles(clusterOC,
-                feedName, EntityType.FEED).get(0)
-        );
+            OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0));
 
         //create queuedata folderList:
         List<String> deletedFolders = new ArrayList<String>();
 
-        for (MapMessage data : queueData) {
-            if (data != null) {
-                Assert.assertEquals(data.getString("entityName"), feedName);
-                String[] splitData = data.getString("feedInstancePaths").split(TEST_FOLDERS);
+        for (MapMessage message : messages) {
+            if (message != null) {
+                Assert.assertEquals(message.getString("entityName"), feedName);
+                String[] splitData = message.getString("feedInstancePaths").split(TEST_FOLDERS);
                 deletedFolders.add(splitData[splitData.length - 1]);
-                Assert.assertEquals(data.getString("operation"), "DELETE");
-                Assert.assertEquals(data.getString("workflowId"), jobIds.get(0));
+                Assert.assertEquals(message.getString("operation"), "DELETE");
+                Assert.assertEquals(message.getString("workflowId"), jobIds.get(0));
 
                 //verify other data also
-                Assert.assertEquals(data.getString("topicName"), "FALCON." + feedName);
-                Assert.assertEquals(data.getString("brokerImplClass"),
+                Assert.assertEquals(message.getString("topicName"), "FALCON." + feedName);
+                Assert.assertEquals(message.getString("brokerImplClass"),
                     "org.apache.activemq.ActiveMQConnectionFactory");
-                Assert.assertEquals(data.getString("status"), "SUCCEEDED");
-                Assert.assertEquals(data.getString("brokerUrl"),
+                Assert.assertEquals(message.getString("status"), "SUCCEEDED");
+                Assert.assertEquals(message.getString("brokerUrl"),
                     cluster.getFeedHelper().getActiveMQ());
 
             }
         }
 
-        //now make sure queueData and input lists are same
+        //now make sure messages and input lists are same
         Assert.assertEquals(deletedFolders.size(), input.size(),
             "Output size is different than expected!");
         Assert.assertTrue(Arrays.deepEquals(input.toArray(new String[input.size()]),
-                deletedFolders.toArray(new String[deletedFolders.size()])),
-            "It appears that the data that is received from queue and the data deleted are " +
-                "not same!");
+                        deletedFolders.toArray(new String[deletedFolders.size()])),
+                "It appears that the data that is received from queue and the data deleted are " +
+                        "not same!");
     }
 
     private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,
