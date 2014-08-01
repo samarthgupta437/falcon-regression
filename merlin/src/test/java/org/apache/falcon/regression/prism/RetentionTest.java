@@ -227,25 +227,8 @@ public class RetentionTest extends BaseTestClass {
             appender = "/01";
         }
 
-
         //end date is today's date
-        formatter.print(currentTime);
-        String startLimit = "";
-
-        if (retentionUnit == RetentionUnit.MINUTES) {
-            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusMinutes(
-                    retentionPeriod));
-        } else if (retentionUnit == RetentionUnit.HOURS) {
-            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusHours(
-                    retentionPeriod));
-        } else if (retentionUnit == RetentionUnit.DAYS) {
-            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusDays(
-                    retentionPeriod));
-        } else if (retentionUnit == RetentionUnit.MONTHS) {
-            startLimit = formatter.print(new DateTime(currentTime, DateTimeZone.UTC).minusDays(31 *
-                    retentionPeriod));
-        }
-
+        String startLimit = formatter.print(retentionUnit.minusTime(currentTime, retentionPeriod));
 
         //now to actually check!
         for (String testDate : inputData) {
@@ -257,9 +240,7 @@ public class RetentionTest extends BaseTestClass {
                 finalData.add(testDate);
             }
         }
-
         return finalData;
-
     }
 
     final static int[] gaps = new int[]{2, 4, 5, 1};
