@@ -173,8 +173,8 @@ public class RetentionTest extends BaseTestClass {
     private void validateDataFromFeedQueue(String feedName, List<MapMessage> messages,
         List<String> missingData) throws OozieClientException, JMSException {
         //just verify that each element in queue is same as deleted data!
-        List<String> jobIds = OozieUtil.getCoordinatorJobs(cluster,
-            OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0));
+        List<String> workflowIds = OozieUtil.getWorkflowJobs(cluster,
+                OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0));
 
         //create queuedata folderList:
         List<String> deletedFolders = new ArrayList<String>();
@@ -185,7 +185,7 @@ public class RetentionTest extends BaseTestClass {
                 String[] splitData = message.getString("feedInstancePaths").split(TEST_FOLDERS);
                 deletedFolders.add(splitData[splitData.length - 1]);
                 Assert.assertEquals(message.getString("operation"), "DELETE");
-                Assert.assertEquals(message.getString("workflowId"), jobIds.get(0));
+                Assert.assertEquals(message.getString("workflowId"), workflowIds.get(0));
 
                 //verify other data also
                 Assert.assertEquals(message.getString("topicName"), "FALCON." + feedName);
