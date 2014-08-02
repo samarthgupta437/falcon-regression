@@ -266,17 +266,13 @@ public final class OozieUtil {
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
         waitForCoordinatorJobCreation(oozieClient, bundleID);
         List<String> workflowIds = new ArrayList<String>();
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-        CoordinatorJob jobInfo =
-            oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        List<CoordinatorJob> coordJobs = oozieClient.getBundleJobInfo(bundleID).getCoordinators();
+        CoordinatorJob coordJobInfo = oozieClient.getCoordJobInfo(coordJobs.get(0).getId());
 
-        for (CoordinatorAction action : jobInfo.getActions()) {
+        for (CoordinatorAction action : coordJobInfo.getActions()) {
             workflowIds.add(action.getExternalId());
         }
-
-
         return workflowIds;
-
     }
 
     public static Date getNominalTime(ColoHelper prismHelper, String bundleID)
