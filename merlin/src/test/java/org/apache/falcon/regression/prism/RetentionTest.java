@@ -42,8 +42,6 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -161,8 +159,9 @@ public class RetentionTest extends BaseTestClass {
         logger.info("finalData = " + finalData);
         logger.info("expectedOutput = " + expectedOutput);
 
-        validateDataFromFeedQueue(feedName, messageConsumer.getReceivedMessages(),
-            expectedOutput, initialData);
+        final List<String> missingData = new ArrayList<String>(initialData);
+        missingData.removeAll(expectedOutput);
+        validateDataFromFeedQueue(feedName, messageConsumer.getReceivedMessages(), missingData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
             "sizes of outputs are different! please check");
@@ -172,10 +171,8 @@ public class RetentionTest extends BaseTestClass {
     }
 
     private void validateDataFromFeedQueue(String feedName, List<MapMessage> messages,
-        List<String> expectedOutput, List<String> input) throws OozieClientException, JMSException {
+        List<String> missingData) throws OozieClientException, JMSException {
         //just verify that each element in queue is same as deleted data!
-        input.removeAll(expectedOutput);
-
         List<String> jobIds = OozieUtil.getCoordinatorJobs(cluster,
             OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0));
 
@@ -197,17 +194,14 @@ public class RetentionTest extends BaseTestClass {
                 Assert.assertEquals(message.getString("status"), "SUCCEEDED");
                 Assert.assertEquals(message.getString("brokerUrl"),
                     cluster.getFeedHelper().getActiveMQ());
-
             }
         }
 
-        //now make sure messages and input lists are same
-        Assert.assertEquals(deletedFolders.size(), input.size(),
+        Assert.assertEquals(deletedFolders.size(), missingData.size(),
             "Output size is different than expected!");
-        Assert.assertTrue(Arrays.deepEquals(input.toArray(new String[input.size()]),
-                        deletedFolders.toArray(new String[deletedFolders.size()])),
-                "It appears that the data that is received from queue and the data deleted are " +
-                        "not same!");
+        Assert.assertTrue(Arrays.deepEquals(missingData.toArray(new String[missingData.size()]),
+            deletedFolders.toArray(new String[deletedFolders.size()])),
+            "The missing data and message for delete operation don't correspond");
     }
 
     private List<String> filterDataOnRetention(List<String> inputData, DateTime currentTime,
