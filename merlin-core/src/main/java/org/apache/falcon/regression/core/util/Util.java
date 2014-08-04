@@ -40,7 +40,7 @@ import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.interfaces.IEntityManagerHelper;
 import org.apache.falcon.regression.core.response.APIResult;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.Consumer;
+import org.apache.falcon.regression.core.supportClasses.JmsMessageConsumer;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.http.HttpResponse;
@@ -57,6 +57,8 @@ import org.apache.log4j.Logger;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -74,7 +76,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 
@@ -358,15 +360,17 @@ public final class Util {
         return (Process) Entity.fromString(EntityType.PROCESS, processData);
     }
 
-    public static void dumpConsumerData(Consumer consumer) {
+    public static void printMessageData(JmsMessageConsumer messageConsumer) throws JMSException {
         LOGGER.info("dumping all queue data:");
-
-        for (HashMap<String, String> data : consumer.getMessageData()) {
-            LOGGER.info("*************************************");
-            for (String key : data.keySet()) {
-                LOGGER.info(key + "=" + data.get(key));
+        for (MapMessage mapMessage : messageConsumer.getReceivedMessages()) {
+            StringBuilder stringBuilder = new StringBuilder();
+            final Enumeration mapNames = mapMessage.getMapNames();
+            while (mapNames.hasMoreElements()) {
+                final String propName = mapNames.nextElement().toString();
+                final String propValue = mapMessage.getString(propName);
+                stringBuilder.append(propName).append('=').append(propValue).append(' ');
             }
-            LOGGER.info("*************************************");
+            LOGGER.info(stringBuilder);
         }
     }
 

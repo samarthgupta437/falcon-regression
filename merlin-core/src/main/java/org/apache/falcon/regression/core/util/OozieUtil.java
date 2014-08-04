@@ -261,22 +261,18 @@ public final class OozieUtil {
         return new ArrayList<String>(Arrays.asList(missingDependencies));
     }
 
-    public static List<String> getCoordinatorJobs(ColoHelper prismHelper, String bundleID)
+    public static List<String> getWorkflowJobs(ColoHelper prismHelper, String bundleID)
         throws OozieClientException {
         XOozieClient oozieClient = prismHelper.getClusterHelper().getOozieClient();
         waitForCoordinatorJobCreation(oozieClient, bundleID);
-        List<String> jobIds = new ArrayList<String>();
-        BundleJob bundleJob = oozieClient.getBundleJobInfo(bundleID);
-        CoordinatorJob jobInfo =
-            oozieClient.getCoordJobInfo(bundleJob.getCoordinators().get(0).getId());
+        List<String> workflowIds = new ArrayList<String>();
+        List<CoordinatorJob> coordJobs = oozieClient.getBundleJobInfo(bundleID).getCoordinators();
+        CoordinatorJob coordJobInfo = oozieClient.getCoordJobInfo(coordJobs.get(0).getId());
 
-        for (CoordinatorAction action : jobInfo.getActions()) {
-            jobIds.add(action.getExternalId());
+        for (CoordinatorAction action : coordJobInfo.getActions()) {
+            workflowIds.add(action.getExternalId());
         }
-
-
-        return jobIds;
-
+        return workflowIds;
     }
 
     public static Date getNominalTime(ColoHelper prismHelper, String bundleID)

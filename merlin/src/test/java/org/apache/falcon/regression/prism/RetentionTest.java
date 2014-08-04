@@ -19,19 +19,14 @@
 package org.apache.falcon.regression.prism;
 
 
-import org.apache.falcon.entity.v0.Entity;
 import org.apache.falcon.entity.v0.EntityType;
-import org.apache.falcon.entity.v0.Frequency;
-import org.apache.falcon.entity.v0.feed.Feed;
-import org.apache.falcon.entity.v0.feed.Location;
-import org.apache.falcon.entity.v0.feed.LocationType;
 import org.apache.falcon.regression.Entities.FeedMerlin;
 import org.apache.falcon.regression.core.bundle.Bundle;
 import org.apache.falcon.regression.core.enumsAndConstants.FeedType;
 import org.apache.falcon.regression.core.enumsAndConstants.RetentionUnit;
 import org.apache.falcon.regression.core.helpers.ColoHelper;
 import org.apache.falcon.regression.core.response.ServiceResponse;
-import org.apache.falcon.regression.core.supportClasses.Consumer;
+import org.apache.falcon.regression.core.supportClasses.JmsMessageConsumer;
 import org.apache.falcon.regression.core.util.AssertUtil;
 import org.apache.falcon.regression.core.util.BundleUtil;
 import org.apache.falcon.regression.core.util.HadoopUtil;
@@ -47,21 +42,19 @@ import org.apache.oozie.client.OozieClient;
 import org.apache.oozie.client.OozieClientException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.testng.Assert;
-import org.testng.TestNGException;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -111,7 +104,8 @@ public class RetentionTest extends BaseTestClass {
 
             replenishData(feedType, gaps, withData);
 
-            commonDataRetentionWorkflow(feedObject.toString(), retentionPeriod, retentionUnit);
+            commonDataRetentionWorkflow(feedObject.toString(), feedType, retentionUnit,
+                retentionPeriod);
         } else {
             AssertUtil.assertFailed(response);
         }
@@ -132,68 +126,42 @@ public class RetentionTest extends BaseTestClass {
         HadoopUtil.replenishData(clusterFS, testHDFSDir, dataDates, withData);
     }
 
-    private void commonDataRetentionWorkflow(String inputFeed, int time,
-                                             RetentionUnit interval)
-        throws OozieClientException, IOException, URISyntaxException, AuthenticationException {
+    private void commonDataRetentionWorkflow(String feed, FeedType feedType,
+        RetentionUnit retentionUnit, int retentionPeriod) throws OozieClientException,
+        IOException, URISyntaxException, AuthenticationException, JMSException {
         //get Data created in the cluster
-        List<String> initialData = Util.getHadoopDataFromDir(clusterFS, inputFeed, testHDFSDir);
+        List<String> initialData = Util.getHadoopDataFromDir(clusterFS, feed, testHDFSDir);
 
-        cluster.getFeedHelper().schedule(URLS.SCHEDULE_URL, inputFeed);
+        cluster.getFeedHelper().schedule(URLS.SCHEDULE_URL, feed);
         logger.info(cluster.getClusterHelper().getActiveMQ());
-        final String inputDataSetName = Util.readEntityName(inputFeed);
-        logger.info(inputDataSetName);
-        Consumer consumer = new Consumer("FALCON." + inputDataSetName,
+        final String feedName = Util.readEntityName(feed);
+        logger.info(feedName);
+        JmsMessageConsumer messageConsumer = new JmsMessageConsumer("FALCON." + feedName,
                 cluster.getClusterHelper().getActiveMQ());
-        consumer.start();
+        messageConsumer.start();
 
-        DateTime currentTime = new DateTime(DateTimeZone.UTC);
-        String bundleId = OozieUtil.getBundles(clusterOC,
-            inputDataSetName, EntityType.FEED).get(0);
+        final DateTime currentTime = new DateTime(DateTimeZone.UTC);
+        String bundleId = OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0);
 
         List<String> workflows = OozieUtil.waitForRetentionWorkflowToSucceed(bundleId, clusterOC);
         logger.info("workflows: " + workflows);
 
-        consumer.interrupt();
-
-        logger.info("deleted data which has been received from messaging queue:");
-        for (HashMap<String, String> data : consumer.getMessageData()) {
-            logger.info("*************************************");
-            for (String key : data.keySet()) {
-                logger.info(key + "=" + data.get(key));
-            }
-            logger.info("*************************************");
-        }
-        if (consumer.getMessageData().isEmpty()) {
-            logger.info("Message data was empty!");
-        }
+        messageConsumer.interrupt();
+        Util.printMessageData(messageConsumer);
         //now look for cluster data
-        List<String> finalData =
-            Util.getHadoopDataFromDir(clusterFS, inputFeed,
-                testHDFSDir);
+        List<String> finalData = Util.getHadoopDataFromDir(clusterFS, feed, testHDFSDir);
 
         //now see if retention value was matched to as expected
-        List<String> expectedOutput =
-            filterDataOnRetention(inputFeed, time, interval,
-                currentTime, initialData);
+        List<String> expectedOutput = filterDataOnRetention(initialData, currentTime, retentionUnit,
+            retentionPeriod, feedType);
 
-        logger.info("initial data in system was:");
-        for (String line : initialData) {
-            logger.info(line);
-        }
+        logger.info("initialData = " + initialData);
+        logger.info("finalData = " + finalData);
+        logger.info("expectedOutput = " + expectedOutput);
 
-        logger.info("system output is:");
-        for (String line : finalData) {
-            logger.info(line);
-        }
-
-        logger.info("actual output is:");
-        for (String line : expectedOutput) {
-            logger.info(line);
-        }
-
-        validateDataFromFeedQueue(
-            inputDataSetName,
-            consumer.getMessageData(), expectedOutput, initialData);
+        final List<String> missingData = new ArrayList<String>(initialData);
+        missingData.removeAll(expectedOutput);
+        validateDataFromFeedQueue(feedName, messageConsumer.getReceivedMessages(), missingData);
 
         Assert.assertEquals(finalData.size(), expectedOutput.size(),
             "sizes of outputs are different! please check");
@@ -202,117 +170,55 @@ public class RetentionTest extends BaseTestClass {
             expectedOutput.toArray(new String[expectedOutput.size()])));
     }
 
-    private void validateDataFromFeedQueue(String feedName,
-                                           List<HashMap<String, String>> queueData,
-                                           List<String> expectedOutput,
-                                           List<String> input) throws OozieClientException {
-
+    private void validateDataFromFeedQueue(String feedName, List<MapMessage> messages,
+        List<String> missingData) throws OozieClientException, JMSException {
         //just verify that each element in queue is same as deleted data!
-        input.removeAll(expectedOutput);
-
-        List<String> jobIds = OozieUtil.getCoordinatorJobs(cluster,
-            OozieUtil.getBundles(clusterOC,
-                feedName, EntityType.FEED).get(0)
-        );
+        List<String> workflowIds = OozieUtil.getWorkflowJobs(cluster,
+                OozieUtil.getBundles(clusterOC, feedName, EntityType.FEED).get(0));
 
         //create queuedata folderList:
         List<String> deletedFolders = new ArrayList<String>();
 
-        for (HashMap<String, String> data : queueData) {
-            if (data != null) {
-                Assert.assertEquals(data.get("entityName"), feedName);
-                String[] splitData = data.get("feedInstancePaths").split(TEST_FOLDERS);
+        for (MapMessage message : messages) {
+            if (message != null) {
+                Assert.assertEquals(message.getString("entityName"), feedName);
+                String[] splitData = message.getString("feedInstancePaths").split(TEST_FOLDERS);
                 deletedFolders.add(splitData[splitData.length - 1]);
-                Assert.assertEquals(data.get("operation"), "DELETE");
-                Assert.assertEquals(data.get("workflowId"), jobIds.get(0));
+                Assert.assertEquals(message.getString("operation"), "DELETE");
+                Assert.assertEquals(message.getString("workflowId"), workflowIds.get(0));
 
                 //verify other data also
-                Assert.assertEquals(data.get("topicName"), "FALCON." + feedName);
-                Assert.assertEquals(data.get("brokerImplClass"),
+                Assert.assertEquals(message.getString("topicName"), "FALCON." + feedName);
+                Assert.assertEquals(message.getString("brokerImplClass"),
                     "org.apache.activemq.ActiveMQConnectionFactory");
-                Assert.assertEquals(data.get("status"), "SUCCEEDED");
-                Assert.assertEquals(data.get("brokerUrl"),
+                Assert.assertEquals(message.getString("status"), "SUCCEEDED");
+                Assert.assertEquals(message.getString("brokerUrl"),
                     cluster.getFeedHelper().getActiveMQ());
-
             }
         }
 
-        //now make sure queueData and input lists are same
-        Assert.assertEquals(deletedFolders.size(), input.size(),
+        Assert.assertEquals(deletedFolders.size(), missingData.size(),
             "Output size is different than expected!");
-        Assert.assertTrue(Arrays.deepEquals(input.toArray(new String[input.size()]),
-                deletedFolders.toArray(new String[deletedFolders.size()])),
-            "It appears that the data that is received from queue and the data deleted are " +
-                "not same!");
+        Assert.assertTrue(Arrays.deepEquals(missingData.toArray(new String[missingData.size()]),
+            deletedFolders.toArray(new String[deletedFolders.size()])),
+            "The missing data and message for delete operation don't correspond");
     }
 
-    private List<String> filterDataOnRetention(String feed, int time, RetentionUnit interval,
-                                               DateTime endDate,
-                                               List<String> inputData) {
-        String locationType = "";
-        String appender = "";
-
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy/MM/dd/HH/mm");
-        List<String> finalData = new ArrayList<String>();
-
-        //determine what kind of data is there in the feed!
-        Feed feedObject = (Feed) Entity.fromString(EntityType.FEED, feed);
-
-        for (Location location : feedObject.getLocations().getLocations()) {
-            if (location.getType() == LocationType.DATA) {
-                locationType = location.getPath();
-            }
-        }
-
-        if (locationType.equalsIgnoreCase("") || locationType.equalsIgnoreCase(null)) {
-            throw new TestNGException("location type was not mentioned in your feed!");
-        }
-
-        if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}")) {
-            appender = "/01/00/01";
-        } else if (locationType
-            .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}")) {
-            appender = "/01"; //because we already take care of that!
-        } else if (locationType
-            .equalsIgnoreCase(testHDFSDir + "${YEAR}/${MONTH}/${DAY}/${HOUR}")) {
-            appender = "/01";
-        } else if (locationType.equalsIgnoreCase(testHDFSDir + "${YEAR}")) {
-            appender = "/01/01/00/01";
-        }
-
-        //convert the start and end date boundaries to the same format
-
-
+    private List<String> filterDataOnRetention(List<String> inputData, DateTime currentTime,
+        RetentionUnit retentionUnit, int retentionPeriod, FeedType feedType) {
+        final List<String> finalData = new ArrayList<String>();
         //end date is today's date
-        formatter.print(endDate);
-        String startLimit = "";
-
-        if (interval == RetentionUnit.MINUTES) {
-            startLimit =
-                formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusMinutes(time));
-        } else if (interval == RetentionUnit.HOURS) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusHours(time));
-        } else if (interval == RetentionUnit.DAYS) {
-            startLimit = formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(time));
-        } else if (interval == RetentionUnit.MONTHS) {
-            startLimit =
-                formatter.print(new DateTime(endDate, DateTimeZone.UTC).minusDays(31 * time));
-        }
-
+        final String startLimit = feedType.getFormatter().print(
+                retentionUnit.minusTime(currentTime, retentionPeriod));
 
         //now to actually check!
         for (String testDate : inputData) {
-            if (!testDate.equalsIgnoreCase("somethingRandom")) {
-                if ((testDate + appender).compareTo(startLimit) > 0) {
-                    finalData.add(testDate);
-                }
-            } else {
+            if (testDate.equals(HadoopUtil.SOMETHING_RANDOM)
+                    || testDate.compareTo(startLimit) > 0) {
                 finalData.add(testDate);
             }
         }
-
         return finalData;
-
     }
 
     final static int[] gaps = new int[]{2, 4, 5, 1};
