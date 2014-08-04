@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/** Class for representing a cluster xml. */
 public class ClusterMerlin extends Cluster {
 
     public ClusterMerlin(String clusterData) {

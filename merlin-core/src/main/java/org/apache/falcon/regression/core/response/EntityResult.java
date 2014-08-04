@@ -41,10 +41,7 @@ public class EntityResult {
 
     @Override
     public String toString() {
-        return "EntityResult{" +
-            "type='" + type + '\'' +
-            ", name='" + name + '\'' +
-            '}';
+        return String.format("EntityResult{type='%s', name='%s'}", type, name);
     }
 
 }
