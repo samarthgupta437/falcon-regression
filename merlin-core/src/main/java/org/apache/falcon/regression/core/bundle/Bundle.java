@@ -195,9 +195,9 @@ public class Bundle {
      * @param c      Cluster object to be unwrapped and set into bundle
      */
     public void writeClusterElement(org.apache.falcon.entity.v0.cluster.Cluster c) {
-        final List<String> clusters = new ArrayList<String>();
-        clusters.add(c.toString());
-        setClusterData(clusters);
+        final List<String> newClusters = new ArrayList<String>();
+        newClusters.add(c.toString());
+        setClusterData(newClusters);
     }
 
     /**
@@ -526,7 +526,7 @@ public class Bundle {
         Feed feedElement = getFeedElement(feedName);
         final List<Location> locations = feedElement.getLocations().getLocations();
         for (Location location : locations) {
-            if(location.getType() == LocationType.DATA) {
+            if (location.getType() == LocationType.DATA) {
                 locations.get(0).setPath(path);
             }
         }
@@ -1007,8 +1007,7 @@ public class Bundle {
     }
 
     public String getInputFeedFromBundle() {
-        String processData = getProcessData();
-        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, getProcessData());
         for (Input input : processObject.getInputs().getInputs()) {
             for (String feed : getDataSets()) {
                 if (Util.readEntityName(feed).equalsIgnoreCase(input.getFeed())) {
@@ -1020,8 +1019,7 @@ public class Bundle {
     }
 
     public String getOutputFeedFromBundle() {
-        String processData = getProcessData();
-        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, processData);
+        Process processObject = (Process) Entity.fromString(EntityType.PROCESS, getProcessData());
 
         for (Output output : processObject.getOutputs().getOutputs()) {
             for (String feed : getDataSets()) {

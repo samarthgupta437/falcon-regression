@@ -28,7 +28,7 @@ import java.io.StringWriter;
 
 /**
  * APIResult is the output returned by all the APIs; status-SUCCEEDED or FAILED
- * message- detailed message
+ * message- detailed message.
  */
 @XmlRootElement(name = "result")
 @XmlAccessorType(XmlAccessType.FIELD)
