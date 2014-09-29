@@ -24,6 +24,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.jcraft.jsch.JSchException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.falcon.entity.v0.Entity;
 import org.apache.falcon.entity.v0.EntityType;
 import org.apache.falcon.regression.core.enumsAndConstants.MerlinConstants;
@@ -567,7 +568,7 @@ public final class Util {
         }
 
         String hcatEndpoint = Config.getProperty(prefix + "hcat_endpoint");
-
+        String hbaseEndpoint = Config.getProperty(prefix + "hbase_endpoint");
         //now read and set relevant values
         for (Interface iface : clusterObject.getInterfaces().getInterfaces()) {
             if (iface.getType() == Interfacetype.READONLY) {
@@ -584,6 +585,17 @@ public final class Util {
                 iface.setEndpoint(hcatEndpoint);
             }
         }
+
+        if (StringUtils.isNotBlank(hbaseEndpoint)) {
+            List<org.apache.falcon.entity.v0.cluster.Property> properties = clusterObject.getProperties()
+                    .getProperties();
+            for (org.apache.falcon.entity.v0.cluster.Property property : properties) {
+                if (property.getName().equals("hbase.zookeeper.quorum")) {
+                    property.setValue(hbaseEndpoint);
+                }
+            }
+        }
+
 
         //set colo name:
         clusterObject.setColo(Config.getProperty(prefix + "colo"));

@@ -101,6 +101,10 @@ public abstract class IEntityManagerHelper {
         return hcatEndpoint;
     }
 
+    public String gethbaseEndpoint() {
+        return hbaseEndpoint;
+    }
+
     protected HCatClient hCatClient;
 
     public HCatClient getHCatClient() {
@@ -140,6 +144,7 @@ public abstract class IEntityManagerHelper {
     protected String serviceStopCmd;
     protected String serviceStatusCmd;
     protected String hcatEndpoint = "";
+    protected String hbaseEndpoint = "";
 
     public String getNamenodePrincipal() {
         return namenodePrincipal;
@@ -212,6 +217,7 @@ public abstract class IEntityManagerHelper {
         this.hadoopLocation = Config.getProperty(prefix + "hadoop_location");
         this.hadoopURL = Config.getProperty(prefix + "hadoop_url");
         this.hcatEndpoint = Config.getProperty(prefix + "hcat_endpoint");
+        this.hbaseEndpoint = Config.getProperty(prefix + "hbase_endpoint");
         this.clusterReadonly = Config.getProperty(prefix + "cluster_readonly");
         this.clusterWrite = Config.getProperty(prefix + "cluster_write");
         this.oozieURL = Config.getProperty(prefix + "oozie_url");
