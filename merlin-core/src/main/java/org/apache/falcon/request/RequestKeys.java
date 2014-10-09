@@ -17,6 +17,8 @@
  */
 
 package org.apache.falcon.request;
+import org.apache.falcon.regression.core.util.Config;
+import org.apache.commons.lang.StringUtils;
 
 public class RequestKeys {
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
@@ -27,6 +29,19 @@ public class RequestKeys {
     public static final String COOKIE = "Cookie";
     public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
     public static final String NEGOTIATE = "Negotiate";
-    public static final String CURRENT_USER = System
-        .getProperty("user.name");
+    public static String CURRENT_USER = getCurrentUSer();
+
+    private static String getCurrentUSer() {
+        String configUser = Config.getProperty("REQUEST.USER");
+        if (StringUtils.isNotBlank(configUser)) {
+            return configUser;
+        }
+        else {
+              return  System.getProperty("user.name");
+        }
+    }
+    public static void setCURRENT_USER(String CURRENT_USER) {
+        RequestKeys.CURRENT_USER = CURRENT_USER;
+    }
+
 }
