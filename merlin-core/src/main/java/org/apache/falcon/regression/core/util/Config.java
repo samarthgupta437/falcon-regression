@@ -23,22 +23,48 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 public class Config {
     private static final Logger logger = Logger.getLogger(Config.class);
 
     private static final String MERLIN_PROPERTIES = "Merlin.properties";
-    private static final Config INSTANCE = new Config(MERLIN_PROPERTIES);
-
+    public static Config INSTANCE ;
+    static {
+        try {
+            INSTANCE = new Config(MERLIN_PROPERTIES);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+    }
     private PropertiesConfiguration confObj;
-    private Config(String propFileName) {
+    public Config(String propFileName) throws Exception {
         try {
             logger.info("Going to read properties from: " + propFileName);
-            confObj = new PropertiesConfiguration(Config.class.getResource("/" + propFileName));
+            logger.info("Looking from "+ propFileName + "on local disk");
+            File propFile = new File(propFileName);
+            if (propFile.exists()) {
+                FileInputStream fis = new FileInputStream(propFile);
+                confObj.load(fis);
+                fis.close();
+            }
+            else
+            {
+                logger.info("Coudnt find properties on disk. trying to load properties from from classpath");
+                confObj = new PropertiesConfiguration(Config.class.getResource("/" + propFileName));
+            }
         } catch (ConfigurationException e) {
             Assert.fail("Could not read properties because of exception: " + e);
         }
     }
 
+    public static void setConfig(String filePath) throws Exception{
+        INSTANCE = new Config(filePath);
+    }
     public static String getProperty(String key) {
         return INSTANCE.confObj.getString(key);
     }
