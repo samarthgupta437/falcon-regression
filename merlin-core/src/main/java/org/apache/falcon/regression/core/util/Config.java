@@ -48,6 +48,7 @@ public class Config {
             File propFile = new File(propFileName);
             if (propFile.exists()) {
                 FileInputStream fis = new FileInputStream(propFile);
+                confObj = new PropertiesConfiguration();
                 confObj.load(fis);
                 fis.close();
             }
