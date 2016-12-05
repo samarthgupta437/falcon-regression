@@ -213,7 +213,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"multiCluster"})
+    @Test(groups = {"multiCluster", "embedded"})
     public void testServer1FeedDeleteAlreadyDeletedFeed() throws Exception {
         restartRequired = true;
         bundles[0].submitFeed();
@@ -322,7 +322,7 @@ public class PrismFeedDeleteTest extends BaseTestClass {
         compareDataStoreStates(finalServer1ArchiveStore, initialServer1ArchiveStore, clusterName);
     }
 
-    @Test(groups = {"multiCluster"})
+    @Test(groups = {"multiCluster", "embedded"})
     public void testServer1FeedDeleteNonExistent() throws Exception {
         //now lets get the final states
         List<String> initialPrismStore = prism.getFeedHelper().getStoreInfo();

@@ -198,7 +198,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
     }
 
 
-    @Test(groups = {"multiCluster"})
+    @Test(groups = {"multiCluster", "embedded"})
     public void testServer1ClusterDeleteAlreadyDeletedCluster() throws Exception {
         restartRequired = true;
         AssertUtil.assertSucceeded(prism.getClusterHelper()
@@ -306,7 +306,7 @@ public class PrismClusterDeleteTest extends BaseTestClass {
         compareDataStoreStates(finalServer1ArchiveStore, initialServer1ArchiveStore, clusterName);
     }
 
-    @Test(groups = {"multiCluster"})
+    @Test(groups = {"multiCluster", "embedded"})
     public void testServer1ClusterDeleteNonExistent() throws Exception {
         //now lets get the final states
         List<String> initialPrismStore = prism.getClusterHelper().getStoreInfo();
